@@ -1,4 +1,4 @@
-package andpact.project.wid
+package andpact.project.wid.fragment
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -14,15 +14,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun WiDSearchScreen() {
+fun WiDReadFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Blue)
+            .background(color = Color.Magenta)
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Search Screen",
+            text = "Read Screen",
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -33,6 +33,6 @@ fun WiDSearchScreen() {
 
 @Preview(showBackground = true)
 @Composable
-fun WiDSearchScreenPreview() {
-    WiDSearchScreen()
+fun WiDReadFragmentPreview() {
+    WiDReadFragment()
 }

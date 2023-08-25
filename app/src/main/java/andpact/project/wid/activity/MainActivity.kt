@@ -1,21 +1,21 @@
-package andpact.project.wid
+package andpact.project.wid.activity
 
+import andpact.project.wid.fragment.WiDCreateFragment
+import andpact.project.wid.fragment.WiDReadFragment
+import andpact.project.wid.fragment.WiDSearchFragment
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import andpact.project.wid.ui.theme.WiDTheme
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,22 +27,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WiDMainScreen()
+            WiDMainActivity()
         }
     }
 }
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController, startDestination = Destinations.WiDCreateScreen.route) {
-        composable(Destinations.WiDCreateScreen.route) {
-            WiDCreateScreen()
+    NavHost(navController, startDestination = Destinations.WiDCreateFragment.route) {
+        composable(Destinations.WiDCreateFragment.route) {
+            WiDCreateFragment()
         }
-        composable(Destinations.WiDReadScreen.route) {
-            WiDReadScreen()
+        composable(Destinations.WiDReadFragment.route) {
+            WiDReadFragment()
         }
-        composable(Destinations.WiDSearchScreen.route) {
-            WiDSearchScreen()
+        composable(Destinations.WiDSearchFragment.route) {
+            WiDSearchFragment()
         }
     }
 }
@@ -52,7 +52,7 @@ fun BottomBar(
     navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier
 ) {
     val screens = listOf(
-        Destinations.WiDCreateScreen, Destinations.WiDReadScreen, Destinations.WiDSearchScreen
+        Destinations.WiDCreateFragment, Destinations.WiDReadFragment, Destinations.WiDSearchFragment
     )
 
     NavigationBar(
@@ -91,7 +91,7 @@ fun BottomBar(
 }
 
 @Composable
-fun WiDMainScreen() {
+fun WiDMainActivity() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
 //        val bottomBarHeight = 56.dp
@@ -121,28 +121,27 @@ sealed class Destinations(
     val title: String? = null,
     val icon: ImageVector? = null
 ) {
-    object WiDCreateScreen : Destinations(
-        route = "wid_create_screen",
+    object WiDCreateFragment : Destinations(
+        route = "wid_create_fragment",
         title = "Create",
         icon = Icons.Filled.Add
     )
 
-    object WiDReadScreen : Destinations(
-        route = "wid_read_screen",
+    object WiDReadFragment : Destinations(
+        route = "wid_read_fragment",
         title = "Read",
         icon = Icons.Filled.List
     )
 
-    object WiDSearchScreen : Destinations(
-        route = "wid_search_screen",
+    object WiDSearchFragment : Destinations(
+        route = "wid_search_fragment",
         title = "Search",
         icon = Icons.Filled.Search
     )
-
 }
 
 @Preview(showBackground = true)
 @Composable
-fun WiDMainScreenPreview() {
-    WiDMainScreen()
+fun WiDMainActivityPreview() {
+    WiDMainActivity()
 }
