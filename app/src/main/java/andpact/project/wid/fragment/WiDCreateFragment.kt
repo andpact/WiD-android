@@ -1,5 +1,7 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.model.WiD
+import andpact.project.wid.service.WiDService
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.background
@@ -15,9 +17,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope.coroutineContext
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -25,52 +33,100 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun WiDCreateFragment() {
-    var date by remember { mutableStateOf(LocalDate.now()) }
+    val wiDService = WiDService(context = LocalContext.current)
+
+    var date: LocalDate = LocalDate.now()
+
     val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var titleIndex by remember { mutableStateOf(0) }
     var title by remember { mutableStateOf(titles[titleIndex]) }
-    val currentTime: LocalTime = LocalTime.now()
-    var start by remember { mutableStateOf(currentTime) }
-    var finish by remember { mutableStateOf(currentTime) }
-    val duration: Duration = Duration.between(start, finish)
-    val durationFormatted = String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutes(), duration.seconds % 60)
-    var detail: String
 
-    var isAfterStart by remember { mutableStateOf(false) }
-    var isAfterFinish by remember { mutableStateOf(false) }
+    var start: LocalTime = LocalTime.now()
+    var finish: LocalTime
 
-    val updateInterval = 1000L // 1 second in milliseconds
-    val startHandler by remember { mutableStateOf(Handler(Looper.getMainLooper())) }
-    val startRunnable = remember {
-        object : Runnable {
-            override fun run() {
-                date = LocalDate.now()
-                start = LocalTime.now()
-                finish = start
-                startHandler.postDelayed(this, updateInterval)
+    var runningTime by remember { mutableStateOf(Duration.ZERO) }
+
+    var isStarted by remember { mutableStateOf(false) }
+    var isFinished by remember { mutableStateOf(false) }
+    var isReset by remember { mutableStateOf(true) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    fun finishWiD() {
+        coroutineScope.launch {
+            isStarted = !isStarted // true to false
+            isFinished = !isFinished  // false to true
+
+            finish = LocalTime.now()
+
+            if (finish.isBefore(start)) {
+                val midnight = LocalTime.MIDNIGHT
+
+                val firstWiD = WiD(
+                    id = 0,
+                    date = date,
+                    title = title,
+                    start = start,
+                    finish = midnight.plusSeconds(-1),
+                    duration = Duration.between(start, midnight.plusSeconds(-1)),
+                    detail = ""
+                )
+                wiDService.createWiD(firstWiD)
+
+                val nextDate = date.plusDays(1)
+
+                val secondWiD = WiD(
+                    id = 0,
+                    date = nextDate,
+                    title = title,
+                    start = midnight,
+                    finish = finish,
+                    duration = Duration.between(midnight, finish),
+                    detail = ""
+                )
+                wiDService.createWiD(secondWiD)
+            } else {
+                val newWiD = WiD(
+                    id = 0,
+                    date = date,
+                    title = title,
+                    start = start,
+                    finish = finish,
+                    duration = Duration.between(start, finish),
+                    detail = ""
+                )
+                wiDService.createWiD(newWiD)
             }
         }
     }
 
-    val finishHandler by remember { mutableStateOf(Handler(Looper.getMainLooper())) }
-    val finishRunnable = remember {
-        object : Runnable {
-            override fun run() {
-                finish = LocalTime.now()
-                finishHandler.postDelayed(this, updateInterval)
+    fun runningTimer(scope: CoroutineScope) {
+        scope.launch {
+            while (isStarted) {
+                delay(1000)
+                runningTime = runningTime.plusSeconds(1)
             }
         }
     }
 
-    LaunchedEffect(isAfterStart, isAfterFinish) {
-        if (isAfterStart) { // 시작 버튼 누른 후
-            startHandler.removeCallbacks(startRunnable)
-            finishHandler.post(finishRunnable)
-        } else if (isAfterFinish) { // 종료 버튼 누른 후
-            finishHandler.removeCallbacks(finishRunnable)
-        } else { // 초기 상태
-            startHandler.post(startRunnable)
-            finishHandler.removeCallbacks(finishRunnable)
+    fun startWiD() {
+        isStarted = !isStarted // false to true
+        isReset = !isReset // true to false
+
+        if (isStarted) {
+            date = LocalDate.now()
+            start = LocalTime.now()
+            runningTime = Duration.ZERO
+            runningTimer(coroutineScope)
+        } else {
+            coroutineScope.launch { coroutineContext.cancelChildren() }
+        }
+    }
+
+    fun resetWiD() {
+        isReset = !isReset // false to true
+        coroutineScope.launch {
+            runningTime = Duration.ZERO
         }
     }
 
@@ -79,8 +135,8 @@ fun WiDCreateFragment() {
             .fillMaxSize()
             .background(color = Color.Gray)
             .wrapContentSize(Alignment.Center)
-            .padding(16.dp), // Add padding for spacing
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Add vertical spacing between buttons
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             modifier = Modifier
@@ -94,7 +150,7 @@ fun WiDCreateFragment() {
                     title = titles[titleIndex]
                 },
                 modifier = Modifier.weight(1f),
-                enabled = !isAfterStart && !isAfterFinish
+                enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "previousTitle")
             }
@@ -113,14 +169,14 @@ fun WiDCreateFragment() {
                     title = titles[titleIndex]
                 },
                 modifier = Modifier.weight(1f),
-                enabled = !isAfterStart && !isAfterFinish
+                enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
             }
         }
 
         Text( // Duration TextView
-            text = durationFormatted,
+            text = formatDuration(runningTime),
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -135,36 +191,42 @@ fun WiDCreateFragment() {
         ) {
             Button(
                 onClick = {
-                    isAfterStart = true
+                    startWiD()
                 },
                 modifier = Modifier.weight(1f),
-                enabled = !isAfterStart && !isAfterFinish
+                enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "start")
             }
 
             Button(
                 onClick = {
-                    isAfterStart = false
-                    isAfterFinish = true
+                    finishWiD()
                 },
                 modifier = Modifier.weight(1f),
-                enabled = isAfterStart && !isAfterFinish
+                enabled = isStarted
             ) {
                 Icon(imageVector = Icons.Filled.Done, contentDescription = "finish")
             }
 
             Button(
                 onClick = {
-                    isAfterFinish = false
+                    resetWiD()
                 },
                 modifier = Modifier.weight(1f),
-                enabled = !isAfterStart && isAfterFinish
+                enabled = !isReset && isFinished
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "reset")
             }
         }
     }
+}
+
+fun formatDuration(duration: Duration): String {
+    val hours = duration.toHours()
+    val minutes = (duration.toMinutes() % 60)
+    val seconds = (duration.seconds % 60)
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
 @Preview(showBackground = true)

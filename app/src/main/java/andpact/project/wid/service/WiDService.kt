@@ -5,6 +5,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.time.LocalDate
+import java.time.LocalTime
 
 class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
@@ -41,7 +43,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         onCreate(db)
     }
 
-    fun insertWiD(wid: WiD) {
+    fun createWiD(wid: WiD) {
         val db = writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_ID, wid.id)
@@ -53,6 +55,119 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
             put(COLUMN_DETAIL, wid.detail)
         }
         db.insert(TABLE_NAME, null, values)
+        db.close()
+    }
+
+    fun readWiDById(id: Long): WiD? {
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_ID = ?"
+        val selectionArgs = arrayOf(id.toString())
+
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+        var wiD: WiD? = null
+
+        if (cursor.moveToFirst()) {
+            val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
+            val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+            val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+            val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+            val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+            val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+
+            wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
+        }
+
+        cursor.close()
+        db.close()
+
+        return wiD
+    }
+
+    fun readWiDListByDate(date: LocalDate): List<WiD> {
+        val db = readableDatabase
+        val wiDList = mutableListOf<WiD>()
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ?"
+        val selectionArgs = arrayOf(date.toString())
+
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+                val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+
+                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
+                wiDList.add(wiD)
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+
+        return wiDList
+    }
+
+    fun readWiDListByDetail(detail: String): List<WiD> {
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DETAIL = ?"
+        val selectionArgs = arrayOf(detail)
+
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+        val wiDList = mutableListOf<WiD>()
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+            val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
+            val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+            val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+            val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+            val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+            val retrievedDetail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+
+            val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, retrievedDetail)
+            wiDList.add(wiD)
+        }
+
+        cursor.close()
+        db.close()
+
+        return wiDList
+    }
+
+    fun updateWiDDetail(id: Long, newDetail: String) {
+        val db = writableDatabase
+
+        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
+        val selectionArgs = arrayOf(newDetail, id.toString())
+
+        db.execSQL(updateQuery, selectionArgs)
+
+        db.close()
+    }
+
+    fun deleteWiDById(id: Long) {
+        val db = writableDatabase
+
+        val deleteQuery = "DELETE FROM $TABLE_NAME WHERE $COLUMN_ID = ?"
+        val selectionArgs = arrayOf(id.toString())
+
+        db.execSQL(deleteQuery, selectionArgs)
+
+        db.close()
+    }
+
+    fun deleteAllWiD() {
+        val db = writableDatabase
+        db.execSQL("DELETE FROM $TABLE_NAME")
         db.close()
     }
 }
