@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -44,14 +45,17 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
     }
 
     fun createWiD(wid: WiD) {
+        Log.d("WiDService", "createWiD executed")
+
         val db = writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_ID, wid.id)
+//            put(COLUMN_ID, wid.id) // 이거 필요없음
             put(COLUMN_DATE, wid.date.toString())
             put(COLUMN_TITLE, wid.title)
             put(COLUMN_START, wid.start.toString())
             put(COLUMN_FINISH, wid.finish.toString())
-            put(COLUMN_DURATION, wid.duration.toString())
+//            put(COLUMN_DURATION, wid.duration.toString())
+            put(COLUMN_DURATION, wid.duration.toMillis())
             put(COLUMN_DETAIL, wid.detail)
         }
         db.insert(TABLE_NAME, null, values)
@@ -86,6 +90,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
     }
 
     fun readWiDListByDate(date: LocalDate): List<WiD> {
+        Log.d("WiDService", "readWiDListByDate executed")
+
         val db = readableDatabase
         val wiDList = mutableListOf<WiD>()
 
@@ -135,6 +141,35 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 
             val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, retrievedDetail)
             wiDList.add(wiD)
+        }
+
+        cursor.close()
+        db.close()
+
+        return wiDList
+    }
+
+    fun readAllWiD(): List<WiD> {
+        val db = readableDatabase
+        val wiDList = mutableListOf<WiD>()
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME"
+
+        val cursor = db.rawQuery(selectQuery, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
+                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+                val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+
+                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
+                wiDList.add(wiD)
+            } while (cursor.moveToNext())
         }
 
         cursor.close()

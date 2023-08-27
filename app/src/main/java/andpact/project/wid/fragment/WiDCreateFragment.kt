@@ -4,6 +4,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -41,8 +42,8 @@ fun WiDCreateFragment() {
     var titleIndex by remember { mutableStateOf(0) }
     var title by remember { mutableStateOf(titles[titleIndex]) }
 
-    var start: LocalTime = LocalTime.now()
-    var finish: LocalTime
+    var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
+    var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
     var runningTime by remember { mutableStateOf(Duration.ZERO) }
 
@@ -53,11 +54,14 @@ fun WiDCreateFragment() {
     val coroutineScope = rememberCoroutineScope()
 
     fun finishWiD() {
+        Log.d("WiDCreateFragment", "finishWiD executed")
+
         coroutineScope.launch {
             isStarted = !isStarted // true to false
             isFinished = !isFinished  // false to true
 
             finish = LocalTime.now()
+            Log.d("finish : ", finish.toString())
 
             if (finish.isBefore(start)) {
                 val midnight = LocalTime.MIDNIGHT
@@ -95,6 +99,7 @@ fun WiDCreateFragment() {
                     duration = Duration.between(start, finish),
                     detail = ""
                 )
+                Log.d("newWiD", newWiD.toString())
                 wiDService.createWiD(newWiD)
             }
         }
@@ -110,12 +115,15 @@ fun WiDCreateFragment() {
     }
 
     fun startWiD() {
+        Log.d("WiDCreateFragment", "startWiD executed")
+
         isStarted = !isStarted // false to true
         isReset = !isReset // true to false
 
         if (isStarted) {
             date = LocalDate.now()
             start = LocalTime.now()
+            Log.d("start : ", start.toString())
             runningTime = Duration.ZERO
             runningTimer(coroutineScope)
         } else {
@@ -152,7 +160,7 @@ fun WiDCreateFragment() {
                 modifier = Modifier.weight(1f),
                 enabled = isReset
             ) {
-                Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "previousTitle")
+                Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
             }
 
             Text(
@@ -217,6 +225,14 @@ fun WiDCreateFragment() {
                 enabled = !isReset && isFinished
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "reset")
+            }
+
+            Button(
+                onClick = {
+                    wiDService.deleteAllWiD()
+                },
+            ) {
+                Icon(imageVector = Icons.Filled.Delete, contentDescription = "deleteAllWiD")
             }
         }
     }
