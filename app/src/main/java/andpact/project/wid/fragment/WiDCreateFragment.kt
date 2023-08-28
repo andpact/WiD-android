@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.DataMaps
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -164,7 +165,7 @@ fun WiDCreateFragment() {
             }
 
             Text(
-                text = title,
+                text = DataMaps.titleMap[title] ?: title, // Use titleMap to get Korean title, fallback to original title
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
                 modifier = Modifier.align(Alignment.CenterVertically),

@@ -1,7 +1,7 @@
 package andpact.project.wid.activity
 
 import andpact.project.wid.fragment.WiDCreateFragment
-import andpact.project.wid.fragment.WiDReadFragment
+import andpact.project.wid.fragment.WiDReadHolderFragment
 import andpact.project.wid.fragment.WiDSearchFragment
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -38,8 +38,8 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Destinations.WiDCreateFragment.route) {
             WiDCreateFragment()
         }
-        composable(Destinations.WiDReadFragment.route) {
-            WiDReadFragment()
+        composable(Destinations.WiDReadHolderFragment.route) {
+            WiDReadHolderFragment()
         }
         composable(Destinations.WiDSearchFragment.route) {
             WiDSearchFragment()
@@ -52,7 +52,7 @@ fun BottomBar(
     navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier
 ) {
     val screens = listOf(
-        Destinations.WiDCreateFragment, Destinations.WiDReadFragment, Destinations.WiDSearchFragment
+        Destinations.WiDCreateFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment
     )
 
     NavigationBar(
@@ -127,8 +127,8 @@ sealed class Destinations(
         icon = Icons.Filled.Add
     )
 
-    object WiDReadFragment : Destinations(
-        route = "wid_read_fragment",
+    object WiDReadHolderFragment : Destinations(
+        route = "wid_read_holder_fragment",
         title = "Read",
         icon = Icons.Filled.List
     )

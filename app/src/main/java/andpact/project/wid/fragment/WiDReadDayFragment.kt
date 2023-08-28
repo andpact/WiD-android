@@ -1,20 +1,17 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.service.WiDService
-import android.util.Log
+import andpact.project.wid.util.DataMaps
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,22 +24,19 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun WiDReadFragment() {
+fun WiDReadDayFragment() {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
 
     val wiDService = WiDService(context = LocalContext.current)
 
-    // Fetch the list of WiDs based on the selected date
     val wiDList = remember(currentDate) {
         wiDService.readWiDListByDate(currentDate)
     }
 
-    Log.d("wiDList : ", wiDList.toString())
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.LightGray)
+//            .background(color = Color.LightGray)
             .wrapContentSize(Alignment.TopCenter),
     ) {
         Row(
@@ -53,40 +47,37 @@ fun WiDReadFragment() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = currentDate.format(DateTimeFormatter.ofPattern("MM.dd (E)")),
+                text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd (E)")),
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Black,
                 textAlign = TextAlign.Center,
             )
 
-            Button(
+            IconButton(
                 onClick = {
                     currentDate = LocalDate.now()
                 },
                 modifier = Modifier
-                    .background(color = Color.Transparent)
                     .border(1.dp, Color.Black)
             ) {
-                Icon(imageVector = Icons.Filled.Refresh, contentDescription = "previousDay")
+                Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Today")
             }
 
-            Button(
+            IconButton(
                 onClick = {
                     currentDate = currentDate.minusDays(1)
                 },
                 modifier = Modifier
-                    .background(color = Color.Transparent)
                     .border(1.dp, Color.Black)
             ) {
-                Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "previousDay")
+                Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevDay")
             }
 
-            Button(
+            IconButton(
                 onClick = {
                     currentDate = currentDate.plusDays(1)
                 },
                 modifier = Modifier
-                    .background(color = Color.Transparent)
                     .border(1.dp, Color.Black)
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextDay")
@@ -98,27 +89,81 @@ fun WiDReadFragment() {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 10.dp, height = 20.dp)
+                    .background(Color.Black)
+            )
+
             Text(text = "순서",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
+                textAlign = TextAlign.Center,
+            )
+
             Text(text = "제목",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
+
             Text(text = "시작",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
+
             Text(text = "종료",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
+
             Text(text = "소요",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
+
             Text(text = "설명",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 10.dp, height = 20.dp)
+                    .background(Color.Black)
+            )
+
+            Text(text = "999",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+
+            Text(text = "공부",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+
+            Text(text = "99:99:99",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+
+            Text(text = "99:99:99",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+
+            Text(text = "99:99:99",
+                modifier = Modifier.weight(1f)
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center)
+
+            Text(text = "999",
                 modifier = Modifier.weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
@@ -128,39 +173,53 @@ fun WiDReadFragment() {
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(16.dp)
         ) {
-            items(wiDList) { wiD ->
+            itemsIndexed(wiDList) { index, wiD ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val titleColor = DataMaps.colorMap[wiD.title]
+                    if (titleColor != null) {
+                        Box(
+                            modifier = Modifier
+                                .size(width = 10.dp, height = 20.dp)
+                                .background(Color(android.graphics.Color.parseColor(titleColor)))
+                        )
+                    }
+
                     Text(
-                        text = wiD.id.toString(),
+                        text = (index + 1).toString(),
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = wiD.title,
+                        text = DataMaps.titleMap[wiD.title] ?: wiD.title,
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = wiD.start.toString(),
+                        text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = wiD.finish.toString(),
+                        text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = formatDuration(wiD.duration),
+                        modifier = Modifier.weight(1f)
+                            .border(1.dp, Color.Black),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = wiD.detail.length.toString(),
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
@@ -174,6 +233,6 @@ fun WiDReadFragment() {
 
 @Preview(showBackground = true)
 @Composable
-fun WiDReadFragmentPreview() {
-    WiDReadFragment()
+fun WiDReadDayFragmentPreview() {
+    WiDReadDayFragment()
 }
