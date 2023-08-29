@@ -1,6 +1,8 @@
 package andpact.project.wid.util
 
-class DataMaps {
+import andpact.project.wid.R
+
+class DataMapsUtil {
     companion object {
         val titleMap = mapOf(
             "STUDY" to "공부",
@@ -13,13 +15,13 @@ class DataMaps {
         )
 
         val colorMap = mapOf(
-            "STUDY" to "#FF0000",    // 빨강
-            "WORK" to "#FF7F00",     // 주황
-            "READING" to "#FFFF00",  // 노랑
-            "EXERCISE" to "#007F00", // 연두
-            "HOBBY" to "#0000FF",    // 녹색
-            "TRAVEL" to "#00007F",   // 남색
-            "SLEEP" to "#7F00FF"     // 보라
+            "STUDY" to R.color.study,
+            "WORK" to R.color.work,
+            "READING" to R.color.reading,
+            "EXERCISE" to R.color.exercise,
+            "HOBBY" to R.color.hobby,
+            "TRAVEL" to R.color.travel,
+            "SLEEP" to R.color.sleep
         )
     }
 }

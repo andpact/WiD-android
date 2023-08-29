@@ -2,9 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.DataMaps
-import android.os.Handler
-import android.os.Looper
+import andpact.project.wid.util.DataMapsUtil
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,14 +22,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun WiDCreateFragment() {
@@ -62,6 +58,7 @@ fun WiDCreateFragment() {
             isFinished = !isFinished  // false to true
 
             finish = LocalTime.now()
+//            finish = LocalTime.now().plusHours(1)
             Log.d("finish : ", finish.toString())
 
             if (finish.isBefore(start)) {
@@ -124,6 +121,7 @@ fun WiDCreateFragment() {
         if (isStarted) {
             date = LocalDate.now()
             start = LocalTime.now()
+//            start = LocalTime.now().minusHours(1)
             Log.d("start : ", start.toString())
             runningTime = Duration.ZERO
             runningTimer(coroutineScope)
@@ -165,7 +163,7 @@ fun WiDCreateFragment() {
             }
 
             Text(
-                text = DataMaps.titleMap[title] ?: title, // Use titleMap to get Korean title, fallback to original title
+                text = DataMapsUtil.titleMap[title] ?: title, // Use titleMap to get Korean title, fallback to original title
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
                 modifier = Modifier.align(Alignment.CenterVertically),

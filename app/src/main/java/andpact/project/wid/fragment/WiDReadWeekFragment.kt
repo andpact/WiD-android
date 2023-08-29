@@ -2,9 +2,13 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.PieChartView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -18,9 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -34,6 +41,7 @@ fun WiDReadWeekFragment() {
 
     val wiDService = WiDService(context = LocalContext.current)
 
+    // 일주일의 WiD 리스트
     val wiDList = remember(firstDayOfWeek) {
         val allWiDs = mutableListOf<WiD>()
 
@@ -42,29 +50,23 @@ fun WiDReadWeekFragment() {
             val wiDsForDate = wiDService.readWiDListByDate(date)
             allWiDs.addAll(wiDsForDate)
         }
-
         allWiDs
     }
 
-    // Calculate total duration dictionary
     val totalDurationMap = remember(wiDList) {
         val result = mutableMapOf<String, Duration>()
 
         for (wiD in wiDList) {
             result[wiD.title] = (result[wiD.title] ?: Duration.ZERO) + wiD.duration
         }
-
         result
     }
 
-    // Convert the map entries to a list and sort in descending order
     val sortedTotalDurationList = totalDurationMap.entries.sortedByDescending { it.value }
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray),
-//            .padding(16.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -84,6 +86,7 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = LocalDate.now()
+                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
                 modifier = Modifier
                     .border(1.dp, Color.Black)
@@ -94,6 +97,7 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = currentDate.minusDays(7)
+                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
                 modifier = Modifier
                     .border(1.dp, Color.Black)
@@ -104,11 +108,44 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = currentDate.plusDays(7)
+                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
+                enabled = currentDate != LocalDate.now(),
                 modifier = Modifier
                     .border(1.dp, Color.Black)
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextWeek")
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            val daysOfWeek = listOf("월", "화", "수", "목", "금", "토", "일")
+            daysOfWeek.forEachIndexed { index, day ->
+                val textColor = when (index) {
+                    5 -> Color.Blue // "토"의 인덱스는 5
+                    6 -> Color.Red  // "일"의 인덱스는 6
+                    else -> Color.Black
+                }
+
+                Text(
+                    text = day,
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                    color = textColor,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        LazyVerticalGrid(columns = GridCells.Fixed(7),
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            items(7) { index ->
+                val date = firstDayOfWeek.plusDays(index.toLong())
+                PieChartView(date = date, forReadDay = false)
             }
         }
 
@@ -141,23 +178,22 @@ fun WiDReadWeekFragment() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Title: $title",
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
-                    textAlign = TextAlign.Start,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(8.dp)
                 )
 
                 Text(
-                    text = "Duration: ${formatDuration(duration)}",
+                    text = formatDuration(duration),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
-                    textAlign = TextAlign.End,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(8.dp)
                 )
             }
         }
-
     }
 }
 

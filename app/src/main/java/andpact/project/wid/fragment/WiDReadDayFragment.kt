@@ -1,7 +1,8 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.DataMaps
+import andpact.project.wid.util.DataMapsUtil
+import andpact.project.wid.util.PieChartView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -36,8 +38,6 @@ fun WiDReadDayFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-//            .background(color = Color.LightGray)
-            .wrapContentSize(Alignment.TopCenter),
     ) {
         Row(
             modifier = Modifier
@@ -77,12 +77,16 @@ fun WiDReadDayFragment() {
                 onClick = {
                     currentDate = currentDate.plusDays(1)
                 },
+                enabled = currentDate != LocalDate.now(),
                 modifier = Modifier
                     .border(1.dp, Color.Black)
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextDay")
             }
         }
+
+        // 파이 차트 표시
+        PieChartView(date = currentDate, forReadDay = true)
 
         Row(
             modifier = Modifier
@@ -96,75 +100,39 @@ fun WiDReadDayFragment() {
             )
 
             Text(text = "순서",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center,
             )
 
             Text(text = "제목",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
 
             Text(text = "시작",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
 
             Text(text = "종료",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
 
             Text(text = "소요",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
 
             Text(text = "설명",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Box(
                 modifier = Modifier
-                    .size(width = 10.dp, height = 20.dp)
-                    .background(Color.Black)
-            )
-
-            Text(text = "999",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-
-            Text(text = "공부",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-
-            Text(text = "99:99:99",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-
-            Text(text = "99:99:99",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-
-            Text(text = "99:99:99",
-                modifier = Modifier.weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
-
-            Text(text = "999",
-                modifier = Modifier.weight(1f)
+                    .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
         }
@@ -179,14 +147,16 @@ fun WiDReadDayFragment() {
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                 ) {
-                    val titleColor = DataMaps.colorMap[wiD.title]
-                    if (titleColor != null) {
+                    val titleColorId = DataMapsUtil.colorMap[wiD.title]
+                    if (titleColorId != null) {
+                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                         Box(
                             modifier = Modifier
                                 .size(width = 10.dp, height = 20.dp)
-                                .background(Color(android.graphics.Color.parseColor(titleColor)))
+                                .background(backgroundColor)
                         )
                     }
+
 
                     Text(
                         text = (index + 1).toString(),
@@ -195,7 +165,7 @@ fun WiDReadDayFragment() {
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = DataMaps.titleMap[wiD.title] ?: wiD.title,
+                        text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
                         modifier = Modifier.weight(1f)
                             .border(1.dp, Color.Black),
                         textAlign = TextAlign.Center
