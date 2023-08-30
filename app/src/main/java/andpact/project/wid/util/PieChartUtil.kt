@@ -78,10 +78,10 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
 
                     setDrawCenterText(true) // Draw center text
 
-                    if (forReadDay) {
-                        centerText = "오후 | 오전"
+                    centerText = if (forReadDay) {
+                        "오후 | 오전"
                     } else {
-                        centerText = date.dayOfMonth.toString()
+                        date.dayOfMonth.toString()
                     }
 
                     setCenterTextSize(16f)

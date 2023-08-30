@@ -10,9 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun WiDReadHolderFragment() {
+fun WiDReadHolderFragment(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) }
 
     Column(
@@ -70,7 +71,7 @@ fun WiDReadHolderFragment() {
         }
 
         when (selectedTab) {
-            0 -> WiDReadDayFragment()
+            0 -> WiDReadDayFragment(navController = navController)
             1 -> WiDReadWeekFragment()
             2 -> WiDReadMonthFragment()
         }
@@ -81,5 +82,5 @@ fun WiDReadHolderFragment() {
 @Preview(showBackground = true)
 @Composable
 fun WiDReadHolderFragmentPreview() {
-    WiDReadHolderFragment()
+//    WiDReadHolderFragment()
 }

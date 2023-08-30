@@ -80,6 +80,7 @@ fun WiDReadMonthFragment() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Black,
@@ -197,7 +198,7 @@ fun WiDReadMonthFragment() {
                 )
 
                 Text(
-                    text = "Duration: ${formatDuration(duration)}",
+                    text = "Duration: ${formatDuration(duration = duration, hasSeconds = false)}",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
                     textAlign = TextAlign.Center,

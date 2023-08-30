@@ -77,6 +77,7 @@ fun WiDReadWeekFragment() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = "${currentDate.format(DateTimeFormatter.ofPattern("yyyy년"))} ${getWeekNumber(currentDate)}번째 주",
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Black,
@@ -186,7 +187,7 @@ fun WiDReadWeekFragment() {
                 )
 
                 Text(
-                    text = formatDuration(duration),
+                    text = formatDuration(duration = duration, hasSeconds = false),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
                     textAlign = TextAlign.Center,

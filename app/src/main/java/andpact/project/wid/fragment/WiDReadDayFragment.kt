@@ -1,13 +1,18 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.activity.Destinations
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.DataMapsUtil
 import andpact.project.wid.util.PieChartView
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -18,15 +23,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavArgumentBuilder
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun WiDReadDayFragment() {
+fun WiDReadDayFragment(navController: NavController) {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
 
     val wiDService = WiDService(context = LocalContext.current)
@@ -41,12 +52,12 @@ fun WiDReadDayFragment() {
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd (E)")),
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Black,
@@ -91,17 +102,16 @@ fun WiDReadDayFragment() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(width = 10.dp, height = 20.dp)
-                    .background(Color.Black)
+                    .size(width = 10.dp, height = 25.dp)
+                    .background(Color.Transparent)
             )
 
             Text(text = "순서",
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(0.5f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center,
             )
@@ -129,80 +139,97 @@ fun WiDReadDayFragment() {
                     .weight(1f)
                     .border(1.dp, Color.Black),
                 textAlign = TextAlign.Center)
-
-            Text(text = "설명",
-                modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Black),
-                textAlign = TextAlign.Center)
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp)
         ) {
             itemsIndexed(wiDList) { index, wiD ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                        .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     val titleColorId = DataMapsUtil.colorMap[wiD.title]
                     if (titleColorId != null) {
                         val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                         Box(
                             modifier = Modifier
-                                .size(width = 10.dp, height = 20.dp)
-                                .background(backgroundColor)
+                                .size(width = 10.dp, height = 50.dp)
+                                .background(color = backgroundColor, shape = RoundedCornerShape(8.dp))
                         )
                     }
 
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
+//                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
+                            },
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = (index + 1).toString(),
+                                modifier = Modifier.weight(0.5f)
+                                    .border(1.dp, Color.Black),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
+                                modifier = Modifier.weight(1f)
+                                    .border(1.dp, Color.Black),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                modifier = Modifier.weight(1f)
+                                    .border(1.dp, Color.Black),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                modifier = Modifier.weight(1f)
+                                    .border(1.dp, Color.Black),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = formatDuration(wiD.duration, hasSeconds = false),
+                                modifier = Modifier.weight(1f)
+                                    .border(1.dp, Color.Black),
+                                textAlign = TextAlign.Center
+                            )
+                        }
 
-                    Text(
-                        text = (index + 1).toString(),
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = formatDuration(wiD.duration),
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = wiD.detail.length.toString(),
-                        modifier = Modifier.weight(1f)
-                            .border(1.dp, Color.Black),
-                        textAlign = TextAlign.Center
-                    )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "설명 : ",
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text = wiD.detail.ifBlank { "설명 입력.." },
+                                modifier = Modifier.weight(1f),
+                                style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
+                                maxLines = 1
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WiDReadDayFragmentPreview() {
-    WiDReadDayFragment()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WiDReadDayFragmentPreview() {
+//    WiDReadDayFragment()
+//}

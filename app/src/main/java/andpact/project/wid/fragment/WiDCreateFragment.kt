@@ -51,7 +51,7 @@ fun WiDCreateFragment() {
     val coroutineScope = rememberCoroutineScope()
 
     fun finishWiD() {
-        Log.d("WiDCreateFragment", "finishWiD executed")
+//        Log.d("WiDCreateFragment", "finishWiD executed")
 
         coroutineScope.launch {
             isStarted = !isStarted // true to false
@@ -113,7 +113,7 @@ fun WiDCreateFragment() {
     }
 
     fun startWiD() {
-        Log.d("WiDCreateFragment", "startWiD executed")
+//        Log.d("WiDCreateFragment", "startWiD executed")
 
         isStarted = !isStarted // false to true
         isReset = !isReset // true to false
@@ -183,7 +183,7 @@ fun WiDCreateFragment() {
         }
 
         Text( // Duration TextView
-            text = formatDuration(runningTime),
+            text = formatDuration(duration = runningTime, hasSeconds = true),
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -237,12 +237,18 @@ fun WiDCreateFragment() {
     }
 }
 
-fun formatDuration(duration: Duration): String {
+fun formatDuration(duration: Duration, hasSeconds: Boolean): String {
     val hours = duration.toHours()
     val minutes = (duration.toMinutes() % 60)
     val seconds = (duration.seconds % 60)
-    return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+    return if (hasSeconds) {
+        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", hours, minutes)
+    }
 }
+
 
 @Preview(showBackground = true)
 @Composable
