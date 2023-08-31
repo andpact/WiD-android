@@ -2,9 +2,9 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.PieChartView
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.getFirstDayOfWeek
+import andpact.project.wid.util.getWeekNumber
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -187,7 +187,7 @@ fun WiDReadWeekFragment() {
                 )
 
                 Text(
-                    text = formatDuration(duration = duration, hasSeconds = false),
+                    text = formatDuration(duration = duration, mode = 1),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
                     textAlign = TextAlign.Center,
@@ -196,18 +196,6 @@ fun WiDReadWeekFragment() {
             }
         }
     }
-}
-
-fun getFirstDayOfWeek(date: LocalDate): LocalDate {
-    val dayOfWeek = date.dayOfWeek
-    val daysToSubtract = (dayOfWeek.value - DayOfWeek.MONDAY.value + 7) % 7
-
-    return date.minusDays(daysToSubtract.toLong())
-}
-
-fun getWeekNumber(date: LocalDate): Int {
-    val weekFields = WeekFields.of(java.util.Locale.getDefault())
-    return date.get(weekFields.weekOfWeekBasedYear())
 }
 
 @Preview(showBackground = true)

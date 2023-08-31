@@ -1,9 +1,8 @@
-package andpact.project.wid.util
+package andpact.project.wid.fragment
 
-import andpact.project.wid.fragment.formatDuration
-import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import androidx.activity.compose.BackHandler
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.titleMap
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,13 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -97,7 +92,7 @@ fun WiDView(wiDId: Long, navController: NavController) {
                 )
                 Text(
                     modifier = Modifier.padding(8.dp).weight(1.0F),
-                    text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
+                    text = titleMap[wiD.title] ?: wiD.title,
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
             }
@@ -139,7 +134,7 @@ fun WiDView(wiDId: Long, navController: NavController) {
                 )
                 Text(
                     modifier = Modifier.padding(8.dp).weight(1.0F),
-                    text = formatDuration(wiD.duration, hasSeconds = true),
+                    text = formatDuration(wiD.duration, mode = 2),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
             }

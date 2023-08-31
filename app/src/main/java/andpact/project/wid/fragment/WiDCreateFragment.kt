@@ -2,16 +2,17 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.DataMapsUtil
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.titleMap
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,15 +52,12 @@ fun WiDCreateFragment() {
     val coroutineScope = rememberCoroutineScope()
 
     fun finishWiD() {
-//        Log.d("WiDCreateFragment", "finishWiD executed")
-
         coroutineScope.launch {
             isStarted = !isStarted // true to false
             isFinished = !isFinished  // false to true
 
             finish = LocalTime.now()
 //            finish = LocalTime.now().plusHours(1)
-            Log.d("finish : ", finish.toString())
 
             if (finish.isBefore(start)) {
                 val midnight = LocalTime.MIDNIGHT
@@ -97,7 +95,6 @@ fun WiDCreateFragment() {
                     duration = Duration.between(start, finish),
                     detail = ""
                 )
-                Log.d("newWiD", newWiD.toString())
                 wiDService.createWiD(newWiD)
             }
         }
@@ -113,8 +110,6 @@ fun WiDCreateFragment() {
     }
 
     fun startWiD() {
-//        Log.d("WiDCreateFragment", "startWiD executed")
-
         isStarted = !isStarted // false to true
         isReset = !isReset // true to false
 
@@ -122,7 +117,6 @@ fun WiDCreateFragment() {
             date = LocalDate.now()
             start = LocalTime.now()
 //            start = LocalTime.now().minusHours(1)
-            Log.d("start : ", start.toString())
             runningTime = Duration.ZERO
             runningTimer(coroutineScope)
         } else {
@@ -142,8 +136,7 @@ fun WiDCreateFragment() {
             .fillMaxSize()
             .background(color = Color.Gray)
             .wrapContentSize(Alignment.Center)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
     ) {
         Row(
             modifier = Modifier
@@ -151,31 +144,34 @@ fun WiDCreateFragment() {
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp) // Add horizontal spacing between buttons
         ) {
-            Button(
+            IconButton(
                 onClick = {
                     titleIndex = (titleIndex - 1 + titles.size) % titles.size
                     title = titles[titleIndex]
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1.0f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
             }
 
             Text(
-                text = DataMapsUtil.titleMap[title] ?: title, // Use titleMap to get Korean title, fallback to original title
+                modifier = Modifier.weight(1.0f)
+                    .align(Alignment.CenterVertically),
+                text = titleMap[title] ?: title,
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
-                modifier = Modifier.align(Alignment.CenterVertically),
                 textAlign = TextAlign.Center,
             )
 
-            Button(
+            IconButton(
                 onClick = {
                     titleIndex = (titleIndex + 1) % titles.size
                     title = titles[titleIndex]
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1.0f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
@@ -183,10 +179,11 @@ fun WiDCreateFragment() {
         }
 
         Text( // Duration TextView
-            text = formatDuration(duration = runningTime, hasSeconds = true),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally),
+            text = formatDuration(duration = runningTime, mode = 0),
             style = MaterialTheme.typography.titleLarge,
             color = Color.White,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center,
         )
 
@@ -196,59 +193,49 @@ fun WiDCreateFragment() {
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp) // Add horizontal spacing between buttons
         ) {
-            Button(
+            IconButton(
                 onClick = {
                     startWiD()
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 enabled = isReset
             ) {
                 Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "start")
             }
 
-            Button(
+            IconButton(
                 onClick = {
                     finishWiD()
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 enabled = isStarted
             ) {
                 Icon(imageVector = Icons.Filled.Done, contentDescription = "finish")
             }
 
-            Button(
+            IconButton(
                 onClick = {
                     resetWiD()
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 enabled = !isReset && isFinished
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "reset")
             }
 
-            Button(
-                onClick = {
-                    wiDService.deleteAllWiD()
-                },
-            ) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "deleteAllWiD")
-            }
+//            Button(
+//                onClick = {
+//                    wiDService.deleteAllWiD()
+//                },
+//            ) {
+//                Icon(imageVector = Icons.Filled.Delete, contentDescription = "deleteAllWiD")
+//            }
         }
     }
 }
-
-fun formatDuration(duration: Duration, hasSeconds: Boolean): String {
-    val hours = duration.toHours()
-    val minutes = (duration.toMinutes() % 60)
-    val seconds = (duration.seconds % 60)
-
-    return if (hasSeconds) {
-        String.format("%02d:%02d:%02d", hours, minutes, seconds)
-    } else {
-        String.format("%02d:%02d", hours, minutes)
-    }
-}
-
 
 @Preview(showBackground = true)
 @Composable

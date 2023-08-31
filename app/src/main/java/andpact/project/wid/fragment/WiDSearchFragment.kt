@@ -3,7 +3,9 @@ package andpact.project.wid.fragment
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.DataMapsUtil
+import andpact.project.wid.util.colorMap
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.titleMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -109,7 +111,7 @@ fun WiDSearchFragment(navController: NavController) {
                             .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp)),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val titleColorId = DataMapsUtil.colorMap[wiD.title]
+                        val titleColorId = colorMap[wiD.title]
                         if (titleColorId != null) {
                             val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                             Box(
@@ -142,7 +144,7 @@ fun WiDSearchFragment(navController: NavController) {
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
+                                    text = titleMap[wiD.title] ?: wiD.title,
                                     modifier = Modifier
                                         .weight(1f)
                                         .border(1.dp, Color.Black),
@@ -163,7 +165,7 @@ fun WiDSearchFragment(navController: NavController) {
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = formatDuration(wiD.duration, hasSeconds = false),
+                                    text = formatDuration(wiD.duration, mode = 1),
                                     modifier = Modifier
                                         .weight(1f)
                                         .border(1.dp, Color.Black),

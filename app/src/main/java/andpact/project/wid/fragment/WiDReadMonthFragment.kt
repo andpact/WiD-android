@@ -2,10 +2,8 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.EmptyPieChartView
-import andpact.project.wid.util.PieChartView
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.getFirstDayOfMonth
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -198,7 +196,7 @@ fun WiDReadMonthFragment() {
                 )
 
                 Text(
-                    text = "Duration: ${formatDuration(duration = duration, hasSeconds = false)}",
+                    text = "Duration: ${formatDuration(duration = duration, mode = 1)}",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black,
                     textAlign = TextAlign.Center,
@@ -207,11 +205,6 @@ fun WiDReadMonthFragment() {
             }
         }
     }
-}
-
-fun getFirstDayOfMonth(date: LocalDate): LocalDate {
-    val yearMonth = YearMonth.from(date)
-    return yearMonth.atDay(1)
 }
 
 @Preview(showBackground = true)

@@ -3,15 +3,13 @@ package andpact.project.wid.activity
 import andpact.project.wid.fragment.WiDCreateFragment
 import andpact.project.wid.fragment.WiDReadHolderFragment
 import andpact.project.wid.fragment.WiDSearchFragment
-import andpact.project.wid.service.WiDService
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.util.WiDView
-import android.util.Log
+import andpact.project.wid.fragment.WiDView
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -19,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost

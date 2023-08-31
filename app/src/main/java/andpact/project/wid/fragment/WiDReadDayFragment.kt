@@ -2,10 +2,9 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.DataMapsUtil
-import andpact.project.wid.util.PieChartView
-import android.util.Log
-import androidx.compose.foundation.BorderStroke
+import andpact.project.wid.util.colorMap
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.titleMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,14 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavArgumentBuilder
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -151,7 +145,7 @@ fun WiDReadDayFragment(navController: NavController) {
                         .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val titleColorId = DataMapsUtil.colorMap[wiD.title]
+                    val titleColorId = colorMap[wiD.title]
                     if (titleColorId != null) {
                         val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                         Box(
@@ -180,7 +174,7 @@ fun WiDReadDayFragment(navController: NavController) {
                                 textAlign = TextAlign.Center
                             )
                             Text(
-                                text = DataMapsUtil.titleMap[wiD.title] ?: wiD.title,
+                                text = titleMap[wiD.title] ?: wiD.title,
                                 modifier = Modifier.weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
@@ -198,7 +192,7 @@ fun WiDReadDayFragment(navController: NavController) {
                                 textAlign = TextAlign.Center
                             )
                             Text(
-                                text = formatDuration(wiD.duration, hasSeconds = false),
+                                text = formatDuration(wiD.duration, mode = 1),
                                 modifier = Modifier.weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
