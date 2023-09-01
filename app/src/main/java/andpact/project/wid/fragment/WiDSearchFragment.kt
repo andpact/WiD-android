@@ -64,14 +64,6 @@ fun WiDSearchFragment(navController: NavController) {
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "search")
             },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    // Handle search action here
-                }
-            )
         )
 
 
@@ -165,7 +157,7 @@ fun WiDSearchFragment(navController: NavController) {
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = formatDuration(wiD.duration, mode = 1),
+                                    text = formatDuration(wiD.duration, mode = 2),
                                     modifier = Modifier
                                         .weight(1f)
                                         .border(1.dp, Color.Black),

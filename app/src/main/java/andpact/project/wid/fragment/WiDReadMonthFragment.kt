@@ -2,12 +2,17 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.getFirstDayOfMonth
+import andpact.project.wid.util.titleMap
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -27,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
@@ -54,16 +60,42 @@ fun WiDReadMonthFragment() {
         allWiDs
     }
 
-    val totalDurationMap = remember(wiDList) {
-        val result = mutableMapOf<String, Duration>()
+    // 각 제목별 날짜별 종합 시간을 추적하기 위한 맵
+    val titleDateDurations = remember(wiDList) {
+        val map = mutableMapOf<String, MutableMap<LocalDate, Duration>>()
 
         for (wiD in wiDList) {
-            result[wiD.title] = (result[wiD.title] ?: Duration.ZERO) + wiD.duration
+            val title = wiD.title
+            val date = wiD.date
+            val duration = wiD.duration
+
+            // 각 제목에 대한 맵 가져오기
+            val titleMap = map.getOrPut(title) { mutableMapOf() }
+
+            // 날짜별 시간 누적
+            titleMap[date] = (titleMap[date] ?: Duration.ZERO) + duration
         }
-        result
+        map
     }
 
-    val sortedTotalDurationList = totalDurationMap.entries.sortedByDescending { it.value }
+    // 최저, 최고, 평균, 종합 시간 계산
+    val titleStats = remember(titleDateDurations) {
+        val map = mutableMapOf<String, TitleStats>()
+
+        for ((title, dateDurations) in titleDateDurations) {
+            val minDuration = dateDurations.values.minOrNull() ?: Duration.ZERO
+            val maxDuration = dateDurations.values.maxOrNull() ?: Duration.ZERO
+            val totalDuration = dateDurations.values.fold(Duration.ZERO) { acc, duration -> acc + duration }
+            val averageDuration = if (dateDurations.isNotEmpty()) {
+                val totalMinutes = totalDuration.toMinutes()
+                Duration.ofMinutes(totalMinutes / dateDurations.size)
+            } else {
+                Duration.ZERO
+            }
+            map[title] = TitleStats(minDuration, maxDuration, averageDuration, totalDuration)
+        }
+        map
+    }
 
     Column(
         modifier = Modifier
@@ -72,16 +104,13 @@ fun WiDReadMonthFragment() {
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.Black,
                 textAlign = TextAlign.Center,
             )
 
@@ -91,7 +120,7 @@ fun WiDReadMonthFragment() {
                     firstDayOfMonth = getFirstDayOfMonth(currentDate)
                 },
                 modifier = Modifier
-                    .border(1.dp, Color.Black)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "ThisMonth")
             }
@@ -102,7 +131,7 @@ fun WiDReadMonthFragment() {
                     firstDayOfMonth = getFirstDayOfMonth(currentDate)
                 },
                 modifier = Modifier
-                    .border(1.dp, Color.Black)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevMonth")
             }
@@ -114,7 +143,7 @@ fun WiDReadMonthFragment() {
                 },
                 enabled = currentDate != LocalDate.now(),
                 modifier = Modifier
-                    .border(1.dp, Color.Black)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextMonth")
             }
@@ -134,7 +163,6 @@ fun WiDReadMonthFragment() {
                 Text(
                     text = day,
                     textAlign = TextAlign.Center,
-                    style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
                     color = textColor,
                     modifier = Modifier.weight(1f)
                 )
@@ -160,47 +188,97 @@ fun WiDReadMonthFragment() {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+                .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 10.dp, height = 25.dp)
+                    .background(Color.Transparent)
+            )
+
             Text(
                 text = "제목",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Black,
-                textAlign = TextAlign.Start,
-                modifier = Modifier.padding(8.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(0.5f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            )
+
+            Text(
+                text = "최저",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            )
+
+            Text(
+                text = "최고",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            )
+
+            Text(
+                text = "평균",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "총합",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.Black,
-                textAlign = TextAlign.End,
-                modifier = Modifier.padding(8.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
         }
 
-        for ((title, duration) in sortedTotalDurationList) {
+        // 각 제목별로 정보를 표시
+        for ((title, stats) in titleStats) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // "제목" 표시
                 Text(
-                    text = "Title: $title",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black,
+                    text = titleMap[title] ?: title,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.weight(0.5f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
+                // "최저" 표시
                 Text(
-                    text = "Duration: ${formatDuration(duration = duration, mode = 1)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black,
+                    text = formatDuration(stats.minDuration, mode = 1),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.weight(1f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                )
+
+                // "최고" 표시
+                Text(
+                    text = formatDuration(stats.maxDuration, mode = 1),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                )
+
+                // "평균" 표시
+                Text(
+                    text = formatDuration(stats.averageDuration, mode = 1),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                )
+
+                // "총합" 표시
+                Text(
+                    text = formatDuration(stats.totalDuration, mode = 1),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
             }
         }

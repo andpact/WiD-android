@@ -9,19 +9,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -33,6 +34,9 @@ fun WiDView(wiDId: Long, navController: NavController) {
         Text(text = "WiD not found")
         return
     }
+
+    var updatedDetail by remember { mutableStateOf(wiD.detail) }
+    var isEditing by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -76,10 +80,25 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     text = "날짜",
                     style = TextStyle(fontSize = 30.sp)
                 )
+
                 Text(
-                    modifier = Modifier.padding(8.dp).weight(1.0F),
-                    text = wiD.date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd (E)")),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1.0F),
+                    text = wiD.date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                )
+
+                Text(
+                    modifier = Modifier.padding(8.dp)
+                        .weight(1f),
+                    text = wiD.date.format(DateTimeFormatter.ofPattern("E")),
+                    textAlign = TextAlign.Start,
+                    color = when (wiD.date.dayOfWeek) {
+                        DayOfWeek.SATURDAY -> Color.Blue
+                        DayOfWeek.SUNDAY -> Color.Red
+                        else -> Color.Black
+                    }
                 )
             }
             Row(
@@ -91,7 +110,9 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     style = TextStyle(fontSize = 30.sp)
                 )
                 Text(
-                    modifier = Modifier.padding(8.dp).weight(1.0F),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1.0F),
                     text = titleMap[wiD.title] ?: wiD.title,
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
@@ -105,7 +126,9 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     style = TextStyle(fontSize = 30.sp)
                 )
                 Text(
-                    modifier = Modifier.padding(8.dp).weight(1.0F),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1.0F),
                     text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
@@ -119,7 +142,9 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     style = TextStyle(fontSize = 30.sp)
                 )
                 Text(
-                    modifier = Modifier.padding(8.dp).weight(1.0F),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1.0F),
                     text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
@@ -133,21 +158,76 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     style = TextStyle(fontSize = 30.sp)
                 )
                 Text(
-                    modifier = Modifier.padding(8.dp).weight(1.0F),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1.0F),
                     text = formatDuration(wiD.duration, mode = 2),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
             }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(1.0F)
+                        .padding(8.dp),
+                    text = "설명",
+                    style = TextStyle(fontSize = 30.sp),
+                    textAlign = TextAlign.Start
+                )
+
+                IconToggleButton(
+                    checked = isEditing,
+                    onCheckedChange = { newValue ->
+                        if (!newValue) {
+                            val newDetail = updatedDetail
+                            wiDService.updateWiDDetail(wiD.id, newDetail)
+                        }
+                        isEditing = newValue
+                    },
+                    modifier = Modifier
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
+                ) {
+                    if (isEditing) {
+                        Icon(imageVector = Icons.Filled.Done, contentDescription = "Done")
+                    } else {
+                        Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+                    }
+                }
+
+            }
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                value = wiD.detail,
+                onValueChange = { newText ->
+                    updatedDetail = newText
+                },
+                minLines = 3,
+                placeholder = {
+                    Text(style = TextStyle(Color.Black),
+                        text = "설명 입력..")
+                },
+//                readOnly = !isEditing,
+                enabled = isEditing
+            )
         }
 
         Row(
-            modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp)
+            modifier = Modifier
+                .padding(0.dp, 8.dp, 0.dp, 0.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = {
+                    wiDService.deleteWiDById(id = wiDId)
+                    navController.popBackStack()
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -170,18 +250,8 @@ fun WiDView(wiDId: Long, navController: NavController) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDViewPreview() {
-//    val sampleWiD = WiD(
-//        id = 0,
-//        date = LocalDate.now(),
-//        title = "STUDY",
-//        start = LocalTime.of(10, 0, 0),
-//        finish = LocalTime.of(12, 0, 0),
-//        durationMillis = 2 * 60 * 60 * 1000, // 2 hours in milliseconds
-//        detail = "Studying for exams"
-//    )
-//
-//    WiDView(0)
-//}
+@Preview(showBackground = true)
+@Composable
+fun WiDViewPreview() {
+    WiDView(0, NavController(LocalContext.current))
+}
