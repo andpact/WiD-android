@@ -25,15 +25,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
-fun WiDReadDayFragment(navController: NavController) {
+fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
 
     val wiDService = WiDService(context = LocalContext.current)
@@ -45,6 +49,7 @@ fun WiDReadDayFragment(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(16.dp),
     ) {
         Row(
             modifier = Modifier
@@ -52,22 +57,33 @@ fun WiDReadDayFragment(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
-                textAlign = TextAlign.End,
-            )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    modifier = Modifier
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                    text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                )
 
-            Text(
-                modifier = Modifier.weight(1f),
-                text = currentDate.format(DateTimeFormatter.ofPattern("E")),
-                textAlign = TextAlign.Start,
-                color = when (currentDate.dayOfWeek) {
-                    DayOfWeek.SATURDAY -> Color.Blue
-                    DayOfWeek.SUNDAY -> Color.Red
-                    else -> Color.Black
-                }
-            )
+                Text(text = "(")
+
+                Text(
+                    modifier = Modifier
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                    text = currentDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                    color = when (currentDate.dayOfWeek) {
+                        DayOfWeek.SATURDAY -> Color.Blue
+                        DayOfWeek.SUNDAY -> Color.Red
+                        else -> Color.Black
+                    }
+                )
+
+                Text(text = ")")
+            }
 
             IconButton(
                 onClick = {
@@ -164,7 +180,10 @@ fun WiDReadDayFragment(navController: NavController) {
                         Box(
                             modifier = Modifier
                                 .size(width = 10.dp, height = 50.dp)
-                                .background(color = backgroundColor, shape = RoundedCornerShape(8.dp))
+                                .background(
+                                    color = backgroundColor,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
                         )
                     }
 
@@ -174,6 +193,8 @@ fun WiDReadDayFragment(navController: NavController) {
                             .clickable {
                                 navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
 //                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
+
+                                buttonsVisible.value = false
                             },
                     ) {
                         Row(
@@ -182,31 +203,36 @@ fun WiDReadDayFragment(navController: NavController) {
                         ) {
                             Text(
                                 text = (index + 1).toString(),
-                                modifier = Modifier.weight(0.5f)
+                                modifier = Modifier
+                                    .weight(0.5f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = titleMap[wiD.title] ?: wiD.title,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = formatDuration(wiD.duration, mode = 2),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
                                     .border(1.dp, Color.Black),
                                 textAlign = TextAlign.Center
                             )
@@ -242,5 +268,6 @@ fun WiDReadDayFragment(navController: NavController) {
 //@Preview(showBackground = true)
 //@Composable
 //fun WiDReadDayFragmentPreview() {
-//    WiDReadDayFragment()
+//    val navController: NavHostController = rememberNavController()
+//    WiDReadDayFragment(navController = navController)
 //}

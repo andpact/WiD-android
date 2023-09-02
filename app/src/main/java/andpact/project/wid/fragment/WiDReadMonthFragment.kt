@@ -99,7 +99,8 @@ fun WiDReadMonthFragment() {
 
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -241,6 +242,19 @@ fun WiDReadMonthFragment() {
                     .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val titleColorId = colorMap[title]
+                if (titleColorId != null) {
+                    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                    Box(
+                        modifier = Modifier
+                            .size(width = 10.dp, height = 25.dp)
+                            .background(
+                                color = backgroundColor,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                    )
+                }
+
                 // "제목" 표시
                 Text(
                     text = titleMap[title] ?: title,

@@ -37,7 +37,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun WiDSearchFragment(navController: NavController) {
+fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
     val wiDService = WiDService(context = LocalContext.current)
 
     var searchText by remember { mutableStateOf("") }
@@ -46,6 +46,7 @@ fun WiDSearchFragment(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(16.dp),
     ) {
         OutlinedTextField(
             value = searchText,
@@ -76,7 +77,7 @@ fun WiDSearchFragment(navController: NavController) {
                 .weight(1f) // Take remaining vertical space
         ) {
             Text(
-                text = "Total Items: ${wiDList.size}",
+                text = "검색된 WiD ${wiDList.size}개",
                 modifier = Modifier
                     .fillMaxWidth(),
                 textAlign = TextAlign.Right
@@ -122,6 +123,8 @@ fun WiDSearchFragment(navController: NavController) {
                                 .clickable {
                                     navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
 //                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
+
+                                    buttonsVisible.value = false
                                 },
                         ) {
                             Row(

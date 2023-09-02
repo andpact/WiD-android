@@ -31,7 +31,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
-fun WiDCreateFragment() {
+fun WiDCreateFragment(buttonsVisible: MutableState<Boolean>) {
     val wiDService = WiDService(context = LocalContext.current)
 
     var date: LocalDate = LocalDate.now()
@@ -136,7 +136,8 @@ fun WiDCreateFragment() {
             .fillMaxSize()
             .background(color = Color.Gray)
             .wrapContentSize(Alignment.Center)
-            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
+            .padding(16.dp),
     ) {
         Row(
             modifier = Modifier
@@ -196,6 +197,7 @@ fun WiDCreateFragment() {
             IconButton(
                 onClick = {
                     startWiD()
+                    buttonsVisible.value = false
                 },
                 modifier = Modifier.weight(1f)
                     .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
@@ -218,6 +220,7 @@ fun WiDCreateFragment() {
             IconButton(
                 onClick = {
                     resetWiD()
+                    buttonsVisible.value = true
                 },
                 modifier = Modifier.weight(1f)
                     .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
@@ -240,5 +243,5 @@ fun WiDCreateFragment() {
 @Preview(showBackground = true)
 @Composable
 fun WiDCreateFragmentPreview() {
-    WiDCreateFragment()
+//    WiDCreateFragment()
 }

@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
-fun WiDView(wiDId: Long, navController: NavController) {
+fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableState<Boolean>) {
     val wiDService = WiDService(context = LocalContext.current)
     val wiD = wiDService.readWiDById(wiDId)
 
@@ -41,7 +42,7 @@ fun WiDView(wiDId: Long, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -81,25 +82,33 @@ fun WiDView(wiDId: Long, navController: NavController) {
                     style = TextStyle(fontSize = 30.sp)
                 )
 
-                Text(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .weight(1.0F),
-                    text = wiD.date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")),
-                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                )
+                Row(
+                    modifier = Modifier.weight(1f)
+                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                        text = wiD.date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                    )
 
-                Text(
-                    modifier = Modifier.padding(8.dp)
-                        .weight(1f),
-                    text = wiD.date.format(DateTimeFormatter.ofPattern("E")),
-                    textAlign = TextAlign.Start,
-                    color = when (wiD.date.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> Color.Blue
-                        DayOfWeek.SUNDAY -> Color.Red
-                        else -> Color.Black
-                    }
-                )
+                    Text(text = "(")
+
+                    Text(
+                        modifier = Modifier
+                            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                        text = wiD.date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                        color = when (wiD.date.dayOfWeek) {
+                            DayOfWeek.SATURDAY -> Color.Blue
+                            DayOfWeek.SUNDAY -> Color.Red
+                            else -> Color.Black
+                        }
+                    )
+
+                    Text(text = ")")
+                }
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -228,6 +237,8 @@ fun WiDView(wiDId: Long, navController: NavController) {
                 onClick = {
                     wiDService.deleteWiDById(id = wiDId)
                     navController.popBackStack()
+
+                    buttonsVisible.value = true
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -239,6 +250,8 @@ fun WiDView(wiDId: Long, navController: NavController) {
             IconButton(
                 onClick = {
                     navController.popBackStack()
+
+                    buttonsVisible.value = true
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -250,8 +263,8 @@ fun WiDView(wiDId: Long, navController: NavController) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WiDViewPreview() {
-    WiDView(0, NavController(LocalContext.current))
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WiDViewPreview() {
+//    WiDView(0, NavController(LocalContext.current))
+//}

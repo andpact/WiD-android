@@ -34,21 +34,21 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NavigationGraph(navController: NavHostController) {
+fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
     NavHost(navController, startDestination = Destinations.WiDCreateFragment.route) {
         composable(Destinations.WiDCreateFragment.route) {
-            WiDCreateFragment()
+            WiDCreateFragment(buttonsVisible)
         }
         composable(Destinations.WiDReadHolderFragment.route) {
-            WiDReadHolderFragment(navController)
+            WiDReadHolderFragment(navController, buttonsVisible)
         }
         composable(Destinations.WiDSearchFragment.route) {
-            WiDSearchFragment(navController)
+            WiDSearchFragment(navController, buttonsVisible)
         }
         composable(Destinations.WiDViewFragment.route + "/{wiDId}") { backStackEntry ->
             val wiDId = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
 //            Log.d("WiDID", wiDId.toString())
-            WiDView(wiDId = wiDId, navController = navController)
+            WiDView(wiDId = wiDId, navController = navController, buttonsVisible = buttonsVisible)
         }
     }
 }
@@ -61,39 +61,40 @@ fun BottomBar(
         Destinations.WiDCreateFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment
     )
 
-    NavigationBar(
-        modifier = modifier,
-        containerColor = Color.LightGray,
-    ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+    if (state.value) {
+        NavigationBar(
+            modifier = modifier,
+            containerColor = Color.LightGray,
+        ) {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
 
-        screens.forEach { screen ->
+            screens.forEach { screen ->
 
-            NavigationBarItem(
-                label = {
-                    Text(text = screen.title!!)
-                },
-                icon = {
-                    Icon(imageVector = screen.icon!!, contentDescription = "")
-                },
-                selected = currentRoute == screen.route,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                NavigationBarItem(
+                    label = {
+                        Text(text = screen.title!!)
+                    },
+                    icon = {
+                        Icon(imageVector = screen.icon!!, contentDescription = "")
+                    },
+                    selected = currentRoute == screen.route,
+                    onClick = {
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    unselectedTextColor = Color.Gray, selectedTextColor = Color.White
-                ),
-            )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        unselectedTextColor = Color.Gray, selectedTextColor = Color.White
+                    ),
+                )
+            }
         }
     }
-
 }
 
 @Composable
@@ -110,13 +111,13 @@ fun WiDMainActivity() {
                 BottomBar(
                     navController = navController,
                     state = buttonsVisible,
-                    modifier = Modifier
+                    modifier = Modifier,
                 )
             }) { paddingValues ->
             Box(
                 modifier = Modifier.padding(paddingValues)
             ) {
-                NavigationGraph(navController = navController)
+                NavigationGraph(navController = navController, buttonsVisible = buttonsVisible)
             }
         }
     }

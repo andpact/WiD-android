@@ -13,14 +13,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun WiDReadHolderFragment(navController: NavController) {
+fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
     var selectedTab by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Transparent),
-//            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         TabRow(
@@ -71,7 +70,7 @@ fun WiDReadHolderFragment(navController: NavController) {
         }
 
         when (selectedTab) {
-            0 -> WiDReadDayFragment(navController = navController)
+            0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
             1 -> WiDReadWeekFragment()
             2 -> WiDReadMonthFragment()
         }
@@ -79,8 +78,8 @@ fun WiDReadHolderFragment(navController: NavController) {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun WiDReadHolderFragmentPreview() {
+//@Preview(showBackground = true)
+//@Composable
+//fun WiDReadHolderFragmentPreview() {
 //    WiDReadHolderFragment()
-}
+//}

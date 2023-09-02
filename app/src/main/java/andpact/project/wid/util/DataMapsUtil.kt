@@ -32,8 +32,8 @@ val titleMap = mapOf(
     "READING" to "독서",
     "EXERCISE" to "운동",
     "HOBBY" to "취미",
-    "TRAVEL" to "여행",
-    "SLEEP" to "수면"
+    "TRAVEL" to "이동",
+    "SLEEP" to "취침"
 )
 
 val colorMap = mapOf(

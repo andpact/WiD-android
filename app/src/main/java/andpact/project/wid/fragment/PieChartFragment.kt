@@ -3,13 +3,18 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
+import android.graphics.Paint
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -18,6 +23,8 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import java.time.LocalDate
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun PieChartView(date: LocalDate, forReadDay: Boolean) {
@@ -72,13 +79,11 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     setHoleColor(ContextCompat.getColor(context, R.color.transparent))
 
                     setDrawCenterText(true) // Draw center text
-
                     centerText = if (forReadDay) {
                         "오후 | 오전"
                     } else {
                         date.dayOfMonth.toString()
                     }
-
                     setCenterTextSize(16f)
 
                     if (wiDList.isEmpty()) {
@@ -100,6 +105,34 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     this.invalidate()
                 }
             })
+
+            if (forReadDay) {
+                Canvas(modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)) {
+                    val radius: Float = size.minDimension / 1.9f // 원의 반지름
+                    val centerX = center.x
+                    val centerY = center.y
+
+                    val textPaint = Paint().apply {
+                        color = Color.Black.toArgb()
+                        textSize = 40f
+                        textAlign = Paint.Align.CENTER
+                    }
+
+                    for (i in 0 until 24) {
+                        val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
+                        val angleInRadian = Math.toRadians(angleInDegree)
+
+                        // 시간 텍스트 좌표 계산
+                        val x = centerX + radius * 0.85f * cos(angleInRadian)
+                        val y = centerY + radius * 0.85f * sin(angleInRadian)
+
+                        // 시간 텍스트 그리기
+                        drawContext.canvas.nativeCanvas.drawText(i.toString(), x.toFloat(), y.toFloat(), textPaint)
+                    }
+                }
+            }
         }
     }
 }

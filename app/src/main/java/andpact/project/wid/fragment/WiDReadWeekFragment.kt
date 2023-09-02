@@ -94,21 +94,35 @@ fun WiDReadWeekFragment() {
 
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "${currentDate.format(DateTimeFormatter.ofPattern("yyyy년"))} ${getWeekNumber(currentDate)}번째 주",
-                textAlign = TextAlign.Center,
-            )
+            Row(
+                modifier = Modifier
+                    .weight(1f),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년")),
+                )
+
+                Text(
+                    text = "${getWeekNumber(currentDate)}",
+                    color = Color.Blue
+                )
+
+                Text(
+                    text = "번째 주",
+                )
+            }
+
 
             IconButton(
                 onClick = {
@@ -229,6 +243,19 @@ fun WiDReadWeekFragment() {
                     .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val titleColorId = colorMap[title]
+                if (titleColorId != null) {
+                    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                    Box(
+                        modifier = Modifier
+                            .size(width = 10.dp, height = 25.dp)
+                            .background(
+                                color = backgroundColor,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                    )
+                }
+
                 // "제목" 표시
                 Text(
                     text = titleMap[title] ?: title,
