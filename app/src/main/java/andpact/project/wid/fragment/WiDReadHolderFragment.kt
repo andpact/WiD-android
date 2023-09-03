@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
@@ -26,7 +27,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
             selectedTabIndex = selectedTab,
             modifier = Modifier.fillMaxWidth(),
             indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
+                SecondaryIndicator(
                     modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                     color = MaterialTheme.colorScheme.primary
                 )

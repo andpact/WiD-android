@@ -1,10 +1,9 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,13 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancelChildren
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -43,205 +43,223 @@ fun WiDCreateFragment(buttonsVisible: MutableState<Boolean>) {
     var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
-    var runningTime by remember { mutableStateOf(Duration.ZERO) }
+    var isRunning by remember { mutableStateOf(false) }
+    var elapsedTime by remember { mutableStateOf(0L) }
+    var startTime by remember { mutableStateOf(0L) }
+    var currentTime by remember { mutableStateOf(0L) }
+    var buttonText by remember { mutableStateOf("시작") }
 
-    var isStarted by remember { mutableStateOf(false) }
-    var isFinished by remember { mutableStateOf(false) }
-    var isReset by remember { mutableStateOf(true) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    fun finishWiD() {
-        coroutineScope.launch {
-            isStarted = !isStarted // true to false
-            isFinished = !isFinished  // false to true
-
-            finish = LocalTime.now()
-//            finish = LocalTime.now().plusHours(1)
-
-            if (finish.isBefore(start)) {
-                val midnight = LocalTime.MIDNIGHT
-
-                val firstWiD = WiD(
-                    id = 0,
-                    date = date,
-                    title = title,
-                    start = start,
-                    finish = midnight.plusSeconds(-1),
-                    duration = Duration.between(start, midnight.plusSeconds(-1)),
-                    detail = ""
-                )
-                wiDService.createWiD(firstWiD)
-
-                val nextDate = date.plusDays(1)
-
-                val secondWiD = WiD(
-                    id = 0,
-                    date = nextDate,
-                    title = title,
-                    start = midnight,
-                    finish = finish,
-                    duration = Duration.between(midnight, finish),
-                    detail = ""
-                )
-                wiDService.createWiD(secondWiD)
-            } else {
-                val newWiD = WiD(
-                    id = 0,
-                    date = date,
-                    title = title,
-                    start = start,
-                    finish = finish,
-                    duration = Duration.between(start, finish),
-                    detail = ""
-                )
-                wiDService.createWiD(newWiD)
-            }
-        }
-    }
-
-    fun runningTimer(scope: CoroutineScope) {
-        scope.launch {
-            while (isStarted) {
-                delay(1000)
-                runningTime = runningTime.plusSeconds(1)
-            }
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            currentTime = System.currentTimeMillis()
+            elapsedTime = currentTime - startTime
+            delay(1000)
         }
     }
 
     fun startWiD() {
-        isStarted = !isStarted // false to true
-        isReset = !isReset // true to false
+        date = LocalDate.now()
+        start = LocalTime.now()
+//        start = LocalTime.now().minusHours(1)
 
-        if (isStarted) {
-            date = LocalDate.now()
-            start = LocalTime.now()
-//            start = LocalTime.now().minusHours(1)
-            runningTime = Duration.ZERO
-            runningTimer(coroutineScope)
+        buttonsVisible.value = false
+
+        startTime = System.currentTimeMillis() - elapsedTime
+        buttonText = "중지"
+    }
+
+    fun finishWiD() {
+        finish = LocalTime.now()
+//        finish = LocalTime.now().plusHours(1)
+
+        buttonText = "계속"
+
+        if (finish.isBefore(start)) {
+            val midnight = LocalTime.MIDNIGHT
+
+            val firstWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = start,
+                finish = midnight.plusSeconds(-1),
+                duration = Duration.between(start, midnight.plusSeconds(-1)),
+                detail = ""
+            )
+            wiDService.createWiD(firstWiD)
+
+            val nextDate = date.plusDays(1)
+
+            val secondWiD = WiD(
+                id = 0,
+                date = nextDate,
+                title = title,
+                start = midnight,
+                finish = finish,
+                duration = Duration.between(midnight, finish),
+                detail = ""
+            )
+            wiDService.createWiD(secondWiD)
         } else {
-            coroutineScope.launch { coroutineContext.cancelChildren() }
+            val newWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = start,
+                finish = finish,
+                duration = Duration.between(start, finish),
+                detail = ""
+            )
+            wiDService.createWiD(newWiD)
         }
     }
 
     fun resetWiD() {
-        isReset = !isReset // false to true
-        coroutineScope.launch {
-            runningTime = Duration.ZERO
-        }
+        elapsedTime = 0
+        buttonText = "시작"
+
+        buttonsVisible.value = true
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.Gray)
-            .wrapContentSize(Alignment.Center)
-            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
-            .padding(16.dp),
+    Column(modifier = Modifier
+        .fillMaxSize()
+//        .background(color = Color.LightGray)
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp) // Add horizontal spacing between buttons
+                .padding(16.dp)
+                .weight(1f)
+                .wrapContentSize(Alignment.Center)
         ) {
-            IconButton(
-                onClick = {
-                    titleIndex = (titleIndex - 1 + titles.size) % titles.size
-                    title = titles[titleIndex]
-                },
-                modifier = Modifier.weight(1.0f)
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
                     .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                enabled = isReset
             ) {
-                Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
-            }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (buttonsVisible.value) {
+                        IconButton(modifier = Modifier,
+                            onClick = {
+                                titleIndex = (titleIndex - 1 + titles.size) % titles.size
+                                title = titles[titleIndex]
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
+                        }
+                    }
 
-            Text(
-                modifier = Modifier.weight(1.0f)
-                    .align(Alignment.CenterVertically),
-                text = titleMap[title] ?: title,
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-            )
+                    Text(
+                        modifier = Modifier
+                            .weight(1.0f),
+                        text = titleMap[title] ?: title,
+                        textAlign = TextAlign.Center,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
 
-            IconButton(
-                onClick = {
-                    titleIndex = (titleIndex + 1) % titles.size
-                    title = titles[titleIndex]
-                },
-                modifier = Modifier.weight(1.0f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                enabled = isReset
-            ) {
-                Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
+                    if (buttonsVisible.value) {
+                        IconButton(
+                            onClick = {
+                                titleIndex = (titleIndex + 1) % titles.size
+                                title = titles[titleIndex]
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
+                        }
+                    }
+                }
+
+                Text(
+                    text = formatTime(elapsedTime),
+                    fontSize = 60.sp,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)),
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            if (!isRunning) {
+                                startWiD()
+                            } else {
+                                finishWiD()
+                            }
+                            isRunning = !isRunning
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(
+                                BorderStroke(1.dp, Color.Black),
+                                RoundedCornerShape(0.dp, 0.dp, 0.dp, 8.dp)
+                            ),
+                    ) {
+                        Text(
+                            text = buttonText,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (!isRunning) {
+                                resetWiD()
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(
+                                BorderStroke(1.dp, Color.Black),
+                                RoundedCornerShape(0.dp, 0.dp, 8.dp, 0.dp)
+                            ),
+                        enabled = !isRunning
+                    ) {
+                        Text(
+                            text = "초기화",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
-
-        Text( // Duration TextView
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
-            text = formatDuration(duration = runningTime, mode = 0),
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.White,
-            textAlign = TextAlign.Center,
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp) // Add horizontal spacing between buttons
-        ) {
-            IconButton(
-                onClick = {
-                    startWiD()
-                    buttonsVisible.value = false
-                },
-                modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                enabled = isReset
-            ) {
-                Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "start")
-            }
-
-            IconButton(
-                onClick = {
-                    finishWiD()
-                },
-                modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                enabled = isStarted
-            ) {
-                Icon(imageVector = Icons.Filled.Done, contentDescription = "finish")
-            }
-
-            IconButton(
-                onClick = {
-                    resetWiD()
-                    buttonsVisible.value = true
-                },
-                modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                enabled = !isReset && isFinished
-            ) {
-                Icon(imageVector = Icons.Filled.Refresh, contentDescription = "reset")
-            }
-
-//            Button(
-//                onClick = {
-//                    wiDService.deleteAllWiD()
-//                },
-//            ) {
-//                Icon(imageVector = Icons.Filled.Delete, contentDescription = "deleteAllWiD")
-//            }
+        if (!buttonsVisible.value) {
+            Text(modifier = Modifier
+                .fillMaxWidth(),
+                text = "WiD",
+                textAlign = TextAlign.Center,
+                fontSize = 63.sp, // Bottom Bar 높이 == 63
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily(Font(R.font.acme_regular))
+            )
         }
     }
+}
+
+fun formatTime(time: Long): String {
+//    val minutes = (time / 60000).toString().padStart(2, '0')
+//    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
+//    val milliseconds = (time % 1000 / 10).toString().padStart(2, '0')
+//    return "$minutes:$seconds.$milliseconds"
+
+    val hours = (time / 3600000).toString().padStart(2, '0')
+    val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
+    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
+    return "$hours:$minutes:$seconds"
 }
 
 @Preview(showBackground = true)
 @Composable
 fun WiDCreateFragmentPreview() {
-//    WiDCreateFragment()
+    val buttonsVisible = remember { mutableStateOf(false) }
+    WiDCreateFragment(buttonsVisible = buttonsVisible)
 }

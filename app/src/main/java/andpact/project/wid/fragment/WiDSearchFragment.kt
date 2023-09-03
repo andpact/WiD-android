@@ -6,6 +6,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,8 +34,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
 fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
@@ -91,11 +94,34 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                     // Check if the date has changed, if so, display the new date
                     if (currentDate != wiDDate) {
                         currentDate = wiDDate
-                        Text(
-                            text = wiDDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd (E)")), // Display the date, adjust formatting as needed
+
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                        )
+                        ) {
+                            if (currentDate == LocalDate.now()) {
+                                Text(text = "오늘")
+                            } else if (currentDate == LocalDate.now().minusDays(1)) {
+                                Text(text = "어제")
+                            } else {
+                                Text(
+                                    text = wiDDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")), // Display the date, adjust formatting as needed
+                                )
+
+                                Text(text = "(")
+
+                                Text(
+                                    text = wiDDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                                    color = when (wiDDate.dayOfWeek) {
+                                        DayOfWeek.SATURDAY -> Color.Blue
+                                        DayOfWeek.SUNDAY -> Color.Red
+                                        else -> Color.Black
+                                    }
+                                )
+
+                                Text(text = ")")
+                            }
+                        }
                     }
 
                     Row(
@@ -189,7 +215,6 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 }
             }
         }
-
     }
 }
 
