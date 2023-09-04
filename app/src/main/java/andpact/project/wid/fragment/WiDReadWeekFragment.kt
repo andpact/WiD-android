@@ -95,13 +95,12 @@ fun WiDReadWeekFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
@@ -111,15 +110,17 @@ fun WiDReadWeekFragment() {
             ) {
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년")),
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 )
 
                 Text(
                     text = "${getWeekNumber(currentDate)}",
-                    color = Color.Blue
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, color = Color.Blue, fontWeight = FontWeight.Bold)
                 )
 
                 Text(
                     text = "번째 주",
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                 )
             }
 
@@ -129,8 +130,6 @@ fun WiDReadWeekFragment() {
                     currentDate = LocalDate.now()
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "ThisWeek")
             }
@@ -140,8 +139,6 @@ fun WiDReadWeekFragment() {
                     currentDate = currentDate.minusDays(7)
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevWeek")
             }
@@ -152,8 +149,6 @@ fun WiDReadWeekFragment() {
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
                 },
                 enabled = currentDate != LocalDate.now(),
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextWeek")
             }
@@ -190,8 +185,7 @@ fun WiDReadWeekFragment() {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth()
-                .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -204,43 +198,37 @@ fun WiDReadWeekFragment() {
                 text = "제목",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(0.5f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "최저",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "최고",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "평균",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "총합",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
         }
 
         // 각 제목별로 정보를 표시
         for ((title, stats) in titleStats) {
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val titleColorId = colorMap[title]
@@ -261,7 +249,6 @@ fun WiDReadWeekFragment() {
                     text = titleMap[title] ?: title,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(0.5f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "최저" 표시
@@ -269,7 +256,6 @@ fun WiDReadWeekFragment() {
                     text = formatDuration(stats.minDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "최고" 표시
@@ -277,7 +263,6 @@ fun WiDReadWeekFragment() {
                     text = formatDuration(stats.maxDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "평균" 표시
@@ -285,7 +270,6 @@ fun WiDReadWeekFragment() {
                     text = formatDuration(stats.averageDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "총합" 표시
@@ -293,7 +277,6 @@ fun WiDReadWeekFragment() {
                     text = formatDuration(stats.totalDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
             }
         }

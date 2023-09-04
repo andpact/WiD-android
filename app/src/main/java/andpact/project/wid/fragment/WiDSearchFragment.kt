@@ -53,7 +53,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
     ) {
         OutlinedTextField(
             value = searchText,
-            singleLine = true,
+//            singleLine = true,
             onValueChange = { newText ->
                 searchText = newText
                 // Call the method to update the list based on the searchText
@@ -77,14 +77,9 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // Take remaining vertical space
+                .weight(1f)
+                .padding(0.dp, 8.dp, 0.dp, 9.dp)
         ) {
-            Text(
-                text = "검색된 WiD ${wiDList.size}개",
-                modifier = Modifier
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Right
-            )
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -158,44 +153,34 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = (index + 1).toString(),
-                                    modifier = Modifier
-                                        .weight(0.5f)
-                                        .border(1.dp, Color.Black),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
                                     text = titleMap[wiD.title] ?: wiD.title,
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .border(1.dp, Color.Black),
+                                        .weight(0.5f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .border(1.dp, Color.Black),
+                                        .weight(1f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .border(1.dp, Color.Black),
+                                        .weight(1f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = formatDuration(wiD.duration, mode = 2),
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .border(1.dp, Color.Black),
+                                        .weight(1f),
                                     textAlign = TextAlign.Center
                                 )
                             }
 
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
@@ -213,6 +198,18 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                         }
                     }
                 }
+            }
+
+            Row(modifier = Modifier
+                .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Text(modifier = Modifier
+                    .background(Color.Black, RoundedCornerShape(4.dp)),
+                    text = "검색된 WiD ${wiDList.size}개",
+                    textAlign = TextAlign.Center,
+                    color = Color.White
+                )
             }
         }
     }

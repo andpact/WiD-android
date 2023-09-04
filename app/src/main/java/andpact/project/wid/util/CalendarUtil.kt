@@ -18,16 +18,44 @@ fun formatDuration(duration: Duration, mode: Int): String {
 
     return when (mode) {
         0 -> String.format("%02d:%02d:%02d", hours, minutes, seconds)
+
+//        1 -> {
+//            val totalHours = hours.toDouble() + (minutes.toDouble() / 60.0)
+//            val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
+//
+//            when {
+//                totalHours >= 1.1 -> String.format("%.1f시간", totalHours)
+//                totalHours >= 1.0 -> String.format("%d시간", hours)
+//                totalMinutes >= 1.1 -> String.format("%.1f분", totalMinutes)
+//                totalMinutes >= 1.0 -> String.format("%d분", minutes)
+//                else -> String.format("%d초", seconds)
+//            }
+//        }
+
         1 -> {
             val totalHours = hours.toDouble() + (minutes.toDouble() / 60.0)
             val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
 
             when {
-                totalHours >= 1.1 -> String.format("%.1f시간", totalHours)
-                totalHours >= 1.0 -> String.format("%d시간", hours)
-                totalMinutes >= 1.1 -> String.format("%.1f분", totalMinutes)
-                totalMinutes >= 1.0 -> String.format("%d분", minutes)
-                else -> String.format("%d초", seconds)
+                totalHours >= 1.1 -> {
+                    val formattedTotalHours = if (totalHours % 1.0 == 0.0) {
+                        totalHours.toInt().toString()
+                    } else {
+                        String.format("%.1f", totalHours)
+                    }
+                    "${formattedTotalHours}시간"
+                }
+                totalHours >= 1.0 -> "${hours}시간"
+                totalMinutes >= 1.1 -> {
+                    val formattedTotalMinutes = if (totalMinutes % 1.0 == 0.0) {
+                        totalMinutes.toInt().toString()
+                    } else {
+                        String.format("%.1f", totalMinutes)
+                    }
+                    "${formattedTotalMinutes}분"
+                }
+                totalMinutes >= 1.0 -> "${minutes}분"
+                else -> "${seconds}초"
             }
         }
 

@@ -1,15 +1,14 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.fragment.WiDCreateFragment
-import andpact.project.wid.fragment.WiDReadHolderFragment
-import andpact.project.wid.fragment.WiDSearchFragment
+import andpact.project.wid.fragment.*
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.fragment.WiDView
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -35,9 +34,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
-    NavHost(navController, startDestination = Destinations.WiDCreateFragment.route) {
-        composable(Destinations.WiDCreateFragment.route) {
-            WiDCreateFragment(buttonsVisible)
+    NavHost(navController, startDestination = Destinations.WiDCreateHolderFragment.route) {
+        composable(Destinations.WiDCreateHolderFragment.route) {
+            WiDCreateHolderFragment(buttonsVisible)
         }
         composable(Destinations.WiDReadHolderFragment.route) {
             WiDReadHolderFragment(navController, buttonsVisible)
@@ -58,10 +57,20 @@ fun BottomBar(
     navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier
 ) {
     val screens = listOf(
-        Destinations.WiDCreateFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment
+        Destinations.WiDCreateHolderFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment
     )
 
-    if (state.value) {
+    AnimatedVisibility(
+        visible = state.value,
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(500)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(500)
+        )
+    ) {
         NavigationBar(
             modifier = modifier,
             containerColor = Color.LightGray,
@@ -128,8 +137,8 @@ sealed class Destinations(
     val title: String? = null,
     val icon: ImageVector? = null
 ) {
-    object WiDCreateFragment : Destinations(
-        route = "wid_create_fragment",
+    object WiDCreateHolderFragment : Destinations(
+        route = "wid_create_holder_fragment",
         title = "Create",
         icon = Icons.Filled.Add
     )

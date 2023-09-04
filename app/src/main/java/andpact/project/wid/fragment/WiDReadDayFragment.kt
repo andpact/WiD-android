@@ -24,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -49,48 +51,45 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                    .weight(1f),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    modifier = Modifier
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                     text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 )
 
-                Text(text = "(")
+                Text(text = "(",
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
 
                 Text(
-                    modifier = Modifier
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                     text = currentDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
                     color = when (currentDate.dayOfWeek) {
                         DayOfWeek.SATURDAY -> Color.Blue
                         DayOfWeek.SUNDAY -> Color.Red
                         else -> Color.Black
-                    }
+                    },
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 )
 
-                Text(text = ")")
+                Text(text = ")",
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
             }
 
             IconButton(
                 onClick = {
                     currentDate = LocalDate.now()
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Today")
             }
@@ -99,8 +98,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 onClick = {
                     currentDate = currentDate.minusDays(1)
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevDay")
             }
@@ -110,8 +107,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     currentDate = currentDate.plusDays(1)
                 },
                 enabled = currentDate != LocalDate.now(),
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextDay")
             }
@@ -133,33 +128,28 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
             Text(text = "순서",
                 modifier = Modifier
-                    .weight(0.5f)
-                    .border(1.dp, Color.Black),
+                    .weight(0.5f),
                 textAlign = TextAlign.Center,
             )
 
             Text(text = "제목",
                 modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Black),
+                    .weight(0.5f),
                 textAlign = TextAlign.Center)
 
             Text(text = "시작",
                 modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Black),
+                    .weight(1f),
                 textAlign = TextAlign.Center)
 
             Text(text = "종료",
                 modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Black),
+                    .weight(1f),
                 textAlign = TextAlign.Center)
 
             Text(text = "소요",
                 modifier = Modifier
-                    .weight(1f)
-                    .border(1.dp, Color.Black),
+                    .weight(1f),
                 textAlign = TextAlign.Center)
         }
 
@@ -204,36 +194,31 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                             Text(
                                 text = (index + 1).toString(),
                                 modifier = Modifier
-                                    .weight(0.5f)
-                                    .border(1.dp, Color.Black),
+                                    .weight(0.5f),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = titleMap[wiD.title] ?: wiD.title,
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .border(1.dp, Color.Black),
+                                    .weight(0.5f),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .border(1.dp, Color.Black),
+                                    .weight(1f),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .border(1.dp, Color.Black),
+                                    .weight(1f),
                                 textAlign = TextAlign.Center
                             )
                             Text(
                                 text = formatDuration(wiD.duration, mode = 2),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .border(1.dp, Color.Black),
+                                    .weight(1f),
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -244,16 +229,12 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                             horizontalArrangement = Arrangement.Start
                         ) {
                             Text(
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black),
                                 text = "설명 : ",
                                 textAlign = TextAlign.Center,
                             )
 
                             Text(
                                 text = wiD.detail.ifBlank { "설명 입력.." },
-                                modifier = Modifier
-                                    .border(1.dp, Color.Black),
                                 style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
                                 maxLines = 1
                             )

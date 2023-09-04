@@ -100,19 +100,18 @@ fun WiDReadMonthFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
-                textAlign = TextAlign.Center,
+                style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
             )
 
             IconButton(
@@ -120,8 +119,6 @@ fun WiDReadMonthFragment() {
                     currentDate = LocalDate.now()
                     firstDayOfMonth = getFirstDayOfMonth(currentDate)
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "ThisMonth")
             }
@@ -131,8 +128,6 @@ fun WiDReadMonthFragment() {
                     currentDate = currentDate.minusMonths(1)
                     firstDayOfMonth = getFirstDayOfMonth(currentDate)
                 },
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevMonth")
             }
@@ -143,8 +138,6 @@ fun WiDReadMonthFragment() {
                     firstDayOfMonth = getFirstDayOfMonth(currentDate)
                 },
                 enabled = currentDate != LocalDate.now(),
-                modifier = Modifier
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "nextMonth")
             }
@@ -189,8 +182,7 @@ fun WiDReadMonthFragment() {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth()
-                .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -203,43 +195,37 @@ fun WiDReadMonthFragment() {
                 text = "제목",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(0.5f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "최저",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "최고",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "평균",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
 
             Text(
                 text = "총합",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
             )
         }
 
         // 각 제목별로 정보를 표시
         for ((title, stats) in titleStats) {
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val titleColorId = colorMap[title]
@@ -260,7 +246,6 @@ fun WiDReadMonthFragment() {
                     text = titleMap[title] ?: title,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(0.5f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "최저" 표시
@@ -268,7 +253,6 @@ fun WiDReadMonthFragment() {
                     text = formatDuration(stats.minDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "최고" 표시
@@ -276,7 +260,6 @@ fun WiDReadMonthFragment() {
                     text = formatDuration(stats.maxDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "평균" 표시
@@ -284,7 +267,6 @@ fun WiDReadMonthFragment() {
                     text = formatDuration(stats.averageDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
 
                 // "총합" 표시
@@ -292,7 +274,6 @@ fun WiDReadMonthFragment() {
                     text = formatDuration(stats.totalDuration, mode = 1),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                 )
             }
         }

@@ -1,5 +1,6 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
@@ -17,11 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -38,6 +43,15 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
     var updatedDetail by remember { mutableStateOf(wiD.detail) }
     var isEditing by remember { mutableStateOf(false) }
+
+    var isDeleteButtonPressed by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isDeleteButtonPressed) {
+        if (isDeleteButtonPressed) {
+            delay(2000L) // 3초 대기
+            isDeleteButtonPressed = false // 3초 후에 다시 false로 설정
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -57,9 +71,11 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(8.dp)
+                        .fillMaxWidth(),
                     text = "WiD",
-                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
                 )
 
 //                val titleColorId = DataMapsUtil.colorMap[wiD.title]
@@ -79,35 +95,38 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier.padding(8.dp),
                     text = "날짜",
-                    style = TextStyle(fontSize = 30.sp)
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
 
                 Row(
-                    modifier = Modifier.weight(1f)
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
+                    modifier = Modifier
+                        .weight(1f)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        modifier = Modifier
-                            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                         text = wiD.date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                     )
 
-                    Text(text = "(")
+                    Text(text = "(",
+                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                    )
 
                     Text(
-                        modifier = Modifier
-                            .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
                         text = wiD.date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
                         color = when (wiD.date.dayOfWeek) {
                             DayOfWeek.SATURDAY -> Color.Blue
                             DayOfWeek.SUNDAY -> Color.Red
                             else -> Color.Black
-                        }
+                        },
+                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                     )
 
-                    Text(text = ")")
+                    Text(text = ")",
+                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                    )
                 }
             }
             Row(
@@ -116,7 +135,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier.padding(8.dp),
                     text = "제목",
-                    style = TextStyle(fontSize = 30.sp)
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
                 Text(
                     modifier = Modifier
@@ -132,7 +151,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier.padding(8.dp),
                     text = "시작",
-                    style = TextStyle(fontSize = 30.sp)
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
                 Text(
                     modifier = Modifier
@@ -148,7 +167,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier.padding(8.dp),
                     text = "종료",
-                    style = TextStyle(fontSize = 30.sp)
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
                 Text(
                     modifier = Modifier
@@ -164,7 +183,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier.padding(8.dp),
                     text = "경과",
-                    style = TextStyle(fontSize = 30.sp)
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
                 Text(
                     modifier = Modifier
@@ -183,8 +202,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         .weight(1.0F)
                         .padding(8.dp),
                     text = "설명",
-                    style = TextStyle(fontSize = 30.sp),
-                    textAlign = TextAlign.Start
+                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Start)
                 )
 
                 IconToggleButton(
@@ -196,13 +214,16 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         }
                         isEditing = newValue
                     },
-                    modifier = Modifier
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
+                    modifier = Modifier.padding(0.dp, 0.dp, 8.dp, 0.dp)
                 ) {
                     if (isEditing) {
-                        Icon(imageVector = Icons.Filled.Done, contentDescription = "Done")
+//                        Icon(imageVector = Icons.Filled.Done, contentDescription = "Done")
+                        Text(text = "완료",
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
                     } else {
-                        Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+//                        Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+                        Text(text = "수정",
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
                     }
                 }
 
@@ -221,7 +242,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     Text(style = TextStyle(Color.Black),
                         text = "설명 입력..")
                 },
-//                readOnly = !isEditing,
+                readOnly = !isEditing,
                 enabled = isEditing
             )
         }
@@ -235,16 +256,20 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         ) {
             IconButton(
                 onClick = {
-                    wiDService.deleteWiDById(id = wiDId)
-                    navController.popBackStack()
-
-                    buttonsVisible.value = true
+                    if (isDeleteButtonPressed) {
+                        wiDService.deleteWiDById(id = wiDId)
+                        navController.popBackStack()
+                        buttonsVisible.value = true
+                    } else {
+                        isDeleteButtonPressed = true
+                    }
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
             ) {
-                Icon(imageVector = Icons.Filled.Delete, contentDescription = "delete")
+                Text(text = if (isDeleteButtonPressed) "한번 더 눌러 삭제" else "삭제",
+                    color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold))
             }
 
             IconButton(
@@ -255,16 +280,17 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp))
             ) {
-                Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "back")
+                Text(text = "뒤로 가기",
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold))
             }
         }
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDViewPreview() {
-//    WiDView(0, NavController(LocalContext.current))
-//}
+@Preview(showBackground = true)
+@Composable
+fun WiDViewPreview() {
+    val buttonsVisible = remember { mutableStateOf(true) }
+    WiDView(0, NavController(LocalContext.current), buttonsVisible)
+}
