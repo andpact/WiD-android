@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
@@ -38,28 +39,27 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = Color.Black
                     )
                 }
             ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(
-                            text = "스탑워치",
-                            style = TextStyle(color = if (selectedTab == 0) Color.Black else Color.Gray, fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "스탑워치")
                     }
                 )
 
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(
-                            text = "타이머",
-                            style = TextStyle(color = if (selectedTab == 1) Color.Black else Color.Gray, fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "타이머")
                     }
                 )
             }

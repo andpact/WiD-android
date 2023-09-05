@@ -1,5 +1,6 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
@@ -26,7 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -108,10 +112,16 @@ fun WiDReadMonthFragment() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(text = "WiD",
+                style = TextStyle(textAlign = TextAlign.Center, fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular))
+                )
+            )
+
             Text(
                 modifier = Modifier.weight(1f),
                 text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
-                style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
+                style = TextStyle(textAlign = TextAlign.Center)
             )
 
             IconButton(
@@ -151,7 +161,7 @@ fun WiDReadMonthFragment() {
                 val textColor = when (index) {
                     0 -> Color.Red  // "일"의 인덱스는 0
                     6 -> Color.Blue // "토"의 인덱스는 6
-                    else -> Color.Black
+                    else -> Color.Unspecified
                 }
 
                 Text(
@@ -182,13 +192,15 @@ fun WiDReadMonthFragment() {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .padding(0.dp, 0.dp, 0.dp, 0.dp)
+                .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 25.dp)
-                    .background(Color.Transparent)
+//                    .background(colorResource(id = R.color.light_gray))
             )
 
             Text(
@@ -222,59 +234,65 @@ fun WiDReadMonthFragment() {
             )
         }
 
-        // 각 제목별로 정보를 표시
-        for ((title, stats) in titleStats) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val titleColorId = colorMap[title]
-                if (titleColorId != null) {
-                    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                    Box(
-                        modifier = Modifier
-                            .size(width = 10.dp, height = 25.dp)
-                            .background(
-                                color = backgroundColor,
-                                shape = RoundedCornerShape(8.dp)
-                            )
+        if (wiDList.isEmpty()) {
+            Text(modifier = Modifier.fillMaxSize()
+                .padding(vertical = 16.dp),
+                text = "표시할 정보가 없습니다.",
+                style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+            )
+        } else {
+            for ((title, stats) in titleStats) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(0.dp, 8.dp, 0.dp, 0.dp)
+                        .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val titleColorId = colorMap[title]
+                    if (titleColorId != null) {
+                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                        Box(
+                            modifier = Modifier
+                                .size(width = 10.dp, height = 25.dp)
+                                .background(color = backgroundColor, shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp))
+                        )
+                    }
+
+                    // "제목" 표시
+                    Text(
+                        text = titleMap[title] ?: title,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(0.5f)
+                    )
+
+                    // "최저" 표시
+                    Text(
+                        text = formatDuration(stats.minDuration, mode = 1),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // "최고" 표시
+                    Text(
+                        text = formatDuration(stats.maxDuration, mode = 1),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // "평균" 표시
+                    Text(
+                        text = formatDuration(stats.averageDuration, mode = 1),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // "총합" 표시
+                    Text(
+                        text = formatDuration(stats.totalDuration, mode = 1),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-
-                // "제목" 표시
-                Text(
-                    text = titleMap[title] ?: title,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(0.5f)
-                )
-
-                // "최저" 표시
-                Text(
-                    text = formatDuration(stats.minDuration, mode = 1),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // "최고" 표시
-                Text(
-                    text = formatDuration(stats.maxDuration, mode = 1),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // "평균" 표시
-                Text(
-                    text = formatDuration(stats.averageDuration, mode = 1),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
-
-                // "총합" 표시
-                Text(
-                    text = formatDuration(stats.totalDuration, mode = 1),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
             }
         }
     }

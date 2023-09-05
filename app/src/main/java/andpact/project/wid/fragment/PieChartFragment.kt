@@ -10,12 +10,16 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.PieChart
@@ -75,7 +79,7 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     setTouchEnabled(false) // Disable touch gestures for zooming
 
                     isDrawHoleEnabled = true
-                    holeRadius = 70f // Hole radius as percentage of the chart
+                    holeRadius = 80f // Hole radius as percentage of the chart
                     setHoleColor(ContextCompat.getColor(context, R.color.transparent))
 
                     setDrawCenterText(true) // Draw center text
@@ -87,7 +91,7 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     setCenterTextSize(16f)
 
                     if (wiDList.isEmpty()) {
-                        setCenterTextColor(ContextCompat.getColor(context, R.color.gray))
+                        setCenterTextColor(Color.LightGray.toArgb())
                     } else {
                         setCenterTextColor(ContextCompat.getColor(context, R.color.black))
                     }
@@ -95,7 +99,7 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        val colorId = colorMap[label] ?: R.color.gray
+                        val colorId = colorMap[label] ?: R.color.light_gray
                         ContextCompat.getColor(context, colorId)
                     }
                     dataSet.colors = colors
@@ -112,11 +116,11 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     .aspectRatio(1f)) {
                     val radius: Float = size.minDimension / 1.9f // 원의 반지름
                     val centerX = center.x
-                    val centerY = center.y
+                    val centerY = center.y + 10
 
                     val textPaint = Paint().apply {
                         color = Color.Black.toArgb()
-                        textSize = 40f
+                        textSize = 30f
                         textAlign = Paint.Align.CENTER
                     }
 
@@ -158,9 +162,9 @@ fun EmptyPieChartView() {
                 setDrawEntryLabels(false)
                 setTouchEnabled(false) // Disable touch gestures for zooming
 
-                isDrawHoleEnabled = true
-                holeRadius = 70f // Hole radius as percentage of the chart
-                setHoleColor(ContextCompat.getColor(context, R.color.transparent))
+//                isDrawHoleEnabled = true
+//                holeRadius = 70f // Hole radius as percentage of the chart
+//                setHoleColor(ContextCompat.getColor(context, R.color.transparent))
 
                 val dataSet = PieDataSet(listOf(PieEntry(1.0F, "")), "")
                 dataSet.colors = listOf(ContextCompat.getColor(context, R.color.transparent))

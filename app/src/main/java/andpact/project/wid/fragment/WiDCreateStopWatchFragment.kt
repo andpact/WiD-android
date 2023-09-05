@@ -3,15 +3,13 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -55,19 +54,12 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
     var buttonText by remember { mutableStateOf("시작") }
 
-    LaunchedEffect(isRunning) {
-        while (isRunning) {
-            currentTime = System.currentTimeMillis()
-            elapsedTime = currentTime - startTime
-            delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
-        }
-    }
-
     fun startWiD() {
         date = LocalDate.now()
         start = LocalTime.now()
 //        start = LocalTime.now().minusHours(1)
 
+        isRunning = true
         buttonsVisible.value = false
 
         startTime = System.currentTimeMillis() - elapsedTime
@@ -78,6 +70,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         finish = LocalTime.now()
 //        finish = LocalTime.now().plusHours(1)
 
+        isRunning = false
         buttonText = "계속"
 
         if (finish.isBefore(start)) {
@@ -127,19 +120,31 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         buttonsVisible.value = true
     }
 
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            currentTime = System.currentTimeMillis()
+            elapsedTime = currentTime - startTime
+            if (60 * 60 * 12 * 1000 <= elapsedTime) {
+                finishWiD()
+                resetWiD()
+            }
+            delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
+        }
+    }
+
     Column(modifier = Modifier
         .fillMaxSize()
     ) {
-        if (!buttonsVisible.value) {
-            Text(modifier = Modifier
-                .fillMaxWidth(),
-                text = "",
-                textAlign = TextAlign.Center,
-                fontSize = 39.sp, // Tap Bar 높이 39.sp
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily(Font(R.font.acme_regular))
-            )
-        }
+//        if (!buttonsVisible.value) {
+//            Text(modifier = Modifier
+//                .fillMaxWidth(),
+//                text = "",
+//                textAlign = TextAlign.Center,
+//                fontSize = 39.sp, // Tap Bar 높이 39.sp
+//                fontWeight = FontWeight.Bold,
+//                fontFamily = FontFamily(Font(R.font.acme_regular))
+//            )
+//        }
 
         Column(
             modifier = Modifier
@@ -183,7 +188,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                         modifier = Modifier
                             .weight(1.0f),
                         text = titleMap[title] ?: title,
-                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
                     )
 
                     AnimatedVisibility(
@@ -226,12 +231,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 ) {
                     IconButton(
                         onClick = {
-                            if (!isRunning) {
-                                startWiD()
-                            } else {
-                                finishWiD()
-                            }
-                            isRunning = !isRunning
+                            if (!isRunning) startWiD() else finishWiD()
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -240,10 +240,10 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                             text = buttonText,
                             color = when (buttonText) {
                                 "중지" -> Color.Red
-                                "계속" -> Color.Green
+                                "계속" -> colorResource(id = R.color.exercise)
                                 else -> Color.Unspecified
                             },
-                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontSize = 20.sp)
                         )
                     }
 
@@ -259,29 +259,21 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                     ) {
                         Text(
                             text = "초기화",
-                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontSize = 20.sp)
                         )
                     }
                 }
             }
         }
 
-        if (!buttonsVisible.value) {
-            Text(modifier = Modifier
-                .fillMaxWidth(),
-                text = "WiD", // Bottom Bar 높이 == 63.sp
-                style = TextStyle(textAlign = TextAlign.Center, fontSize = 63.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
-            )
-        }
+//        if (!buttonsVisible.value) {
+//            Text(modifier = Modifier
+//                .fillMaxWidth(),
+//                text = "WiD", // Bottom Bar 높이 == 63.sp
+//                style = TextStyle(textAlign = TextAlign.Center, fontSize = 63.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+//            )
+//        }
     }
-}
-
-fun formatTime(time: Long): String {
-    val hours = (time / 3600000).toString().padStart(2, '0')
-    val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
-    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
-//    val milliseconds = (time % 1000 / 10).toString().padStart(2, '0')
-    return "$hours:$minutes:$seconds"
 }
 
 @Preview(showBackground = true)

@@ -6,6 +6,14 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
 
+fun formatTime(time: Long): String {
+    val hours = (time / 3600000).toString().padStart(2, '0')
+    val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
+    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
+//    val milliseconds = (time % 1000 / 10).toString().padStart(2, '0')
+    return "$hours:$minutes:$seconds"
+}
+
 fun formatDuration(duration: Duration, mode: Int): String {
     // mode 0. HH:mm:ss (10:30:30)
     // mode 1. H시간 (10.5시간), m분 (30.5분)

@@ -1,5 +1,6 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
@@ -23,7 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +63,11 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(text = "WiD",
+                style = TextStyle(textAlign = TextAlign.Center, fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+            )
+
             Row(
                 modifier = Modifier
                     .weight(1f),
@@ -66,11 +75,12 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             ) {
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+//                    style = TextStyle(fontSize = 20.sp)
                 )
 
                 Text(text = "(",
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+//                    style = TextStyle(fontSize = 20.sp)
+                )
 
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
@@ -79,11 +89,12 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         DayOfWeek.SUNDAY -> Color.Red
                         else -> Color.Black
                     },
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+//                    style = TextStyle(fontSize = 20.sp)
                 )
 
                 Text(text = ")",
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+//                    style = TextStyle(fontSize = 20.sp)
+                )
             }
 
             IconButton(
@@ -118,12 +129,15 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                .padding(0.dp, 0.dp, 0.dp, 8.dp)
+                .background(
+                    color = colorResource(id = R.color.light_gray),
+                    shape = RoundedCornerShape(8.dp)
+                ),
         ) {
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 25.dp)
-                    .background(Color.Transparent)
             )
 
             Text(text = "순서",
@@ -153,91 +167,112 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 textAlign = TextAlign.Center)
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            itemsIndexed(wiDList) { index, wiD ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-//                        .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val titleColorId = colorMap[wiD.title]
-                    if (titleColorId != null) {
-                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                        Box(
-                            modifier = Modifier
-                                .size(width = 10.dp, height = 50.dp)
-                                .background(
-                                    color = backgroundColor,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                        )
-                    }
-
-                    Column(
+        if (wiDList.isEmpty()) {
+            Text(modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+                text = "표시할 WiD가 없습니다.",
+                style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                itemsIndexed(wiDList) { index, wiD ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
-//                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
-
-                                buttonsVisible.value = false
-                            },
+                            .background(
+                                color = colorResource(id = R.color.light_gray),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = (index + 1).toString(),
+                        val titleColorId = colorMap[wiD.title]
+                        if (titleColorId != null) {
+                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                            Box(
                                 modifier = Modifier
-                                    .weight(0.5f),
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = titleMap[wiD.title] ?: wiD.title,
-                                modifier = Modifier
-                                    .weight(0.5f),
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                modifier = Modifier
-                                    .weight(1f),
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                modifier = Modifier
-                                    .weight(1f),
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                text = formatDuration(wiD.duration, mode = 2),
-                                modifier = Modifier
-                                    .weight(1f),
-                                textAlign = TextAlign.Center
+                                    .size(width = 10.dp, height = 50.dp)
+                                    .background(
+                                        color = backgroundColor,
+                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                                    )
                             )
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Start
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
+
+                                    buttonsVisible.value = false
+                                },
                         ) {
-                            Text(
-                                text = "설명 : ",
-                                textAlign = TextAlign.Center,
+                            Row(
+                                modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = (index + 1).toString(),
+                                    modifier = Modifier
+                                        .weight(0.5f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = titleMap[wiD.title] ?: wiD.title,
+                                    modifier = Modifier
+                                        .weight(0.5f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = formatDuration(wiD.duration, mode = 2),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .padding(horizontal = 8.dp)
+                                    .background(color = Color.Gray)
                             )
 
-                            Text(
-                                text = wiD.detail.ifBlank { "설명 입력.." },
-                                style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
-                                maxLines = 1
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Text(modifier = Modifier
+                                    .weight(0.5f),
+                                    text = "설명",
+                                    textAlign = TextAlign.Center,
+                                )
+
+                                Text(modifier = Modifier
+                                    .weight(3f),
+                                    text = ": " + wiD.detail.ifBlank { "설명 입력.." },
+                                    style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
+                                    maxLines = 1,
+                                )
+                            }
                         }
                     }
                 }

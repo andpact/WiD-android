@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -23,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -62,18 +64,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     // 버튼 활성화 여부를 나타내는 상태 변수 추가
     var minusButtonEnabled by remember { mutableStateOf(false) }
     var plusButtonEnabled by remember { mutableStateOf(true) }
-
-    LaunchedEffect(isRunning) {
-        while (isRunning) {
-            if (finishTime > System.currentTimeMillis()) {
-                currentTime = System.currentTimeMillis()
-                remainingTime = finishTime - currentTime
-            } else {
-                isRunning = false
-            }
-            delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
-        }
-    }
 
     fun startWiD() {
         date = LocalDate.now()
@@ -145,16 +135,29 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         minusButtonEnabled = false
     }
 
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            if (finishTime > System.currentTimeMillis()) {
+                currentTime = System.currentTimeMillis()
+                remainingTime = finishTime - currentTime
+            } else {
+                finishWiD()
+                resetWiD()
+            }
+            delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
+        }
+    }
+
     Column(modifier = Modifier
         .fillMaxSize()
     ) {
-        if (!buttonsVisible.value) {
-            Text(modifier = Modifier
-                .fillMaxWidth(),
-                text = "",  // Tap Bar 높이 == 39.sp
-                style = TextStyle(textAlign = TextAlign.Center, fontSize = 39.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)),)
-            )
-        }
+//        if (!buttonsVisible.value) {
+//            Text(modifier = Modifier
+//                .fillMaxWidth(),
+//                text = "",  // Tap Bar 높이 == 39.sp
+//                style = TextStyle(textAlign = TextAlign.Center, fontSize = 39.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)),)
+//            )
+//        }
 
         Column(
             modifier = Modifier
@@ -198,7 +201,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                         modifier = Modifier
                             .weight(1.0f),
                         text = titleMap[title] ?: title,
-                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
                     )
 
                     AnimatedVisibility(
@@ -261,6 +264,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                     Text( // 남은 시간 텍스트 뷰
                         text = formatTime(time = remainingTime),
                         modifier = Modifier.weight(1.0f),
+                        color = if (minusButtonEnabled) Color.Unspecified else Color.LightGray,
                         style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
                     )
 
@@ -301,11 +305,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 ) {
                     IconButton(
                         onClick = {
-                            if (!isRunning) {
-                                startWiD()
-                            } else {
-                                finishWiD()
-                            }
+                            if (!isRunning) startWiD() else finishWiD()
                         },
                         modifier = Modifier
                             .weight(1f),
@@ -315,10 +315,10 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                             text = buttonText,
                             color = when (buttonText) {
                                 "중지" -> Color.Red
-                                "계속" -> Color.Green
+                                "계속" -> colorResource(id = R.color.exercise)
                                 else -> Color.Unspecified
                             },
-                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontSize = 20.sp)
                         )
                     }
 
@@ -334,22 +334,22 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                     ) {
                         Text(
                             text = "초기화",
-                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            style = TextStyle(fontSize = 20.sp)
                         )
                     }
                 }
             }
         }
-        if (!buttonsVisible.value) {
-            Text(modifier = Modifier
-                .fillMaxWidth(),
-                text = "WiD",
-                textAlign = TextAlign.Center,
-                fontSize = 63.sp, // Bottom Bar 높이 == 63.sp
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily(Font(R.font.acme_regular))
-            )
-        }
+//        if (!buttonsVisible.value) {
+//            Text(modifier = Modifier
+//                .fillMaxWidth(),
+//                text = "WiD",
+//                textAlign = TextAlign.Center,
+//                fontSize = 63.sp, // Bottom Bar 높이 == 63.sp
+//                fontWeight = FontWeight.Bold,
+//                fontFamily = FontFamily(Font(R.font.acme_regular))
+//            )
+//        }
     }
 }
 

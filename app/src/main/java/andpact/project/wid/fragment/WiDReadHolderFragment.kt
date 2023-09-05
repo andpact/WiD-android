@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
@@ -39,40 +40,37 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-//                    color = MaterialTheme.colorScheme.primary
+                        color = Color.Black
                     )
                 }
             ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(
-                            text = "Day",
-                            style = TextStyle(color = if (selectedTab == 0) Color.Black else Color.Gray, fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "Day")
                     }
                 )
 
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(
-                            text = "Week",
-                            style = TextStyle(color = if (selectedTab == 1) Color.Black else Color.Gray, fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "Week")
                     }
                 )
 
                 Tab(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(
-                            text = "Month",
-                            style = TextStyle(color = if (selectedTab == 2) Color.Black else Color.Gray, fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "Month")
                     }
                 )
             }

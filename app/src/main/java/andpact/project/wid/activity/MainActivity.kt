@@ -1,5 +1,6 @@
 package andpact.project.wid.activity
 
+import andpact.project.wid.R
 import andpact.project.wid.fragment.*
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -16,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -34,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
-    NavHost(navController, startDestination = Destinations.WiDCreateHolderFragment.route) {
+    NavHost(navController = navController, startDestination = Destinations.WiDCreateHolderFragment.route) {
         composable(Destinations.WiDCreateHolderFragment.route) {
             WiDCreateHolderFragment(buttonsVisible)
         }
@@ -72,8 +74,7 @@ fun BottomBar(
         )
     ) {
         NavigationBar(
-            modifier = modifier,
-            containerColor = Color.LightGray,
+            containerColor = Color.Transparent
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
@@ -98,7 +99,9 @@ fun BottomBar(
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        unselectedTextColor = Color.Gray, selectedTextColor = Color.White
+                        unselectedTextColor = Color.LightGray, selectedTextColor = Color.Black,
+                        unselectedIconColor = Color.LightGray, selectedIconColor = Color.Black,
+                        indicatorColor = colorResource(id = R.color.transparent)
                     ),
                 )
             }
@@ -120,7 +123,6 @@ fun WiDMainActivity() {
                 BottomBar(
                     navController = navController,
                     state = buttonsVisible,
-                    modifier = Modifier,
                 )
             }) { paddingValues ->
             Box(

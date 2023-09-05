@@ -5,6 +5,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -62,7 +64,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
     ) {
         Column(
             modifier = Modifier
-                .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
+                .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -71,7 +73,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier
+                        .padding(8.dp)
                         .fillMaxWidth(),
                     text = "WiD",
                     style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center,
@@ -269,7 +272,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             ) {
                 Text(text = if (isDeleteButtonPressed) "한번 더 눌러 삭제" else "삭제",
                     color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
-                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold))
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
             }
 
             IconButton(
@@ -282,7 +285,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     .weight(1f)
             ) {
                 Text(text = "뒤로 가기",
-                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold))
+                    style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
             }
         }
     }

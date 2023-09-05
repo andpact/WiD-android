@@ -1,5 +1,6 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
@@ -18,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -60,8 +63,8 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 wiDList = wiDService.readWiDListByDetail(newText)
             },
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White),
+                .fillMaxWidth(),
+//                .background(Color.White),
             placeholder = {
                 Text(text = "설명으로 검색..")
             },
@@ -70,20 +73,19 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
             },
         )
 
-
-
         var currentDate: LocalDate? = null // Initialize this with null
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(0.dp, 8.dp, 0.dp, 9.dp)
+                .padding(0.dp, 8.dp, 0.dp, 8.dp)
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(wiDList) { index, wiD ->
+                itemsIndexed(wiDList) { _, wiD ->
                     val wiDDate = wiD.date // Assuming date is stored in wiD.date
 
                     // Check if the date has changed, if so, display the new date
@@ -122,7 +124,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp)),
+                            .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val titleColorId = colorMap[wiD.title]
@@ -131,10 +133,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                             Box(
                                 modifier = Modifier
                                     .size(width = 10.dp, height = 50.dp)
-                                    .background(
-                                        color = backgroundColor,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
+                                    .background(color = backgroundColor, shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp))
                             )
                         }
 
@@ -178,19 +177,28 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 )
                             }
 
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .padding(horizontal = 8.dp)
+                                    .background(color = Color.Gray)
+                            )
+
                             Row(
-                                modifier = Modifier.fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
                             ) {
-                                Text(
-                                    text = "설명 : ",
+                                Text(modifier = Modifier
+                                    .weight(0.5f),
+                                    text = "설명",
                                     textAlign = TextAlign.Center
                                 )
 
-                                Text(
-                                    text = wiD.detail.ifBlank { "설명 입력.." },
-                                    modifier = Modifier.weight(1f),
+                                Text(modifier = Modifier
+                                    .weight(3f),
+                                    text = ": " + wiD.detail.ifBlank { "설명 입력.." },
                                     style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
                                     maxLines = 1
                                 )
