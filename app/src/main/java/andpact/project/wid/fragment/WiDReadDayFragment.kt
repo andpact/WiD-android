@@ -142,23 +142,23 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
             Text(text = "순서",
                 modifier = Modifier
-                    .weight(0.5f),
+                    .weight(0.4f),
                 textAlign = TextAlign.Center,
             )
 
             Text(text = "제목",
                 modifier = Modifier
-                    .weight(0.5f),
+                    .weight(0.4f),
                 textAlign = TextAlign.Center)
 
             Text(text = "시작",
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(0.7f),
                 textAlign = TextAlign.Center)
 
             Text(text = "종료",
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(0.7f),
                 textAlign = TextAlign.Center)
 
             Text(text = "소요",
@@ -166,6 +166,47 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     .weight(1f),
                 textAlign = TextAlign.Center)
         }
+
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(0.dp, 0.dp, 0.dp, 8.dp)
+//                .background(
+//                    color = colorResource(id = R.color.light_gray),
+//                    shape = RoundedCornerShape(8.dp)
+//                ),
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .size(width = 10.dp, height = 25.dp)
+//            )
+//
+//            Text(text = "99",
+//                modifier = Modifier
+//                    .weight(0.4f),
+//                textAlign = TextAlign.Center,
+//            )
+//
+//            Text(text = "공부",
+//                modifier = Modifier
+//                    .weight(0.4f),
+//                textAlign = TextAlign.Center)
+//
+//            Text(text = "99:99",
+//                modifier = Modifier
+//                    .weight(0.7f),
+//                textAlign = TextAlign.Center)
+//
+//            Text(text = "99:99",
+//                modifier = Modifier
+//                    .weight(0.7f),
+//                textAlign = TextAlign.Center)
+//
+//            Text(text = "99시간 99분",
+//                modifier = Modifier
+//                    .weight(1f),
+//                textAlign = TextAlign.Center)
+//        }
 
         if (wiDList.isEmpty()) {
             Text(modifier = Modifier
@@ -218,25 +259,25 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 Text(
                                     text = (index + 1).toString(),
                                     modifier = Modifier
-                                        .weight(0.5f),
+                                        .weight(0.4f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = titleMap[wiD.title] ?: wiD.title,
                                     modifier = Modifier
-                                        .weight(0.5f),
+                                        .weight(0.4f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.7f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.7f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
@@ -261,13 +302,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 horizontalArrangement = Arrangement.Start
                             ) {
                                 Text(modifier = Modifier
-                                    .weight(0.5f),
+                                    .weight(0.4f),
                                     text = "설명",
                                     textAlign = TextAlign.Center,
                                 )
 
                                 Text(modifier = Modifier
-                                    .weight(3f),
+                                    .weight(2.8f),
                                     text = ": " + wiD.detail.ifBlank { "설명 입력.." },
                                     style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
                                     maxLines = 1,

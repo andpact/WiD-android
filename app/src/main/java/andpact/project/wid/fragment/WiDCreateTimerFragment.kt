@@ -5,10 +5,8 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -177,17 +175,17 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 ) {
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { -it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { -it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {
                         IconButton(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp),
                             onClick = {
                                 titleIndex = (titleIndex - 1 + titles.size) % titles.size
                                 title = titles[titleIndex]
@@ -206,17 +204,17 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
 
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {
                         IconButton(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp),
                             onClick = {
                                 titleIndex = (titleIndex + 1) % titles.size
                                 title = titles[titleIndex]
@@ -233,12 +231,12 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 ) {
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { -it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { -it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {
@@ -270,12 +268,12 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
 
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {

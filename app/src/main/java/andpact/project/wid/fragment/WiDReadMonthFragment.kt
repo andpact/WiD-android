@@ -11,6 +11,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -166,9 +167,8 @@ fun WiDReadMonthFragment() {
 
                 Text(
                     text = day,
-                    textAlign = TextAlign.Center,
-                    color = textColor,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    style = TextStyle(textAlign = TextAlign.Center, color = textColor)
                 )
             }
         }
@@ -193,14 +193,13 @@ fun WiDReadMonthFragment() {
 
         Row(
             modifier = Modifier.fillMaxWidth()
-                .padding(0.dp, 0.dp, 0.dp, 0.dp)
+                .padding(0.dp, 0.dp, 0.dp, 8.dp)
                 .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 25.dp)
-//                    .background(colorResource(id = R.color.light_gray))
             )
 
             Text(
@@ -241,57 +240,70 @@ fun WiDReadMonthFragment() {
                 style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
             )
         } else {
-            for ((title, stats) in titleStats) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(0.dp, 8.dp, 0.dp, 0.dp)
-                        .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val titleColorId = colorMap[title]
-                    if (titleColorId != null) {
-                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                        Box(
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                for ((title, stats) in titleStats) {
+                    item {
+                        Row(
                             modifier = Modifier
-                                .size(width = 10.dp, height = 25.dp)
-                                .background(color = backgroundColor, shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp))
-                        )
+                                .fillMaxWidth()
+                                .background(
+                                    color = colorResource(id = R.color.light_gray),
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            val titleColorId = colorMap[title]
+                            if (titleColorId != null) {
+                                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 10.dp, height = 25.dp)
+                                        .background(
+                                            color = backgroundColor,
+                                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                                        )
+                                )
+                            }
+
+                            // "제목" 표시
+                            Text(
+                                text = titleMap[title] ?: title,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(0.5f)
+                            )
+
+                            // "최저" 표시
+                            Text(
+                                text = formatDuration(stats.minDuration, mode = 1),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            // "최고" 표시
+                            Text(
+                                text = formatDuration(stats.maxDuration, mode = 1),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            // "평균" 표시
+                            Text(
+                                text = formatDuration(stats.averageDuration, mode = 1),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            // "총합" 표시
+                            Text(
+                                text = formatDuration(stats.totalDuration, mode = 1),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
-
-                    // "제목" 표시
-                    Text(
-                        text = titleMap[title] ?: title,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(0.5f)
-                    )
-
-                    // "최저" 표시
-                    Text(
-                        text = formatDuration(stats.minDuration, mode = 1),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // "최고" 표시
-                    Text(
-                        text = formatDuration(stats.maxDuration, mode = 1),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // "평균" 표시
-                    Text(
-                        text = formatDuration(stats.averageDuration, mode = 1),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    // "총합" 표시
-                    Text(
-                        text = formatDuration(stats.totalDuration, mode = 1),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
                 }
             }
         }

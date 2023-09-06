@@ -5,10 +5,8 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -57,7 +55,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
     fun startWiD() {
         date = LocalDate.now()
         start = LocalTime.now()
-//        start = LocalTime.now().minusHours(1)
 
         isRunning = true
         buttonsVisible.value = false
@@ -68,7 +65,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
     fun finishWiD() {
         finish = LocalTime.now()
-//        finish = LocalTime.now().plusHours(1)
+//        finish = LocalTime.now().plusHours(10).plusMinutes(33).plusSeconds(33)
 
         isRunning = false
         buttonText = "계속"
@@ -164,17 +161,17 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 ) {
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { -it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { -it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {
                         IconButton(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp),
                             onClick = {
                                 titleIndex = (titleIndex - 1 + titles.size) % titles.size
                                 title = titles[titleIndex]
@@ -193,17 +190,17 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
                     AnimatedVisibility(
                         visible = buttonsVisible.value,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { it },
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
                             animationSpec = tween(500)
                         ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { it },
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
                             animationSpec = tween(500)
                         )
                     ) {
                         IconButton(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp),
                             onClick = {
                                 titleIndex = (titleIndex + 1) % titles.size
                                 title = titles[titleIndex]
@@ -216,16 +213,12 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
                 Text(
                     text = formatTime(elapsedTime),
-                    fontSize = 50.sp,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
                 )
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -279,6 +272,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 @Preview(showBackground = true)
 @Composable
 fun WiDCreateStopWatchFragmentPreview() {
-    val buttonsVisible = remember { mutableStateOf(false) }
+    val buttonsVisible = remember { mutableStateOf(true) }
     WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
 }

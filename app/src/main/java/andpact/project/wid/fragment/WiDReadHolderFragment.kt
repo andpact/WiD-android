@@ -2,6 +2,8 @@ package andpact.project.wid.fragment
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
@@ -25,18 +28,14 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
     ) {
         AnimatedVisibility(
             visible = buttonsVisible.value,
-            enter = slideInVertically(
-                initialOffsetY = { -it },
-                animationSpec = tween(500)
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { -it },
-                animationSpec = tween(500)
-            )
+            enter = expandVertically{ 0 },
+            exit = shrinkVertically{ 0 },
         ) {
             TabRow(
                 selectedTabIndex = selectedTab,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+//                    .border(BorderStroke(1.dp, Color.Black))
+                    .height(55.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),

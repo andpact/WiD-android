@@ -10,6 +10,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import andpact.project.wid.ui.theme.WiDTheme
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -49,6 +53,7 @@ fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableSta
         composable(Destinations.WiDViewFragment.route + "/{wiDId}") { backStackEntry ->
             val wiDId = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
 //            Log.d("WiDID", wiDId.toString())
+
             WiDView(wiDId = wiDId, navController = navController, buttonsVisible = buttonsVisible)
         }
     }
@@ -64,27 +69,24 @@ fun BottomBar(
 
     AnimatedVisibility(
         visible = state.value,
-        enter = slideInVertically(
-            initialOffsetY = { it },
-            animationSpec = tween(500)
-        ),
-        exit = slideOutVertically(
-            targetOffsetY = { it },
-            animationSpec = tween(500)
-        )
+        enter = expandVertically{ 0 },
+        exit = shrinkVertically{ 0 },
     ) {
         NavigationBar(
-            containerColor = Color.Transparent
+            modifier = modifier
+//                .border(BorderStroke(1.dp, Color.Black))
+                .height(55.dp),
+            containerColor = Color.Transparent,
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
             screens.forEach { screen ->
-
                 NavigationBarItem(
                     label = {
                         Text(text = screen.title!!)
                     },
+                    alwaysShowLabel = false,
                     icon = {
                         Icon(imageVector = screen.icon!!, contentDescription = "")
                     },
@@ -113,9 +115,6 @@ fun BottomBar(
 fun WiDMainActivity() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
-//        val bottomBarHeight = 56.dp
-//        val bottomBarOffsetHeightPx = remember { mutableStateOf(0f) }
-
         val buttonsVisible = remember { mutableStateOf(true) }
 
         Scaffold(
@@ -142,7 +141,7 @@ sealed class Destinations(
     object WiDCreateHolderFragment : Destinations(
         route = "wid_create_holder_fragment",
         title = "Create",
-        icon = Icons.Filled.Add
+        icon = Icons.Filled.Edit
     )
 
     object WiDReadHolderFragment : Destinations(

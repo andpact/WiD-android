@@ -123,8 +123,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
     fun readWiDListByDetail(detail: String): List<WiD> {
         val db = readableDatabase
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DETAIL = ?"
-        val selectionArgs = arrayOf(detail)
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DETAIL LIKE ?" // LIKE 연산자 사용
+        val selectionArgs = arrayOf("%$detail%") // detail을 와일드카드로 묶어 부분 일치 검색
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
