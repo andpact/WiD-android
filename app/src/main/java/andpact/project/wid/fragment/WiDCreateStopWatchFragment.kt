@@ -7,7 +7,10 @@ import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -53,21 +56,24 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
     var buttonText by remember { mutableStateOf("시작") }
 
     fun startWiD() {
+        isRunning = true
+
         date = LocalDate.now()
         start = LocalTime.now()
 
-        isRunning = true
+        startTime = System.currentTimeMillis() - elapsedTime
+
         buttonsVisible.value = false
 
-        startTime = System.currentTimeMillis() - elapsedTime
         buttonText = "중지"
     }
 
     fun finishWiD() {
+        isRunning = false
+
         finish = LocalTime.now()
 //        finish = LocalTime.now().plusHours(10).plusMinutes(33).plusSeconds(33)
 
-        isRunning = false
         buttonText = "계속"
 
         if (finish.isBefore(start)) {
@@ -112,9 +118,10 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
     fun resetWiD() {
         elapsedTime = 0
-        buttonText = "시작"
 
         buttonsVisible.value = true
+
+        buttonText = "시작"
     }
 
     LaunchedEffect(isRunning) {
@@ -129,143 +136,132 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-    ) {
-//        if (!buttonsVisible.value) {
-//            Text(modifier = Modifier
-//                .fillMaxWidth(),
-//                text = "",
-//                textAlign = TextAlign.Center,
-//                fontSize = 39.sp, // Tap Bar 높이 39.sp
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = FontFamily(Font(R.font.acme_regular))
-//            )
-//        }
-
+    Box() {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .weight(1f)
-                .wrapContentSize(Alignment.Center)
+            modifier = Modifier.fillMaxSize()
+                .padding(32.dp)
+                .wrapContentSize(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(40.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp),
-//                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                verticalArrangement = Arrangement.spacedBy(40.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
-                    ) {
-                        IconButton(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            onClick = {
-                                titleIndex = (titleIndex - 1 + titles.size) % titles.size
-                                title = titles[titleIndex]
-                            },
-                        ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
-                        }
-                    }
-
-                    Text(
-                        modifier = Modifier
-                            .weight(1.0f),
-                        text = titleMap[title] ?: title,
-                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
                     )
-
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
+                ) {
+                    IconButton(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        onClick = {
+                            titleIndex = (titleIndex - 1 + titles.size) % titles.size
+                            title = titles[titleIndex]
+                        },
                     ) {
-                        IconButton(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            onClick = {
-                                titleIndex = (titleIndex + 1) % titles.size
-                                title = titles[titleIndex]
-                            },
-                        ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
-                        }
+                        Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
                     }
                 }
 
                 Text(
-                    text = formatTime(elapsedTime),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+                    modifier = Modifier
+                        .weight(1.0f),
+                    text = titleMap[title] ?: title,
+                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    )
                 ) {
                     IconButton(
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
-                            if (!isRunning) startWiD() else finishWiD()
+                            titleIndex = (titleIndex + 1) % titles.size
+                            title = titles[titleIndex]
                         },
-                        modifier = Modifier
-                            .weight(1f)
                     ) {
-                        Text(
-                            text = buttonText,
-                            color = when (buttonText) {
-                                "중지" -> Color.Red
-                                "계속" -> colorResource(id = R.color.exercise)
-                                else -> Color.Unspecified
-                            },
-                            style = TextStyle(fontSize = 20.sp)
-                        )
+                        Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
                     }
+                }
+            }
 
-                    IconButton(
-                        onClick = {
-                            if (!isRunning) {
-                                resetWiD()
-                            }
+            Text(
+                text = formatTime(elapsedTime),
+                modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        if (!isRunning) startWiD() else finishWiD()
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = buttonText,
+                        color = when (buttonText) {
+                            "중지" -> Color.Red
+                            "계속" -> colorResource(id = R.color.exercise)
+                            else -> Color.Unspecified
                         },
-                        modifier = Modifier
-                            .weight(1f),
-                        enabled = !isRunning && !buttonsVisible.value
-                    ) {
-                        Text(
-                            text = "초기화",
-                            style = TextStyle(fontSize = 20.sp)
-                        )
-                    }
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        if (!isRunning) {
+                            resetWiD()
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f),
+                    enabled = !isRunning && !buttonsVisible.value
+                ) {
+                    Text(
+                        text = "초기화",
+                        style = TextStyle(fontSize = 20.sp)
+                    )
                 }
             }
         }
 
-//        if (!buttonsVisible.value) {
-//            Text(modifier = Modifier
-//                .fillMaxWidth(),
-//                text = "WiD", // Bottom Bar 높이 == 63.sp
-//                style = TextStyle(textAlign = TextAlign.Center, fontSize = 63.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
-//            )
-//        }
+        Column(modifier = Modifier
+            .fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            AnimatedVisibility(
+                visible = !buttonsVisible.value,
+                enter = expandVertically{ 0 },
+                exit = shrinkVertically{ 0 },
+            ) {
+                Text(modifier = Modifier
+                    .fillMaxWidth(),
+                    text = "WiD", // Bottom Bar 높이 == 63.sp
+                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 50.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+                )
+            }
+        }
     }
 }
 

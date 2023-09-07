@@ -44,28 +44,39 @@ fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableSta
         composable(Destinations.WiDCreateHolderFragment.route) {
             WiDCreateHolderFragment(buttonsVisible)
         }
+//        composable(Destinations.WiDCreateStopWatchFragment.route) {
+//            WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
+//        }
+//        composable(Destinations.WiDCreateTimerFragment.route) {
+//            WiDCreateTimerFragment(buttonsVisible = buttonsVisible)
+//        }
+
         composable(Destinations.WiDReadHolderFragment.route) {
             WiDReadHolderFragment(navController, buttonsVisible)
         }
+//        composable(Destinations.WiDReadDayFragment.route) {
+//            WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
+//        }
+//        composable(Destinations.WiDReadWeekFragment.route) {
+//            WiDReadWeekFragment()
+//        }
+//        composable(Destinations.WiDReadMonthFragment.route) {
+//            WiDReadMonthFragment()
+//        }
+
         composable(Destinations.WiDSearchFragment.route) {
             WiDSearchFragment(navController, buttonsVisible)
         }
         composable(Destinations.WiDViewFragment.route + "/{wiDId}") { backStackEntry ->
             val wiDId = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
-//            Log.d("WiDID", wiDId.toString())
-
             WiDView(wiDId = wiDId, navController = navController, buttonsVisible = buttonsVisible)
         }
     }
 }
 
 @Composable
-fun BottomBar(
-    navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier
-) {
-    val screens = listOf(
-        Destinations.WiDCreateHolderFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment
-    )
+fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier) {
+    val screens = listOf(Destinations.WiDCreateHolderFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment)
 
     AnimatedVisibility(
         visible = state.value,
@@ -74,7 +85,6 @@ fun BottomBar(
     ) {
         NavigationBar(
             modifier = modifier
-//                .border(BorderStroke(1.dp, Color.Black))
                 .height(55.dp),
             containerColor = Color.Transparent,
         ) {
@@ -88,7 +98,8 @@ fun BottomBar(
                     },
                     alwaysShowLabel = false,
                     icon = {
-                        Icon(imageVector = screen.icon!!, contentDescription = "")
+//                        Icon(imageVector = screen.icon!!, contentDescription = "")
+                        Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
                     },
                     selected = currentRoute == screen.route,
                     onClick = {
@@ -136,24 +147,44 @@ fun WiDMainActivity() {
 sealed class Destinations(
     val route: String,
     val title: String? = null,
-    val icon: ImageVector? = null
+    val icon: Int? = null
 ) {
     object WiDCreateHolderFragment : Destinations(
         route = "wid_create_holder_fragment",
-        title = "Create",
-        icon = Icons.Filled.Edit
+        title = "Add",
+        icon = R.drawable.baseline_post_add_24
     )
+
+//    object WiDCreateStopWatchFragment : Destinations(
+//        route = "wid_create_stop_watch_fragment",
+//    )
+//
+//    object WiDCreateTimerFragment : Destinations(
+//        route = "wid_create_timer_fragment",
+//    )
 
     object WiDReadHolderFragment : Destinations(
         route = "wid_read_holder_fragment",
-        title = "Read",
-        icon = Icons.Filled.List
+        title = "List",
+        icon = R.drawable.baseline_format_list_bulleted_24
     )
+
+//    object WiDReadDayFragment : Destinations(
+//        route = "wid_read_day_fragment",
+//    )
+//
+//    object WiDReadWeekFragment : Destinations(
+//        route = "wid_read_week_fragment",
+//    )
+//
+//    object WiDReadMonthFragment : Destinations(
+//        route = "wid_read_month_fragment",
+//    )
 
     object WiDSearchFragment : Destinations(
         route = "wid_search_fragment",
         title = "Search",
-        icon = Icons.Filled.Search
+        icon = R.drawable.baseline_search_24
     )
 
     object WiDViewFragment : Destinations(

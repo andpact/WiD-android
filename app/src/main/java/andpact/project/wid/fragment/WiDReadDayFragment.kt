@@ -167,47 +167,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 textAlign = TextAlign.Center)
         }
 
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(0.dp, 0.dp, 0.dp, 8.dp)
-//                .background(
-//                    color = colorResource(id = R.color.light_gray),
-//                    shape = RoundedCornerShape(8.dp)
-//                ),
-//        ) {
-//            Box(
-//                modifier = Modifier
-//                    .size(width = 10.dp, height = 25.dp)
-//            )
-//
-//            Text(text = "99",
-//                modifier = Modifier
-//                    .weight(0.4f),
-//                textAlign = TextAlign.Center,
-//            )
-//
-//            Text(text = "공부",
-//                modifier = Modifier
-//                    .weight(0.4f),
-//                textAlign = TextAlign.Center)
-//
-//            Text(text = "99:99",
-//                modifier = Modifier
-//                    .weight(0.7f),
-//                textAlign = TextAlign.Center)
-//
-//            Text(text = "99:99",
-//                modifier = Modifier
-//                    .weight(0.7f),
-//                textAlign = TextAlign.Center)
-//
-//            Text(text = "99시간 99분",
-//                modifier = Modifier
-//                    .weight(1f),
-//                textAlign = TextAlign.Center)
-//        }
-
         if (wiDList.isEmpty()) {
             Text(modifier = Modifier
                 .fillMaxWidth()

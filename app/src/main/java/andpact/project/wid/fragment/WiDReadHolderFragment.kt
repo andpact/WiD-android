@@ -1,10 +1,10 @@
 package andpact.project.wid.fragment
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -12,15 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
-    var selectedTab by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { 3 })
+
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -32,57 +33,66 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
             exit = shrinkVertically{ 0 },
         ) {
             TabRow(
-                selectedTabIndex = selectedTab,
+                selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.fillMaxWidth()
-//                    .border(BorderStroke(1.dp, Color.Black))
                     .height(55.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = Color.Black
                     )
                 }
             ) {
                 Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
+                    selected = pagerState.currentPage == 0,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "Day")
+                        Text(text = "DAY")
                     }
                 )
 
                 Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    selected = pagerState.currentPage == 1,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "Week")
+                        Text(text = "WEEK")
                     }
                 )
 
                 Tab(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
+                    selected = pagerState.currentPage == 2,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(2)
+                        }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "Month")
+                        Text(text = "MONTH")
                     }
                 )
             }
         }
 
-        when (selectedTab) {
-            0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
-            1 -> WiDReadWeekFragment()
-            2 -> WiDReadMonthFragment()
+        HorizontalPager(state = pagerState) {page ->
+            when (page) {
+                0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
+                1 -> WiDReadWeekFragment()
+                2 -> WiDReadMonthFragment()
+            }
         }
     }
 }
-
 
 //@Preview(showBackground = true)
 //@Composable

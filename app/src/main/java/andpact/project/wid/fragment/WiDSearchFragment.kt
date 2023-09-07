@@ -9,6 +9,9 @@ import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -98,8 +101,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-//                reverseLayout = true
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(sortedWiDList) { _, wiD ->
                         val wiDDate = wiD.date
@@ -230,8 +232,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 }
 
                 Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize(),
+                    .fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
                     Text(modifier = Modifier
@@ -240,7 +241,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                         text = "검색된 WiD ${wiDList.size}개",
                         textAlign = TextAlign.Center,
                         color = Color.White,
-                        fontSize = 16.sp
+                        fontSize = 12.sp
                     )
                 }
             }

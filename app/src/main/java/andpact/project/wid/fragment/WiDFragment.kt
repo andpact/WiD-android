@@ -80,9 +80,9 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Text(
                     modifier = Modifier
                         .padding(8.dp)
-                        .fillMaxWidth(),
+                        .weight(1.0f),
                     text = "WiD",
-                    style = TextStyle(fontSize = 50.sp,
+                    style = TextStyle(fontSize = 30.sp,
                         fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
                 )
 
@@ -91,6 +91,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                     Box(
                         modifier = Modifier
+                            .padding(8.dp)
                             .size(20.dp)
                             .background(color = backgroundColor, shape = RoundedCornerShape(18.dp))
                     )

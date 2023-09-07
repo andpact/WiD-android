@@ -64,6 +64,8 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     var plusButtonEnabled by remember { mutableStateOf(true) }
 
     fun startWiD() {
+        isRunning = true
+
         date = LocalDate.now()
         start = LocalTime.now()
 
@@ -72,13 +74,12 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         buttonText = "중지"
 
         finishTime = System.currentTimeMillis() + remainingTime
-        isRunning = true
     }
 
     fun finishWiD() {
-        finish = LocalTime.now()
-
         isRunning = false
+
+        finish = LocalTime.now()
 
         buttonText = "계속"
 
@@ -126,10 +127,10 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         finishTime = 0
         currentTime = 0
         remainingTime = 0
+
         buttonText = "시작"
 
         buttonsVisible.value = true
-
         minusButtonEnabled = false
     }
 
@@ -146,208 +147,198 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-    ) {
-//        if (!buttonsVisible.value) {
-//            Text(modifier = Modifier
-//                .fillMaxWidth(),
-//                text = "",  // Tap Bar 높이 == 39.sp
-//                style = TextStyle(textAlign = TextAlign.Center, fontSize = 39.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)),)
-//            )
-//        }
-
+    Box() {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .weight(1f)
-                .wrapContentSize(Alignment.Center)
+            modifier = Modifier.fillMaxSize()
+                .padding(32.dp)
+                .wrapContentSize(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(40.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp),
-//                    .border(BorderStroke(1.dp, Color.Black), RoundedCornerShape(8.dp)),
-                verticalArrangement = Arrangement.spacedBy(40.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
-                    ) {
-                        IconButton(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            onClick = {
-                                titleIndex = (titleIndex - 1 + titles.size) % titles.size
-                                title = titles[titleIndex]
-                            },
-                        ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
-                        }
-                    }
-
-                    Text(
-                        modifier = Modifier
-                            .weight(1.0f),
-                        text = titleMap[title] ?: title,
-                        style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
                     )
-
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
+                ) {
+                    IconButton(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        onClick = {
+                            titleIndex = (titleIndex - 1 + titles.size) % titles.size
+                            title = titles[titleIndex]
+                        },
                     ) {
-                        IconButton(
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            onClick = {
-                                titleIndex = (titleIndex + 1) % titles.size
-                                title = titles[titleIndex]
-                            },
-                        ) {
-                            Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
-                        }
+                        Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (remainingTime > 0) {
-                                    finishTime -= 3_600_000
-                                    remainingTime = finishTime - currentTime
-                                }
-                                if (remainingTime <= 0) {
-                                    minusButtonEnabled = false
-                                }
-                                if (remainingTime < 12 * 3_600_000) {
-                                    plusButtonEnabled = true
-                                }
-                            },
-                            enabled = minusButtonEnabled
-                        ) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_remove_24), contentDescription = "minus1Hour")
-                        }
-                    }
-
-                    Text( // 남은 시간 텍스트 뷰
-                        text = formatTime(time = remainingTime),
-                        modifier = Modifier.weight(1.0f),
-                        color = if (minusButtonEnabled) Color.Unspecified else Color.LightGray,
-                        style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
-                    )
-
-                    AnimatedVisibility(
-                        visible = buttonsVisible.value,
-                        enter = fadeIn(
-                            initialAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        ),
-                        exit = fadeOut(
-                            targetAlpha = 0.1f,
-                            animationSpec = tween(500)
-                        )
-                    ) {
-                        IconButton(
-                            onClick = {
-                                finishTime += 3_600_000
-                                remainingTime = finishTime - currentTime
-                                if (remainingTime > 0) {
-                                    minusButtonEnabled = true
-                                }
-                                if (remainingTime >= 12 * 3_600_000) {
-                                    plusButtonEnabled = false
-                                }
-                            },
-                            enabled = plusButtonEnabled
-                        ) {
-                            Icon(imageVector = Icons.Filled.Add, contentDescription = "plus1Hour")
-                        }
-                    }
-                }
-
-                Row(
+                Text(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1.0f),
+                    text = titleMap[title] ?: title,
+                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
+                )
+
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    )
                 ) {
                     IconButton(
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         onClick = {
-                            if (!isRunning) startWiD() else finishWiD()
+                            titleIndex = (titleIndex + 1) % titles.size
+                            title = titles[titleIndex]
                         },
-                        modifier = Modifier
-                            .weight(1f),
-                        enabled = minusButtonEnabled
                     ) {
-                        Text(
-                            text = buttonText,
-                            color = when (buttonText) {
-                                "중지" -> Color.Red
-                                "계속" -> colorResource(id = R.color.exercise)
-                                else -> Color.Unspecified
-                            },
-                            style = TextStyle(fontSize = 20.sp)
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            if (!isRunning) {
-                                resetWiD()
-                            }
-                        },
-                        modifier = Modifier
-                            .weight(1f),
-                        enabled = !isRunning && !buttonsVisible.value
-                    ) {
-                        Text(
-                            text = "초기화",
-                            style = TextStyle(fontSize = 20.sp)
-                        )
+                        Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
                     }
                 }
             }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    )
+                ) {
+                    IconButton(
+                        onClick = {
+                            if (remainingTime > 0) {
+                                finishTime -= 3_600_000
+                                remainingTime = finishTime - currentTime
+                            }
+                            if (remainingTime <= 0) {
+                                minusButtonEnabled = false
+                            }
+                            if (remainingTime < 12 * 3_600_000) {
+                                plusButtonEnabled = true
+                            }
+                        },
+                        enabled = minusButtonEnabled
+                    ) {
+                        Icon(painter = painterResource(id = R.drawable.baseline_remove_24), contentDescription = "minus1Hour")
+                    }
+                }
+
+                Text( // 남은 시간 텍스트 뷰
+                    text = formatTime(time = remainingTime),
+                    modifier = Modifier.weight(1.0f),
+                    color = if (minusButtonEnabled) Color.Unspecified else Color.LightGray,
+                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+                )
+
+                AnimatedVisibility(
+                    visible = buttonsVisible.value,
+                    enter = fadeIn(
+                        initialAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(
+                        targetAlpha = 0.1f,
+                        animationSpec = tween(500)
+                    )
+                ) {
+                    IconButton(
+                        onClick = {
+                            finishTime += 3_600_000
+                            remainingTime = finishTime - currentTime
+                            if (remainingTime > 0) {
+                                minusButtonEnabled = true
+                            }
+                            if (remainingTime >= 12 * 3_600_000) {
+                                plusButtonEnabled = false
+                            }
+                        },
+                        enabled = plusButtonEnabled
+                    ) {
+                        Icon(imageVector = Icons.Filled.Add, contentDescription = "plus1Hour")
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                        if (!isRunning) startWiD() else finishWiD()
+                    },
+                    modifier = Modifier
+                        .weight(1f),
+                    enabled = minusButtonEnabled
+                ) {
+                    Text(
+                        text = buttonText,
+                        color = when (buttonText) {
+                            "중지" -> Color.Red
+                            "계속" -> colorResource(id = R.color.exercise)
+                            else -> Color.Unspecified
+                        },
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        if (!isRunning) {
+                            resetWiD()
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f),
+                    enabled = !isRunning && !buttonsVisible.value
+                ) {
+                    Text(
+                        text = "초기화",
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+                }
+            }
         }
-//        if (!buttonsVisible.value) {
-//            Text(modifier = Modifier
-//                .fillMaxWidth(),
-//                text = "WiD",
-//                textAlign = TextAlign.Center,
-//                fontSize = 63.sp, // Bottom Bar 높이 == 63.sp
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = FontFamily(Font(R.font.acme_regular))
-//            )
-//        }
+
+        Column(modifier = Modifier
+            .fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            AnimatedVisibility(
+                visible = !buttonsVisible.value,
+                enter = expandVertically{ 0 },
+                exit = shrinkVertically{ 0 },
+            ) {
+                Text(modifier = Modifier
+                    .fillMaxWidth(),
+                    text = "WiD", // Bottom Bar 높이 == 63.sp
+                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 50.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+                )
+            }
+        }
     }
 }
 
