@@ -38,6 +38,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +68,6 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
     ) {
         OutlinedTextField(
             value = searchText,
-//            singleLine = true,
             onValueChange = { newText ->
                 searchText = newText
                 // Call the method to update the list based on the searchText
@@ -76,173 +76,154 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
             modifier = Modifier
                 .fillMaxWidth(),
             placeholder = {
-                Text(text = "설명으로 검색..")
+                Text(text = "검색..")
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "search")
             },
+            singleLine = true
         )
 
         if (searchText.isEmpty()) {
             Text(modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
-                text = "표시할 WiD가 없습니다.",
+                text = "설명으로 WiD를 검색해 보세요.",
                 style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
             )
         } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(vertical = 8.dp)
+            var currentDate: LocalDate? = null
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                var currentDate: LocalDate? = null
+                itemsIndexed(sortedWiDList) { _, wiD ->
+                    val wiDDate = wiD.date
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    itemsIndexed(sortedWiDList) { _, wiD ->
-                        val wiDDate = wiD.date
-
-                        if (currentDate != wiDDate) {
-                            currentDate = wiDDate
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            ) {
-                                if (currentDate == LocalDate.now()) {
-                                    Text(text = "오늘")
-                                } else if (currentDate == LocalDate.now().minusDays(1)) {
-                                    Text(text = "어제")
-                                } else {
-                                    Text(
-                                        text = wiDDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
-                                    )
-
-                                    Text(text = "(")
-
-                                    Text(
-                                        text = wiDDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
-                                        color = when (wiDDate.dayOfWeek) {
-                                            DayOfWeek.SATURDAY -> Color.Blue
-                                            DayOfWeek.SUNDAY -> Color.Red
-                                            else -> Color.Black
-                                        }
-                                    )
-
-                                    Text(text = ")")
-                                }
-                            }
-                        }
+                    if (currentDate != wiDDate) {
+                        currentDate = wiDDate
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(
-                                    color = colorResource(id = R.color.light_gray),
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val titleColorId = colorMap[wiD.title]
-                            if (titleColorId != null) {
-                                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                                Box(
-                                    modifier = Modifier
-                                        .size(width = 10.dp, height = 50.dp)
-                                        .background(
-                                            color = backgroundColor,
-                                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
-                                        )
-                                )
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
-//                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
-
-                                        buttonsVisible.value = false
-                                    },
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = titleMap[wiD.title] ?: wiD.title,
-                                        modifier = Modifier
-                                            .weight(0.4f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Text(
-                                        text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                        modifier = Modifier
-                                            .weight(1f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Text(
-                                        text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                        modifier = Modifier
-                                            .weight(1f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Text(
-                                        text = formatDuration(wiD.duration, mode = 2),
-                                        modifier = Modifier
-                                            .weight(1f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-
-                                HorizontalDivider(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(1.dp)
-                                        .padding(horizontal = 8.dp)
-                                        .background(color = Color.Gray)
+                            if (currentDate == LocalDate.now()) {
+                                Text(text = "오늘")
+                            } else if (currentDate == LocalDate.now().minusDays(1)) {
+                                Text(text = "어제")
+                            } else {
+                                Text(
+                                    text = wiDDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
                                 )
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
-                                    Text(modifier = Modifier
-                                        .weight(0.4f),
-                                        text = "설명",
-                                        textAlign = TextAlign.Center
-                                    )
+                                Text(text = "(")
 
-                                    Text(modifier = Modifier
-                                        .weight(3f),
-                                        text = ": " + wiD.detail.ifBlank { "설명 입력.." },
-                                        style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
-                                        maxLines = 1
-                                    )
-                                }
+                                Text(
+                                    text = wiDDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                                    color = when (wiDDate.dayOfWeek) {
+                                        DayOfWeek.SATURDAY -> Color.Blue
+                                        DayOfWeek.SUNDAY -> Color.Red
+                                        else -> Color.Black
+                                    }
+                                )
+
+                                Text(text = ")")
                             }
                         }
                     }
-                }
 
-                Row(modifier = Modifier
-                    .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    Text(modifier = Modifier
-                        .background(Color.DarkGray, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp),
-                        text = "검색된 WiD ${wiDList.size}개",
-                        textAlign = TextAlign.Center,
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = colorResource(id = R.color.light_gray),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val titleColorId = colorMap[wiD.title]
+                        if (titleColorId != null) {
+                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 10.dp, height = 50.dp)
+                                    .background(
+                                        color = backgroundColor,
+                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                                    )
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
+//                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
+
+                                    buttonsVisible.value = false
+                                },
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = titleMap[wiD.title] ?: wiD.title,
+                                    modifier = Modifier
+                                        .weight(0.4f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = formatDuration(wiD.duration, mode = 2),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .padding(horizontal = 8.dp)
+                                    .background(color = Color.Gray)
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Text(modifier = Modifier
+                                    .weight(0.4f),
+                                    text = "설명",
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Text(modifier = Modifier
+                                    .weight(3f),
+                                    text = ": " + wiD.detail.ifBlank { "설명 입력.." },
+                                    style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

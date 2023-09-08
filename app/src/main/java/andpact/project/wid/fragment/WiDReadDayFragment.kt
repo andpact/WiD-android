@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -271,6 +272,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     text = ": " + wiD.detail.ifBlank { "설명 입력.." },
                                     style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
                                     maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +45,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         Text(modifier = Modifier
             .fillMaxSize(),
             text = "WiD not found",
-        textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center)
         return
     }
 
@@ -55,8 +56,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
     LaunchedEffect(isDeleteButtonPressed) {
         if (isDeleteButtonPressed) {
-            delay(3000L) // 3초 대기
-            isDeleteButtonPressed = false // 3초 후에 다시 false로 설정
+            delay(2000L)
+            isDeleteButtonPressed = false
         }
     }
 
@@ -256,7 +257,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         text = "설명 입력..")
                 },
                 readOnly = !isEditing,
-//                enabled = isEditing,
             )
         }
 
