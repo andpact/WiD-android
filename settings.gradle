@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://jitpack.io" } // MPAndroidChart 의존 추가
+        maven { url "https://jitpack.io" } // MPAndroidChart 의존 추가 (github의 코드를 라이브러리로 사용하기 위한 코드인듯)
     }
 }
 rootProject.name = "WiD"
