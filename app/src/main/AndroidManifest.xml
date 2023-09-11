@@ -11,7 +11,7 @@
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
-        android:name=".AppOpenAdUtil"
+        android:name=".util.AppOpenAdUtil"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,8 +23,9 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true"
+            android:noHistory="true"
             android:theme="@style/Theme.WiD">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +33,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true" />
 
 <!--        실제 앱 WiD ID-->
 <!--        <meta-data-->

@@ -1,79 +1,40 @@
 package andpact.project.wid.activity
 
 import andpact.project.wid.R
-import andpact.project.wid.fragment.*
+import andpact.project.wid.fragment.WiDCreateHolderFragment
+import andpact.project.wid.fragment.WiDReadHolderFragment
+import andpact.project.wid.fragment.WiDSearchFragment
+import andpact.project.wid.fragment.WiDView
+import andpact.project.wid.ui.theme.WiDTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import andpact.project.wid.ui.theme.WiDTheme
-import android.content.Intent
-import android.os.CountDownTimer
-import android.util.Log
-import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContent {
-//            WiDMainActivity()
-//        }
         setContent {
-            SplashScreen {
-                setContent {
-                    WiDMainActivity()
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SplashScreen(onSplashScreenFinished: () -> Unit) {
-    var visible by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        delay(2000)
-        visible = false
-        onSplashScreenFinished()
-    }
-
-    if (visible) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "WiD",
-                style = TextStyle(textAlign = TextAlign.Center, fontSize = 70.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(
-                    Font(R.font.acme_regular)))
-            )
+            WiDMainActivity()
         }
     }
 }
