@@ -5,6 +5,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -59,6 +60,11 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             delay(2000L)
             isDeleteButtonPressed = false
         }
+    }
+
+    BackHandler(enabled = true) { // 휴대폰 뒤로 가기 버튼 클릭 시
+        navController.popBackStack()
+        buttonsVisible.value = true
     }
 
     Column(
@@ -288,7 +294,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             IconButton(
                 onClick = {
                     navController.popBackStack()
-
                     buttonsVisible.value = true
                 },
                 modifier = Modifier

@@ -3,14 +3,16 @@ package andpact.project.wid.activity
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.util.AppOpenAdUtil
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private const val LOG_TAG = "SplashActivity"
@@ -28,10 +31,23 @@ private const val LOG_TAG = "SplashActivity"
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isInternetConnected = isInternetConnected()
+
         setContent {
-            SplashScreen()
+            SplashScreen(isInternetConnected)
         }
-        showAppOpenAd()
+
+        if (isInternetConnected) {
+            showAppOpenAd()
+        }
+    }
+
+    private fun isInternetConnected(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+        return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
     private fun showAppOpenAd() {
@@ -55,28 +71,44 @@ class SplashActivity : ComponentActivity() {
 //                override fun onShowAdComplete() {
 //                    startMainActivity()
 //                }
-//            })
+//            }
+//        )
     }
 }
 
 @Composable
-fun SplashScreen() {
+fun SplashScreen(isInternetConnected: Boolean) {
     WiDTheme() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color.Black),
-            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "WiD",
-                style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 70.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(
-                    Font(R.font.acme_regular)))
-            )
+            Column(modifier = Modifier
+                .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "WiD",
+                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 70.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(
+                        Font(R.font.acme_regular)))
+                )
+            }
 
-//            LinearProgressIndicator()
-//
-//            CircularProgressIndicator()
+            if (!isInternetConnected) {
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(0.dp, 100.dp, 0.dp, 0.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "인터넷 연결을 확인하세요.",
+                        style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
+                    )
+                }
+            }
         }
     }
 }

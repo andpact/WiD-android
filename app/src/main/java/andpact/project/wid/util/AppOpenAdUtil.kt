@@ -47,11 +47,11 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
 //        }
 
         // 홈버튼 누른 후 다시 실행했을 때
-        if (event == Lifecycle.Event.ON_RESUME) {
-            currentActivity?.let {
-                appOpenAdManager.loadAd(it)
-            }
-        }
+//        if (event == Lifecycle.Event.ON_RESUME) {
+//            currentActivity?.let {
+//                appOpenAdManager.loadAd(it)
+//            }
+//        }
     }
 
     /** Show the ad if one isn't already showing. */
@@ -82,8 +82,6 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
         if (!appOpenAdManager.isShowingAd) {
             Log.d(LOG_TAG, "onActivityStarted - 1")
             currentActivity = activity
-
-//            appOpenAdManager.loadAd(this)
         }
     }
     override fun onActivityResumed(activity: Activity) {

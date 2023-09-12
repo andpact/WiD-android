@@ -7,6 +7,8 @@ import andpact.project.wid.fragment.WiDSearchFragment
 import andpact.project.wid.fragment.WiDView
 import andpact.project.wid.ui.theme.WiDTheme
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -21,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -45,26 +46,9 @@ fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableSta
         composable(Destinations.WiDCreateHolderFragment.route) {
             WiDCreateHolderFragment(buttonsVisible)
         }
-//        composable(Destinations.WiDCreateStopWatchFragment.route) {
-//            WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
-//        }
-//        composable(Destinations.WiDCreateTimerFragment.route) {
-//            WiDCreateTimerFragment(buttonsVisible = buttonsVisible)
-//        }
-
         composable(Destinations.WiDReadHolderFragment.route) {
             WiDReadHolderFragment(navController, buttonsVisible)
         }
-//        composable(Destinations.WiDReadDayFragment.route) {
-//            WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
-//        }
-//        composable(Destinations.WiDReadWeekFragment.route) {
-//            WiDReadWeekFragment()
-//        }
-//        composable(Destinations.WiDReadMonthFragment.route) {
-//            WiDReadMonthFragment()
-//        }
-
         composable(Destinations.WiDSearchFragment.route) {
             WiDSearchFragment(navController, buttonsVisible)
         }
@@ -99,7 +83,6 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
                     },
                     alwaysShowLabel = false,
                     icon = {
-//                        Icon(imageVector = screen.icon!!, contentDescription = "")
                         Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
                     },
                     selected = currentRoute == screen.route,
@@ -155,46 +138,23 @@ sealed class Destinations(
         title = "Add",
         icon = R.drawable.baseline_post_add_24
     )
-
-//    object WiDCreateStopWatchFragment : Destinations(
-//        route = "wid_create_stop_watch_fragment",
-//    )
-//
-//    object WiDCreateTimerFragment : Destinations(
-//        route = "wid_create_timer_fragment",
-//    )
-
     object WiDReadHolderFragment : Destinations(
         route = "wid_read_holder_fragment",
         title = "List",
         icon = R.drawable.baseline_format_list_bulleted_24
     )
-
-//    object WiDReadDayFragment : Destinations(
-//        route = "wid_read_day_fragment",
-//    )
-//
-//    object WiDReadWeekFragment : Destinations(
-//        route = "wid_read_week_fragment",
-//    )
-//
-//    object WiDReadMonthFragment : Destinations(
-//        route = "wid_read_month_fragment",
-//    )
-
     object WiDSearchFragment : Destinations(
         route = "wid_search_fragment",
         title = "Search",
         icon = R.drawable.baseline_search_24
     )
-
     object WiDViewFragment : Destinations(
         route = "wid_view_fragment",
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WiDMainActivityPreview() {
-    WiDMainActivity()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WiDMainActivityPreview() {
+//    WiDMainActivity()
+//}

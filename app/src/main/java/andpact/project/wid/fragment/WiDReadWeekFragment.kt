@@ -87,8 +87,8 @@ fun WiDReadWeekFragment() {
             val maxDuration = dateDurations.values.maxOrNull() ?: Duration.ZERO
             val totalDuration = dateDurations.values.fold(Duration.ZERO) { acc, duration -> acc + duration }
             val averageDuration = if (dateDurations.isNotEmpty()) {
-                val totalMinutes = totalDuration.toMinutes()
-                Duration.ofMinutes(totalMinutes / dateDurations.size)
+                val totalSeconds = totalDuration.seconds
+                Duration.ofSeconds(totalSeconds / dateDurations.size)
             } else {
                 Duration.ZERO
             }

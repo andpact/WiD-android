@@ -35,7 +35,8 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
         ) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .height(55.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(

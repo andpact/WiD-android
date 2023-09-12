@@ -3,8 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 <!--    package="andpact.project.wid">-->
 
-    <!-- 에뮬레이터에서 인터넷을 사용하기 위해 작성해야 함 -->
+<!--    인터넷 사용 허가-->
     <uses-permission android:name="android.permission.INTERNET" />
+<!--    인터넷 접속 상태 확인 허가-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Required only if your app targets Android 13 or higher. -->
     <!-- For apps targeting Android 13 or higher & GMA SDK version 20.3.0 or lower -->
