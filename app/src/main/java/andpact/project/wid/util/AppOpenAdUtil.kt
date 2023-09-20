@@ -14,7 +14,8 @@ import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback
 import java.util.*
 
 private const val LOG_TAG = "WiD AppOpenAdUtil"
-private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294" // 테스트 용 오프닝 광고 ID
+private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294" // 앱 오프닝 광고 단위 ID 테스트 용
+//private const val AD_UNIT_ID = "ca-app-pub-3641806776840744/6249474966" // 앱 오프닝 광고 단위 ID
 class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, LifecycleEventObserver {
     private lateinit var appOpenAdManager: AppOpenAdManager
     private var currentActivity: Activity? = null
@@ -130,6 +131,9 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
                 object : AppOpenAdLoadCallback() {
                     // 광고는 비동기로 호출되므로 광고가 호출되는 동안 다른 메서드들이 실행됨.
                     override fun onAdLoaded(ad: AppOpenAd) {
+                        // 광고가 로드 되지 않는 상황.
+//                        onAdFailedToLoad(LoadAdError(3, "TEST : Ad not loaded", "", null, null))
+//                        return
                         // Called when an app open ad has loaded.
                         appOpenAd = ad
                         isLoadingAd = false
@@ -144,6 +148,8 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
                         // Called when an app open ad has failed to load.
                         isLoadingAd = false
                         Log.d(LOG_TAG, "onAdFailedToLoad : " + loadAdError.message)
+
+                        appOpenAdManager.showAdIfAvailable(currentActivity!!)
                     }
                 }
             )
@@ -186,6 +192,12 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
             if (!isAdAvailable()) {
                 Log.d(LOG_TAG, "showAdIfAvailable : The app open ad is not ready yet.")
                 onShowAdCompleteListener.onShowAdComplete()
+
+                // 광고를 표시할 수 없을 때 메인 액티비티로 전환시킴.
+                val intent = Intent(activity, MainActivity::class.java)
+                activity.startActivity(intent)
+                activity.finish()
+
 //                loadAd(activity)
                 return
             }
@@ -203,6 +215,7 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
                     onShowAdCompleteListener.onShowAdComplete()
 //                    loadAd(activity)
 
+                    // 광고를 닫으면 메인 화면으로 전환.
                     val intent = Intent(activity, MainActivity::class.java)
                     activity.startActivity(intent)
                     activity.finish()
@@ -217,6 +230,11 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
 
                     onShowAdCompleteListener.onShowAdComplete()
 //                    loadAd(activity)
+
+                    // 광고를 가져왔지만 못 보여주면 메인 화면으로 전환.
+//                    val intent = Intent(activity, MainActivity::class.java)
+//                    activity.startActivity(intent)
+//                    activity.finish()
                 }
 
                 override fun onAdShowedFullScreenContent() {

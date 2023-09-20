@@ -11,8 +11,8 @@ android {
         applicationId "andpact.project.wid"
         minSdk 26
         targetSdk 34
-        versionCode 1 // 현재 출시된 버전이 2니까 3 이상으로
-        versionName "1.0" // 현재 출시된 버전이 1.0.1이니까 1.0.2 이상으로
+        versionCode 5
+        versionName "1.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

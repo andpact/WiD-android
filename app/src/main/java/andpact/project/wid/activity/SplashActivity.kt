@@ -50,15 +50,20 @@ class SplashActivity : ComponentActivity() {
         return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
+    private fun startMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+
     private fun showAppOpenAd() {
         val application = application as? AppOpenAdUtil
 
         if (application == null) {
             Log.e(LOG_TAG, "showAppOpenAd : Failed to cast application to AppOpenAdUtil.")
 
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
+            startMainActivity()
 
             return
         }
