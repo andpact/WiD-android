@@ -100,6 +100,11 @@ fun getFirstDayOfWeek(date: LocalDate): LocalDate {
     return date.minusDays(daysToSubtract.toLong())
 }
 
+fun getLastDayOfWeek(date: LocalDate): LocalDate {
+    val firstDayOfWeek = getFirstDayOfWeek(date)
+    return firstDayOfWeek.plusDays(6)
+}
+
 fun getFirstDayOfMonth(date: LocalDate): LocalDate {
     val yearMonth = YearMonth.from(date)
     return yearMonth.atDay(1)

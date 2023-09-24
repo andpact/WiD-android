@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
 
     val scope = rememberCoroutineScope()
 
@@ -70,6 +70,19 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                         Text(text = "TIMER")
                     }
                 )
+
+                Tab(
+                    selected = pagerState.currentPage == 2,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(2)
+                        }},
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.LightGray,
+                    text = {
+                        Text(text = "MANUAL")
+                    }
+                )
             }
         }
 
@@ -77,6 +90,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
             when (page) {
                 0 -> WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
                 1 -> WiDCreateTimerFragment(buttonsVisible = buttonsVisible)
+                2 -> WiDCreateManualFragment()
             }
         }
     }

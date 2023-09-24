@@ -79,16 +79,17 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     setTouchEnabled(false) // Disable touch gestures for zooming
 
                     isDrawHoleEnabled = true
-                    holeRadius = 80f // Hole radius as percentage of the chart
+                    holeRadius = 80f
                     setHoleColor(ContextCompat.getColor(context, R.color.transparent))
 
-                    setDrawCenterText(true) // Draw center text
-                    centerText = if (forReadDay) {
-                        "오후 | 오전"
+                    setDrawCenterText(true)
+                    if (forReadDay) {
+                        centerText = "오후 | 오전"
+                        setCenterTextSize(16f)
                     } else {
-                        date.dayOfMonth.toString()
+                        centerText = date.dayOfMonth.toString()
+                        setCenterTextSize(12f)
                     }
-                    setCenterTextSize(16f)
 
                     if (wiDList.isEmpty()) {
                         setCenterTextColor(Color.LightGray.toArgb())

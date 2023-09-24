@@ -46,6 +46,7 @@ import java.time.temporal.WeekFields
 fun WiDReadWeekFragment() {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
     var firstDayOfWeek by remember { mutableStateOf(getFirstDayOfWeek(currentDate)) }
+    var lastDayOfWeek by remember { mutableStateOf(getLastDayOfWeek(currentDate)) }
 
     val wiDService = WiDService(context = LocalContext.current)
 
@@ -121,17 +122,21 @@ fun WiDReadWeekFragment() {
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 ")),
+                    text = firstDayOfWeek.format(DateTimeFormatter.ofPattern("M월 d일")),
                     style = TextStyle(textAlign = TextAlign.Center)
                 )
 
-                Text(
-                    text = "${getWeekNumber(currentDate)}",
-                    style = TextStyle(textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
-                )
+                Text(" ~ ",
+                    style = TextStyle(textAlign = TextAlign.Center))
+
+                val lastDayFormatPattern = if (firstDayOfWeek.month == lastDayOfWeek.month) {
+                    "d일"
+                } else {
+                    "M월 d일"
+                }
 
                 Text(
-                    text = "번째 주",
+                    text = lastDayOfWeek.format(DateTimeFormatter.ofPattern(lastDayFormatPattern)),
                     style = TextStyle(textAlign = TextAlign.Center)
                 )
             }
@@ -141,6 +146,7 @@ fun WiDReadWeekFragment() {
                 onClick = {
                     currentDate = LocalDate.now()
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
+                    lastDayOfWeek = getLastDayOfWeek(currentDate)
                 },
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "ThisWeek")
@@ -150,6 +156,7 @@ fun WiDReadWeekFragment() {
                 onClick = {
                     currentDate = currentDate.minusDays(7)
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
+                    lastDayOfWeek = getLastDayOfWeek(currentDate)
                 },
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevWeek")
@@ -159,6 +166,7 @@ fun WiDReadWeekFragment() {
                 onClick = {
                     currentDate = currentDate.plusDays(7)
                     firstDayOfWeek = getFirstDayOfWeek(currentDate)
+                    lastDayOfWeek = getLastDayOfWeek(currentDate)
                 },
                 enabled = currentDate != LocalDate.now(),
             ) {

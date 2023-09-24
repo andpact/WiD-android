@@ -75,7 +75,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = currentDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                    text = currentDate.format(DateTimeFormatter.ofPattern("M월 d일 ")),
 //                    style = TextStyle(fontSize = 20.sp)
                 )
 
