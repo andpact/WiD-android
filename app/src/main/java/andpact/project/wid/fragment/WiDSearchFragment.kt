@@ -176,13 +176,13 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
                                         .weight(1f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
                                         .weight(1f),
                                     textAlign = TextAlign.Center

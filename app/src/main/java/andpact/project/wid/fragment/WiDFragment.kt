@@ -173,7 +173,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     modifier = Modifier
                         .padding(8.dp)
                         .weight(1.0F),
-                    text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                    text = wiD.start.format(DateTimeFormatter.ofPattern("a HH:mm:ss")),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
             }
@@ -189,7 +189,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     modifier = Modifier
                         .padding(8.dp)
                         .weight(1.0F),
-                    text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                    text = wiD.finish.format(DateTimeFormatter.ofPattern("a HH:mm:ss")),
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                 )
             }

@@ -49,9 +49,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
     val wiDService = WiDService(context = LocalContext.current)
 
-    val wiDList = remember(currentDate) {
-        wiDService.readWiDListByDate(currentDate)
-    }
+    val wiDList = remember(currentDate) { wiDService.readWiDListByDate(currentDate) }
 
     Column(
         modifier = Modifier
@@ -229,13 +227,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = wiD.start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
                                         .weight(0.7f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
                                         .weight(0.7f),
                                     textAlign = TextAlign.Center

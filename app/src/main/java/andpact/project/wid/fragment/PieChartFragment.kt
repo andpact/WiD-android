@@ -125,8 +125,21 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                         textAlign = Paint.Align.CENTER
                     }
 
+//                    for (i in 0 until 24) {
+//                        val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
+//                        val angleInRadian = Math.toRadians(angleInDegree)
+//
+//                        // 시간 텍스트 좌표 계산
+//                        val x = centerX + radius * 0.85f * cos(angleInRadian)
+//                        val y = centerY + radius * 0.85f * sin(angleInRadian)
+//
+//                        // 시간 텍스트 그리기
+//                        drawContext.canvas.nativeCanvas.drawText(i.toString(), x.toFloat(), y.toFloat(), textPaint)
+//                    }
+
                     for (i in 0 until 24) {
-                        val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
+                        val hour = if (i < 12) i + 1 else i - 11 // 0...23을 1...12, 1...12로 변환
+                        val angleInDegree = (i * 15.0) - 75.0 // 360도를 24등분, 초기 각도를 0으로 설정
                         val angleInRadian = Math.toRadians(angleInDegree)
 
                         // 시간 텍스트 좌표 계산
@@ -134,7 +147,7 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                         val y = centerY + radius * 0.85f * sin(angleInRadian)
 
                         // 시간 텍스트 그리기
-                        drawContext.canvas.nativeCanvas.drawText(i.toString(), x.toFloat(), y.toFloat(), textPaint)
+                        drawContext.canvas.nativeCanvas.drawText(hour.toString(), x.toFloat(), y.toFloat(), textPaint)
                     }
                 }
             }
