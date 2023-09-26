@@ -19,11 +19,11 @@ private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294" // 앱 �
 class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, LifecycleEventObserver {
     private lateinit var appOpenAdManager: AppOpenAdManager
     private var currentActivity: Activity? = null
+
     override fun onCreate() { // 앱이 처음 생성될 때 실행되는 메서드.
         super.onCreate()
         registerActivityLifecycleCallbacks(this)
 
-        // Log the Mobile Ads SDK version.
         Log.d(LOG_TAG, "Google Mobile Ads SDK Version: " + MobileAds.getVersion())
 
         MobileAds.initialize(this) {}
@@ -48,11 +48,11 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
 //        }
 
         // 홈버튼 누른 후 다시 실행했을 때
-//        if (event == Lifecycle.Event.ON_RESUME) {
-//            currentActivity?.let {
+        if (event == Lifecycle.Event.ON_RESUME) {
+            currentActivity?.let {
 //                appOpenAdManager.loadAd(it)
-//            }
-//        }
+            }
+        }
     }
 
     /** Show the ad if one isn't already showing. */
@@ -63,12 +63,11 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
                 override fun onShowAdComplete() {
                     // Empty because the user will go back to the activity that shows the ad.
                 }
-            })
+            }
+        )
     }
 
     private fun showAdIfAvailable(activity: Activity, onShowAdCompleteListener: OnShowAdCompleteListener) {
-        // We wrap the showAdIfAvailable to enforce that other classes only interact with MyApplication
-        // class.
 //        appOpenAdManager.showAdIfAvailable(activity, onShowAdCompleteListener)
 
         appOpenAdManager.loadAd(this)
@@ -94,7 +93,8 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
     override fun onActivityStopped(activity: Activity) {
         Log.d(LOG_TAG, "onActivityStopped - 1")
     }
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+    }
     override fun onActivityDestroyed(activity: Activity) {
         Log.d(LOG_TAG, "onActivityDestroyed - 1")
     }
@@ -206,8 +206,6 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
 
             appOpenAd!!.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
-                    // Called when full screen content is dismissed.
-                    // Set the reference to null so isAdAvailable() returns false.
                     appOpenAd = null
                     isShowingAd = false
                     Log.d(LOG_TAG, "Ad dismissed fullscreen content.")
@@ -222,8 +220,6 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
                 }
 
                 override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                    // Called when fullscreen content failed to show.
-                    // Set the reference to null so isAdAvailable() returns false.
                     appOpenAd = null
                     isShowingAd = false
                     Log.d(LOG_TAG, "onAdFailedToShowFullScreenContent : " + adError.message)

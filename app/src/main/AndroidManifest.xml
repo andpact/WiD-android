@@ -24,10 +24,10 @@
         android:theme="@style/Theme.WiD"
         tools:targetApi="31">
 
+<!--        android:noHistory="true"-->
         <activity
             android:name=".activity.SplashActivity"
             android:exported="true"
-            android:noHistory="true"
             android:theme="@style/Theme.WiD">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
