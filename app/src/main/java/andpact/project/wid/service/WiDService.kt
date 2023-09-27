@@ -117,7 +117,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         cursor.close()
         db.close()
 
-        return wiDList
+        return wiDList.sortedBy { it.start }
     }
 
     fun readWiDListByDetail(detail: String): List<WiD> {

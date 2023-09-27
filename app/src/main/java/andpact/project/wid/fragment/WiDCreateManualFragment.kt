@@ -53,27 +53,23 @@ fun WiDCreateManualFragment() {
             }
         }
     )
-    var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var date: LocalDate by remember { mutableStateOf(Instant.ofEpochMilli(selectedDate).atZone(ZoneId.systemDefault()).toLocalDate()) }
+//    var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var date: LocalDate by remember { mutableStateOf(Instant.ofEpochMilli(System.currentTimeMillis()).atZone(ZoneId.systemDefault()).toLocalDate()) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var title by remember { mutableStateOf("STUDY") }
 
-    var currentTime: LocalTime = LocalTime.now()
+    val currentTime: LocalTime = LocalTime.now().withSecond(0)
 
     var showStartPicker by remember { mutableStateOf(false) }
-    var selectedStartHour by remember { mutableStateOf(currentTime.hour) }
-    var selectedStartMinute by remember { mutableStateOf(currentTime.minute) }
-    val startTimePickerState = rememberTimePickerState(initialHour = selectedStartHour, initialMinute = selectedStartMinute)
-    var start: LocalTime by remember { mutableStateOf(currentTime.withSecond(0)) }
+    val startTimePickerState = rememberTimePickerState(initialHour = currentTime.hour, initialMinute = currentTime.minute)
+    var start: LocalTime by remember { mutableStateOf(currentTime) }
     var isStartOverlap by remember { mutableStateOf(false) }
 
     var showFinishPicker by remember { mutableStateOf(false) }
-    var selectedFinishHour by remember { mutableStateOf(currentTime.hour) }
-    var selectedFinishMinute by remember { mutableStateOf(currentTime.minute) }
-    val finishTimePickerState = rememberTimePickerState(initialHour = selectedFinishHour, initialMinute = selectedFinishMinute)
-    var finish: LocalTime by remember { mutableStateOf(currentTime.withSecond(0)) }
+    val finishTimePickerState = rememberTimePickerState(initialHour = currentTime.hour, initialMinute = currentTime.minute)
+    var finish: LocalTime by remember { mutableStateOf(currentTime) }
     var isFinishOverlap by remember { mutableStateOf(false) }
 
     var duration: Duration by remember { mutableStateOf(Duration.between(start, finish)) }
@@ -81,12 +77,10 @@ fun WiDCreateManualFragment() {
 
     var detail by remember { mutableStateOf("") }
 
-    var wiDList = remember(date) { wiDService.readWiDListByDate(date) }
+    var wiDList: List<WiD>
 
     fun updateWiDListAndOverlapFlags() {
-        if (finish < start) {
-            finish = start
-        }
+        wiDList = wiDService.readWiDListByDate(date)
 
         duration = Duration.between(start, finish)
 
@@ -133,8 +127,8 @@ fun WiDCreateManualFragment() {
                 confirmButton = {
                     TextButton(onClick = {
                         showDatePicker = false
-                        selectedDate = datePickerState.selectedDateMillis!!
-                        date = Instant.ofEpochMilli(selectedDate).atZone(ZoneId.systemDefault()).toLocalDate()
+//                        selectedDate = datePickerState.selectedDateMillis!!
+                        date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
                     }) {
                         Text(text = "확인")
                     }
@@ -182,16 +176,27 @@ fun WiDCreateManualFragment() {
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showStartPicker = false } ) {
+                        TextButton(onClick = { showStartPicker = false }
+                        ) {
                             Text(text = "취소")
                         }
 
                         TextButton(
                             onClick = {
                                 showStartPicker = false
-                                selectedStartHour = startTimePickerState.hour
-                                selectedStartMinute = startTimePickerState.minute
-                                start = LocalTime.of(selectedStartHour, selectedStartMinute)
+                                val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute).withSecond(0)
+
+                                if (newStart.isAfter(finish)) {
+                                    finish = newStart
+                                }
+
+                                start = newStart
+
+                                val today = LocalDate.now()
+                                if (date == today && currentTime < start) {
+                                    start = currentTime
+                                    finish = currentTime
+                                }
 
                                 updateWiDListAndOverlapFlags()
                             }
@@ -227,16 +232,26 @@ fun WiDCreateManualFragment() {
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showFinishPicker = false }) {
+                        TextButton(onClick = { showFinishPicker = false }
+                        ) {
                             Text(text = "취소")
                         }
 
                         TextButton(
                             onClick = {
                                 showFinishPicker = false
-                                selectedFinishHour = finishTimePickerState.hour
-                                selectedFinishMinute = finishTimePickerState.minute
-                                finish = LocalTime.of(selectedFinishHour, selectedFinishMinute)
+                                val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute).withSecond(0)
+
+                                if (newFinish.isBefore(start)) {
+                                    start = newFinish
+                                }
+
+                                finish = newFinish
+
+                                val today = LocalDate.now()
+                                if (date == today && currentTime < finish) {
+                                    finish = currentTime
+                                }
 
                                 updateWiDListAndOverlapFlags()
                             }
@@ -385,7 +400,7 @@ fun WiDCreateManualFragment() {
                     ) {
                         Text(
                             modifier = Modifier.clickable { showStartPicker = true },
-                            text = start.format(DateTimeFormatter.ofPattern("a h:mm")),
+                            text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
                             style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                         )
 
@@ -416,7 +431,7 @@ fun WiDCreateManualFragment() {
                     ) {
                         Text(
                             modifier = Modifier.clickable { showFinishPicker = true },
-                            text = finish.format(DateTimeFormatter.ofPattern("a h:mm")),
+                            text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
                             style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                         )
 
@@ -500,7 +515,7 @@ fun WiDCreateManualFragment() {
                         val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = "")
                         wiDService.createWiD(newWiD)
 
-                        wiDList = wiDService.readWiDListByDate(date)
+//                        wiDList = wiDService.readWiDListByDate(date)
 
                         updateWiDListAndOverlapFlags()
                     },
@@ -518,8 +533,8 @@ fun WiDCreateManualFragment() {
                     onClick = {
                         date = LocalDate.now()
                         title = "STUDY"
-                        start = LocalTime.now()
-                        finish = LocalTime.now()
+                        start = currentTime
+                        finish = currentTime
                         duration = Duration.ZERO
                         detail = ""
 

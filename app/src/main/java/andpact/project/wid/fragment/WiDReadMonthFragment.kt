@@ -83,23 +83,23 @@ fun WiDReadMonthFragment() {
         map
     }
 
-    // 최저, 최고, 평균, 종합 시간 계산
-    val titleStats = remember(titleDateDurations) {
-        val map = mutableMapOf<String, TitleStats>()
+    val titleStatsList = remember(wiDList, titleDateDurations) {
+        val statsList = mutableListOf<TitleStats>()
 
         for ((title, dateDurations) in titleDateDurations) {
             val minDuration = dateDurations.values.minOrNull() ?: Duration.ZERO
             val maxDuration = dateDurations.values.maxOrNull() ?: Duration.ZERO
-            val totalDuration = dateDurations.values.fold(Duration.ZERO) { acc, duration -> acc + duration }
-            val averageDuration = if (dateDurations.isNotEmpty()) {
-                val totalSeconds = totalDuration.seconds
-                Duration.ofSeconds(totalSeconds / dateDurations.size)
-            } else {
-                Duration.ZERO
-            }
-            map[title] = TitleStats(minDuration, maxDuration, averageDuration, totalDuration)
+            val totalDuration = dateDurations.values.fold(Duration.ZERO) { acc, duration -> acc.plus(duration) }
+            val averageDuration = if (dateDurations.isEmpty()) Duration.ZERO else totalDuration.dividedBy(dateDurations.size.toLong())
+
+            val titleStats = TitleStats(title, minDuration, maxDuration, averageDuration, totalDuration)
+            statsList.add(titleStats)
         }
-        map
+
+        // 총 소요 시간별로 내림차순으로 정렬
+        statsList.sortByDescending { it.totalDuration }
+
+        statsList
     }
 
     Column(
@@ -244,7 +244,7 @@ fun WiDReadMonthFragment() {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                for ((title, stats) in titleStats) {
+                for (stats in titleStatsList) {
                     item {
                         Row(
                             modifier = Modifier
@@ -255,7 +255,7 @@ fun WiDReadMonthFragment() {
                                 ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            val titleColorId = colorMap[title]
+                            val titleColorId = colorMap[stats.title]
                             if (titleColorId != null) {
                                 val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                                 Box(
@@ -270,7 +270,7 @@ fun WiDReadMonthFragment() {
 
                             // "제목" 표시
                             Text(
-                                text = titleMap[title] ?: title,
+                                text = titleMap[stats.title] ?: stats.title,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.weight(0.5f)
                             )

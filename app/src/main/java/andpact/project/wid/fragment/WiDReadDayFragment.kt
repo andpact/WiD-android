@@ -48,7 +48,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
 
     val wiDService = WiDService(context = LocalContext.current)
-
     val wiDList = remember(currentDate) { wiDService.readWiDListByDate(currentDate) }
 
     Column(
@@ -74,26 +73,21 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             ) {
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("M월 d일 ")),
-//                    style = TextStyle(fontSize = 20.sp)
                 )
 
-                Text(text = "(",
-//                    style = TextStyle(fontSize = 20.sp)
-                )
+                Text(text = "(")
 
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
-                    color = when (currentDate.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> Color.Blue
-                        DayOfWeek.SUNDAY -> Color.Red
-                        else -> Color.Black
-                    },
+//                    color = when (currentDate.dayOfWeek) {
+//                        DayOfWeek.SATURDAY -> Color.Blue
+//                        DayOfWeek.SUNDAY -> Color.Red
+//                        else -> Color.Black
+//                    },
 //                    style = TextStyle(fontSize = 20.sp)
                 )
 
-                Text(text = ")",
-//                    style = TextStyle(fontSize = 20.sp)
-                )
+                Text(text = ")")
             }
 
             IconButton(
@@ -141,13 +135,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
             Text(text = "순서",
                 modifier = Modifier
-                    .weight(0.4f),
+                    .weight(0.3f),
                 textAlign = TextAlign.Center,
             )
 
             Text(text = "제목",
                 modifier = Modifier
-                    .weight(0.4f),
+                    .weight(0.3f),
                 textAlign = TextAlign.Center)
 
             Text(text = "시작",
@@ -162,9 +156,106 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
             Text(text = "소요",
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(0.6f),
                 textAlign = TextAlign.Center)
         }
+
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .background(
+//                    color = colorResource(id = R.color.light_gray),
+//                    shape = RoundedCornerShape(8.dp)
+//                ),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            val titleColorId = colorMap["STUDY"]
+//            if (titleColorId != null) {
+//                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+//                Box(
+//                    modifier = Modifier
+//                        .size(width = 10.dp, height = 50.dp)
+//                        .background(
+//                            color = backgroundColor,
+//                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+//                        )
+//                )
+//            }
+//
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//            ) {
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = "99",
+//                        modifier = Modifier
+//                            .border(BorderStroke(1.dp, Color.Black))
+//                            .weight(0.3f),
+//                        textAlign = TextAlign.Center
+//                    )
+//                    Text(
+//                        text = "공부",
+//                        modifier = Modifier
+//                            .border(BorderStroke(1.dp, Color.Black))
+//                            .weight(0.3f),
+//                        textAlign = TextAlign.Center
+//                    )
+//                    Text(
+//                        text = "오전 99:99",
+//                        modifier = Modifier
+//                            .border(BorderStroke(1.dp, Color.Black))
+//                            .weight(0.7f),
+//                        textAlign = TextAlign.Center
+//                    )
+//                    Text(
+//                        text = "오후 99:99",
+//                        modifier = Modifier
+//                            .border(BorderStroke(1.dp, Color.Black))
+//                            .weight(0.7f),
+//                        textAlign = TextAlign.Center
+//                    )
+//                    Text(
+//                        text = "9.9시간",
+//                        modifier = Modifier
+//                            .border(BorderStroke(1.dp, Color.Black))
+//                            .weight(0.6f),
+//                        textAlign = TextAlign.Center
+//                    )
+//                }
+//
+//                HorizontalDivider(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(1.dp)
+//                        .padding(horizontal = 8.dp)
+//                        .background(color = Color.Gray)
+//                )
+//
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.Start
+//                ) {
+//                    Text(modifier = Modifier
+//                        .weight(0.4f),
+//                        text = "설명",
+//                        textAlign = TextAlign.Center,
+//                    )
+//
+//                    Text(modifier = Modifier
+//                        .weight(2.8f),
+//                        text = ": detail",
+//                        style = TextStyle(color = Color.Black),
+//                        maxLines = 1,
+//                        overflow = TextOverflow.Ellipsis
+//                    )
+//                }
+//            }
+//        }
 
         if (wiDList.isEmpty()) {
             Text(modifier = Modifier
@@ -217,13 +308,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 Text(
                                     text = (index + 1).toString(),
                                     modifier = Modifier
-                                        .weight(0.4f),
+                                        .weight(0.3f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = titleMap[wiD.title] ?: wiD.title,
                                     modifier = Modifier
-                                        .weight(0.4f),
+                                        .weight(0.3f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
@@ -239,9 +330,9 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
-                                    text = formatDuration(wiD.duration, mode = 2),
+                                    text = formatDuration(wiD.duration, mode = 1),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.6f),
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -260,13 +351,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 horizontalArrangement = Arrangement.Start
                             ) {
                                 Text(modifier = Modifier
-                                    .weight(0.4f),
+                                    .weight(0.3f),
                                     text = "설명",
                                     textAlign = TextAlign.Center,
                                 )
 
                                 Text(modifier = Modifier
-                                    .weight(2.8f),
+                                    .weight(2.3f),
                                     text = ": " + wiD.detail.ifBlank { "설명 입력.." },
                                     style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
                                     maxLines = 1,
@@ -281,9 +372,10 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDReadDayFragmentPreview() {
-//    val navController: NavHostController = rememberNavController()
-//    WiDReadDayFragment(navController = navController)
-//}
+@Preview(showBackground = true)
+@Composable
+fun WiDReadDayFragmentPreview() {
+    val navController: NavHostController = rememberNavController()
+    val buttonsVisible = remember { mutableStateOf(true) }
+    WiDReadDayFragment(navController = navController, buttonsVisible)
+}

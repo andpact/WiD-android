@@ -98,7 +98,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(sortedWiDList) { _, wiD ->
+                itemsIndexed(sortedWiDList) { index, wiD ->
                     val wiDDate = wiD.date
 
                     if (currentDate != wiDDate) {
@@ -130,6 +130,47 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
                                 Text(text = ")")
                             }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(0.dp, 0.dp, 0.dp, 8.dp)
+                                .background(
+                                    color = colorResource(id = R.color.light_gray),
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 10.dp, height = 25.dp)
+                            )
+
+                            Text(text = "순서",
+                                modifier = Modifier
+                                    .weight(0.3f),
+                                textAlign = TextAlign.Center,
+                            )
+
+                            Text(text = "제목",
+                                modifier = Modifier
+                                    .weight(0.3f),
+                                textAlign = TextAlign.Center)
+
+                            Text(text = "시작",
+                                modifier = Modifier
+                                    .weight(0.7f),
+                                textAlign = TextAlign.Center)
+
+                            Text(text = "종료",
+                                modifier = Modifier
+                                    .weight(0.7f),
+                                textAlign = TextAlign.Center)
+
+                            Text(text = "소요",
+                                modifier = Modifier
+                                    .weight(0.6f),
+                                textAlign = TextAlign.Center)
                         }
                     }
 
@@ -170,27 +211,33 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
+                                    text = (index + 1).toString(),
+                                    modifier = Modifier
+                                        .weight(0.3f),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
                                     text = titleMap[wiD.title] ?: wiD.title,
                                     modifier = Modifier
-                                        .weight(0.4f),
+                                        .weight(0.3f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.7f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.7f),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = formatDuration(wiD.duration, mode = 2),
                                     modifier = Modifier
-                                        .weight(1f),
+                                        .weight(0.6f),
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -209,13 +256,13 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 horizontalArrangement = Arrangement.Start
                             ) {
                                 Text(modifier = Modifier
-                                    .weight(0.4f),
+                                    .weight(0.3f),
                                     text = "설명",
                                     textAlign = TextAlign.Center
                                 )
 
                                 Text(modifier = Modifier
-                                    .weight(3f),
+                                    .weight(2.3f),
                                     text = ": " + wiD.detail.ifBlank { "설명 입력.." },
                                     style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
                                     maxLines = 1,

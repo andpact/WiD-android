@@ -48,11 +48,11 @@ class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, Lif
 //        }
 
         // 홈버튼 누른 후 다시 실행했을 때
-        if (event == Lifecycle.Event.ON_RESUME) {
-            currentActivity?.let {
+//        if (event == Lifecycle.Event.ON_RESUME) {
+//            currentActivity?.let {
 //                appOpenAdManager.loadAd(it)
-            }
-        }
+//            }
+//        }
     }
 
     /** Show the ad if one isn't already showing. */
