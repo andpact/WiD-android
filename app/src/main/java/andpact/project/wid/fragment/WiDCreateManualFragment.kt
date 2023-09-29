@@ -53,7 +53,6 @@ fun WiDCreateManualFragment() {
             }
         }
     )
-//    var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var date: LocalDate by remember { mutableStateOf(Instant.ofEpochMilli(System.currentTimeMillis()).atZone(ZoneId.systemDefault()).toLocalDate()) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -62,14 +61,14 @@ fun WiDCreateManualFragment() {
 
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
 
+    var start: LocalTime by remember { mutableStateOf(currentTime) }
     var showStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState(initialHour = currentTime.hour, initialMinute = currentTime.minute)
-    var start: LocalTime by remember { mutableStateOf(currentTime) }
     var isStartOverlap by remember { mutableStateOf(false) }
 
+    var finish: LocalTime by remember { mutableStateOf(currentTime) }
     var showFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState(initialHour = currentTime.hour, initialMinute = currentTime.minute)
-    var finish: LocalTime by remember { mutableStateOf(currentTime) }
     var isFinishOverlap by remember { mutableStateOf(false) }
 
     var duration: Duration by remember { mutableStateOf(Duration.between(start, finish)) }
@@ -127,7 +126,6 @@ fun WiDCreateManualFragment() {
                 confirmButton = {
                     TextButton(onClick = {
                         showDatePicker = false
-//                        selectedDate = datePickerState.selectedDateMillis!!
                         date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
                     }) {
                         Text(text = "확인")
@@ -400,7 +398,7 @@ fun WiDCreateManualFragment() {
                     ) {
                         Text(
                             modifier = Modifier.clickable { showStartPicker = true },
-                            text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                            text = start.format(DateTimeFormatter.ofPattern("a h:mm")),
                             style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                         )
 
@@ -431,7 +429,7 @@ fun WiDCreateManualFragment() {
                     ) {
                         Text(
                             modifier = Modifier.clickable { showFinishPicker = true },
-                            text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                            text = finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                             style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                         )
 
@@ -512,7 +510,7 @@ fun WiDCreateManualFragment() {
             ) {
                 IconButton(
                     onClick = {
-                        val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = "")
+                        val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
                         wiDService.createWiD(newWiD)
 
 //                        wiDList = wiDService.readWiDListByDate(date)

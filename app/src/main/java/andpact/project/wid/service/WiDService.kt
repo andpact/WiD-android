@@ -149,40 +149,62 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return wiDList
     }
 
-    fun readAllWiD(): List<WiD> {
-        val db = readableDatabase
-        val wiDList = mutableListOf<WiD>()
+//    fun readAllWiD(): List<WiD> {
+//        val db = readableDatabase
+//        val wiDList = mutableListOf<WiD>()
+//
+//        val selectQuery = "SELECT * FROM $TABLE_NAME"
+//
+//        val cursor = db.rawQuery(selectQuery, null)
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+//                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
+//                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+//                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+//                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+//                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+//                val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+//
+//                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
+//                wiDList.add(wiD)
+//            } while (cursor.moveToNext())
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        return wiDList
+//    }
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME"
+//    fun updateWiDStartAndFinish(id: Long, newStartTime: LocalTime, newFinishTime: LocalTime) {
+//        val db = writableDatabase
+//
+//        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_START = ?, $COLUMN_FINISH = ? WHERE $COLUMN_ID = ?"
+//        val selectionArgs = arrayOf(newStartTime.toString(), newFinishTime.toString(), id.toString())
+//
+//        db.execSQL(updateQuery, selectionArgs)
+//
+//        db.close()
+//    }
+//
+//    fun updateWiDDetail(id: Long, newDetail: String) {
+//        val db = writableDatabase
+//
+//        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
+//        val selectionArgs = arrayOf(newDetail, id.toString())
+//
+//        db.execSQL(updateQuery, selectionArgs)
+//
+//        db.close()
+//    }
 
-        val cursor = db.rawQuery(selectQuery, null)
-
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
-                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
-                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
-                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
-                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
-                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
-                val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
-
-                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
-                wiDList.add(wiD)
-            } while (cursor.moveToNext())
-        }
-
-        cursor.close()
-        db.close()
-
-        return wiDList
-    }
-
-    fun updateWiDDetail(id: Long, newDetail: String) {
+    fun updateWiD(id: Long, newStartTime: LocalTime, newFinishTime: LocalTime, newDetail: String) {
         val db = writableDatabase
 
-        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
-        val selectionArgs = arrayOf(newDetail, id.toString())
+        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_START = ?, $COLUMN_FINISH = ?, $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
+        val selectionArgs = arrayOf(newStartTime.toString(), newFinishTime.toString(), newDetail, id.toString())
 
         db.execSQL(updateQuery, selectionArgs)
 
@@ -200,9 +222,9 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         db.close()
     }
 
-    fun deleteAllWiD() {
-        val db = writableDatabase
-        db.execSQL("DELETE FROM $TABLE_NAME")
-        db.close()
-    }
+//    fun deleteAllWiD() {
+//        val db = writableDatabase
+//        db.execSQL("DELETE FROM $TABLE_NAME")
+//        db.close()
+//    }
 }
