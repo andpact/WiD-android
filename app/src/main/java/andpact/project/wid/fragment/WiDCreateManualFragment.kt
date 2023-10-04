@@ -6,7 +6,9 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import java.time.*
@@ -118,8 +121,9 @@ fun WiDCreateManualFragment() {
         .fillMaxSize())
     {
         if (showDatePicker) {
-            DatePickerDialog(modifier = Modifier
-                .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
+            DatePickerDialog(
+//                modifier = Modifier
+//                    .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
                 onDismissRequest = {
                     showDatePicker = false
                 },
@@ -140,8 +144,8 @@ fun WiDCreateManualFragment() {
                 }
             ) {
                 DatePicker(
-                    modifier = Modifier
-                        .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
+//                    modifier = Modifier
+//                        .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
                     state = datePickerState,
                     showModeToggle = false,
                     title = null,
@@ -270,48 +274,34 @@ fun WiDCreateManualFragment() {
         ) {
             Column(
                 modifier = Modifier
+                    .padding(16.dp)
                     .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
+                val titleColorId = colorMap[title]
+                if (titleColorId != null) {
+                    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                    Box(
                         modifier = Modifier
-                            .padding(8.dp)
-                            .weight(1.0f),
-                        text = "WiD",
-                        style = TextStyle(fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular))
-                        )
+                            .height(10.dp)
+                            .fillMaxWidth()
+                            .background(color = backgroundColor, shape = RoundedCornerShape(8.dp, 8.dp, 0.dp, 0.dp))
                     )
-
-                    val titleColorId = colorMap[title]
-                    if (titleColorId != null) {
-                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .size(20.dp)
-                                .background(color = backgroundColor, shape = RoundedCornerShape(18.dp))
-                        )
-                    }
                 }
 
-                Row(
+                Row(modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "날짜",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
+                    Icon(modifier = Modifier.padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                        contentDescription = "date")
 
                     Row(
                         modifier = Modifier
-//                                .weight(1f)
+                            .padding(16.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
@@ -319,12 +309,13 @@ fun WiDCreateManualFragment() {
                         Text(modifier = Modifier.clickable {
                             showDatePicker = true
                         },
-                            text = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+//                            text = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
+                            text = date.format(DateTimeFormatter.ofPattern("M월 d일 ")),
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         Text(text = "(",
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         Text(
@@ -334,30 +325,32 @@ fun WiDCreateManualFragment() {
                                 DayOfWeek.SUNDAY -> Color.Red
                                 else -> Color.Black
                             },
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         Text(text = ")",
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
                     }
                 }
-                Row(
+
+                Row(modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "제목",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
+                    Icon(modifier = Modifier.padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_category_24),
+                        contentDescription = "title")
+
                     Text(
                         modifier = Modifier.clickable {
                             titleMenuExpanded = true
                         }
-                            .padding(8.dp)
-                            .weight(1.0F),
+                            .padding(16.dp)
+                            .fillMaxWidth(),
                         text = titleMap[title] ?: title,
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                     )
 
                     DropdownMenu(modifier = Modifier
@@ -381,25 +374,26 @@ fun WiDCreateManualFragment() {
                         }
                     }
                 }
-                Row(
+
+                Row(modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "시작",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
+                    Icon(modifier = Modifier.padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_access_time_24),
+                        contentDescription = "start")
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            modifier = Modifier.clickable { showStartPicker = true },
+                            modifier = Modifier.clickable {showStartPicker = true },
                             text = start.format(DateTimeFormatter.ofPattern("a h:mm")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         if (isStartOverlap) {
@@ -412,25 +406,26 @@ fun WiDCreateManualFragment() {
                         }
                     }
                 }
-                Row(
+
+                Row(modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "종료",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
+                    Icon(modifier = Modifier.padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_access_time_filled_24),
+                        contentDescription = "finish")
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             modifier = Modifier.clickable { showFinishPicker = true },
                             text = finish.format(DateTimeFormatter.ofPattern("a h:mm")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         if (isFinishOverlap) {
@@ -443,24 +438,25 @@ fun WiDCreateManualFragment() {
                         }
                     }
                 }
-                Row(
+
+                Row(modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "경과",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
+                    Icon(modifier = Modifier.padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                        contentDescription = "elapsedTime")
 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = formatDuration(duration, mode = 2),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                         )
 
                         if (isDurationMinOrMax) {
@@ -474,30 +470,26 @@ fun WiDCreateManualFragment() {
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .weight(1.0F)
-                            .padding(8.dp),
-                        text = "설명",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Start)
-                    )
-                }
-
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(horizontal = 16.dp)
+                        .padding(0.dp, 0.dp, 0.dp, 10.dp),
+//                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     value = detail,
                     onValueChange = { newText ->
                         detail = newText
                     },
-                    minLines = 5,
                     placeholder = {
-                        Text(text = "설명 입력..")
+                        Text(text = "설명 입력..",
+                            textAlign = TextAlign.Center)
                     },
+                    leadingIcon = {
+                        Icon(
+                            modifier = Modifier.padding(8.dp),
+                            painter = painterResource(id = R.drawable.baseline_message_24),
+                            contentDescription = "detail")
+                    }
                 )
             }
 
