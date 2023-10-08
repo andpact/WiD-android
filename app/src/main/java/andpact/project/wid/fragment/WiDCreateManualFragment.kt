@@ -280,16 +280,15 @@ fun WiDCreateManualFragment() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp),
-//                    .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
+//                verticalArrangement = Arrangement.spacedBy(16.dp),
+//                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val titleColorId = colorMap[title]
                 val backgroundColor = if (titleColorId != null) {
@@ -308,58 +307,57 @@ fun WiDCreateManualFragment() {
                         )
                 )
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                    Icon(modifier = Modifier.padding(16.dp),
+                Text("날짜")
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp))
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                         contentDescription = "date")
 
-                    Row(
+                    val annotatedString = buildAnnotatedString {
+                        date?.let {
+                            append(it.format(DateTimeFormatter.ofPattern("M월 d일 ")))
+                            append("(")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = when (it.dayOfWeek) {
+                                        DayOfWeek.SATURDAY -> Color.Blue
+                                        DayOfWeek.SUNDAY -> Color.Red
+                                        else -> Color.Black
+                                    }
+                                )
+                            ) {
+                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                            }
+                            append(")")
+                        } ?: append("날짜")
+                    }
+
+                    Text(
                         modifier = Modifier
                             .padding(16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val annotatedString = buildAnnotatedString {
-                            date?.let {
-                                append(it.format(DateTimeFormatter.ofPattern("M월 d일 ")))
-                                append("(")
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = when (it.dayOfWeek) {
-                                            DayOfWeek.SATURDAY -> Color.Blue
-                                            DayOfWeek.SUNDAY -> Color.Red
-                                            else -> Color.Black
-                                        }
-                                    )
-                                ) {
-                                    append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                                }
-                                append(")")
-                            } ?: append("날짜")
-                        }
-
-                        Text(
-                            modifier = Modifier.clickable {
-                                showDatePicker = true
-                            },
-                            text = annotatedString
-                        )
-                    }
+                            .clickable { showDatePicker = true },
+                        text = annotatedString,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
-                HorizontalDivider()
+                Text("제목")
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(modifier = Modifier.padding(16.dp),
+                    Icon(modifier = Modifier
+                        .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_category_24),
                         contentDescription = "title")
 
@@ -367,18 +365,17 @@ fun WiDCreateManualFragment() {
 
                     Text(
                         modifier = Modifier
+                            .padding(16.dp)
                             .clickable {
                                 titleMenuExpanded = true
-                            }
-                            .padding(16.dp)
-                            .fillMaxWidth(),
+                            },
                         text = titleMap[formattedTitle] ?: formattedTitle,
                         textAlign = TextAlign.Center
                     )
 
                     DropdownMenu(modifier = Modifier
                         .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-                        offset = DpOffset(150.dp, 0.dp),
+//                            offset = DpOffset(150.dp, 0.dp),
                         expanded = titleMenuExpanded,
                         onDismissRequest = {
                             titleMenuExpanded = false
@@ -398,128 +395,151 @@ fun WiDCreateManualFragment() {
                     }
                 }
 
-                HorizontalDivider()
+                Text("시작")
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(modifier = Modifier.padding(16.dp),
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_access_time_24),
                         contentDescription = "start")
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         val formattedStartTime = start?.format(DateTimeFormatter.ofPattern("a h:mm")) ?: "시작"
 
                         Text(
-                            modifier = Modifier.clickable { showStartPicker = true },
-                            text = formattedStartTime
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { showStartPicker = true },
+                            text = formattedStartTime,
                         )
 
 
                         if (isStartOverlap) {
                             Icon(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.CenterEnd),
                                 painter = painterResource(id = R.drawable.baseline_priority_high_24),
                                 contentDescription = "StartOverlap",
-                                modifier = Modifier.align(Alignment.CenterEnd),
                                 tint = Color.Red
                             )
                         }
                     }
                 }
 
-                HorizontalDivider()
+                Text("종료")
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(modifier = Modifier.padding(16.dp),
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_access_time_filled_24),
                         contentDescription = "finish")
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         val formattedFinishTime = finish?.format(DateTimeFormatter.ofPattern("a h:mm")) ?: "종료"
 
                         Text(
-                            modifier = Modifier.clickable { showFinishPicker = true },
-                            text = formattedFinishTime
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { showFinishPicker = true },
+                            text = formattedFinishTime,
                         )
-
 
                         if (isFinishOverlap) {
                             Icon(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.CenterEnd),
                                 painter = painterResource(id = R.drawable.baseline_priority_high_24),
                                 contentDescription = "FinishOverlap",
-                                modifier = Modifier.align(Alignment.CenterEnd),
                                 tint = Color.Red
                             )
                         }
                     }
                 }
 
-                HorizontalDivider()
+                Text("경과")
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(modifier = Modifier.padding(16.dp),
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_timelapse_24),
                         contentDescription = "elapsedTime")
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         val formattedDuration = duration?.let { formatDuration(it, mode = 2) } ?: "경과"
 
-                        Text(
+                        Text(modifier = Modifier
+                            .padding(16.dp),
                             text = formattedDuration,
                         )
 
                         if (isDurationMinOrMax) {
                             Icon(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.CenterEnd),
                                 painter = painterResource(id = R.drawable.baseline_priority_high_24),
                                 contentDescription = "DurationMinOrMax",
-                                modifier = Modifier.align(Alignment.CenterEnd),
                                 tint = Color.Red
                             )
                         }
                     }
                 }
 
-                HorizontalDivider()
+                Text("설명")
 
-                Row(modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                    .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                    verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(BorderStroke(1.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier
+                            .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_message_24),
                         contentDescription = "detail")
 
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth(),
-//                            .padding(16.dp),
+//                        leadingIcon = {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.baseline_message_24),
+//                                contentDescription = "detail")
+//                        },
                         value = detail,
                         onValueChange = { newText ->
                             detail = newText
@@ -527,7 +547,6 @@ fun WiDCreateManualFragment() {
                         placeholder = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     text = "설명",
@@ -538,14 +557,14 @@ fun WiDCreateManualFragment() {
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent
-                        )
+                        ),
                     )
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .padding(0.dp, 8.dp, 0.dp, 0.dp)
+//                    .padding(0.dp, 8.dp, 0.dp, 0.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
