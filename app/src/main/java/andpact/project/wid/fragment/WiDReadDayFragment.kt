@@ -302,7 +302,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 },
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(

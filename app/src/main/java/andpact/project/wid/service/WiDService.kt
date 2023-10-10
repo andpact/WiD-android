@@ -6,6 +6,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -178,33 +179,11 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //        return wiDList
 //    }
 
-//    fun updateWiDStartAndFinish(id: Long, newStartTime: LocalTime, newFinishTime: LocalTime) {
-//        val db = writableDatabase
-//
-//        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_START = ?, $COLUMN_FINISH = ? WHERE $COLUMN_ID = ?"
-//        val selectionArgs = arrayOf(newStartTime.toString(), newFinishTime.toString(), id.toString())
-//
-//        db.execSQL(updateQuery, selectionArgs)
-//
-//        db.close()
-//    }
-//
-//    fun updateWiDDetail(id: Long, newDetail: String) {
-//        val db = writableDatabase
-//
-//        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
-//        val selectionArgs = arrayOf(newDetail, id.toString())
-//
-//        db.execSQL(updateQuery, selectionArgs)
-//
-//        db.close()
-//    }
-
-    fun updateWiD(id: Long, newStartTime: LocalTime, newFinishTime: LocalTime, newDetail: String) {
+    fun updateWiD(id: Long, date: LocalDate, title: String, start: LocalTime, finish: LocalTime, duration: Duration, detail: String) {
         val db = writableDatabase
 
-        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_START = ?, $COLUMN_FINISH = ?, $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
-        val selectionArgs = arrayOf(newStartTime.toString(), newFinishTime.toString(), newDetail, id.toString())
+        val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DATE = ?, $COLUMN_TITLE = ?, $COLUMN_START = ?, $COLUMN_FINISH = ?, $COLUMN_DURATION = ?, $COLUMN_DETAIL = ? WHERE $COLUMN_ID = ?"
+        val selectionArgs = arrayOf(date.toString(), title, start.toString(), finish.toString(), duration.toMillis(), detail, id.toString())
 
         db.execSQL(updateQuery, selectionArgs)
 

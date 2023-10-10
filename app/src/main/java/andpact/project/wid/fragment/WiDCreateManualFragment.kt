@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.delay
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -55,50 +56,46 @@ fun WiDCreateManualFragment() {
         }
     )
 
-    val today: LocalDate = LocalDate.now()
+    var today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var title by remember { mutableStateOf("STUDY") }
 
-    val currentTime: LocalTime = LocalTime.now().withSecond(0)
+//    val currentTimeState = remember { mutableStateOf(LocalTime.now().withSecond(0)) }
+//
+//    LaunchedEffect(currentTimeState.value) {
+//        while (true) {
+////            delay(60_000)
+//            delay(1_000)
+//            currentTimeState.value = LocalTime.now().withSecond(0)
+//        }
+//    }
+//
+//    val currentTime = currentTimeState.value
+
+    var currentTime: LocalTime = LocalTime.now().withSecond(0)
 
     var start by remember { mutableStateOf(currentTime) }
     var showStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState()
     var isStartOverlap by remember { mutableStateOf(false) }
+    var isStartOverCurrentTime by remember { mutableStateOf(false) }
 
     var finish by remember { mutableStateOf(currentTime) }
     var showFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState()
     var isFinishOverlap by remember { mutableStateOf(false) }
+    var isFinishOverCurrentTime by remember { mutableStateOf(false) }
 
     var duration by remember { mutableStateOf(Duration.ZERO) }
-    var isDurationMinOrMax by remember { mutableStateOf(true) }
+    var isDurationUnderMin by remember { mutableStateOf(false) }
+    var isDurationOverMax by remember { mutableStateOf(false) }
 
     var detail by remember { mutableStateOf("") }
 
     var wiDList by remember { mutableStateOf(wiDService.readWiDListByDate(date))}
-
-//    dateText = buildAnnotatedString {
-//        date.let {
-//            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 ")))
-//            append("(")
-//            withStyle(
-//                style = SpanStyle(
-//                    color = when (it.dayOfWeek) {
-//                        DayOfWeek.SATURDAY -> Color.Blue
-//                        DayOfWeek.SUNDAY -> Color.Red
-//                        else -> Color.Unspecified
-//                    }
-//                )
-//            ) {
-//                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-//            }
-//            append(")")
-//        }
-//    }
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -207,15 +204,21 @@ fun WiDCreateManualFragment() {
 
                                 start = newStart
 
-                                duration = Duration.between(start, finish)
-                                isDurationMinOrMax = Duration.ofHours(12) < duration || duration <= Duration.ZERO
-
                                 for (existingWiD in wiDList) {
                                     if (existingWiD.start <= start && start <= existingWiD.finish) {
                                         isStartOverlap = true
                                         break
                                     } else {
                                         isStartOverlap = false
+                                    }
+                                }
+
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                                        isFinishOverlap = true
+                                        break
+                                    } else {
+                                        isFinishOverlap = false
                                     }
                                 }
 
@@ -227,10 +230,11 @@ fun WiDCreateManualFragment() {
                                     }
                                 }
 
-//                                if (date == today && currentTime < start) {
-//                                    start = currentTime
-//                                    finish = currentTime
-//                                }
+                                isStartOverCurrentTime = date == today && currentTime < start
+
+                                duration = Duration.between(start, finish)
+                                isDurationUnderMin = duration <= Duration.ZERO
+                                isDurationOverMax = Duration.ofHours(12) < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -279,8 +283,14 @@ fun WiDCreateManualFragment() {
 
                                 finish = newFinish
 
-                                duration = Duration.between(start, finish)
-                                isDurationMinOrMax = Duration.ofHours(12) < duration || duration <= Duration.ZERO
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
+                                        isStartOverlap = true
+                                        break
+                                    } else {
+                                        isStartOverlap = false
+                                    }
+                                }
 
                                 for (existingWiD in wiDList) {
                                     if (existingWiD.start <= finish && finish <= existingWiD.finish) {
@@ -299,9 +309,11 @@ fun WiDCreateManualFragment() {
                                     }
                                 }
 
-//                                if (date == today && currentTime < finish) {
-//                                    finish = currentTime
-//                                }
+                                isFinishOverCurrentTime = date == today && currentTime < finish
+
+                                duration = Duration.between(start, finish)
+                                isDurationUnderMin = duration <= Duration.ZERO
+                                isDurationOverMax = Duration.ofHours(12) < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -322,7 +334,7 @@ fun WiDCreateManualFragment() {
                 modifier = Modifier
                     .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
 //                verticalArrangement = Arrangement.spacedBy(4.dp),
-//                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val titleColorId = colorMap[title]
                 val backgroundColor = if (titleColorId != null) {
@@ -343,8 +355,7 @@ fun WiDCreateManualFragment() {
 
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(0.dp, 8.dp, 0.dp, 0.dp)
+                        .padding(24.dp, 16.dp, 24.dp, 0.dp)
                         .fillMaxWidth()
                 ) {
                     Text(text = "날짜",
@@ -354,7 +365,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -416,7 +427,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -505,11 +516,14 @@ fun WiDCreateManualFragment() {
                 ) {
                     Text(modifier = Modifier
                         .weight(1f),
-                        text = "시작",
+                        text = "시작 시간",
                         style = TextStyle(fontSize = 14.sp))
 
                     if (isStartOverlap) {
-                        Text(text = "다른 시간을 선택해 주세요.",
+                        Text(text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isStartOverCurrentTime) {
+                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
                     }
                 }
@@ -517,7 +531,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -536,7 +550,7 @@ fun WiDCreateManualFragment() {
                         modifier = Modifier
                             .padding(16.dp)
                             .weight(1f),
-                        text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                        text = start.format(DateTimeFormatter.ofPattern("a h:mm")),
                     )
 
                     VerticalDivider()
@@ -556,11 +570,14 @@ fun WiDCreateManualFragment() {
                 ) {
                     Text(modifier = Modifier
                         .weight(1f),
-                        text = "종료",
+                        text = "종료 시간",
                         style = TextStyle(fontSize = 14.sp))
 
                     if (isFinishOverlap) {
-                        Text(text = "다른 시간을 선택해 주세요.",
+                        Text(text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isFinishOverCurrentTime) {
+                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
                     }
                 }
@@ -568,7 +585,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -587,7 +604,7 @@ fun WiDCreateManualFragment() {
                         modifier = Modifier
                             .padding(16.dp)
                             .weight(1f),
-                        text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                        text = finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                     )
 
                     VerticalDivider()
@@ -607,18 +624,21 @@ fun WiDCreateManualFragment() {
                 ) {
                     Text(modifier = Modifier
                         .weight(1f),
-                        text = "경과",
+                        text = "지속 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isDurationMinOrMax) {
-                        Text(text = "error",
+                    if (isDurationUnderMin) {
+                        Text(text = "1분 이상의 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isDurationOverMax) {
+                        Text(text = "12시간 이하의 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
                     }
                 }
 
                 Row(
                     modifier = Modifier
-                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -631,7 +651,7 @@ fun WiDCreateManualFragment() {
                         modifier = Modifier
                             .padding(16.dp),
                         painter = painterResource(id = R.drawable.baseline_timelapse_24),
-                        contentDescription = "elapsedTime")
+                        contentDescription = "duration")
 
                     Text(modifier = Modifier
                         .padding(16.dp),
@@ -650,11 +670,6 @@ fun WiDCreateManualFragment() {
                         text = "설명",
                         style = TextStyle(fontSize = 14.sp)
                     )
-
-//                    Text(
-//                        text = "(선택 사항)",
-//                        style = TextStyle(fontSize = 14.sp)
-//                    )
                 }
 
                 Row(
@@ -710,6 +725,9 @@ fun WiDCreateManualFragment() {
             ) {
                 IconButton(
                     onClick = {
+//                        today = LocalDate.now()
+//                        currentTime = LocalTime.now()
+
                         date = today
                         title = "STUDY"
                         start = currentTime
@@ -717,9 +735,37 @@ fun WiDCreateManualFragment() {
                         duration = Duration.ZERO
                         detail = ""
 
-                        isStartOverlap = false
-                        isFinishOverlap = false
-                        isDurationMinOrMax = false
+                        isStartOverCurrentTime = false
+                        isFinishOverCurrentTime = false
+
+                        isDurationUnderMin = false
+                        isDurationOverMax = false
+
+                        for (existingWiD in wiDList) {
+                            if (existingWiD.start <= start && start <= existingWiD.finish) {
+                                isStartOverlap = true
+                                break
+                            } else {
+                                isStartOverlap = false
+                            }
+                        }
+
+                        for (existingWiD in wiDList) {
+                            if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                                isFinishOverlap = true
+                                break
+                            } else {
+                                isFinishOverlap = false
+                            }
+                        }
+
+                        for (existingWiD in wiDList) {
+                            if (start <= existingWiD.start && existingWiD.finish <= finish) {
+                                isStartOverlap = true
+                                isFinishOverlap = true
+                                break
+                            }
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -764,11 +810,10 @@ fun WiDCreateManualFragment() {
                     },
                     modifier = Modifier
                         .weight(1f),
-                    enabled = !(isStartOverlap || isFinishOverlap || isDurationMinOrMax)
+                    enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
                 ) {
-                    Text(text = "등록",
-                        color = if (isStartOverlap || isFinishOverlap || isDurationMinOrMax)
-                        { Color.Unspecified } else { colorResource(id = R.color.exercise) },
+                    Text(text = "등록", color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
+                    { Color.Unspecified } else { colorResource(id = R.color.exercise) },
                         style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                     )
                 }

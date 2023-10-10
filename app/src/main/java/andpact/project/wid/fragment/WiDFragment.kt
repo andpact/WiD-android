@@ -6,16 +6,18 @@ import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,14 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -57,26 +57,30 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         return
     }
 
-    val currentTime: LocalTime = LocalTime.now().withSecond(0)
-
+    var today: LocalDate = LocalDate.now()
     val date by remember { mutableStateOf(wiD.date) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var title by remember { mutableStateOf(wiD.title) }
 
+    val currentTime: LocalTime = LocalTime.now().withSecond(0)
+
     var start by remember { mutableStateOf(wiD.start) }
     var showStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute)
     var isStartOverlap by remember { mutableStateOf(false) }
+    var isStartOverCurrentTime by remember { mutableStateOf(false) }
 
     var finish by remember { mutableStateOf(wiD.finish) }
     var showFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute)
     var isFinishOverlap by remember { mutableStateOf(false) }
+    var isFinishOverCurrentTime by remember { mutableStateOf(false) }
 
     var duration by remember { mutableStateOf(wiD.duration) }
-    var isDurationMinOrMax by remember { mutableStateOf(false) }
+    var isDurationUnderMin by remember { mutableStateOf(false) }
+    var isDurationOverMax by remember { mutableStateOf(false) }
 
     var detail by remember { mutableStateOf(wiD.detail) }
 
@@ -85,7 +89,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
     var isDeleteButtonPressed by remember { mutableStateOf(false) }
 
     var wiDList by remember { mutableStateOf(wiDService.readWiDListByDate(date)) }
-    val currentIndex = wiDList.indexOf(wiD)
+//    val currentIndex = wiDList.indexOf(wiD)
 
     LaunchedEffect(isDeleteButtonPressed) {
         if (isDeleteButtonPressed) {
@@ -98,40 +102,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         navController.popBackStack()
         buttonsVisible.value = true
     }
-
-//    fun updateWiDListAndOverlapFlags() {
-//        duration = Duration.between(start, finish)
-//
-//        isDurationMinOrMax = Duration.ofHours(12) < duration || duration <= Duration.ZERO
-//
-//        for (existingWiD in wiDList) {
-//            if (existingWiD.start <= start && start <= existingWiD.finish) {
-//                isStartOverlap = true
-//                break
-//            } else {
-//                isStartOverlap = false
-//            }
-//        }
-//
-//        for (existingWiD in wiDList) {
-//            if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-//                isFinishOverlap = true
-//                break
-//            } else {
-//                isFinishOverlap = false
-//            }
-//        }
-//
-//        for (existingWiD in wiDList) {
-//            if (start <= existingWiD.start && existingWiD.finish <= finish) {
-//                isStartOverlap = true
-//                isFinishOverlap = true
-//                break
-//            }
-//        }
-//    }
-//
-//    updateWiDListAndOverlapFlags()
 
     Box(modifier = Modifier
         .fillMaxSize())
@@ -166,39 +136,53 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         TextButton(
                             onClick = {
                                 showStartPicker = false
-//                                val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute).withSecond(0)
                                 val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
-
-                                if (newStart.isAfter(finish)) {
-                                    finish = newStart
-
-                                    if (currentIndex < wiDList.size - 1) {
-                                        val nextWiD = wiDList[currentIndex + 1]
-                                        isFinishOverlap = finish.isAfter(nextWiD.start) || finish == nextWiD.start
-                                    }
-
-                                }
 
                                 start = newStart
 
-                                val today = LocalDate.now()
-                                if (date == today && currentTime < start) {
-                                    start = currentTime
-                                    finish = currentTime
-
-                                    if (currentIndex < wiDList.size - 1) {
-                                        val nextWiD = wiDList[currentIndex + 1]
-                                        isFinishOverlap = finish.isAfter(nextWiD.start) || finish == nextWiD.start
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
                                     }
 
+                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
+                                        isStartOverlap = true
+                                        break
+                                    } else {
+                                        isStartOverlap = false
+                                    }
                                 }
+
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
+                                    }
+
+                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                                        isFinishOverlap = true
+                                        break
+                                    } else {
+                                        isFinishOverlap = false
+                                    }
+                                }
+
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
+                                    }
+
+                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
+                                        isStartOverlap = true
+                                        isFinishOverlap = true
+                                        break
+                                    }
+                                }
+
+                                isStartOverCurrentTime = date == today && currentTime < start
 
                                 duration = Duration.between(start, finish)
-
-                                if (currentIndex > 0) {
-                                    val previousWiD = wiDList[currentIndex - 1]
-                                    isStartOverlap = start.isBefore(previousWiD.finish) || start == previousWiD.finish
-                                }
+                                isDurationUnderMin = duration <= Duration.ZERO
+                                isDurationOverMax = Duration.ofHours(12) < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -240,32 +224,53 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         TextButton(
                             onClick = {
                                 showFinishPicker = false
-//                                val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute).withSecond(0)
                                 val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
-
-                                if (newFinish.isBefore(start)) {
-                                    start = newFinish
-
-                                    if (currentIndex > 0) {
-                                        val previousWiD = wiDList[currentIndex - 1]
-                                        isStartOverlap = start.isBefore(previousWiD.finish) || start == previousWiD.finish
-                                    }
-                                }
 
                                 finish = newFinish
 
-                                val today = LocalDate.now()
-                                if (date == today && currentTime < finish) {
-                                    finish = currentTime
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
+                                    }
+
+                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
+                                        isStartOverlap = true
+                                        break
+                                    } else {
+                                        isStartOverlap = false
+                                    }
                                 }
+
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
+                                    }
+
+                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                                        isFinishOverlap = true
+                                        break
+                                    } else {
+                                        isFinishOverlap = false
+                                    }
+                                }
+
+                                for (existingWiD in wiDList) {
+                                    if (existingWiD == wiD) {
+                                        continue
+                                    }
+
+                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
+                                        isStartOverlap = true
+                                        isFinishOverlap = true
+                                        break
+                                    }
+                                }
+
+                                isFinishOverCurrentTime = date == today && currentTime < finish
 
                                 duration = Duration.between(start, finish)
-
-                                if (currentIndex < wiDList.size - 1) {
-                                    val nextWiD = wiDList[currentIndex + 1]
-                                    isFinishOverlap = finish.isAfter(nextWiD.start) || finish == nextWiD.start
-                                }
-
+                                isDurationUnderMin = duration <= Duration.ZERO
+                                isDurationOverMax = Duration.ofHours(12) < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -287,101 +292,122 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     .background(color = colorResource(id = R.color.light_gray), shape = RoundedCornerShape(8.dp)),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val titleColorId = colorMap[title]
+                val backgroundColor = if (titleColorId != null) {
+                    Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                } else {
+                    colorResource(id = R.color.light_gray)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .height(10.dp)
+                        .fillMaxWidth()
+                        .background(
+                            color = backgroundColor,
+                            shape = RoundedCornerShape(8.dp, 8.dp, 0.dp, 0.dp)
+                        )
+                )
+
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(24.dp, 16.dp, 24.dp, 0.dp)
+                        .fillMaxWidth()
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .weight(1.0f),
-                        text = "WiD",
-                        style = TextStyle(fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
-                    )
-
-                    val titleColorId = colorMap[title]
-                    if (titleColorId != null) {
-                        val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .size(20.dp)
-                                .background(color = backgroundColor, shape = RoundedCornerShape(18.dp))
-                        )
-                    }
+                    Text(text = "날짜",
+                        style = TextStyle(fontSize = 14.sp))
                 }
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp))
                 ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "날짜",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
-
-                    Row(
+                    Icon(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = date.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
+                            .padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                        contentDescription = "date")
 
-                        Text(text = "(",
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
-
-                        Text(
-                            text = date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
-                            color = when (date.dayOfWeek) {
-                                DayOfWeek.SATURDAY -> Color.Blue
-                                DayOfWeek.SUNDAY -> Color.Red
-                                else -> Color.Black
-                            },
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
-
-                        Text(text = ")",
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
+                    val dateText = buildAnnotatedString {
+                        date.let {
+                            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 ")))
+                            append("(")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = when (it.dayOfWeek) {
+                                        DayOfWeek.SATURDAY -> Color.Blue
+                                        DayOfWeek.SUNDAY -> Color.Red
+                                        else -> Color.Unspecified
+                                    }
+                                )
+                            ) {
+                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                            }
+                            append(")")
+                        }
                     }
+
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .weight(1f),
+                        text = dateText,
+                    )
                 }
+
                 Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "제목",
+                        style = TextStyle(fontSize = 14.sp))
+                }
+
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Icon(modifier = Modifier
+                        .padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_category_24),
+                        contentDescription = "title")
+
                     Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "제목",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
-                    Text(
-                        modifier = Modifier.clickable(enabled = isEditing) { titleMenuExpanded = true }
-                            .padding(8.dp)
-                            .weight(1.0F),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .weight(1f),
                         text = titleMap[title] ?: title,
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
                     )
 
                     DropdownMenu(modifier = Modifier
+//                        .padding(horizontal = 32.dp)
                         .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-                        offset = DpOffset(150.dp, 0.dp),
                         expanded = titleMenuExpanded,
                         onDismissRequest = {
                             titleMenuExpanded = false
-                        }
+                        },
                     ) {
                         titles.forEach { menuItem ->
-                            DropdownMenuItem(
+                            DropdownMenuItem(modifier = Modifier,
                                 onClick = {
                                     title = menuItem
-                                    titleMenuExpanded = true
+                                    titleMenuExpanded = false
                                 },
                                 text = {
                                     Text(text = titleMap[menuItem] ?: menuItem)
@@ -389,166 +415,288 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             )
                         }
                     }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "시작",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            modifier = Modifier.clickable(enabled = isEditing) { showStartPicker = true },
-                            text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+
+                    AnimatedVisibility(
+                        visible = isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
                         )
-
-                        if (isStartOverlap) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_priority_high_24),
-                                contentDescription = "StartOverlap",
-                                modifier = Modifier.align(Alignment.CenterEnd),
-                                tint = Color.Red
-                            )
-                        }
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "종료",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            modifier = Modifier.clickable(enabled = isEditing) { showFinishPicker = true },
-                            text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
+                        VerticalDivider()
 
-                        if (isFinishOverlap) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_priority_high_24),
-                                contentDescription = "FinishOverlap",
-                                modifier = Modifier.align(Alignment.CenterEnd),
-                                tint = Color.Red
-                            )
-                        }
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        modifier = Modifier.padding(8.dp),
-                        text = "경과",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = formatDuration(duration, mode = 2),
-                            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
-                        )
-
-                        if (isDurationMinOrMax) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_priority_high_24),
-                                contentDescription = "DurationMinOrMax",
-                                modifier = Modifier.align(Alignment.CenterEnd),
-                                tint = Color.Red
-                            )
-                        }
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { titleMenuExpanded = true },
+                            painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
+                            contentDescription = "titleMenuExpanded")
                     }
                 }
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .weight(1.0F)
-                            .padding(8.dp),
-                        text = "설명",
-                        style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Start)
-                    )
+                    Text(modifier = Modifier
+                        .weight(1f),
+                        text = "시작 시간",
+                        style = TextStyle(fontSize = 14.sp))
+
+                    if (isStartOverlap) {
+                        Text(text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isStartOverCurrentTime) {
+                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    }
                 }
 
-                if (isEditing) {
-                    OutlinedTextField(
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .background(Color.White, shape = RoundedCornerShape(8.dp)),
-                        value = detail,
-                        onValueChange = { newText ->
-                            detail = newText
-                        },
-                        minLines = 5,
-                        placeholder = {
-                            Text(style = TextStyle(Color.Black),
-                                text = "설명 입력..")
-                        },
-                    )
-                } else {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .border(BorderStroke(1.dp, Color.Black), shape = RoundedCornerShape(8.dp))
                             .padding(16.dp),
-                        text = detail.ifEmpty { "설명 입력.." },
-                        minLines = 5
+                        painter = painterResource(id = R.drawable.baseline_access_time_24),
+                        contentDescription = "start")
+
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .weight(1f),
+                        text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
                     )
+
+                    AnimatedVisibility(
+                        visible = isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        VerticalDivider()
+
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { showStartPicker = true },
+                            painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
+                            contentDescription = "showStartPicker")
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(modifier = Modifier
+                        .weight(1f),
+                        text = "종료 시간",
+                        style = TextStyle(fontSize = 14.sp))
+
+                    if (isFinishOverlap) {
+                        Text(text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isFinishOverCurrentTime) {
+                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_access_time_filled_24),
+                        contentDescription = "finish")
+
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .weight(1f),
+                        text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                    )
+
+                    AnimatedVisibility(
+                        visible = isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        VerticalDivider()
+
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable { showFinishPicker = true },
+                            painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
+                            contentDescription = "showFinishPicker")
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(modifier = Modifier
+                        .weight(1f),
+                        text = "지속 시간",
+                        style = TextStyle(fontSize = 14.sp))
+
+                    if (isDurationUnderMin) {
+                        Text(text = "1분 이상의 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    } else if (isDurationOverMax) {
+                        Text(text = "12시간 이하의 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                        contentDescription = "duration")
+
+                    Text(modifier = Modifier
+                        .padding(16.dp),
+                        text = formatDuration(duration, mode = 2),
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .weight(1f),
+                        text = "설명",
+                        style = TextStyle(fontSize = 14.sp)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(16.dp, 0.dp, 16.dp, 16.dp)
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(Color.White, RoundedCornerShape(8.dp)),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        painter = painterResource(id = R.drawable.baseline_message_24),
+                        contentDescription = "detail")
+
+                    if (isEditing) {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .weight(1f),
+                            value = detail,
+                            onValueChange = { newText ->
+                                detail = newText
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent
+                            ),
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(16.dp),
+                            text = detail.ifEmpty { "설명 입력.." },
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        VerticalDivider()
+
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clickable {
+                                    detail = ""
+                                },
+                            painter = painterResource(id = R.drawable.baseline_clear_24),
+                            contentDescription = "detailClear"
+                        )
+                    }
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .padding(0.dp, 8.dp, 0.dp, 0.dp)
+                    .padding(16.dp)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+//                horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {
-                        if (isEditing) {
-                            wiDService.updateWiD(id = wiDId, newStartTime = start, newFinishTime = finish, newDetail = detail)
-
-                            isEditing = false
-                        } else {
-                            isEditing = true
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f),
-                    enabled = !(isStartOverlap || isFinishOverlap || isDurationMinOrMax)
-                ) {
-                    Text(text = if (isEditing) "완료" else "수정",
-                        color = if (isEditing) Color.Blue else Color.Unspecified,
-                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
-                    )
-                }
-
 //                IconButton(
 //                    onClick = {
 //                        title = wiD.title
@@ -581,6 +729,26 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     Text(text = if (isDeleteButtonPressed) "한번 더 눌러 삭제" else "삭제",
                         color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
                         style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
+                }
+
+                IconButton(
+                    onClick = {
+                        if (isEditing) {
+                            wiDService.updateWiD(id = wiDId, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
+
+                            isEditing = false
+                        } else {
+                            isEditing = true
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f),
+                    enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
+                ) {
+                    Text(text = if (isEditing) "완료" else "수정",
+                        color = if (isEditing) Color.Blue else Color.Unspecified,
+                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+                    )
                 }
             }
         }
