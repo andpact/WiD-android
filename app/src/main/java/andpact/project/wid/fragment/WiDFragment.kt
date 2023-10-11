@@ -6,10 +6,8 @@ import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,7 +55,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         return
     }
 
-    var today: LocalDate = LocalDate.now()
+    val today: LocalDate = LocalDate.now()
     val date by remember { mutableStateOf(wiD.date) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -311,7 +309,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
                 Row(
                     modifier = Modifier
-                        .padding(24.dp, 16.dp, 24.dp, 0.dp)
+                        .padding(24.dp, 8.dp, 24.dp, 0.dp)
                         .fillMaxWidth()
                 ) {
                     Text(text = "날짜",
@@ -321,7 +319,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -374,7 +372,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -448,19 +446,53 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         text = "시작 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isStartOverlap) {
-                        Text(text = "이미 등록된 시간입니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isStartOverCurrentTime) {
-                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    AnimatedVisibility(
+                        visible = isStartOverlap,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
                     }
+
+                    AnimatedVisibility(
+                        visible = isStartOverCurrentTime,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
+                    }
+
+//                    if (isStartOverlap) {
+//                        Text(text = "이미 등록된 시간입니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isStartOverCurrentTime) {
+//                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -514,19 +546,53 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         text = "종료 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isFinishOverlap) {
-                        Text(text = "이미 등록된 시간입니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isFinishOverCurrentTime) {
-                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    AnimatedVisibility(
+                        visible = isFinishOverlap,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
                     }
+
+                    AnimatedVisibility(
+                        visible = isFinishOverCurrentTime,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
+                    }
+
+//                    if (isFinishOverlap) {
+//                        Text(text = "이미 등록된 시간입니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isFinishOverCurrentTime) {
+//                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -580,18 +646,48 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         text = "지속 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isDurationUnderMin) {
+                    AnimatedVisibility(
+                        visible = isDurationUnderMin,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
                         Text(text = "1분 이상의 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isDurationOverMax) {
+                    }
+
+                    AnimatedVisibility(
+                        visible = isDurationOverMax,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
                         Text(text = "12시간 이하의 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
                     }
+
+//                    if (isDurationUnderMin) {
+//                        Text(text = "1분 이상의 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isDurationOverMax) {
+//                        Text(text = "12시간 이하의 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -726,9 +822,44 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     modifier = Modifier
                         .weight(1f)
                 ) {
-                    Text(text = if (isDeleteButtonPressed) "한번 더 눌러 삭제" else "삭제",
-                        color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
-                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
+                    AnimatedVisibility(
+                        visible = !isDeleteButtonPressed,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "삭제",
+                            color = Color.Unspecified,
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = isDeleteButtonPressed,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "한번 더 눌러 삭제",
+                            color = Color.Red,
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+                        )
+                    }
+//                    Text(text = if (isDeleteButtonPressed) "한번 더 눌러 삭제" else "삭제",
+//                        color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
+//                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center))
                 }
 
                 IconButton(
@@ -745,10 +876,45 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         .weight(1f),
                     enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
                 ) {
-                    Text(text = if (isEditing) "완료" else "수정",
-                        color = if (isEditing) Color.Blue else Color.Unspecified,
-                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
-                    )
+                    AnimatedVisibility(
+                        visible = !isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "수정",
+                            color = Color.Unspecified,
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = isEditing,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "완료",
+                            color = Color.Blue,
+                            style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+                        )
+                    }
+//                    Text(text = if (isEditing) "완료" else "수정",
+//                        color = if (isEditing) Color.Blue else Color.Unspecified,
+//                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center),
+//                    )
                 }
             }
         }

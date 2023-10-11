@@ -7,6 +7,8 @@ import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
 import android.app.TimePickerDialog
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,7 +58,7 @@ fun WiDCreateManualFragment() {
         }
     )
 
-    var today: LocalDate = LocalDate.now()
+    val today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -75,7 +77,7 @@ fun WiDCreateManualFragment() {
 //
 //    val currentTime = currentTimeState.value
 
-    var currentTime: LocalTime = LocalTime.now().withSecond(0)
+    val currentTime: LocalTime = LocalTime.now().withSecond(0)
 
     var start by remember { mutableStateOf(currentTime) }
     var showStartPicker by remember { mutableStateOf(false) }
@@ -355,7 +357,7 @@ fun WiDCreateManualFragment() {
 
                 Row(
                     modifier = Modifier
-                        .padding(24.dp, 16.dp, 24.dp, 0.dp)
+                        .padding(24.dp, 8.dp, 24.dp, 0.dp)
                         .fillMaxWidth()
                 ) {
                     Text(text = "날짜",
@@ -365,7 +367,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -427,7 +429,7 @@ fun WiDCreateManualFragment() {
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -519,19 +521,53 @@ fun WiDCreateManualFragment() {
                         text = "시작 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isStartOverlap) {
-                        Text(text = "이미 등록된 시간입니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isStartOverCurrentTime) {
-                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    AnimatedVisibility(
+                        visible = isStartOverlap,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
                     }
+
+                    AnimatedVisibility(
+                        visible = isStartOverCurrentTime,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
+                    }
+
+//                    if (isStartOverlap) {
+//                        Text(text = "이미 등록된 시간입니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isStartOverCurrentTime) {
+//                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -573,19 +609,53 @@ fun WiDCreateManualFragment() {
                         text = "종료 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isFinishOverlap) {
-                        Text(text = "이미 등록된 시간입니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isFinishOverCurrentTime) {
-                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
-                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+                    AnimatedVisibility(
+                        visible = isFinishOverlap,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "이미 등록된 시간입니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
                     }
+
+                    AnimatedVisibility(
+                        visible = isFinishOverCurrentTime,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
+                        Text(
+                            text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+                            style = TextStyle(fontSize = 14.sp, color = Color.Red)
+                        )
+                    }
+
+//                    if (isFinishOverlap) {
+//                        Text(text = "이미 등록된 시간입니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isFinishOverCurrentTime) {
+//                        Text(text = "${currentTime.format(DateTimeFormatter.ofPattern("a h:mm"))} 이전 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
@@ -627,18 +697,48 @@ fun WiDCreateManualFragment() {
                         text = "지속 시간",
                         style = TextStyle(fontSize = 14.sp))
 
-                    if (isDurationUnderMin) {
+                    AnimatedVisibility(
+                        visible = isDurationUnderMin,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
                         Text(text = "1분 이상의 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
-                    } else if (isDurationOverMax) {
+                    }
+
+                    AnimatedVisibility(
+                        visible = isDurationOverMax,
+                        enter = fadeIn(
+                            initialAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        ),
+                        exit = fadeOut(
+                            targetAlpha = 0.1f,
+                            animationSpec = tween(500)
+                        )
+                    ) {
                         Text(text = "12시간 이하의 시간이 필요합니다.",
                             style = TextStyle(fontSize = 14.sp, color = Color.Red))
                     }
+
+//                    if (isDurationUnderMin) {
+//                        Text(text = "1분 이상의 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    } else if (isDurationOverMax) {
+//                        Text(text = "12시간 이하의 시간이 필요합니다.",
+//                            style = TextStyle(fontSize = 14.sp, color = Color.Red))
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(16.dp, 0.dp, 16.dp, 8.dp)
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),

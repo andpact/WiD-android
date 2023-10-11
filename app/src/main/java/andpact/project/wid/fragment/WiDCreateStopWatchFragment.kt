@@ -134,129 +134,110 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
-    Box() {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(32.dp)
-                .wrapContentSize(Alignment.Center),
-            verticalArrangement = Arrangement.spacedBy(40.dp)
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .padding(32.dp)
+            .wrapContentSize(Alignment.Center),
+        verticalArrangement = Arrangement.spacedBy(40.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AnimatedVisibility(
-                    visible = buttonsVisible.value,
-                    enter = fadeIn(
-                        initialAlpha = 0.1f,
-                        animationSpec = tween(500)
-                    ),
-                    exit = fadeOut(
-                        targetAlpha = 0.1f,
-                        animationSpec = tween(500)
-                    )
-                ) {
-                    IconButton(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        onClick = {
-                            titleIndex = (titleIndex - 1 + titles.size) % titles.size
-                            title = titles[titleIndex]
-                        },
-                    ) {
-                        Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
-                    }
-                }
-
-                Text(
-                    modifier = Modifier
-                        .weight(1.0f),
-                    text = titleMap[title] ?: title,
-                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
+            AnimatedVisibility(
+                visible = buttonsVisible.value,
+                enter = fadeIn(
+                    initialAlpha = 0.1f,
+                    animationSpec = tween(500)
+                ),
+                exit = fadeOut(
+                    targetAlpha = 0.1f,
+                    animationSpec = tween(500)
                 )
-
-                AnimatedVisibility(
-                    visible = buttonsVisible.value,
-                    enter = fadeIn(
-                        initialAlpha = 0.1f,
-                        animationSpec = tween(500)
-                    ),
-                    exit = fadeOut(
-                        targetAlpha = 0.1f,
-                        animationSpec = tween(500)
-                    )
+            ) {
+                IconButton(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    onClick = {
+                        titleIndex = (titleIndex - 1 + titles.size) % titles.size
+                        title = titles[titleIndex]
+                    },
                 ) {
-                    IconButton(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        onClick = {
-                            titleIndex = (titleIndex + 1) % titles.size
-                            title = titles[titleIndex]
-                        },
-                    ) {
-                        Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
-                    }
+                    Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
                 }
             }
 
             Text(
-                text = formatTime(elapsedTime),
-                modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+                modifier = Modifier
+                    .weight(1.0f),
+                text = titleMap[title] ?: title,
+                style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+            AnimatedVisibility(
+                visible = buttonsVisible.value,
+                enter = fadeIn(
+                    initialAlpha = 0.1f,
+                    animationSpec = tween(500)
+                ),
+                exit = fadeOut(
+                    targetAlpha = 0.1f,
+                    animationSpec = tween(500)
+                )
             ) {
                 IconButton(
+                    modifier = Modifier.padding(horizontal = 8.dp),
                     onClick = {
-                        if (!isRunning) startWiD() else finishWiD()
+                        titleIndex = (titleIndex + 1) % titles.size
+                        title = titles[titleIndex]
                     },
-                    modifier = Modifier
-                        .weight(1f)
                 ) {
-                    Text(
-                        text = buttonText,
-                        color = when (buttonText) {
-                            "중지" -> Color.Red
-                            "계속" -> colorResource(id = R.color.exercise)
-                            else -> Color.Unspecified
-                        },
-                        style = TextStyle(fontSize = 20.sp)
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        if (!isRunning) {
-                            resetWiD()
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f),
-                    enabled = !isRunning && !buttonsVisible.value
-                ) {
-                    Text(
-                        text = "초기화",
-                        style = TextStyle(fontSize = 20.sp)
-                    )
+                    Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
                 }
             }
         }
 
-        Column(modifier = Modifier
-            .fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom
+        Text(
+            text = formatTime(elapsedTime),
+            modifier = Modifier.fillMaxWidth(),
+                style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            AnimatedVisibility(
-                visible = !buttonsVisible.value,
-                enter = expandVertically{ 0 },
-                exit = shrinkVertically{ 0 },
+            IconButton(
+                onClick = {
+                    if (!isRunning) startWiD() else finishWiD()
+                },
+                modifier = Modifier
+                    .weight(1f)
             ) {
-                Text(modifier = Modifier
-                    .fillMaxWidth(),
-                    text = "WiD", // Bottom Bar 높이 == 63.sp
-                    style = TextStyle(textAlign = TextAlign.Center, fontSize = 50.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+                Text(
+                    text = buttonText,
+                    color = when (buttonText) {
+                        "중지" -> Color.Red
+                        "계속" -> colorResource(id = R.color.exercise)
+                        else -> Color.Unspecified
+                    },
+                    style = TextStyle(fontSize = 20.sp)
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    if (!isRunning) {
+                        resetWiD()
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f),
+                enabled = !isRunning && !buttonsVisible.value
+            ) {
+                Text(
+                    text = "초기화",
+                    style = TextStyle(fontSize = 20.sp)
                 )
             }
         }
