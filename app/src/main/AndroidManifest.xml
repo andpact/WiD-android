@@ -41,13 +41,13 @@
             android:exported="true" />
 
 <!--        실제 앱 WiD ID-->
-<!--        <meta-data-->
-<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
-<!--            android:value="ca-app-pub-3641806776840744~1276681086"/>-->
-
-<!--        테스트 용 앱 ID-->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-3641806776840744~1276681086"/>
+
+<!--        테스트 용 앱 ID-->
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+<!--            android:value="ca-app-pub-3940256099942544~3347511713"/>-->
     </application>
 </manifest>

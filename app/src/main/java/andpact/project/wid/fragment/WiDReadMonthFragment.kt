@@ -179,7 +179,7 @@ fun WiDReadMonthFragment() {
         ) {
             val dayOfWeek = firstDayOfMonth.dayOfWeek.value // 1 (월요일)부터 7 (일요일)까지
 
-            repeat(dayOfWeek) {
+            repeat(dayOfWeek % 7) {
                 item {
                     EmptyPieChartView()
                 }

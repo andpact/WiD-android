@@ -14,8 +14,8 @@ import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback
 import java.util.*
 
 private const val LOG_TAG = "WiD AppOpenAdUtil"
-private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294" // 앱 오프닝 광고 단위 ID 테스트 용
-//private const val AD_UNIT_ID = "ca-app-pub-3641806776840744/6249474966" // 앱 오프닝 광고 단위 ID
+//private const val AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294" // 앱 오프닝 광고 단위 ID 테스트 용
+private const val AD_UNIT_ID = "ca-app-pub-3641806776840744/6249474966" // 앱 오프닝 광고 단위 ID
 class AppOpenAdUtil : Application(), Application.ActivityLifecycleCallbacks, LifecycleEventObserver {
     private lateinit var appOpenAdManager: AppOpenAdManager
     private var currentActivity: Activity? = null

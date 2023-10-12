@@ -3,6 +3,7 @@ package andpact.project.wid.activity
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.util.AppOpenAdUtil
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 
 private const val LOG_TAG = "SplashActivity"
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +85,7 @@ class SplashActivity : ComponentActivity() {
 
 @Composable
 fun SplashScreen(isInternetConnected: Boolean) {
-    WiDTheme() {
+//    WiDTheme() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,5 +117,5 @@ fun SplashScreen(isInternetConnected: Boolean) {
                 }
             }
         }
-    }
+//    }
 }
