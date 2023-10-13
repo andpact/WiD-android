@@ -110,6 +110,10 @@ fun getFirstDayOfMonth(date: LocalDate): LocalDate {
     return yearMonth.atDay(1)
 }
 
+fun getDate1yearAgo(date: LocalDate): LocalDate {
+    return date.minusDays(364)
+}
+
 fun getWeekNumber(date: LocalDate): Int {
     val weekFields = WeekFields.of(java.util.Locale.getDefault())
     return date.get(weekFields.weekOfWeekBasedYear())

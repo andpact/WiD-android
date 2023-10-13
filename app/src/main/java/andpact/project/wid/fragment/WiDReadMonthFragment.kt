@@ -13,7 +13,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -173,7 +175,8 @@ fun WiDReadMonthFragment() {
             }
         }
 
-        LazyVerticalGrid(columns = GridCells.Fixed(7),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
             modifier = Modifier
                 .fillMaxWidth()
         ) {
