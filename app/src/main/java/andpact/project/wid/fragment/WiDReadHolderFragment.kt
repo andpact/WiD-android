@@ -34,7 +34,8 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
         ) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .height(55.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
@@ -88,7 +89,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
             when (page) {
                 0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
                 1 -> WiDReadWeekFragment()
-                2 -> WiDReadMonthFragment()
+                2 -> WiDReadCalendarFragment()
             }
         }
     }

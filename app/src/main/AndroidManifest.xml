@@ -26,7 +26,7 @@
 
 <!--        android:noHistory="true"-->
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".activity.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.WiD">
             <intent-filter>
@@ -37,7 +37,7 @@
         </activity>
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true" />
 
 <!--        실제 앱 WiD ID-->

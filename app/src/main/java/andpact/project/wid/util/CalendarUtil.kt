@@ -4,6 +4,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 
 fun formatTime(time: Long): String {
@@ -111,7 +112,8 @@ fun getFirstDayOfMonth(date: LocalDate): LocalDate {
 }
 
 fun getDate1yearAgo(date: LocalDate): LocalDate {
-    return date.minusDays(364)
+    val oneYearAgo = date.minusDays(364)
+    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
 }
 
 fun getWeekNumber(date: LocalDate): Int {
