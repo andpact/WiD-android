@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
     val scope = rememberCoroutineScope()
 
@@ -66,30 +66,30 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "WEEK")
+                        Text(text = "CALENDAR")
                     }
                 )
 
-                Tab(
-                    selected = pagerState.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(2)
-                        }},
-                    selectedContentColor = Color.Black,
-                    unselectedContentColor = Color.LightGray,
-                    text = {
-                        Text(text = "MONTH")
-                    }
-                )
+//                Tab(
+//                    selected = pagerState.currentPage == 2,
+//                    onClick = {
+//                        scope.launch {
+//                            pagerState.animateScrollToPage(2)
+//                        }},
+//                    selectedContentColor = Color.Black,
+//                    unselectedContentColor = Color.LightGray,
+//                    text = {
+//                        Text(text = "MONTH")
+//                    }
+//                )
             }
         }
 
         HorizontalPager(state = pagerState) {page ->
             when (page) {
                 0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
-                1 -> WiDReadWeekFragment()
-                2 -> WiDReadCalendarFragment()
+//                1 -> WiDReadWeekFragment()
+                1 -> WiDReadCalendarFragment()
             }
         }
     }

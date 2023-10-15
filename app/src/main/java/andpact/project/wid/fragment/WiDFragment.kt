@@ -86,7 +86,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
     var isDeleteButtonPressed by remember { mutableStateOf(false) }
 
-    var wiDList by remember { mutableStateOf(wiDService.readWiDListByDate(date)) }
+    var wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
 //    val currentIndex = wiDList.indexOf(wiD)
 
     LaunchedEffect(isDeleteButtonPressed) {

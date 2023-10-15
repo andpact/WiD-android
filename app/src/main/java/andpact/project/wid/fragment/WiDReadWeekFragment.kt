@@ -40,26 +40,28 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 
 @Composable
 fun WiDReadWeekFragment() {
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
-    var firstDayOfWeek by remember { mutableStateOf(getFirstDayOfWeek(currentDate)) }
-    var lastDayOfWeek by remember { mutableStateOf(getLastDayOfWeek(currentDate)) }
+    var firstDayOfWeek by remember { mutableStateOf(currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))) }
+    var lastDayOfWeek by remember { mutableStateOf(currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))) }
 
     val wiDService = WiDService(context = LocalContext.current)
 
-    val wiDList = remember(firstDayOfWeek) {
-        val allWiDs = mutableListOf<WiD>()
-
-        for (index in 0 until 7) {
-            val date = firstDayOfWeek.plusDays(index.toLong())
-            val wiDsForDate = wiDService.readWiDListByDate(date)
-            allWiDs.addAll(wiDsForDate)
-        }
-        allWiDs
-    }
+    val wiDList by remember { mutableStateOf(wiDService.readWeeklyWiDListByDate(currentDate)) }
+//    val wiDList = remember(firstDayOfWeek) {
+//        val allWiDs = mutableListOf<WiD>()
+//
+//        for (index in 0 until 7) {
+//            val date = firstDayOfWeek.plusDays(index.toLong())
+//            val wiDsForDate = wiDService.readDayWiDListByDate(date)
+//            allWiDs.addAll(wiDsForDate)
+//        }
+//        allWiDs
+//    }
 
     // 각 제목별 날짜별 종합 시간을 추적하기 위한 맵
     val titleDateDurations = remember(wiDList) {
@@ -144,8 +146,8 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = LocalDate.now()
-                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
-                    lastDayOfWeek = getLastDayOfWeek(currentDate)
+                    firstDayOfWeek = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    lastDayOfWeek = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
                 },
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "ThisWeek")
@@ -154,8 +156,8 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = currentDate.minusDays(7)
-                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
-                    lastDayOfWeek = getLastDayOfWeek(currentDate)
+                    firstDayOfWeek = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    lastDayOfWeek = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
                 },
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "prevWeek")
@@ -164,8 +166,8 @@ fun WiDReadWeekFragment() {
             IconButton(
                 onClick = {
                     currentDate = currentDate.plusDays(7)
-                    firstDayOfWeek = getFirstDayOfWeek(currentDate)
-                    lastDayOfWeek = getLastDayOfWeek(currentDate)
+                    firstDayOfWeek = currentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    lastDayOfWeek = currentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
                 },
                 enabled = currentDate != LocalDate.now(),
             ) {

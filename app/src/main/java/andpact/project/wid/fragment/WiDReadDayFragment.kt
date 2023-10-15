@@ -48,7 +48,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     var currentDate by remember { mutableStateOf(LocalDate.now()) }
 
     val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = remember(currentDate) { wiDService.readWiDListByDate(currentDate) }
+    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
 
     Column(
         modifier = Modifier

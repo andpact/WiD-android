@@ -97,7 +97,7 @@ fun WiDCreateManualFragment() {
 
     var detail by remember { mutableStateOf("") }
 
-    var wiDList by remember { mutableStateOf(wiDService.readWiDListByDate(date))}
+    var wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date))}
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -114,7 +114,7 @@ fun WiDCreateManualFragment() {
                         showDatePicker = false
                         date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
 
-                        wiDList = wiDService.readWiDListByDate(date)
+                        wiDList = wiDService.readDailyWiDListByDate(date)
 
                         if (wiDList.isEmpty()) {
                             isStartOverlap = false
@@ -880,7 +880,7 @@ fun WiDCreateManualFragment() {
                         val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
                         wiDService.createWiD(newWiD)
 
-                        wiDList = wiDService.readWiDListByDate(date)
+                        wiDList = wiDService.readDailyWiDListByDate(date)
 
                         for (existingWiD in wiDList) {
                             if (existingWiD.start <= start && start <= existingWiD.finish) {

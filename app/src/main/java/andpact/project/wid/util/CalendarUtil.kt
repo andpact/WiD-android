@@ -43,7 +43,7 @@ fun formatDuration(duration: Duration, mode: Int): String {
 
         1 -> {
             val totalHours = hours.toDouble() + (minutes.toDouble() / 60.0)
-            val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
+//            val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
 
             when {
                 totalHours >= 1.1 -> {
@@ -55,15 +55,15 @@ fun formatDuration(duration: Duration, mode: Int): String {
                     "${formattedTotalHours}시간"
                 }
                 totalHours >= 1.0 -> "${hours}시간"
-                totalMinutes >= 1.1 -> {
-                    val formattedTotalMinutes = if (totalMinutes % 1.0 == 0.0) {
-                        totalMinutes.toInt().toString()
-                    } else {
-                        String.format("%.1f", totalMinutes)
-                    }
-                    "${formattedTotalMinutes}분"
-                }
-                totalMinutes >= 1.0 -> "${minutes}분"
+//                totalMinutes >= 1.1 -> {
+//                    val formattedTotalMinutes = if (totalMinutes % 1.0 == 0.0) {
+//                        totalMinutes.toInt().toString()
+//                    } else {
+//                        String.format("%.1f", totalMinutes)
+//                    }
+//                    "${formattedTotalMinutes}분"
+//                }
+                minutes >= 1 -> "${minutes}분"
                 else -> "${seconds}초"
             }
         }
@@ -92,18 +92,6 @@ fun formatDuration(duration: Duration, mode: Int): String {
         }
         else -> throw IllegalArgumentException("Invalid mode value")
     }
-}
-
-fun getFirstDayOfWeek(date: LocalDate): LocalDate {
-    val dayOfWeek = date.dayOfWeek
-    val daysToSubtract = (dayOfWeek.value - DayOfWeek.MONDAY.value + 7) % 7
-
-    return date.minusDays(daysToSubtract.toLong())
-}
-
-fun getLastDayOfWeek(date: LocalDate): LocalDate {
-    val firstDayOfWeek = getFirstDayOfWeek(date)
-    return firstDayOfWeek.plusDays(6)
 }
 
 fun getFirstDayOfMonth(date: LocalDate): LocalDate {

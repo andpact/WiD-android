@@ -33,7 +33,7 @@ import kotlin.math.sin
 @Composable
 fun PieChartView(date: LocalDate, forReadDay: Boolean) {
     val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = wiDService.readWiDListByDate(date)
+    val wiDList = wiDService.readDailyWiDListByDate(date)
 
     val pieEntries = mutableListOf<PieEntry>()
 
