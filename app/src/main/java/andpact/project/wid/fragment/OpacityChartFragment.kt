@@ -1,8 +1,11 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,11 +31,7 @@ fun OpacityChartView(date: LocalDate, title: String) {
     val wiDList = wiDService.readDailyWiDListByDate(date, title)
 
     val totalDurationMillis = wiDList.sumOf { it.duration.toMillis() }
-    val maxDurationMillis = if (title == "EXERCISE") {
-        2 * 60 * 60 * 1000 // 2 hours for "EXERCISE"
-    } else {
-        10 * 60 * 60 * 1000 // 10 hours for other titles
-    }
+    val maxDurationMillis = 10 * 60 * 60 * 1000
 
     val opacity = when {
         totalDurationMillis == 0L -> 0.0f
@@ -42,13 +42,16 @@ fun OpacityChartView(date: LocalDate, title: String) {
         else -> 1.0f
     }
 
-    val titleColorId = colorMap[title]!!
-    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+    val titleColorId = colorMap[title]
+    val backgroundColor = titleColorId?.let { id ->
+        Color(ContextCompat.getColor(LocalContext.current, id))
+    } ?: colorResource(id = R.color.light_gray)
 
     Box(modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
         .padding(8.dp)
+        .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(8.dp))
         .background(
             color = backgroundColor.copy(alpha = opacity),
             shape = RoundedCornerShape(8.dp)

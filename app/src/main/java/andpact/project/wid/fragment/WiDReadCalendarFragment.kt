@@ -11,15 +11,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -37,20 +42,23 @@ import java.time.temporal.TemporalAdjusters
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDReadCalendarFragment() {
+    val wiDService = WiDService(context = LocalContext.current)
+
+    val yearList = listOf("지난 1년") + wiDService.getYearList()
+    var selectedYear by remember { mutableStateOf(yearList[0]) }
+
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val titles = arrayOf("ALL", "STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var selectedTitle by remember { mutableStateOf("ALL") }
 
-    val startDate by remember { mutableStateOf(LocalDate.now()) }
-    val finishDate by remember { mutableStateOf(getDate1yearAgo(startDate)) }
+    var finishDate by remember { mutableStateOf(LocalDate.now()) }
+    var startDate by remember { mutableStateOf(getDate1yearAgo(finishDate)) }
 
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val firstDayOfWeek = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     val lastDayOfWeek = selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 
     val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
-
-    val wiDService = WiDService(context = LocalContext.current)
 
     var dailyWiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(selectedDate)) }
     var weeklyWiDList by remember { mutableStateOf(wiDService.readWeeklyWiDListByDate(selectedDate)) }
@@ -120,16 +128,50 @@ fun WiDReadCalendarFragment() {
             .fillMaxSize()
             .padding(horizontal = 16.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(),
+        Row(modifier = Modifier
+//            .height(IntrinsicSize.Min)
+            .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(modifier = Modifier.weight(1f),
-                text = "2023",
-                textAlign = TextAlign.Center)
+            LazyRow(modifier = Modifier.weight(1.5f)) {
+                items(yearList.size) { i ->
+                    FilterChip(
+                        modifier = Modifier.padding(horizontal = 6.dp),
+                        selected = (selectedYear == yearList[i]),
+                        onClick = {
+                            selectedYear = yearList[i]
 
-            Text(modifier = Modifier.weight(1f),
-                text = "2022",
-                textAlign = TextAlign.Center)
+                            if (selectedYear == "지난 1년") {
+                                // For "지난 1년," reset to default values
+                                finishDate = LocalDate.now()
+                                startDate = getDate1yearAgo(finishDate)
+                            } else if (selectedYear.matches("\\d{4}".toRegex())) {
+                                // If it's a valid year (e.g., "2023"), set the start and finish dates accordingly
+                                val year = selectedYear.toInt()
+                                startDate = LocalDate.of(year, 1, 1)
+                                finishDate = LocalDate.of(year, 12, 31)
+                            }
+                        },
+                        label = {
+                            Text(text = yearList[i])
+                        },
+                        leadingIcon = if (selectedYear == yearList[i]) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = "Localized Description",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                                )
+                            }
+                        } else {
+                            null
+                        },
+//                        colors = FilterChipDefaults.filterChipColors(containerColor = Color.Transparent),
+                    )
+                }
+            }
+
+//            VerticalDivider(modifier = Modifier.padding(8.dp))
 
             ExposedDropdownMenuBox(modifier = Modifier.weight(1f),
                 expanded = titleMenuExpanded,
@@ -137,6 +179,7 @@ fun WiDReadCalendarFragment() {
             ) {
                 TextField(
                     modifier = Modifier.menuAnchor(),
+//                    shape = RectangleShape,
                     readOnly = true,
                     value = if (selectedTitle == "ALL") { "전체" } else { titleMap[selectedTitle] ?: "공부" },
                     onValueChange = {},
@@ -148,6 +191,7 @@ fun WiDReadCalendarFragment() {
                         unfocusedIndicatorColor = Color.Transparent
                     ),
                 )
+
                 ExposedDropdownMenu(
                     expanded = titleMenuExpanded,
                     onDismissRequest = { titleMenuExpanded = false },
@@ -165,6 +209,8 @@ fun WiDReadCalendarFragment() {
                 }
             }
         }
+
+        HorizontalDivider()
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -190,16 +236,43 @@ fun WiDReadCalendarFragment() {
             columns = GridCells.Fixed(8),
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
+                .weight(1f)
         ) {
-            val daysDifference = ChronoUnit.DAYS.between(finishDate, startDate).toInt() + 1
+            val daysDifference = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
             var dateIndex = 0
             var gridIndex = 0
 
             var previousMonth: Int? = null
 
+            if (startDate.dayOfWeek.value != 7) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                    ) {
+                        Text(
+                            text = startDate.format(DateTimeFormatter.ofPattern("M월")),
+                            modifier = Modifier.align(Alignment.Center),
+                            style = TextStyle(fontSize = 12.sp)
+                        )
+                    }
+                }
+                gridIndex++
+
+                repeat(startDate.dayOfWeek.value % 7) {
+                    item {
+//                        EmptyPieChartView()
+                    }
+                    gridIndex++
+                }
+
+                previousMonth = startDate.monthValue
+            }
+
+
             while (dateIndex < daysDifference) {
-                val date = finishDate.plusDays(dateIndex.toLong())
+                val date = startDate.plusDays(dateIndex.toLong())
                 val currentMonth = date.monthValue
                 val isSelected = date == selectedDate
 
@@ -235,10 +308,7 @@ fun WiDReadCalendarFragment() {
                                 selectedDate = date
                             }
                             .border(
-                                BorderStroke(
-                                    1.dp,
-                                    if (isSelected) Color.LightGray else Color.Unspecified
-                                ),
+                                BorderStroke(1.dp, color = if (isSelected) Color.Green else Color.Unspecified),
                                 RoundedCornerShape(8.dp)
                             )
                         ) {
@@ -263,7 +333,7 @@ fun WiDReadCalendarFragment() {
             Row(modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Text(text = "less",
+                Text(text = "0시간",
                     style = TextStyle(fontSize = 12.sp))
 
                 for (opacity in opacities) {
@@ -271,6 +341,7 @@ fun WiDReadCalendarFragment() {
                         modifier = Modifier
                             .padding(2.dp)
                             .size(10.dp)
+                            .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(2.dp))
                             .background(
                                 backgroundColor.copy(alpha = opacity),
                                 shape = RoundedCornerShape(2.dp)
@@ -278,50 +349,15 @@ fun WiDReadCalendarFragment() {
                     )
                 }
 
-                Text(text = "more",
+                Text(text = "10시간",
                     style = TextStyle(fontSize = 12.sp))
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = colorResource(id = R.color.light_gray),
-                    shape = RoundedCornerShape(8.dp)
-                ),
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(width = 10.dp, height = 25.dp)
-            )
-
-            Text(modifier = Modifier
-                .weight(0.5f),
-                text = "제목",
-                textAlign = TextAlign.Center)
-
-            Text(modifier = Modifier
-                .weight(1f),
-                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                textAlign = TextAlign.Center)
-
-            Text(modifier = Modifier
-                .weight(1f),
-                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                        "${lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))}",
-                textAlign = TextAlign.Center)
-
-            Text(modifier = Modifier
-                .weight(1f),
-                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                textAlign = TextAlign.Center)
-        }
-
-        for ((title, monthTotal) in monthlyTitleDurationMap) {
-            val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
-            val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -330,42 +366,92 @@ fun WiDReadCalendarFragment() {
                         shape = RoundedCornerShape(8.dp)
                     ),
             ) {
-                val titleColorId = colorMap[title]
-                if (titleColorId != null) {
-                    val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                    Box(
+                Box(
+                    modifier = Modifier
+                        .size(width = 10.dp, height = 25.dp)
+                )
+
+                Text(modifier = Modifier
+                    .weight(0.5f),
+                    text = "제목",
+                    textAlign = TextAlign.Center)
+
+                Text(modifier = Modifier
+                    .weight(1f),
+                    text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
+                    textAlign = TextAlign.Center)
+
+                Text(modifier = Modifier
+                    .weight(1f),
+                    text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+                            "${lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))}",
+                    textAlign = TextAlign.Center)
+
+                Text(modifier = Modifier
+                    .weight(1f),
+                    text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
+                    textAlign = TextAlign.Center)
+            }
+
+            if (monthlyTitleDurationMap.isEmpty()) {
+                Text(
+                    text = "표시할 데이터가 없습니다.",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                )
+            } else {
+                for ((title, monthTotal) in monthlyTitleDurationMap) {
+                    val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
+                    val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
+
+                    Row(
                         modifier = Modifier
-                            .size(width = 10.dp, height = 25.dp)
+                            .fillMaxWidth()
                             .background(
-                                color = backgroundColor,
-                                shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                                color = colorResource(id = R.color.light_gray),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                    ) {
+                        val titleColorId = colorMap[title]
+                        if (titleColorId != null) {
+                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 10.dp, height = 25.dp)
+                                    .background(
+                                        color = backgroundColor,
+                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                                    )
                             )
-                    )
+                        }
+
+                        Text(
+                            modifier = Modifier.weight(0.5f),
+                            text = titleMap[title] ?: title,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = formatDuration(monthTotal, mode = 1),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = formatDuration(weekTotal, mode = 1),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = formatDuration(dayTotal, mode = 1),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
-
-                Text(
-                    modifier = Modifier.weight(0.5f),
-                    text = titleMap[title] ?: title,
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = formatDuration(monthTotal, mode = 1),
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = formatDuration(weekTotal, mode = 1),
-                    textAlign = TextAlign.Center
-                )
-
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = formatDuration(dayTotal, mode = 1),
-                    textAlign = TextAlign.Center
-                )
             }
         }
     }

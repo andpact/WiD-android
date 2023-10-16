@@ -101,7 +101,8 @@ fun getFirstDayOfMonth(date: LocalDate): LocalDate {
 
 fun getDate1yearAgo(date: LocalDate): LocalDate {
     val oneYearAgo = date.minusDays(364)
-    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+//    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+    return oneYearAgo
 }
 
 fun getWeekNumber(date: LocalDate): Int {

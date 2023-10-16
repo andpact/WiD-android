@@ -69,26 +69,12 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                         Text(text = "CALENDAR")
                     }
                 )
-
-//                Tab(
-//                    selected = pagerState.currentPage == 2,
-//                    onClick = {
-//                        scope.launch {
-//                            pagerState.animateScrollToPage(2)
-//                        }},
-//                    selectedContentColor = Color.Black,
-//                    unselectedContentColor = Color.LightGray,
-//                    text = {
-//                        Text(text = "MONTH")
-//                    }
-//                )
             }
         }
 
         HorizontalPager(state = pagerState) {page ->
             when (page) {
                 0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
-//                1 -> WiDReadWeekFragment()
                 1 -> WiDReadCalendarFragment()
             }
         }
