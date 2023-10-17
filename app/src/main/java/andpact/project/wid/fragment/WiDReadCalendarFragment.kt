@@ -11,10 +11,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
@@ -22,13 +24,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -159,7 +166,7 @@ fun WiDReadCalendarFragment() {
                             {
                                 Icon(
                                     imageVector = Icons.Filled.Done,
-                                    contentDescription = "Localized Description",
+                                    contentDescription = "Selected",
                                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                                 )
                             }
@@ -210,7 +217,7 @@ fun WiDReadCalendarFragment() {
             }
         }
 
-        HorizontalDivider()
+//        HorizontalDivider()
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -236,7 +243,7 @@ fun WiDReadCalendarFragment() {
             columns = GridCells.Fixed(8),
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(0.6f)
         ) {
             val daysDifference = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
             var dateIndex = 0
@@ -252,9 +259,9 @@ fun WiDReadCalendarFragment() {
                             .aspectRatio(1f)
                     ) {
                         Text(
-                            text = startDate.format(DateTimeFormatter.ofPattern("M월")),
+                            text = startDate.format(DateTimeFormatter.ofPattern("M")),
                             modifier = Modifier.align(Alignment.Center),
-                            style = TextStyle(fontSize = 12.sp)
+//                            style = TextStyle(fontSize = 12.sp)
                         )
                     }
                 }
@@ -291,7 +298,7 @@ fun WiDReadCalendarFragment() {
                             Text(
                                 text = monthText,
                                 modifier = Modifier.align(Alignment.Center),
-                                style = TextStyle(fontSize = 12.sp)
+//                                style = TextStyle(fontSize = 12.sp)
                             )
                         }
                     }
@@ -308,7 +315,10 @@ fun WiDReadCalendarFragment() {
                                 selectedDate = date
                             }
                             .border(
-                                BorderStroke(1.dp, color = if (isSelected) Color.Green else Color.Unspecified),
+                                BorderStroke(
+                                    1.dp,
+                                    color = if (isSelected) Color.Blue else Color.Unspecified
+                                ),
                                 RoundedCornerShape(8.dp)
                             )
                         ) {
@@ -325,133 +335,261 @@ fun WiDReadCalendarFragment() {
             }
         }
 
-        if (selectedTitle != "ALL") {
-            val titleColorId = colorMap[selectedTitle]!!
-            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-            val opacities = listOf(0.2f, 0.4f, 0.6f, 0.8f, 1.0f)
+        Box(modifier = Modifier
+            .fillMaxWidth()
+        ) {
+            Icon(
+                modifier = Modifier.align(Alignment.Center),
+                painter = painterResource(id = R.drawable.baseline_drag_handle_24),
+                contentDescription = "Drag handle")
 
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(text = "0시간",
-                    style = TextStyle(fontSize = 12.sp))
+            if (selectedTitle != "ALL") {
+                val titleColorId = colorMap[selectedTitle]!!
+                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                val opacities = listOf(0.2f, 0.4f, 0.6f, 0.8f, 1.0f)
 
-                for (opacity in opacities) {
-                    Box(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .size(10.dp)
-                            .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(2.dp))
-                            .background(
-                                backgroundColor.copy(alpha = opacity),
-                                shape = RoundedCornerShape(2.dp)
-                            )
-                    )
+                Row(modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Text(text = "0시간",
+                        style = TextStyle(fontSize = 12.sp))
+
+                    for (opacity in opacities) {
+                        Box(
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .size(10.dp)
+                                .border(
+                                    BorderStroke(1.dp, Color.LightGray),
+                                    RoundedCornerShape(2.dp)
+                                )
+                                .background(
+                                    backgroundColor.copy(alpha = opacity),
+                                    shape = RoundedCornerShape(2.dp)
+                                )
+                        )
+                    }
+
+                    Text(text = "10시간",
+                        style = TextStyle(fontSize = 12.sp))
                 }
-
-                Text(text = "10시간",
-                    style = TextStyle(fontSize = 12.sp))
             }
         }
 
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = colorResource(id = R.color.light_gray),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 10.dp, height = 25.dp)
+            if (selectedTitle == "ALL") {
+                Text(text = "날짜 및 기간별 기록",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
                 )
 
-                Text(modifier = Modifier
-                    .weight(0.5f),
-                    text = "제목",
-                    textAlign = TextAlign.Center)
-
-                Text(modifier = Modifier
-                    .weight(1f),
-                    text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                    textAlign = TextAlign.Center)
-
-                Text(modifier = Modifier
-                    .weight(1f),
-                    text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                            "${lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))}",
-                    textAlign = TextAlign.Center)
-
-                Text(modifier = Modifier
-                    .weight(1f),
-                    text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                    textAlign = TextAlign.Center)
-            }
-
-            if (monthlyTitleDurationMap.isEmpty()) {
-                Text(
-                    text = "표시할 데이터가 없습니다.",
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
-                )
-            } else {
-                for ((title, monthTotal) in monthlyTitleDurationMap) {
-                    val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
-                    val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
-
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(16.dp)
+//                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = colorResource(id = R.color.light_gray),
-                                shape = RoundedCornerShape(8.dp)
-                            ),
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val titleColorId = colorMap[title]
-                        if (titleColorId != null) {
-                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 10.dp, height = 25.dp)
-                                    .background(
-                                        color = backgroundColor,
-                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
-                                    )
-                            )
-                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(width = 5.dp, height = 5.dp)
+                        )
 
                         Text(
                             modifier = Modifier.weight(0.5f),
-                            text = titleMap[title] ?: title,
+                            text = "제목",
+                            textAlign = TextAlign.Center,
+                        )
+
+                        Text(modifier = Modifier
+                            .weight(1f),
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
+                            textAlign = TextAlign.Center)
+
+                        Text(modifier = Modifier
+                            .weight(1f),
+                            text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+                                    "${lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))}",
+                            textAlign = TextAlign.Center)
+
+                        Text(modifier = Modifier
+                            .weight(1f),
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
+                            textAlign = TextAlign.Center)
+                    }
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+//                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        item {
+                            if (monthlyTitleDurationMap.isEmpty()) {
+                                Text(
+                                    text = "표시할 데이터가 없습니다.",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                                )
+                            } else {
+                                for ((title, monthTotal) in monthlyTitleDurationMap) {
+                                    val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
+                                    val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                            val titleColorId = colorMap[title]
+                                            if (titleColorId != null) {
+                                                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(width = 5.dp, height = 5.dp)
+                                                        .clip(CircleShape)
+                                                        .background(
+                                                            color = backgroundColor,
+                                                        )
+                                                )
+                                            }
+
+                                        Text(
+                                            modifier = Modifier.weight(0.5f),
+                                            text = titleMap[title] ?: title,
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(dayTotal, mode = 1),
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(weekTotal, mode = 1),
+                                            textAlign = TextAlign.Center
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(monthTotal, mode = 1),
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text(text = "날짜 및 기간별 기록",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .weight(1f),
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
                             textAlign = TextAlign.Center
                         )
 
                         Text(
-                            modifier = Modifier.weight(1f),
-                            text = formatDuration(monthTotal, mode = 1),
+                            modifier = Modifier
+                                .weight(1f),
+                            text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+                                    "${lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))}",
                             textAlign = TextAlign.Center
                         )
 
                         Text(
-                            modifier = Modifier.weight(1f),
-                            text = formatDuration(weekTotal, mode = 1),
-                            textAlign = TextAlign.Center
-                        )
-
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = formatDuration(dayTotal, mode = 1),
+                            modifier = Modifier
+                                .weight(1f),
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
                             textAlign = TextAlign.Center
                         )
                     }
+
+                    if (monthlyTitleDurationMap.isEmpty()) {
+                        Text(
+                            text = "표시할 데이터가 없습니다.",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                        )
+                    } else {
+                        for ((title, monthTotal) in monthlyTitleDurationMap) {
+                            val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
+                            val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = formatDuration(dayTotal, mode = 1),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = formatDuration(weekTotal, mode = 1),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = formatDuration(monthTotal, mode = 1),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
+
+                Text(text = "종합 기록",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
+
+                Text(text = "연속 기록",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
             }
         }
     }

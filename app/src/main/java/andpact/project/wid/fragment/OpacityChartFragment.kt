@@ -50,7 +50,7 @@ fun OpacityChartView(date: LocalDate, title: String) {
     Box(modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
-        .padding(8.dp)
+        .padding(4.dp)
         .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(8.dp))
         .background(
             color = backgroundColor.copy(alpha = opacity),

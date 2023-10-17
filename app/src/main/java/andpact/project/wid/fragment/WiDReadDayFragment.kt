@@ -116,7 +116,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             }
         }
 
-        // 파이 차트 표시
         PieChartView(date = currentDate, forReadDay = true)
 
         Row(
@@ -257,18 +256,21 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 //            }
 //        }
 
-        if (wiDList.isEmpty()) {
-            Text(modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-                text = "표시할 WiD가 없습니다.",
-                style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (wiDList.isEmpty()) {
+                item {
+                    Text(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                        text = "표시할 WiD가 없습니다.",
+                        style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                    )
+                }
+            } else {
                 itemsIndexed(wiDList) { index, wiD ->
                     Row(
                         modifier = Modifier
