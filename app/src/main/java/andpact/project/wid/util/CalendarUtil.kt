@@ -1,10 +1,8 @@
 package andpact.project.wid.util
 
-import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 
 fun formatTime(time: Long): String {
@@ -17,7 +15,7 @@ fun formatTime(time: Long): String {
 
 fun formatDuration(duration: Duration, mode: Int): String {
     // mode 0. HH:mm:ss (10:30:30)
-    // mode 1. H시간 (10.5시간), m분 (30.5분)
+    // mode 1. H시간 (10.5시간), m분 (30분)
     // mode 2. H시간 m분 (10시간 30분)
     // mode 3. H시간 m분 s초 (10시간 30분 30초)
 
@@ -27,47 +25,16 @@ fun formatDuration(duration: Duration, mode: Int): String {
 
     return when (mode) {
         0 -> String.format("%02d:%02d:%02d", hours, minutes, seconds)
-
-//        1 -> {
-//            val totalHours = hours.toDouble() + (minutes.toDouble() / 60.0)
-//            val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
-//
-//            when {
-//                totalHours >= 1.1 -> String.format("%.1f시간", totalHours)
-//                totalHours >= 1.0 -> String.format("%d시간", hours)
-//                totalMinutes >= 1.1 -> String.format("%.1f분", totalMinutes)
-//                totalMinutes >= 1.0 -> String.format("%d분", minutes)
-//                else -> String.format("%d초", seconds)
-//            }
-//        }
-
         1 -> {
-            val totalHours = hours.toDouble() + (minutes.toDouble() / 60.0)
-//            val totalMinutes = minutes.toDouble() + (seconds.toDouble() / 60.0)
-
+            val totalHours = hours + (minutes / 60.0)
             when {
-                totalHours >= 1.1 -> {
-                    val formattedTotalHours = if (totalHours % 1.0 == 0.0) {
-                        totalHours.toInt().toString()
-                    } else {
-                        String.format("%.1f", totalHours)
-                    }
-                    "${formattedTotalHours}시간"
-                }
-                totalHours >= 1.0 -> "${hours}시간"
-//                totalMinutes >= 1.1 -> {
-//                    val formattedTotalMinutes = if (totalMinutes % 1.0 == 0.0) {
-//                        totalMinutes.toInt().toString()
-//                    } else {
-//                        String.format("%.1f", totalMinutes)
-//                    }
-//                    "${formattedTotalMinutes}분"
-//                }
+                hours >= 1 && minutes == 0 -> "${hours}시간"
+                hours >= 1 -> "${String.format("%.2f", totalHours).substring(0, 3)}시간"
                 minutes >= 1 -> "${minutes}분"
-                else -> "${seconds}초"
+                seconds >= 1 -> "${seconds}초"
+                else -> "기록 없음"
             }
         }
-
         2 -> {
             when {
                 hours > 0 && minutes == 0 && seconds == 0 -> String.format("%d시간", hours)
@@ -103,9 +70,4 @@ fun getDate1yearAgo(date: LocalDate): LocalDate {
     val oneYearAgo = date.minusDays(364)
 //    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
     return oneYearAgo
-}
-
-fun getWeekNumber(date: LocalDate): Int {
-    val weekFields = WeekFields.of(java.util.Locale.getDefault())
-    return date.get(weekFields.weekOfWeekBasedYear())
 }

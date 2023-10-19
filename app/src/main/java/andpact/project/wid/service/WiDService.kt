@@ -174,11 +174,11 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val lastDayOfMonth = date.withDayOfMonth(date.month.length(date.isLeapYear))
 
         val selectQuery = """
-        SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
-        FROM $TABLE_NAME
-        WHERE $COLUMN_DATE BETWEEN ? AND ?
-        GROUP BY $COLUMN_TITLE
-    """.trimIndent()
+            SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
+            FROM $TABLE_NAME
+            WHERE $COLUMN_DATE BETWEEN ? AND ?
+            GROUP BY $COLUMN_TITLE
+        """.trimIndent()
         val selectionArgs = arrayOf(firstDayOfMonth.toString(), lastDayOfMonth.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
@@ -401,7 +401,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 
         if (title == "ALL") {
             selectQuery = """
-                SELECT $COLUMN_DATE
+                SELECT DISTINCT $COLUMN_DATE
                 FROM $TABLE_NAME
                 WHERE $COLUMN_DATE BETWEEN ? AND ?
                 ORDER BY $COLUMN_DATE ASC
@@ -409,7 +409,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
             selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
         } else {
             selectQuery = """
-                SELECT $COLUMN_DATE
+                SELECT DISTINCT $COLUMN_DATE
                 FROM $TABLE_NAME
                 WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
                 ORDER BY $COLUMN_DATE ASC
@@ -431,7 +431,12 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
             } else if (previousDate.plusDays(1) == currentDate) {
                 // The current date continues the range.
                 currentRangeEnd = currentDate
-            } else {
+            }
+//            else if (previousDate == currentDate) {
+//                // The current date is the same as the previous one, continue to the next date.
+//                continue
+//            }
+        else {
                 // The current date breaks the range.
                 if (currentRangeStart != null && currentRangeEnd != null) {
                     // Update the longest range if necessary.
@@ -465,59 +470,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         }
     }
 
-    fun getCurrentStreak(title: String, currentDate: LocalDate): LocalDate? {
-        val db = readableDatabase
-        val startDate = currentDate
-
-        val selectQuery: String
-        val selectionArgs: Array<String>
-
-        if (title == "ALL") {
-            selectQuery = """
-            SELECT $COLUMN_DATE
-            FROM $TABLE_NAME
-            WHERE $COLUMN_DATE BETWEEN ? AND ?
-            ORDER BY $COLUMN_DATE DESC
-        """.trimIndent()
-            selectionArgs = arrayOf(startDate.toString(), currentDate.toString())
-        } else {
-            selectQuery = """
-            SELECT $COLUMN_DATE
-            FROM $TABLE_NAME
-            WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
-            ORDER BY $COLUMN_DATE DESC
-        """.trimIndent()
-            selectionArgs = arrayOf(title, startDate.toString(), currentDate.toString())
-        }
-
-        val cursor = db.rawQuery(selectQuery, selectionArgs)
-        var previousDate: LocalDate? = currentDate
-        var currentStreakStart: LocalDate? = null
-
-        while (cursor.moveToNext()) {
-            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
-            val currentDate = LocalDate.parse(dateString)
-
-            if (previousDate != currentDate.plusDays(1)) {
-                // Streak is broken, return the start of the streak
-                return currentStreakStart
-            }
-
-            if (currentStreakStart == null) {
-                currentStreakStart = currentDate
-            }
-
-            previousDate = currentDate
-        }
-
-        cursor.close()
-        db.close()
-
-        // If the loop completes, it means the streak goes all the way to the start date.
-        return currentStreakStart
-    }
-
-    fun getNumberOfDays(title: String, startDate: LocalDate, finishDate: LocalDate): Long {
+    fun getCurrentStreak(title: String, startDate: LocalDate, finishDate: LocalDate): LocalDate? {
         val db = readableDatabase
 
         val selectQuery: String
@@ -525,31 +478,145 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 
         if (title == "ALL") {
             selectQuery = """
-            SELECT COUNT(DISTINCT $COLUMN_DATE) as days_count
+            SELECT DISTINCT $COLUMN_DATE
             FROM $TABLE_NAME
             WHERE $COLUMN_DATE BETWEEN ? AND ?
+            ORDER BY $COLUMN_DATE DESC
         """.trimIndent()
             selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
         } else {
             selectQuery = """
-            SELECT COUNT(DISTINCT $COLUMN_DATE) as days_count
+            SELECT DISTINCT $COLUMN_DATE
             FROM $TABLE_NAME
             WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+            ORDER BY $COLUMN_DATE DESC
         """.trimIndent()
             selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
         }
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
-        var daysCount: Long = 0
+        var previousDate: LocalDate? = null
 
-        if (cursor.moveToFirst()) {
-            daysCount = cursor.getLong(cursor.getColumnIndex("days_count"))
+        while (cursor.moveToNext()) {
+            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
+            val date = LocalDate.parse(dateString)
+
+            if (cursor.isFirst && date != finishDate) {
+                cursor.close()
+                db.close()
+                return null
+            }
+
+//            if (previousDate != null && previousDate == date) {
+//                // Skip duplicate dates.
+//                continue
+//            }
+
+            if (previousDate == null || previousDate == date.plusDays(1)) {
+                // Continuation of consecutive days or the first day.
+                previousDate = date
+            } else {
+                // Streak is broken.
+                cursor.close()
+                db.close()
+                return previousDate
+            }
         }
 
         cursor.close()
         db.close()
 
-        return daysCount
+        // If we have a consecutive streak, return the finish date.
+        return previousDate
+    }
+
+    fun getTotalDaysAndDuration(title: String, startDate: LocalDate, finishDate: LocalDate): Pair<Long, Duration>? {
+        val db = readableDatabase
+
+        val selectQuery: String
+        val selectionArgs: Array<String>
+
+        if (title == "ALL") {
+            selectQuery = """
+                SELECT COUNT(DISTINCT $COLUMN_DATE) as days_count, SUM($COLUMN_DURATION) as total_duration
+                FROM $TABLE_NAME
+                WHERE $COLUMN_DATE BETWEEN ? AND ?
+            """.trimIndent()
+            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
+        } else {
+            selectQuery = """
+                SELECT COUNT(DISTINCT $COLUMN_DATE) as days_count, SUM($COLUMN_DURATION) as total_duration
+                FROM $TABLE_NAME
+                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+            """.trimIndent()
+            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
+        }
+
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+        var daysCount: Long? = null
+        var totalDuration: Duration? = null
+
+        if (cursor.moveToFirst()) {
+            daysCount = cursor.getLong(cursor.getColumnIndex("days_count"))
+            totalDuration = Duration.ofMillis(cursor.getLong(cursor.getColumnIndex("total_duration")))
+        }
+
+        cursor.close()
+        db.close()
+
+        return if (daysCount != null && totalDuration != null) {
+            Pair(daysCount, totalDuration)
+        } else {
+            null
+        }
+    }
+
+    fun getBestDateAndDuration(title: String, startDate: LocalDate, finishDate: LocalDate): Pair<Duration, LocalDate>? {
+        val db = readableDatabase
+
+        val selectQuery: String
+        val selectionArgs: Array<String>
+
+        if (title == "ALL") {
+            selectQuery = """
+                SELECT $COLUMN_DATE, SUM($COLUMN_DURATION) as total_duration
+                FROM $TABLE_NAME
+                WHERE $COLUMN_DATE BETWEEN ? AND ?
+                GROUP BY $COLUMN_DATE
+                ORDER BY total_duration DESC
+                LIMIT 1
+            """.trimIndent()
+            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
+        } else {
+            selectQuery = """
+                SELECT $COLUMN_DATE, SUM($COLUMN_DURATION) as total_duration
+                FROM $TABLE_NAME
+                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+                GROUP BY $COLUMN_DATE
+                ORDER BY total_duration DESC
+                LIMIT 1
+            """.trimIndent()
+            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
+        }
+
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+        var bestDate: LocalDate? = null
+        var totalDuration: Duration? = null
+
+        if (cursor.moveToFirst()) {
+            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
+            bestDate = LocalDate.parse(dateString)
+            totalDuration = Duration.ofMillis(cursor.getLong(cursor.getColumnIndex("total_duration")))
+        }
+
+        cursor.close()
+        db.close()
+
+        return if (bestDate != null && totalDuration != null) {
+            Pair(totalDuration, bestDate)
+        } else {
+            null
+        }
     }
 
     fun readWiDListByDetail(detail: String): List<WiD> {

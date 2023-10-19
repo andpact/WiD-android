@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -74,10 +75,10 @@ fun WiDReadCalendarFragment() {
     val monthlyTitleDurationMap = wiDService.getMonthlyTitleDurationMap(selectedDate)
 
     var longestStreak by remember { mutableStateOf(wiDService.getLongestStreak(selectedTitle, startDate, finishDate)) }
-    var currentStreak by remember { mutableStateOf(wiDService.getCurrentStreak(selectedTitle, today)) }
+    var currentStreak by remember { mutableStateOf(wiDService.getCurrentStreak(selectedTitle, getDate1yearAgo(today),today)) }
 
-    var totalDays by remember { mutableStateOf(wiDService.getNumberOfDays(selectedTitle, startDate, finishDate)) }
-    var bestDay by remember { mutableStateOf("") }
+    var totalDaysAndDuration by remember { mutableStateOf(wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)) }
+    var bestDateAndDuration by remember { mutableStateOf(wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)) }
 
     Column(
         modifier = Modifier
@@ -88,7 +89,14 @@ fun WiDReadCalendarFragment() {
             .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LazyRow(modifier = Modifier.weight(1.5f)) {
+            LazyRow(modifier = Modifier
+                .weight(2f)
+                .padding(0.dp, 0.dp, 4.dp, 0.dp)
+//                .border(
+//                    BorderStroke(1.dp, Color.LightGray),
+//                    shape = RoundedCornerShape(8.dp)
+//                ),
+            ) {
                 items(yearList.size) { i ->
                     FilterChip(
                         modifier = Modifier.padding(horizontal = 6.dp),
@@ -109,7 +117,8 @@ fun WiDReadCalendarFragment() {
 
                             longestStreak = wiDService.getLongestStreak(selectedTitle, startDate, finishDate)
 
-                            totalDays = wiDService.getNumberOfDays(selectedTitle, startDate, finishDate)
+                            totalDaysAndDuration = wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)
+                            bestDateAndDuration = wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)
                         },
                         label = {
                             Text(text = yearList[i])
@@ -125,12 +134,18 @@ fun WiDReadCalendarFragment() {
                         } else {
                             null
                         },
-//                        colors = FilterChipDefaults.filterChipColors(containerColor = Color.Transparent),
+                        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = colorResource(id = R.color.light_gray)),
                     )
                 }
             }
 
-            ExposedDropdownMenuBox(modifier = Modifier.weight(1f),
+            ExposedDropdownMenuBox(modifier = Modifier
+                .weight(1f),
+//                .background(color = colorResource(id = R.color.light_gray)),
+//                .border(
+//                    BorderStroke(1.dp, Color.LightGray),
+//                    shape = RoundedCornerShape(8.dp)
+//                ),
                 expanded = titleMenuExpanded,
                 onExpandedChange = { titleMenuExpanded = !titleMenuExpanded },
             ) {
@@ -161,9 +176,10 @@ fun WiDReadCalendarFragment() {
                                 titleMenuExpanded = false
 
                                 longestStreak = wiDService.getLongestStreak(selectedTitle, startDate, finishDate)
-                                currentStreak = wiDService.getCurrentStreak(selectedTitle, today)
+                                currentStreak = wiDService.getCurrentStreak(selectedTitle, getDate1yearAgo(today), today)
 
-                                totalDays = wiDService.getNumberOfDays(selectedTitle, startDate, finishDate)
+                                totalDaysAndDuration = wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)
+                                bestDateAndDuration = wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                         )
@@ -172,10 +188,12 @@ fun WiDReadCalendarFragment() {
             }
         }
 
-//        HorizontalDivider()
+        HorizontalDivider()
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
         ) {
             val daysOfWeek = listOf("날짜", "일", "월", "화", "수", "목", "금", "토")
             daysOfWeek.forEachIndexed { index, day ->
@@ -243,11 +261,11 @@ fun WiDReadCalendarFragment() {
                 val isSelected = date == selectedDate
 
                 if (gridIndex % 8 == 0 && (previousMonth == null || currentMonth != previousMonth)) {
-                    val monthText = if (currentMonth == 1) {
-                        date.format(DateTimeFormatter.ofPattern("yyyy년 M월"))
-                    } else {
-                        date.format(DateTimeFormatter.ofPattern("M월"))
-                    }
+//                    val monthText = if (currentMonth == 1) {
+//                        date.format(DateTimeFormatter.ofPattern("yyyy년 M월"))
+//                    } else {
+//                        date.format(DateTimeFormatter.ofPattern("M월"))
+//                    }
                     item {
                         Box(
                             modifier = Modifier
@@ -255,9 +273,10 @@ fun WiDReadCalendarFragment() {
                                 .aspectRatio(1f)
                         ) {
                             Text(
-                                text = monthText,
+//                                text = monthText,
+                                text = date.format(DateTimeFormatter.ofPattern("M월")),
                                 modifier = Modifier.align(Alignment.Center),
-//                                style = TextStyle(fontSize = 12.sp)
+                                style = TextStyle(fontSize = 12.sp)
                             )
                         }
                     }
@@ -296,6 +315,7 @@ fun WiDReadCalendarFragment() {
 
         Box(modifier = Modifier
             .fillMaxWidth()
+            .padding(8.dp)
         ) {
             Text(modifier = Modifier.align(Alignment.CenterStart),
                 text = "달력 날짜를 클릭하여 조회",
@@ -307,6 +327,7 @@ fun WiDReadCalendarFragment() {
                 contentDescription = "Drag handle",
                 tint = Color.LightGray
             )
+
 
             if (selectedTitle != "ALL") {
                 val titleColorId = colorMap[selectedTitle]!!
@@ -357,18 +378,17 @@ fun WiDReadCalendarFragment() {
                             BorderStroke(1.dp, Color.LightGray),
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .padding(16.dp)
-//                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .size(width = 5.dp, height = 5.dp)
+                                .size(10.dp)
                         )
 
                         Text(
@@ -399,7 +419,6 @@ fun WiDReadCalendarFragment() {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth(),
-//                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         item {
                             if (monthlyTitleDurationMap.isEmpty()) {
@@ -417,7 +436,8 @@ fun WiDReadCalendarFragment() {
 
                                     Row(
                                         modifier = Modifier
-                                            .fillMaxWidth(),
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                             val titleColorId = colorMap[title]
@@ -425,11 +445,9 @@ fun WiDReadCalendarFragment() {
                                                 val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                                                 Box(
                                                     modifier = Modifier
-                                                        .size(width = 5.dp, height = 5.dp)
+                                                        .size(10.dp)
                                                         .clip(CircleShape)
-                                                        .background(
-                                                            color = backgroundColor,
-                                                        )
+                                                        .background(color = backgroundColor)
                                                 )
                                             }
 
@@ -467,78 +485,63 @@ fun WiDReadCalendarFragment() {
                     style = TextStyle(fontWeight = FontWeight.Bold)
                 )
 
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(
                             BorderStroke(1.dp, Color.LightGray),
                             shape = RoundedCornerShape(8.dp)
                         ),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            modifier = Modifier
-                                .weight(1f),
                             text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                            textAlign = TextAlign.Center
                         )
 
                         Text(
-                            modifier = Modifier
-                                .weight(1f),
+                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
                             text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
                                     lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
-                            textAlign = TextAlign.Center
                         )
 
                         Text(
-                            modifier = Modifier
-                                .weight(1f),
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                            textAlign = TextAlign.Center
+                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
 
-                    if (monthlyTitleDurationMap.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = "표시할 데이터가 없습니다.",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
                         )
-                    } else {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
 
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Text(
+                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
 
@@ -559,14 +562,10 @@ fun WiDReadCalendarFragment() {
                             .weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "최장 기간",
-                            textAlign = TextAlign.Center
-                        )
+                        Text(text = "최장 기간")
 
                         Text(
                             text = if (longestStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(longestStreak!!.first, longestStreak!!.second) + 1}일" },
-                            textAlign = TextAlign.Center,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -575,18 +574,19 @@ fun WiDReadCalendarFragment() {
                             text = if (longestStreak == null) {
                                 "기간 없음"
                             } else {
-                                val firstDate = longestStreak!!.first
-                                val secondDate = longestStreak!!.second
-                                val formattedFirstDate = if (firstDate.month == secondDate.month) {
-                                    firstDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                val finishDate = longestStreak!!.first
+                                val startDate = longestStreak!!.second
+                                val formattedStartDate = finishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                val formattedFinishDate = if (startDate == today) {
+                                    "오늘"
+                                } else if ((startDate.month == finishDate.month)) {
+                                    startDate.format(DateTimeFormatter.ofPattern("d일"))
                                 } else {
-                                    firstDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                    startDate.format(DateTimeFormatter.ofPattern("M월 d일"))
                                 }
-                                val formattedSecondDate = secondDate.format(DateTimeFormatter.ofPattern("d일"))
-
-                                "$formattedFirstDate ~ $formattedSecondDate"
+                                "$formattedStartDate ~ $formattedFinishDate"
                             },
-                            textAlign = TextAlign.Center
+                            style = TextStyle(color = Color.Gray)
                         )
                     }
 
@@ -595,22 +595,23 @@ fun WiDReadCalendarFragment() {
                             .weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
-                        Text(
-                            text = "현재 진행 중",
-                            textAlign = TextAlign.Center
-                        )
+                        Text(text = "현재 진행 중")
 
                         Text(
                             text = if (currentStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(currentStreak, today) + 1}일" },
-                            textAlign = TextAlign.Center,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
 
                         Text(
-                            text = if (currentStreak == null) { "기간 없음" } else { "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘" },
-                            textAlign = TextAlign.Center
+                            text = if (currentStreak == null) {
+                                "기간 없음"
+                            } else if (currentStreak == today) {
+                                "오늘"
+                            } else {
+                                "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘"
+                            },
+                            style = TextStyle(color = Color.Gray)
                         )
                     }
                 }
@@ -634,7 +635,17 @@ fun WiDReadCalendarFragment() {
                     ) {
                         Text(text = "총")
 
-                        Text(text = "${totalDays}일")
+                        Text(
+                            text = "${totalDaysAndDuration?.first ?: 0}일",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = if (totalDaysAndDuration == null) "날짜 없음" else formatDuration(
+                                totalDaysAndDuration!!.second, mode = 1),
+                            style = TextStyle(color = Color.Gray)
+                        )
                     }
 
                     Column(
@@ -644,7 +655,14 @@ fun WiDReadCalendarFragment() {
                     ) {
                         Text(text = "최고")
 
-                        Text(text = "${totalDays}일")
+                        Text(text = if (bestDateAndDuration == null) "날짜 없음" else bestDateAndDuration!!.second.format(DateTimeFormatter.ofPattern("M월 d일")),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold)
+
+                        Text(text = if (bestDateAndDuration == null) "기록 없음" else formatDuration(
+                            bestDateAndDuration!!.first, mode = 1),
+                            style = TextStyle(color = Color.Gray)
+                        )
                     }
                 }
             }
