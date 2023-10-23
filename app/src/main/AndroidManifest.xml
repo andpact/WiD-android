@@ -6,14 +6,14 @@
 <!--    인터넷 사용 허가-->
     <uses-permission android:name="android.permission.INTERNET" />
 <!--    인터넷 접속 상태 확인 허가-->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 
     <!-- Required only if your app targets Android 13 or higher. -->
     <!-- For apps targeting Android 13 or higher & GMA SDK version 20.3.0 or lower -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+<!--    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>-->
 
+<!--        android:name=".util.AppOpenAdUtil"-->
     <application
-        android:name=".util.AppOpenAdUtil"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,7 +26,7 @@
 
 <!--        android:noHistory="true"-->
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.WiD">
             <intent-filter>
@@ -37,7 +37,7 @@
         </activity>
 
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".activity.MainActivity"
             android:exported="true" />
 
 <!--        실제 앱 WiD ID-->
@@ -45,9 +45,9 @@
 <!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
 <!--            android:value="ca-app-pub-3641806776840744~1276681086"/>-->
 
-<!--        테스트 용 앱 ID-->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+<!--        테스트 광고 용 앱 ID-->
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+<!--            android:value="ca-app-pub-3940256099942544~3347511713"/>-->
     </application>
 </manifest>

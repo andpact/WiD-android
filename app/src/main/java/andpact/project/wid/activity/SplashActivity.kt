@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,66 +27,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 private const val LOG_TAG = "SplashActivity"
 
-@SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val isInternetConnected = isInternetConnected()
+//        val isInternetConnected = isInternetConnected()
 
         setContent {
-            SplashScreen(isInternetConnected)
+//            SplashScreen(isInternetConnected)
+            SplashScreen()
         }
 
-        if (isInternetConnected) {
-            showAppOpenAd()
-        }
+//        if (isInternetConnected) {
+//            showAppOpenAd()
+//        }
     }
 
-    private fun isInternetConnected(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-
-        return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-    }
+//    private fun isInternetConnected(): Boolean {
+//        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+//
+//        return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+//    }
 
     private fun startMainActivity() {
+        Log.d("SplashActivity", "Start MainActivity")
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
     }
 
+    @Composable
+//fun SplashScreen(isInternetConnected: Boolean) {
+    fun SplashScreen() {
 
-    private fun showAppOpenAd() {
-        val application = application as? AppOpenAdUtil
-
-        if (application == null) {
-            Log.e(LOG_TAG, "showAppOpenAd : Failed to cast application to AppOpenAdUtil.")
+        LaunchedEffect(true) {
+            delay(2000)
 
             startMainActivity()
-
-            return
         }
 
-        application.showAdIfAvailable(this)
-
-//        application.showAdIfAvailable(
-//            this@SplashActivity,
-//            object : AppOpenAdUtil.OnShowAdCompleteListener {
-//                override fun onShowAdComplete() {
-//                    startMainActivity()
-//                }
-//            }
-//        )
-    }
-}
-
-@Composable
-fun SplashScreen(isInternetConnected: Boolean) {
-//    WiDTheme() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,19 +88,43 @@ fun SplashScreen(isInternetConnected: Boolean) {
                 )
             }
 
-            if (!isInternetConnected) {
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(0.dp, 100.dp, 0.dp, 0.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "인터넷 연결을 확인하세요.",
-                        style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
-                    )
-                }
-            }
+//        if (!isInternetConnected) {
+//            Column(modifier = Modifier
+//                .fillMaxSize()
+//                .padding(0.dp, 100.dp, 0.dp, 0.dp),
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Text(
+//                    text = "인터넷 연결을 확인하세요.",
+//                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
+//                )
+//            }
+//        }
         }
+    }
+
+//    private fun showAppOpenAd() {
+//        val application = application as? AppOpenAdUtil
+//
+//        if (application == null) {
+//            Log.e(LOG_TAG, "showAppOpenAd : Failed to cast application to AppOpenAdUtil.")
+//
+//            startMainActivity()
+//
+//            return
+//        }
+//
+//        application.showAdIfAvailable(this)
+
+//        application.showAdIfAvailable(
+//            this@SplashActivity,
+//            object : AppOpenAdUtil.OnShowAdCompleteListener {
+//                override fun onShowAdComplete() {
+//                    startMainActivity()
+//                }
+//            }
+//        )
 //    }
 }
+

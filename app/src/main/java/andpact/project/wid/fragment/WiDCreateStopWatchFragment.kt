@@ -5,6 +5,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.titles
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
@@ -38,7 +39,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
 
     var date: LocalDate = LocalDate.now()
 
-    val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var titleIndex by remember { mutableStateOf(0) }
     var title by remember { mutableStateOf(titles[titleIndex]) }
 
@@ -218,7 +218,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                     text = buttonText,
                     color = when (buttonText) {
                         "중지" -> Color.Red
-                        "계속" -> colorResource(id = R.color.exercise)
+                        "계속" -> colorResource(id = R.color.exercise_color)
                         else -> Color.Unspecified
                     },
                     style = TextStyle(fontSize = 20.sp)

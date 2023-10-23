@@ -5,6 +5,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.titles
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -59,7 +60,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
     val date by remember { mutableStateOf(wiD.date) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
-    val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var title by remember { mutableStateOf(wiD.title) }
 
     val currentTime: LocalTime = LocalTime.now().withSecond(0)

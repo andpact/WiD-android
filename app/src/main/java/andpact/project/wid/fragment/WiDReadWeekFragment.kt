@@ -52,16 +52,6 @@ fun WiDReadWeekFragment() {
     val wiDService = WiDService(context = LocalContext.current)
 
     val wiDList by remember { mutableStateOf(wiDService.readWeeklyWiDListByDate(currentDate)) }
-//    val wiDList = remember(firstDayOfWeek) {
-//        val allWiDs = mutableListOf<WiD>()
-//
-//        for (index in 0 until 7) {
-//            val date = firstDayOfWeek.plusDays(index.toLong())
-//            val wiDsForDate = wiDService.readDayWiDListByDate(date)
-//            allWiDs.addAll(wiDsForDate)
-//        }
-//        allWiDs
-//    }
 
     // 각 제목별 날짜별 종합 시간을 추적하기 위한 맵
     val titleDateDurations = remember(wiDList) {
@@ -178,7 +168,6 @@ fun WiDReadWeekFragment() {
         Row(
             modifier = Modifier.fillMaxWidth(),
         ) {
-            val daysOfWeek = listOf("월", "화", "수", "목", "금", "토", "일")
             daysOfWeek.forEachIndexed { index, day ->
                 val textColor = when (index) {
                     5 -> Color.Blue // "토"의 인덱스는 5

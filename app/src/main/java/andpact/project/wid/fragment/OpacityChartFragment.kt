@@ -31,7 +31,11 @@ fun OpacityChartView(date: LocalDate, title: String) {
     val wiDList = wiDService.readDailyWiDListByDate(date, title)
 
     val totalDurationMillis = wiDList.sumOf { it.duration.toMillis() }
-    val maxDurationMillis = 10 * 60 * 60 * 1000
+    val maxDurationMillis = if (title == "EXERCISE") {
+        2 * 60 * 60 * 1000
+    } else {
+        10 * 60 * 60 * 1000
+    }
 
     val opacity = when {
         totalDurationMillis == 0L -> 0.0f

@@ -6,6 +6,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.titles
 import android.app.TimePickerDialog
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -62,7 +63,6 @@ fun WiDCreateManualFragment() {
     var date by remember { mutableStateOf(today) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
-    val titles = arrayOf("STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
     var title by remember { mutableStateOf("STUDY") }
 
 //    val currentTimeState = remember { mutableStateOf(LocalTime.now().withSecond(0)) }
@@ -913,7 +913,7 @@ fun WiDCreateManualFragment() {
                     enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
                 ) {
                     Text(text = "등록", color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
-                    { Color.Unspecified } else { colorResource(id = R.color.exercise) },
+                    { Color.Unspecified } else { colorResource(id = R.color.exercise_color) },
                         style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                     )
                 }

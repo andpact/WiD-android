@@ -32,7 +32,7 @@ fun formatDuration(duration: Duration, mode: Int): String {
                 hours >= 1 -> "${String.format("%.2f", totalHours).substring(0, 3)}시간"
                 minutes >= 1 -> "${minutes}분"
                 seconds >= 1 -> "${seconds}초"
-                else -> "기록 없음"
+                else -> "•••"
             }
         }
         2 -> {

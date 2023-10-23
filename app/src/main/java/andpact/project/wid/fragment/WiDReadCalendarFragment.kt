@@ -2,10 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.formatDuration
-import andpact.project.wid.util.getDate1yearAgo
-import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,7 +55,7 @@ fun WiDReadCalendarFragment() {
     var selectedYear by remember { mutableStateOf(yearList[0]) }
 
     var titleMenuExpanded by remember { mutableStateOf(false) }
-    val titles = arrayOf("ALL", "STUDY", "WORK", "READING", "EXERCISE", "HOBBY", "TRAVEL", "SLEEP")
+    val titles = arrayOf("ALL") + titles
     var selectedTitle by remember { mutableStateOf("ALL") }
 
     var finishDate by remember { mutableStateOf(today) }
@@ -91,15 +88,15 @@ fun WiDReadCalendarFragment() {
         ) {
             LazyRow(modifier = Modifier
                 .weight(2f)
-                .padding(0.dp, 0.dp, 4.dp, 0.dp)
-//                .border(
-//                    BorderStroke(1.dp, Color.LightGray),
-//                    shape = RoundedCornerShape(8.dp)
-//                ),
+//                .padding(0.dp, 0.dp, 4.dp, 0.dp)
+                .border(
+                    BorderStroke(1.dp, Color.LightGray),
+                    shape = RoundedCornerShape(8.dp)
+                ),
             ) {
                 items(yearList.size) { i ->
                     FilterChip(
-                        modifier = Modifier.padding(horizontal = 6.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp),
                         shape = CircleShape,
                         selected = (selectedYear == yearList[i]),
                         onClick = {
@@ -188,14 +185,14 @@ fun WiDReadCalendarFragment() {
             }
         }
 
-        HorizontalDivider()
+//        HorizontalDivider()
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
         ) {
-            val daysOfWeek = listOf("날짜", "일", "월", "화", "수", "목", "금", "토")
+            val daysOfWeek = listOf("날짜") + daysOfWeek
             daysOfWeek.forEachIndexed { index, day ->
                 val textColor = when (index) {
                     1 -> Color.Red  // "일"의 인덱스는 1
@@ -238,7 +235,7 @@ fun WiDReadCalendarFragment() {
                         Text(
                             text = startDate.format(DateTimeFormatter.ofPattern("M월")),
                             modifier = Modifier.align(Alignment.Center),
-//                            style = TextStyle(fontSize = 12.sp)
+                            style = TextStyle(fontSize = 12.sp)
                         )
                     }
                 }
@@ -313,13 +310,15 @@ fun WiDReadCalendarFragment() {
             }
         }
 
-        Box(modifier = Modifier
+        Box(
+            modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(vertical = 8.dp)
         ) {
-            Text(modifier = Modifier.align(Alignment.CenterStart),
-                text = "달력 날짜를 클릭하여 조회",
-                style = TextStyle(fontSize = 12.sp, color = Color.LightGray))
+            Text(
+                modifier = Modifier.align(Alignment.CenterStart),
+                text = "달력을 클릭하여 조회",
+                style = TextStyle(fontSize = 12.sp, color = Color.Gray))
 
             Icon(
                 modifier = Modifier.align(Alignment.Center),
@@ -328,13 +327,13 @@ fun WiDReadCalendarFragment() {
                 tint = Color.LightGray
             )
 
-
             if (selectedTitle != "ALL") {
                 val titleColorId = colorMap[selectedTitle]!!
                 val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
                 val opacities = listOf(0.2f, 0.4f, 0.6f, 0.8f, 1.0f)
 
-                Row(modifier = Modifier.align(Alignment.CenterEnd)
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
                     Text(text = "0시간",
                         style = TextStyle(fontSize = 12.sp))
@@ -355,72 +354,87 @@ fun WiDReadCalendarFragment() {
                         )
                     }
 
-                    Text(text = "10시간",
-                        style = TextStyle(fontSize = 12.sp))
+                    Text(
+                        text = if (selectedTitle == "EXERCISE") "2시간" else "10시간",
+                        style = TextStyle(fontSize = 12.sp)
+                    )
                 }
             }
         }
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
             if (selectedTitle == "ALL") {
-                Text(text = "날짜 및 기간별 기록",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
+                item {
+                    Text(
+                        modifier = Modifier
+                        .padding(0.dp, 0.dp, 0.dp, 8.dp),
+                        text = "날짜 및 기간별 기록",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            BorderStroke(1.dp, Color.LightGray),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Row(
+                item {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .border(
+                                BorderStroke(1.dp, Color.LightGray),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp)
                     ) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .clip(CircleShape)
-                                .size(10.dp)
+                                .fillMaxWidth()
+                                .padding(0.dp, 0.dp, 0.dp, 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(10.dp)
+                                    .background(color = colorResource(id = R.color.light_gray))
+                            )
+
+                            Text(
+                                modifier = Modifier.weight(0.5f),
+                                text = "제목",
+                                textAlign = TextAlign.Center,
+                            )
+
+                            Text(
+                                modifier = Modifier
+                                .weight(1f),
+                                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
+                                textAlign = TextAlign.Center)
+
+                            Text(
+                                modifier = Modifier
+                                .weight(1f),
+                                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+                                        lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
+                                textAlign = TextAlign.Center)
+
+                            Text(
+                                modifier = Modifier
+                                .weight(1f),
+                                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
+                                textAlign = TextAlign.Center)
+                        }
+
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
                         )
 
-                        Text(
-                            modifier = Modifier.weight(0.5f),
-                            text = "제목",
-                            textAlign = TextAlign.Center,
-                        )
-
-                        Text(modifier = Modifier
-                            .weight(1f),
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                            textAlign = TextAlign.Center)
-
-                        Text(modifier = Modifier
-                            .weight(1f),
-                            text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                                    lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
-                            textAlign = TextAlign.Center)
-
-                        Text(modifier = Modifier
-                            .weight(1f),
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                            textAlign = TextAlign.Center)
-                    }
-
-                    HorizontalDivider()
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                    ) {
-                        item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                        ) {
                             if (monthlyTitleDurationMap.isEmpty()) {
                                 Text(
                                     text = "표시할 데이터가 없습니다.",
@@ -437,19 +451,19 @@ fun WiDReadCalendarFragment() {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(8.dp),
+                                            .padding(0.dp, 8.dp, 0.dp, 0.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                            val titleColorId = colorMap[title]
-                                            if (titleColorId != null) {
-                                                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(10.dp)
-                                                        .clip(CircleShape)
-                                                        .background(color = backgroundColor)
-                                                )
-                                            }
+                                        val titleColorId = colorMap[title]
+                                        if (titleColorId != null) {
+                                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .clip(CircleShape)
+                                                    .background(color = backgroundColor)
+                                            )
+                                        }
 
                                         Text(
                                             modifier = Modifier.weight(0.5f),
@@ -481,188 +495,214 @@ fun WiDReadCalendarFragment() {
                     }
                 }
             } else {
-                Text(text = "날짜 및 기간별 기록",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            BorderStroke(1.dp, Color.LightGray),
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                ) {
-                    Column(
+                item {
+                    Text(
                         modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                        )
+                        .padding(0.dp, 0.dp, 0.dp, 8.dp),
+                        text = "날짜 및 기간별 기록",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                }
 
-                        Text(
-                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-
-                    }
-
-                    Column(
+                item {
+                    Row(
                         modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, Color.LightGray),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp),
                     ) {
-                        Text(
-                            text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                                    lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
-                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
+                            )
 
-                        Text(
-                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                            Text(
+                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                fontWeight = FontWeight.Bold
+                            )
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                        )
 
-                        Text(
-                            text = if (monthlyTitleDurationMap.isEmpty()) "기록 없" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+                                        lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
+                            )
+
+                            Text(
+                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
+                            )
+
+                            Text(
+                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
 
-                Text(text = "연속 기록",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
+                item {
+                    Text(modifier = Modifier
+                        .padding(vertical = 8.dp),
+                        text = "연속 기록",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            BorderStroke(1.dp, Color.LightGray),
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                ) {
-                    Column(
+                item {
+                    Row(
                         modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, Color.LightGray),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp),
                     ) {
-                        Text(text = "최장 기간")
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "최장 기간")
 
-                        Text(
-                            text = if (longestStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(longestStreak!!.first, longestStreak!!.second) + 1}일" },
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                            Text(
+                                text = if (longestStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(longestStreak!!.first, longestStreak!!.second) + 1}일" },
+                                fontWeight = FontWeight.Bold
+                            )
 
-                        Text(
-                            text = if (longestStreak == null) {
-                                "기간 없음"
-                            } else {
-                                val finishDate = longestStreak!!.first
-                                val startDate = longestStreak!!.second
-                                val formattedStartDate = finishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
-                                val formattedFinishDate = if (startDate == today) {
-                                    "오늘"
-                                } else if ((startDate.month == finishDate.month)) {
-                                    startDate.format(DateTimeFormatter.ofPattern("d일"))
+                            Text(
+                                text = if (longestStreak == null) {
+                                    "•••"
                                 } else {
-                                    startDate.format(DateTimeFormatter.ofPattern("M월 d일"))
-                                }
-                                "$formattedStartDate ~ $formattedFinishDate"
-                            },
-                            style = TextStyle(color = Color.Gray)
-                        )
-                    }
+                                    val longestStreakFinishDate = longestStreak!!.first
+                                    val longestStreakStartDate = longestStreak!!.second
+                                    if (longestStreakStartDate == longestStreakFinishDate) {
+                                        longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                    } else {
+                                        val formattedStartDate = longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                        val formattedFinishDate = if (longestStreakStartDate == today) {
+                                            "오늘"
+                                        } else if ((longestStreakStartDate.month == longestStreakFinishDate.month)) {
+                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("d일"))
+                                        } else {
+                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+                                        }
+                                        "$formattedStartDate ~ $formattedFinishDate"
+                                    }
+                                },
+                                style = TextStyle(color = Color.Gray)
+                            )
+                        }
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "현재 진행 중")
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "현재 진행 중")
 
-                        Text(
-                            text = if (currentStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(currentStreak, today) + 1}일" },
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                            Text(
+                                text = if (currentStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(currentStreak, today) + 1}일" },
+                                fontWeight = FontWeight.Bold
+                            )
 
-                        Text(
-                            text = if (currentStreak == null) {
-                                "기간 없음"
-                            } else if (currentStreak == today) {
-                                "오늘"
-                            } else {
-                                "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘"
-                            },
-                            style = TextStyle(color = Color.Gray)
-                        )
+                            Text(
+                                text = if (currentStreak == null) {
+                                    "•••"
+                                } else if (currentStreak == today) {
+                                    "오늘"
+                                } else {
+                                    "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘"
+                                },
+                                style = TextStyle(color = Color.Gray)
+                            )
+                        }
                     }
                 }
 
-                Text(text = "종합 기록",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
+                item {
+                    Text(modifier = Modifier
+                        .padding(vertical = 8.dp),
+                        text = "종합 기록",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            BorderStroke(1.dp, Color.LightGray),
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                ) {
-                    Column(
+                item {
+                    Row(
                         modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(1.dp, Color.LightGray),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp),
                     ) {
-                        Text(text = "총")
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "총")
 
-                        Text(
-                            text = "${totalDaysAndDuration?.first ?: 0}일",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                            Text(
+                                text = "${totalDaysAndDuration?.first ?: 0}일",
+                                fontWeight = FontWeight.Bold
+                            )
 
-                        Text(
-                            text = if (totalDaysAndDuration == null) "날짜 없음" else formatDuration(
-                                totalDaysAndDuration!!.second, mode = 1),
-                            style = TextStyle(color = Color.Gray)
-                        )
-                    }
+                            Text(
+                                text = if (totalDaysAndDuration == null) "•••" else formatDuration(
+                                    totalDaysAndDuration!!.second, mode = 1),
+                                style = TextStyle(color = Color.Gray)
+                            )
+                        }
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "최고")
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "최고")
 
-                        Text(text = if (bestDateAndDuration == null) "날짜 없음" else bestDateAndDuration!!.second.format(DateTimeFormatter.ofPattern("M월 d일")),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold)
+                            Text(text = if (bestDateAndDuration == null) "•••" else bestDateAndDuration!!.second.format(DateTimeFormatter.ofPattern("M월 d일")),
+                                fontWeight = FontWeight.Bold)
 
-                        Text(text = if (bestDateAndDuration == null) "기록 없음" else formatDuration(
-                            bestDateAndDuration!!.first, mode = 1),
-                            style = TextStyle(color = Color.Gray)
-                        )
+                            Text(text = if (bestDateAndDuration == null) "•••" else formatDuration(
+                                bestDateAndDuration!!.first, mode = 1),
+                                style = TextStyle(color = Color.Gray)
+                            )
+                        }
                     }
                 }
             }

@@ -3,10 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.formatDuration
-import andpact.project.wid.util.getFirstDayOfMonth
-import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,20 +50,6 @@ fun WiDReadMonthFragment() {
     val wiDService = WiDService(context = LocalContext.current)
 
     val wiDList by remember { mutableStateOf(wiDService.readMonthlyWiDListByDate(currentDate)) }
-//    val wiDList = remember(firstDayOfMonth) {
-//        val allWiDs = mutableListOf<WiD>()
-//
-//        val yearMonth = YearMonth.from(firstDayOfMonth)
-//        val daysInMonth = yearMonth.lengthOfMonth()
-//
-//        for (index in 0 until daysInMonth) {
-//            val date = firstDayOfMonth.plusDays(index.toLong())
-//            val wiDsForDate = wiDService.readDayWiDListByDate(date)
-//            allWiDs.addAll(wiDsForDate)
-//        }
-//
-//        allWiDs
-//    }
 
     // 각 제목별 날짜별 종합 시간을 추적하기 위한 맵
     val titleDateDurations = remember(wiDList) {
@@ -160,7 +143,6 @@ fun WiDReadMonthFragment() {
         Row(
             modifier = Modifier.fillMaxWidth(),
         ) {
-            val daysOfWeek = listOf("일", "월", "화", "수", "목", "금", "토")
             daysOfWeek.forEachIndexed { index, day ->
                 val textColor = when (index) {
                     0 -> Color.Red  // "일"의 인덱스는 0
