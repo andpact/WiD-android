@@ -297,7 +297,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                     text = buttonText,
                     color = when (buttonText) {
                         "중지" -> Color.Red
-                        "계속" -> colorResource(id = R.color.exercise_color)
+                        "계속" -> colorResource(id = R.color.play_color)
                         else -> Color.Unspecified
                     },
                     style = TextStyle(fontSize = 20.sp)

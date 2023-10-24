@@ -77,9 +77,11 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         if (finish.isBefore(start)) {
             val midnight = LocalTime.MIDNIGHT
 
+            val previousDate = date.minusDays(1)
+
             val firstWiD = WiD(
                 id = 0,
-                date = date,
+                date = previousDate,
                 title = title,
                 start = start,
                 finish = midnight.plusSeconds(-1),
@@ -88,11 +90,9 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
             )
             wiDService.createWiD(firstWiD)
 
-            val nextDate = date.plusDays(1)
-
             val secondWiD = WiD(
                 id = 0,
-                date = nextDate,
+                date = date,
                 title = title,
                 start = midnight,
                 finish = finish,
@@ -218,7 +218,7 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                     text = buttonText,
                     color = when (buttonText) {
                         "중지" -> Color.Red
-                        "계속" -> colorResource(id = R.color.exercise_color)
+                        "계속" -> colorResource(id = R.color.play_color)
                         else -> Color.Unspecified
                     },
                     style = TextStyle(fontSize = 20.sp)

@@ -913,7 +913,7 @@ fun WiDCreateManualFragment() {
                     enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
                 ) {
                     Text(text = "등록", color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || isDurationOverMax || duration == Duration.ZERO)
-                    { Color.Unspecified } else { colorResource(id = R.color.exercise_color) },
+                    { Color.Unspecified } else { colorResource(id = R.color.play_color) },
                         style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
                     )
                 }
