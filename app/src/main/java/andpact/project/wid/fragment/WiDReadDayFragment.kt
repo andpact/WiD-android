@@ -79,12 +79,11 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                 Text(
                     text = currentDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
-//                    color = when (currentDate.dayOfWeek) {
-//                        DayOfWeek.SATURDAY -> Color.Blue
-//                        DayOfWeek.SUNDAY -> Color.Red
-//                        else -> Color.Black
-//                    },
-//                    style = TextStyle(fontSize = 20.sp)
+                    color = when (currentDate.dayOfWeek) {
+                        DayOfWeek.SATURDAY -> Color.Blue
+                        DayOfWeek.SUNDAY -> Color.Red
+                        else -> Color.Black
+                    },
                 )
 
                 Text(text = ")")
@@ -116,7 +115,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             }
         }
 
-        PieChartView(date = currentDate, forReadDay = true)
+//        PieChartView(date = currentDate, forReadDay = true)
+        DayPieChartView(wiDList = wiDList)
 
         Row(
             modifier = Modifier
@@ -158,103 +158,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     .weight(0.6f),
                 textAlign = TextAlign.Center)
         }
-
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(
-//                    color = colorResource(id = R.color.light_gray),
-//                    shape = RoundedCornerShape(8.dp)
-//                ),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            val titleColorId = colorMap["STUDY"]
-//            if (titleColorId != null) {
-//                val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-//                Box(
-//                    modifier = Modifier
-//                        .size(width = 10.dp, height = 50.dp)
-//                        .background(
-//                            color = backgroundColor,
-//                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
-//                        )
-//                )
-//            }
-//
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//            ) {
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(), // Adjust this modifier as needed
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Text(
-//                        text = "99",
-//                        modifier = Modifier
-//                            .border(BorderStroke(1.dp, Color.Black))
-//                            .weight(0.3f),
-//                        textAlign = TextAlign.Center
-//                    )
-//                    Text(
-//                        text = "공부",
-//                        modifier = Modifier
-//                            .border(BorderStroke(1.dp, Color.Black))
-//                            .weight(0.3f),
-//                        textAlign = TextAlign.Center
-//                    )
-//                    Text(
-//                        text = "오전 99:99",
-//                        modifier = Modifier
-//                            .border(BorderStroke(1.dp, Color.Black))
-//                            .weight(0.7f),
-//                        textAlign = TextAlign.Center
-//                    )
-//                    Text(
-//                        text = "오후 99:99",
-//                        modifier = Modifier
-//                            .border(BorderStroke(1.dp, Color.Black))
-//                            .weight(0.7f),
-//                        textAlign = TextAlign.Center
-//                    )
-//                    Text(
-//                        text = "9.9시간",
-//                        modifier = Modifier
-//                            .border(BorderStroke(1.dp, Color.Black))
-//                            .weight(0.6f),
-//                        textAlign = TextAlign.Center
-//                    )
-//                }
-//
-//                HorizontalDivider(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(1.dp)
-//                        .padding(horizontal = 8.dp)
-//                        .background(color = Color.Gray)
-//                )
-//
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.Start
-//                ) {
-//                    Text(modifier = Modifier
-//                        .weight(0.4f),
-//                        text = "설명",
-//                        textAlign = TextAlign.Center,
-//                    )
-//
-//                    Text(modifier = Modifier
-//                        .weight(2.8f),
-//                        text = ": detail",
-//                        style = TextStyle(color = Color.Black),
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis
-//                    )
-//                }
-//            }
-//        }
 
         LazyColumn(
             modifier = Modifier

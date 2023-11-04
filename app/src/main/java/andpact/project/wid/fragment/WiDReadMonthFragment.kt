@@ -173,7 +173,7 @@ fun WiDReadMonthFragment() {
 
             items(firstDayOfMonth.lengthOfMonth()) { index ->
                 val date = firstDayOfMonth.plusDays(index.toLong())
-                PieChartView(date = date, forReadDay = false)
+//                PieChartView(date = date, forReadDay = false)
             }
         }
 

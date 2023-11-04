@@ -5,6 +5,7 @@
 
 <!--    인터넷 사용 허가-->
     <uses-permission android:name="android.permission.INTERNET" />
+
 <!--    인터넷 접속 상태 확인 허가-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

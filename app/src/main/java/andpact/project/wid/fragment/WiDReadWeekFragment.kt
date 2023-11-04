@@ -190,7 +190,7 @@ fun WiDReadWeekFragment() {
         ) {
             items(7) { index ->
                 val date = firstDayOfWeek.plusDays(index.toLong())
-                PieChartView(date = date, forReadDay = false)
+//                PieChartView(date = date, forReadDay = false)
             }
         }
 

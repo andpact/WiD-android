@@ -116,11 +116,11 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val dailyTitleDurationMap = mutableMapOf<String, Duration>()
 
         val selectQuery = """
-        SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
-        FROM $TABLE_NAME
-        WHERE $COLUMN_DATE = ?
-        GROUP BY $COLUMN_TITLE
-    """.trimIndent()
+            SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
+            FROM $TABLE_NAME
+            WHERE $COLUMN_DATE = ?
+            GROUP BY $COLUMN_TITLE
+        """.trimIndent()
         val selectionArgs = arrayOf(date.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
@@ -145,11 +145,11 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val lastDayOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 
         val selectQuery = """
-        SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
-        FROM $TABLE_NAME
-        WHERE $COLUMN_DATE BETWEEN ? AND ?
-        GROUP BY $COLUMN_TITLE
-    """.trimIndent()
+            SELECT $COLUMN_TITLE, SUM(CAST($COLUMN_DURATION AS INTEGER)) AS total_duration
+            FROM $TABLE_NAME
+            WHERE $COLUMN_DATE BETWEEN ? AND ?
+            GROUP BY $COLUMN_TITLE
+        """.trimIndent()
         val selectionArgs = arrayOf(firstDayOfWeek.toString(), lastDayOfWeek.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
@@ -478,19 +478,19 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 
         if (title == "ALL") {
             selectQuery = """
-            SELECT DISTINCT $COLUMN_DATE
-            FROM $TABLE_NAME
-            WHERE $COLUMN_DATE BETWEEN ? AND ?
-            ORDER BY $COLUMN_DATE DESC
-        """.trimIndent()
+                SELECT DISTINCT $COLUMN_DATE
+                FROM $TABLE_NAME
+                WHERE $COLUMN_DATE BETWEEN ? AND ?
+                ORDER BY $COLUMN_DATE DESC
+            """.trimIndent()
             selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
         } else {
             selectQuery = """
-            SELECT DISTINCT $COLUMN_DATE
-            FROM $TABLE_NAME
-            WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
-            ORDER BY $COLUMN_DATE DESC
-        """.trimIndent()
+                SELECT DISTINCT $COLUMN_DATE
+                FROM $TABLE_NAME
+                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+                ORDER BY $COLUMN_DATE DESC
+            """.trimIndent()
             selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
         }
 

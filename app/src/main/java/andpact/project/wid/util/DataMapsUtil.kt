@@ -4,7 +4,7 @@ import andpact.project.wid.R
 
 val titles = arrayOf(
     "STUDY", // 공부
-    "WORK", // 일
+    "WORK", // 노동
     "EXERCISE", // 운동
     "HOBBY", // 취미
     "PLAY", // 놀기
@@ -17,7 +17,7 @@ val titles = arrayOf(
 
 val titleMap = mapOf(
     "STUDY" to "공부",
-    "WORK" to "일",
+    "WORK" to "노동",
     "EXERCISE" to "운동",
     "HOBBY" to "취미",
     "PLAY" to "놀기",

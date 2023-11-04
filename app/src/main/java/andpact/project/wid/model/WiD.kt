@@ -4,7 +4,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-data class WiD(
+data class WiD (
     val id: Long,
     val date: LocalDate,
     val title: String,

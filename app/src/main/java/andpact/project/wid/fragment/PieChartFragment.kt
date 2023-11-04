@@ -1,6 +1,7 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import android.graphics.Paint
@@ -31,30 +32,34 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun PieChartView(date: LocalDate, forReadDay: Boolean) {
+fun PieChartView(date: LocalDate) {
     val wiDService = WiDService(context = LocalContext.current)
     val wiDList = wiDService.readDailyWiDListByDate(date)
 
     val pieEntries = mutableListOf<PieEntry>()
 
-    var startMinutes = 0
+    var currentMinute = 0
 
     for (wiD in wiDList) {
         val finishMinutes = wiD.finish.hour * 60 + wiD.finish.minute
 
-        if (wiD.start.hour * 60 + wiD.start.minute > startMinutes) {
-            val emptyMinutes = wiD.start.hour * 60 + wiD.start.minute - startMinutes
+        // 비어 있는 시간대의 엔트리 추가
+        if (wiD.start.hour * 60 + wiD.start.minute > currentMinute) {
+            val emptyMinutes = wiD.start.hour * 60 + wiD.start.minute - currentMinute
             pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
         }
 
-        startMinutes = wiD.start.hour * 60 + wiD.start.minute
-        pieEntries.add(PieEntry((finishMinutes - startMinutes).toFloat(), wiD.title))
+        // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
+        currentMinute = wiD.start.hour * 60 + wiD.start.minute
+        pieEntries.add(PieEntry((finishMinutes - currentMinute).toFloat(), wiD.title))
 
-        startMinutes = wiD.finish.hour * 60 + wiD.finish.minute
+        // 시작 시간 업데이트
+        currentMinute = wiD.finish.hour * 60 + wiD.finish.minute
     }
 
-    if (startMinutes < 24 * 60) {
-        val emptyMinutes = 24 * 60 - startMinutes
+    // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
+    if (currentMinute < 24 * 60) {
+        val emptyMinutes = 24 * 60 - currentMinute
         pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
     }
 
@@ -83,13 +88,8 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     setHoleColor(ContextCompat.getColor(context, R.color.transparent))
 
                     setDrawCenterText(true)
-                    if (forReadDay) {
-                        centerText = "오후 | 오전"
-                        setCenterTextSize(16f)
-                    } else {
-                        centerText = date.dayOfMonth.toString()
-                        setCenterTextSize(12f)
-                    }
+                    centerText = date.dayOfMonth.toString()
+                    setCenterTextSize(12f)
 
                     if (wiDList.isEmpty()) {
                         setCenterTextColor(Color.LightGray.toArgb())
@@ -110,45 +110,113 @@ fun PieChartView(date: LocalDate, forReadDay: Boolean) {
                     this.invalidate()
                 }
             })
+        }
+    }
+}
 
-            if (forReadDay) {
-                Canvas(modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)) {
-                    val radius: Float = size.minDimension / 1.9f // 원의 반지름
-                    val centerX = center.x
-                    val centerY = center.y + 10
+@Composable
+fun DayPieChartView(wiDList: List<WiD>) {
+    val pieEntries = mutableListOf<PieEntry>()
 
-                    val textPaint = Paint().apply {
-                        color = Color.Black.toArgb()
-                        textSize = 30f
-                        textAlign = Paint.Align.CENTER
+    val totalMinutes = 24 * 60 // 1440분(24시간)
+    var currentMinute = 0
+
+    for (wiD in wiDList) {
+        val finishMinutes = wiD.finish.hour * 60 + wiD.finish.minute
+
+        // 비어 있는 시간대의 엔트리 추가
+        if (wiD.start.hour * 60 + wiD.start.minute > currentMinute) {
+            val emptyMinutes = wiD.start.hour * 60 + wiD.start.minute - currentMinute
+            pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
+        }
+
+        // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
+        currentMinute = wiD.start.hour * 60 + wiD.start.minute
+        pieEntries.add(PieEntry((finishMinutes - currentMinute).toFloat(), wiD.title))
+
+        // 시작 시간 업데이트
+        currentMinute = wiD.finish.hour * 60 + wiD.finish.minute
+    }
+
+    // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
+    if (currentMinute < totalMinutes) {
+        val emptyMinutes = totalMinutes - currentMinute
+        pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f),
+        contentAlignment = Alignment.Center
+    ) {
+        Crossfade(targetState = pieEntries) { pieEntries ->
+            AndroidView(factory = { context ->
+                PieChart(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setUsePercentValues(false) // Use absolute values
+                    description.isEnabled = false // Disable description
+                    legend.isEnabled = false // Disable legend
+
+                    setDrawEntryLabels(false)
+                    setTouchEnabled(false) // Disable touch gestures for zooming
+
+                    isDrawHoleEnabled = true
+                    holeRadius = 95f
+                    setHoleColor(ContextCompat.getColor(context, R.color.transparent))
+
+                    setDrawCenterText(true)
+                    centerText = "오후 | 오전"
+                    setCenterTextSize(16f)
+
+                    if (wiDList.isEmpty()) {
+                        setCenterTextColor(Color.LightGray.toArgb())
+                    } else {
+                        setCenterTextColor(ContextCompat.getColor(context, R.color.black))
                     }
 
-//                    for (i in 0 until 24) {
-//                        val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
-//                        val angleInRadian = Math.toRadians(angleInDegree)
-//
-//                        // 시간 텍스트 좌표 계산
-//                        val x = centerX + radius * 0.85f * cos(angleInRadian)
-//                        val y = centerY + radius * 0.85f * sin(angleInRadian)
-//
-//                        // 시간 텍스트 그리기
-//                        drawContext.canvas.nativeCanvas.drawText(i.toString(), x.toFloat(), y.toFloat(), textPaint)
-//                    }
-
-                    for (i in 0 until 24) {
-                        val hour = if (i < 12) i + 1 else i - 11 // 0...23을 1...12, 1...12로 변환
-                        val angleInDegree = (i * 15.0) - 75.0 // 360도를 24등분, 초기 각도를 0으로 설정
-                        val angleInRadian = Math.toRadians(angleInDegree)
-
-                        // 시간 텍스트 좌표 계산
-                        val x = centerX + radius * 0.85f * cos(angleInRadian)
-                        val y = centerY + radius * 0.85f * sin(angleInRadian)
-
-                        // 시간 텍스트 그리기
-                        drawContext.canvas.nativeCanvas.drawText(hour.toString(), x.toFloat(), y.toFloat(), textPaint)
+                    val dataSet = PieDataSet(pieEntries, "")
+                    val colors = pieEntries.map { entry ->
+                        val label = entry.label ?: ""
+                        val colorId = colorMap[label] ?: R.color.black
+                        ContextCompat.getColor(context, colorId)
                     }
+                    dataSet.colors = colors
+                    val data = PieData(dataSet)
+                    data.setDrawValues(false)
+                    this.data = data
+                    this.invalidate()
+                }
+            })
+
+            Canvas(modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)) {
+//                val radius: Float = size.minDimension / 1.9f // 원의 반지름
+                val radius: Float = size.minDimension / 2.0f // 원의 반지름
+                val centerX = center.x
+                val centerY = center.y + 10
+
+                val textPaint = Paint().apply {
+                    color = Color.Black.toArgb()
+                    textSize = 30f
+                    textAlign = Paint.Align.CENTER
+                }
+
+                for (i in 0 until 24) {
+                    val hour = if (i < 12) i + 1 else i - 11 // 0...23을 1...12, 1...12로 변환
+                    val angleInDegree = (i * 15.0) - 75.0 // 360도를 24등분, 초기 각도를 0으로 설정
+                    val angleInRadian = Math.toRadians(angleInDegree)
+
+                    // 시간 텍스트 좌표 계산
+                    val x = centerX + radius * 0.85f * cos(angleInRadian)
+                    val y = centerY + radius * 0.85f * sin(angleInRadian)
+
+                    // 시간 텍스트 그리기
+                    drawContext.canvas.nativeCanvas.drawText(hour.toString(), x.toFloat(), y.toFloat(), textPaint)
                 }
             }
         }
@@ -189,4 +257,10 @@ fun EmptyPieChartView() {
             }
         })
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DayPieChartViewPreview() {
+    DayPieChartView(emptyList())
 }

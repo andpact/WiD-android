@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -43,6 +44,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -298,7 +300,7 @@ fun WiDReadCalendarFragment() {
                             )
                         ) {
                             if (selectedTitle == "ALL") {
-                                PieChartView(date = date, forReadDay = false)
+                                PieChartView(date = date)
                             } else {
                                 OpacityChartView(date = date, title = selectedTitle)
                             }
@@ -312,8 +314,8 @@ fun WiDReadCalendarFragment() {
 
         Box(
             modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
             Text(
                 modifier = Modifier.align(Alignment.CenterStart),
@@ -369,12 +371,361 @@ fun WiDReadCalendarFragment() {
         ) {
             if (selectedTitle == "ALL") {
                 item {
-                    Text(
-                        modifier = Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 8.dp),
-                        text = "날짜 및 기간별 기록",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
+                    Row(modifier = Modifier
+                        .fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = "일(Day) 합계",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+
+                        Text(
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일")),
+                            style = TextStyle(fontSize = 14.sp)
+                        )
+
+                        Text(text = "(",
+                            style = TextStyle(fontSize = 14.sp))
+
+                        Text(
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                            style = TextStyle(fontSize = 14.sp),
+                            color = when (selectedDate.dayOfWeek) {
+                                DayOfWeek.SATURDAY -> Color.Blue
+                                DayOfWeek.SUNDAY -> Color.Red
+                                else -> Color.Black
+                            },
+                        )
+
+                        Text(text = ")",
+                            style = TextStyle(fontSize = 14.sp))
+                    }
+                }
+
+                item {
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(16.dp)
+                    ) {
+                        if (dailyTitleDurationMap.isEmpty()) {
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_message_24),
+                                    contentDescription = "detail")
+
+                                Text(text = "표시할 데이터가 없습니다.")
+                            }
+                        } else {
+                            for ((title, dayTotal) in dailyTitleDurationMap) {
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                ) {
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_category_24),
+                                            contentDescription = "title")
+
+                                        Text(
+                                            text = "제목",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            text = titleMap[title] ?: title,
+                                        )
+
+                                        val titleColorId = colorMap[title]
+                                        if (titleColorId != null) {
+                                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(width = 10.dp, height = 25.dp)
+                                                    .background(
+                                                        color = backgroundColor,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                                    .border(
+                                                        BorderStroke(1.dp, Color.LightGray),
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    ),
+                                            )
+                                        }
+                                    }
+
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                                            contentDescription = "duration")
+
+                                        Text(
+                                            text = "소요",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(dayTotal, mode = 1),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "주(week) 합계",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+
+                        Text(
+                            text = firstDayOfWeek.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일")),
+                            style = TextStyle(fontSize = 14.sp)
+                        )
+
+                        Text(text = "(",
+                            style = TextStyle(fontSize = 14.sp))
+
+                        Text(
+                            text = firstDayOfWeek.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                            style = TextStyle(fontSize = 14.sp),
+                            color = when (firstDayOfWeek.dayOfWeek) {
+                                DayOfWeek.SATURDAY -> Color.Blue
+                                DayOfWeek.SUNDAY -> Color.Red
+                                else -> Color.Black
+                            },
+                        )
+
+                        Text(text = ")",
+                            style = TextStyle(fontSize = 14.sp))
+
+                        Text(text = "~",
+                            style = TextStyle(fontSize = 14.sp))
+
+                        Text(
+                            text = lastDayOfWeek.format(DateTimeFormatter.ofPattern("M월 d일")),
+                            style = TextStyle(fontSize = 14.sp)
+                        )
+
+                        Text(text = "(",
+                            style = TextStyle(fontSize = 14.sp))
+
+                        Text(
+                            text = lastDayOfWeek.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
+                            style = TextStyle(fontSize = 14.sp),
+                            color = when (lastDayOfWeek.dayOfWeek) {
+                                DayOfWeek.SATURDAY -> Color.Blue
+                                DayOfWeek.SUNDAY -> Color.Red
+                                else -> Color.Black
+                            },
+                        )
+
+                        Text(text = ")",
+                            style = TextStyle(fontSize = 14.sp))
+                    }
+                }
+
+                item {
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(16.dp)
+                    ) {
+                        if (weeklyTitleDurationMap.isEmpty()) {
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_message_24),
+                                    contentDescription = "detail")
+
+                                Text(text = "표시할 데이터가 없습니다.")
+                            }
+                        } else {
+                            for ((title, weekTotal) in weeklyTitleDurationMap) {
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                ) {
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_category_24),
+                                            contentDescription = "title")
+
+                                        Text(
+                                            text = "제목",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            text = titleMap[title] ?: title,
+                                        )
+
+                                        val titleColorId = colorMap[title]
+                                        if (titleColorId != null) {
+                                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(width = 10.dp, height = 25.dp)
+                                                    .background(
+                                                        color = backgroundColor,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                                    .border(
+                                                        BorderStroke(1.dp, Color.LightGray),
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    ),
+                                            )
+                                        }
+                                    }
+
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                                            contentDescription = "duration")
+
+                                        Text(
+                                            text = "소요",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(weekTotal, mode = 1),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "월(Month) 합계",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+
+                        Text(
+                            text = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 M월")),
+                            style = TextStyle(fontSize = 14.sp)
+                        )
+                    }
+                }
+
+                item {
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            BorderStroke(1.dp, Color.LightGray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(16.dp)
+                    ) {
+                        if (monthlyTitleDurationMap.isEmpty()) {
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_message_24),
+                                    contentDescription = "detail")
+
+                                Text(text = "표시할 데이터가 없습니다.")
+                            }
+                        } else {
+                            for ((title, monthTotal) in monthlyTitleDurationMap) {
+                                Row(modifier = Modifier
+                                    .fillMaxWidth()
+                                ) {
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_category_24),
+                                            contentDescription = "title")
+
+                                        Text(
+                                            text = "제목",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            text = titleMap[title] ?: title,
+                                        )
+
+                                        val titleColorId = colorMap[title]
+                                        if (titleColorId != null) {
+                                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(width = 10.dp, height = 25.dp)
+                                                    .background(
+                                                        color = backgroundColor,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                                    .border(
+                                                        BorderStroke(1.dp, Color.LightGray),
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    ),
+                                            )
+                                        }
+                                    }
+
+                                    Row(modifier = Modifier
+                                        .weight(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                                            contentDescription = "duration")
+
+                                        Text(
+                                            text = "소요",
+                                            style = TextStyle(fontWeight = FontWeight.Bold)
+                                        )
+
+                                        Text(
+                                            modifier = Modifier.weight(1f),
+                                            text = formatDuration(monthTotal, mode = 1),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else { // selectedTitle이 "ALL"이 아닌 경우
+                item {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "합계 기록",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
 
                 item {
@@ -385,327 +736,323 @@ fun WiDReadCalendarFragment() {
                                 BorderStroke(1.dp, Color.LightGray),
                                 shape = RoundedCornerShape(8.dp)
                             )
-                            .padding(8.dp)
+                            .padding(16.dp)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(0.dp, 0.dp, 0.dp, 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(10.dp)
-                                    .background(color = colorResource(id = R.color.light_gray))
-                            )
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
 
-                            Text(
-                                modifier = Modifier.weight(0.5f),
-                                text = "제목",
-                                textAlign = TextAlign.Center,
-                            )
+                                Text(
+                                    text = "일(Day)",
+                                )
+                            }
 
-                            Text(
-                                modifier = Modifier
-                                .weight(1f),
-                                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                                textAlign = TextAlign.Center)
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
 
-                            Text(
-                                modifier = Modifier
-                                .weight(1f),
-                                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                                        lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
-                                textAlign = TextAlign.Center)
-
-                            Text(
-                                modifier = Modifier
-                                .weight(1f),
-                                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                                textAlign = TextAlign.Center)
+                                Text(
+                                    text = if (dailyTitleDurationMap.isEmpty()) "•••" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
                         ) {
-                            if (monthlyTitleDurationMap.isEmpty()) {
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
+
                                 Text(
-                                    text = "표시할 데이터가 없습니다.",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
+                                    text = "주(Week)",
                                 )
-                            } else {
-                                for ((title, monthTotal) in monthlyTitleDurationMap) {
-                                    val weekTotal = weeklyTitleDurationMap[title] ?: Duration.ZERO
-                                    val dayTotal = dailyTitleDurationMap[title] ?: Duration.ZERO
+                            }
 
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(0.dp, 8.dp, 0.dp, 0.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        val titleColorId = colorMap[title]
-                                        if (titleColorId != null) {
-                                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(10.dp)
-                                                    .clip(CircleShape)
-                                                    .background(color = backgroundColor)
-                                            )
-                                        }
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
 
-                                        Text(
-                                            modifier = Modifier.weight(0.5f),
-                                            text = titleMap[title] ?: title,
-                                            textAlign = TextAlign.Center
-                                        )
+                                Text(
+                                    text = if (weeklyTitleDurationMap.isEmpty()) "•••" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
 
-                                        Text(
-                                            modifier = Modifier.weight(1f),
-                                            text = formatDuration(dayTotal, mode = 1),
-                                            textAlign = TextAlign.Center
-                                        )
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                        ) {
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
 
-                                        Text(
-                                            modifier = Modifier.weight(1f),
-                                            text = formatDuration(weekTotal, mode = 1),
-                                            textAlign = TextAlign.Center
-                                        )
+                                Text(
+                                    text = "월(Month)",
+                                )
+                            }
 
-                                        Text(
-                                            modifier = Modifier.weight(1f),
-                                            text = formatDuration(monthTotal, mode = 1),
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
+                            Row(modifier = Modifier
+                                .weight(1f)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
+
+                                Text(
+                                    text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }
                 }
-            } else {
-                item {
-                    Text(
-                        modifier = Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 8.dp),
-                        text = "날짜 및 기간별 기록",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-                }
 
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(1.dp, Color.LightGray),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(8.dp),
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
-                            )
-
-                            Text(
-                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                fontWeight = FontWeight.Bold
-                            )
-
-
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
-                                        lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
-                            )
-
-                            Text(
-                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
-                            )
-
-                            Text(
-                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        Text(
+                            text = "평균 기록",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
 
-                item {
-                    Text(modifier = Modifier
-                        .padding(vertical = 8.dp),
-                        text = "연속 기록",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(1.dp, Color.LightGray),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(8.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "최장 기간")
-
-                            Text(
-                                text = if (longestStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(longestStreak!!.first, longestStreak!!.second) + 1}일" },
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = if (longestStreak == null) {
-                                    "•••"
-                                } else {
-                                    val longestStreakFinishDate = longestStreak!!.first
-                                    val longestStreakStartDate = longestStreak!!.second
-                                    if (longestStreakStartDate == longestStreakFinishDate) {
-                                        longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
-                                    } else {
-                                        val formattedStartDate = longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
-                                        val formattedFinishDate = if (longestStreakStartDate == today) {
-                                            "오늘"
-                                        } else if ((longestStreakStartDate.month == longestStreakFinishDate.month)) {
-                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("d일"))
-                                        } else {
-                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("M월 d일"))
-                                        }
-                                        "$formattedStartDate ~ $formattedFinishDate"
-                                    }
-                                },
-                                style = TextStyle(color = Color.Gray)
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "현재 진행 중")
-
-                            Text(
-                                text = if (currentStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(currentStreak, today) + 1}일" },
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = if (currentStreak == null) {
-                                    "•••"
-                                } else if (currentStreak == today) {
-                                    "오늘"
-                                } else {
-                                    "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘"
-                                },
-                                style = TextStyle(color = Color.Gray)
-                            )
-                        }
-                    }
-                }
-
-                item {
-                    Text(modifier = Modifier
-                        .padding(vertical = 8.dp),
-                        text = "종합 기록",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(1.dp, Color.LightGray),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(8.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "총")
-
-                            Text(
-                                text = "${totalDaysAndDuration?.first ?: 0}일",
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Text(
-                                text = if (totalDaysAndDuration == null) "•••" else formatDuration(
-                                    totalDaysAndDuration!!.second, mode = 1),
-                                style = TextStyle(color = Color.Gray)
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "최고")
-
-                            Text(text = if (bestDateAndDuration == null) "•••" else bestDateAndDuration!!.second.format(DateTimeFormatter.ofPattern("M월 d일")),
-                                fontWeight = FontWeight.Bold)
-
-                            Text(text = if (bestDateAndDuration == null) "•••" else formatDuration(
-                                bestDateAndDuration!!.first, mode = 1),
-                                style = TextStyle(color = Color.Gray)
-                            )
-                        }
-                    }
-                }
+//                item {
+//                    Text(
+//                        modifier = Modifier
+//                        .padding(0.dp, 0.dp, 0.dp, 8.dp),
+//                        text = "날짜 및 기간별 기록",
+//                        style = TextStyle(fontWeight = FontWeight.Bold)
+//                    )
+//                }
+//
+//                item {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .border(
+//                                BorderStroke(1.dp, Color.LightGray),
+//                                shape = RoundedCornerShape(8.dp)
+//                            )
+//                            .padding(8.dp),
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(
+//                                text = selectedDate.format(DateTimeFormatter.ofPattern("d일")),
+//                            )
+//
+//                            Text(
+//                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(dailyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
+//
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(
+//                                text = "${firstDayOfWeek.format(DateTimeFormatter.ofPattern("d일"))} ~ " +
+//                                        lastDayOfWeek.format(DateTimeFormatter.ofPattern("d일")),
+//                            )
+//
+//                            Text(
+//                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(weeklyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
+//
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(
+//                                text = selectedDate.format(DateTimeFormatter.ofPattern("M월")),
+//                            )
+//
+//                            Text(
+//                                text = if (monthlyTitleDurationMap.isEmpty()) "•••" else formatDuration(monthlyTitleDurationMap[selectedTitle] ?: Duration.ZERO, mode = 1),
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
+//                    }
+//                }
+//
+//                item {
+//                    Text(modifier = Modifier
+//                        .padding(vertical = 8.dp),
+//                        text = "연속 기록",
+//                        style = TextStyle(fontWeight = FontWeight.Bold)
+//                    )
+//                }
+//
+//                item {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .border(
+//                                BorderStroke(1.dp, Color.LightGray),
+//                                shape = RoundedCornerShape(8.dp)
+//                            )
+//                            .padding(8.dp),
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(text = "최장 기간")
+//
+//                            Text(
+//                                text = if (longestStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(longestStreak!!.first, longestStreak!!.second) + 1}일" },
+//                                fontWeight = FontWeight.Bold
+//                            )
+//
+//                            Text(
+//                                text = if (longestStreak == null) {
+//                                    "•••"
+//                                } else {
+//                                    val longestStreakFinishDate = longestStreak!!.first
+//                                    val longestStreakStartDate = longestStreak!!.second
+//                                    if (longestStreakStartDate == longestStreakFinishDate) {
+//                                        longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+//                                    } else {
+//                                        val formattedStartDate = longestStreakFinishDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+//                                        val formattedFinishDate = if (longestStreakStartDate == today) {
+//                                            "오늘"
+//                                        } else if ((longestStreakStartDate.month == longestStreakFinishDate.month)) {
+//                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("d일"))
+//                                        } else {
+//                                            longestStreakStartDate.format(DateTimeFormatter.ofPattern("M월 d일"))
+//                                        }
+//                                        "$formattedStartDate ~ $formattedFinishDate"
+//                                    }
+//                                },
+//                                style = TextStyle(color = Color.Gray)
+//                            )
+//                        }
+//
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(text = "현재 진행 중")
+//
+//                            Text(
+//                                text = if (currentStreak == null) { "0일" } else { "${ChronoUnit.DAYS.between(currentStreak, today) + 1}일" },
+//                                fontWeight = FontWeight.Bold
+//                            )
+//
+//                            Text(
+//                                text = if (currentStreak == null) {
+//                                    "•••"
+//                                } else if (currentStreak == today) {
+//                                    "오늘"
+//                                } else {
+//                                    "${currentStreak!!.format(DateTimeFormatter.ofPattern("M월 d일"))} ~ 오늘"
+//                                },
+//                                style = TextStyle(color = Color.Gray)
+//                            )
+//                        }
+//                    }
+//                }
+//
+//                item {
+//                    Text(modifier = Modifier
+//                        .padding(vertical = 8.dp),
+//                        text = "종합 기록",
+//                        style = TextStyle(fontWeight = FontWeight.Bold)
+//                    )
+//                }
+//
+//                item {
+//                    Row(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .border(
+//                                BorderStroke(1.dp, Color.LightGray),
+//                                shape = RoundedCornerShape(8.dp)
+//                            )
+//                            .padding(8.dp),
+//                    ) {
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(text = "총")
+//
+//                            Text(
+//                                text = "${totalDaysAndDuration?.first ?: 0}일",
+//                                fontWeight = FontWeight.Bold
+//                            )
+//
+//                            Text(
+//                                text = if (totalDaysAndDuration == null) "•••" else formatDuration(
+//                                    totalDaysAndDuration!!.second, mode = 1),
+//                                style = TextStyle(color = Color.Gray)
+//                            )
+//                        }
+//
+//                        Column(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalAlignment = Alignment.CenterHorizontally,
+//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+//                        ) {
+//                            Text(text = "최고")
+//
+//                            Text(text = if (bestDateAndDuration == null) "•••" else bestDateAndDuration!!.second.format(DateTimeFormatter.ofPattern("M월 d일")),
+//                                fontWeight = FontWeight.Bold)
+//
+//                            Text(text = if (bestDateAndDuration == null) "•••" else formatDuration(
+//                                bestDateAndDuration!!.first, mode = 1),
+//                                style = TextStyle(color = Color.Gray)
+//                            )
+//                        }
+//                    }
+//                }
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WiDReadCalendarFragmentPreview() {
+    WiDReadCalendarFragment()
 }
