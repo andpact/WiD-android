@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
@@ -69,18 +70,21 @@ fun WiDCreateManualFragment() {
     var title by remember { mutableStateOf("STUDY") }
 
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
+    val totalMinutes = 24 * 60 // 1440분 (24시간)
 
     var start by remember { mutableStateOf(currentTime) }
     var showStartPicker by remember { mutableStateOf(false) }
-    val startTimePickerState = rememberTimePickerState()
+    val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
     var isStartOverlap by remember { mutableStateOf(false) }
     var isStartOverCurrentTime by remember { mutableStateOf(false) }
+    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
 
     var finish by remember { mutableStateOf(currentTime) }
     var showFinishPicker by remember { mutableStateOf(false) }
-    val finishTimePickerState = rememberTimePickerState()
+    val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
     var isFinishOverlap by remember { mutableStateOf(false) }
     var isFinishOverCurrentTime by remember { mutableStateOf(false) }
+    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
 
     var duration by remember { mutableStateOf(Duration.ZERO) }
     var isDurationUnderMin by remember { mutableStateOf(false) }
@@ -195,6 +199,7 @@ fun WiDCreateManualFragment() {
                                 val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
 
                                 start = newStart
+                                startPosition = (start.hour * 60 + start.minute).toFloat() / totalMinutes
 
                                 for (existingWiD in wiDList) {
                                     if (existingWiD.start <= start && start <= existingWiD.finish) {
@@ -317,8 +322,9 @@ fun WiDCreateManualFragment() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+//            verticalArrangement = Arrangement.Center,
+//            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 val dateText = buildAnnotatedString {
@@ -355,9 +361,10 @@ fun WiDCreateManualFragment() {
                         )
                         .padding(16.dp),
                 ) {
-
                     val configuration = LocalConfiguration.current
                     val screenWidthDp = configuration.screenWidthDp
+//                    val density = LocalDensity.current.density
+//                    val screenWidthPixels = (screenWidthDp * density).toInt()
 
                     Box(modifier = Modifier
                         .fillMaxWidth()
@@ -365,20 +372,26 @@ fun WiDCreateManualFragment() {
                         Icon(
                             modifier = Modifier
                                 .rotate(90f)
-//                                .offset(x = calculateOffset(start)),
-                                .offset(y = (-100).dp), // 마이너스를 Y축에 사용하면 오른쪽으로 이동함.
+                                .offset(y = -(screenWidthDp * startPosition * 0.8).dp),
                             painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                            contentDescription = "start")
+                            contentDescription = "start",
+                            tint = if (isStartOverlap || isStartOverCurrentTime) Color.Red else Color.Unspecified
+                        )
 
-//                        Icon(
-//                            modifier = Modifier
-//                                .rotate(90f)
-//                                .offset(x = calculateOffset(finish)),
-//                            painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-//                            contentDescription = "finish")
+                        Icon(
+                            modifier = Modifier
+                                .rotate(90f)
+                                .offset(y = -(screenWidthDp * finishPosition * 0.8).dp),
+                            painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                            contentDescription = "finish",
+                            tint = if (isFinishOverlap || isFinishOverCurrentTime) Color.Red else Color.Unspecified)
                     }
 
                     HorizontalBarChartView(wiDList = wiDList)
+                    
+//                    Text(text = "screenWidthDp : $screenWidthDp")
+//                    Text(text = "startPosition : $startPosition")
+//                    Text(text = "screenWidthDp * startPosition : ${screenWidthDp * startPosition}")
                 }
             }
 
@@ -468,29 +481,37 @@ fun WiDCreateManualFragment() {
                             painter = painterResource(id = R.drawable.baseline_category_24),
                             contentDescription = "title")
 
-                        Text(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .weight(1f),
-                            text = titleMap[title] ?: title,
-                        )
+                        Row(modifier = Modifier
+                            .weight(1f)
+                            .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = titleMap[title] ?: title,
+                            )
 
-                        val titleColorId = colorMap[title]
-                        val backgroundColor = if (titleColorId != null) {
-                            Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                        } else {
-                            colorResource(id = R.color.light_gray)
+                            val titleColorId = colorMap[title]
+                            val backgroundColor = if (titleColorId != null) {
+                                Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                            } else {
+                                colorResource(id = R.color.light_gray)
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .width(5.dp)
+                                    .height(20.dp)
+                                    .padding(horizontal = 8.dp)
+                                    .border(
+                                        BorderStroke(1.dp, Color.LightGray),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .background(
+                                        color = backgroundColor,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                            )
                         }
-
-                        Box(
-                            modifier = Modifier
-                                .width(3.dp)
-                                .height(20.dp)
-                                .background(
-                                    color = backgroundColor,
-                                    RoundedCornerShape(8.dp)
-                                )
-                        )
 
                         DropdownMenu(modifier = Modifier
                             .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
@@ -665,72 +686,69 @@ fun WiDCreateManualFragment() {
             }
 
             item {
-                IconButton(
-                    onClick = {
-                        val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
-                        wiDService.createWiD(newWiD)
-
-                        wiDList = wiDService.readDailyWiDListByDate(date)
-
-                        for (existingWiD in wiDList) {
-                            if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                isStartOverlap = true
-                                break
-                            } else {
-                                isStartOverlap = false
-                            }
-                        }
-
-                        for (existingWiD in wiDList) {
-                            if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                isFinishOverlap = true
-                                break
-                            } else {
-                                isFinishOverlap = false
-                            }
-                        }
-
-                        for (existingWiD in wiDList) {
-                            if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                isStartOverlap = true
-                                isFinishOverlap = true
-                                break
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .border(
-                            border = BorderStroke(1.dp, Color.LightGray),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .background(
-                            color = Color.Blue,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(),
-                    enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO)
+                Row(modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "등록", color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO)
-                    { Color.Unspecified } else { colorResource(id = R.color.play_color) },
-                        style = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier
+                        .weight(1f)
                     )
+
+                    IconButton(
+                        onClick = {
+                            val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
+                            wiDService.createWiD(newWiD)
+
+                            wiDList = wiDService.readDailyWiDListByDate(date)
+
+                            for (existingWiD in wiDList) {
+                                if (existingWiD.start <= start && start <= existingWiD.finish) {
+                                    isStartOverlap = true
+                                    break
+                                } else {
+                                    isStartOverlap = false
+                                }
+                            }
+
+                            for (existingWiD in wiDList) {
+                                if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                                    isFinishOverlap = true
+                                    break
+                                } else {
+                                    isFinishOverlap = false
+                                }
+                            }
+
+                            for (existingWiD in wiDList) {
+                                if (start <= existingWiD.start && existingWiD.finish <= finish) {
+                                    isStartOverlap = true
+                                    isFinishOverlap = true
+                                    break
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .background(
+                                color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO) {
+                                    Color.LightGray
+                                } else {
+                                    Color.Blue
+                                },
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding()
+                            .weight(1f),
+                        enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO)
+                    ) {
+                        Text(text = "등록",
+                            style = TextStyle(color = Color.White, textAlign = TextAlign.Center)
+                        )
+                    }
+
                 }
             }
         }
     }
-}
-
-fun calculateOffset(time: LocalTime): Dp {
-    val totalMinutes = 24 * 60 // 1440분
-    val minutesSinceMidnight = time.hour * 60 + time.minute
-
-    // 예시: 0시는 가장 왼쪽, 12시는 중앙, 24시는 가장 오른쪽에 위치하도록 계산
-    val centerMinutes = totalMinutes / 2
-    val offset = (minutesSinceMidnight - centerMinutes).toFloat() / totalMinutes
-
-    // 여기에서 offset을 Dp로 변환하여 반환합니다.
-    // 예를 들어, 0.5를 사용하여 중앙에 위치하도록 하려면 다음과 같이 변환합니다.
-    return (offset * 100).dp // 예시로 100을 곱한 후 Dp로 변환합니다.
 }
 
 @Preview(showBackground = true)
