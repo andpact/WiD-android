@@ -32,13 +32,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,12 +91,24 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
         )
 
         if (searchText.isEmpty()) {
-            Text(modifier = Modifier
+            Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
-                text = "설명으로 WiD를 검색해 보세요.",
-                style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
-            )
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(modifier = Modifier
+                    .scale(0.8f),
+                    painter = painterResource(id = R.drawable.baseline_message_24),
+                    contentDescription = "detail",
+                    tint = Color.Gray
+                )
+
+                Text(
+                    text = "설명으로 WiD를 검색해 보세요.",
+                    style = TextStyle(color = Color.Gray)
+                )
+            }
         } else {
             var currentDate: LocalDate? = null
 
@@ -99,176 +117,192 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 itemsIndexed(sortedWiDList) { index, wiD ->
-                    val wiDDate = wiD.date
-
-                    if (currentDate != wiDDate) {
-                        currentDate = wiDDate
+                    if (currentDate != wiD.date) {
+                        currentDate = wiD.date
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
                             if (currentDate == LocalDate.now()) {
-                                Text(text = "오늘")
+                                Text(
+                                    text = "오늘",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
                             } else if (currentDate == LocalDate.now().minusDays(1)) {
-                                Text(text = "어제")
+                                Text(
+                                    text = "어제",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
                             } else {
-                                Text(
-                                    text = wiDDate.format(DateTimeFormatter.ofPattern("yyyy.MM.dd ")),
-                                )
-
-                                Text(text = "(")
-
-                                Text(
-                                    text = wiDDate.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)),
-                                    color = when (wiDDate.dayOfWeek) {
-                                        DayOfWeek.SATURDAY -> Color.Blue
-                                        DayOfWeek.SUNDAY -> Color.Red
-                                        else -> Color.Black
+                                val dateText = buildAnnotatedString {
+                                    wiD.date.let {
+                                        append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 ")))
+                                        append("(")
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = when (it.dayOfWeek) {
+                                                    DayOfWeek.SATURDAY -> Color.Blue
+                                                    DayOfWeek.SUNDAY -> Color.Red
+                                                    else -> Color.Unspecified
+                                                }
+                                            )
+                                        ) {
+                                            append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                        }
+                                        append(")")
                                     }
+                                }
+
+                                Text(
+                                    text = dateText,
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
-
-                                Text(text = ")")
                             }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(0.dp, 0.dp, 0.dp, 8.dp)
-                                .background(
-                                    color = colorResource(id = R.color.light_gray),
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 10.dp, height = 25.dp)
-                            )
-
-                            Text(text = "순서",
-                                modifier = Modifier
-                                    .weight(0.3f),
-                                textAlign = TextAlign.Center,
-                            )
-
-                            Text(text = "제목",
-                                modifier = Modifier
-                                    .weight(0.3f),
-                                textAlign = TextAlign.Center)
-
-                            Text(text = "시작",
-                                modifier = Modifier
-                                    .weight(0.7f),
-                                textAlign = TextAlign.Center)
-
-                            Text(text = "종료",
-                                modifier = Modifier
-                                    .weight(0.7f),
-                                textAlign = TextAlign.Center)
-
-                            Text(text = "소요",
-                                modifier = Modifier
-                                    .weight(0.6f),
-                                textAlign = TextAlign.Center)
                         }
                     }
 
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                color = colorResource(id = R.color.light_gray),
+                            .border(
+                                border = BorderStroke(1.dp, Color.Black),
                                 shape = RoundedCornerShape(8.dp)
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val titleColorId = colorMap[wiD.title]
-                        if (titleColorId != null) {
-                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 10.dp, height = 50.dp)
-                                    .background(
-                                        color = backgroundColor,
-                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
-                                    )
                             )
-                        }
+                            .padding(16.dp)
+                            .clickable {
+                                navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
-//                            Log.d("Navigation", Destinations.WiDViewFragment.route + "/${wiD.id}")
-
-                                    buttonsVisible.value = false
-                                },
+                                buttonsVisible.value = false
+                            },
+                    ) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
+                            Row(modifier = Modifier
+                                .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
+
                                 Text(
-                                    text = (index + 1).toString(),
-                                    modifier = Modifier
-                                        .weight(0.3f),
-                                    textAlign = TextAlign.Center
+                                    text = "제목 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
-                                Text(
-                                    text = titleMap[wiD.title] ?: wiD.title,
+
+                                Text(text = titleMap[wiD.title] ?: wiD.title)
+
+                                val titleColorId = colorMap[wiD.title]
+                                val backgroundColor = if (titleColorId != null) {
+                                    Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                } else {
+                                    colorResource(id = R.color.light_gray)
+                                }
+
+                                Box(
                                     modifier = Modifier
-                                        .weight(0.3f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")),
-                                    modifier = Modifier
-                                        .weight(0.7f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")),
-                                    modifier = Modifier
-                                        .weight(0.7f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = formatDuration(wiD.duration, mode = 2),
-                                    modifier = Modifier
-                                        .weight(0.6f),
-                                    textAlign = TextAlign.Center
+                                        .width(5.dp)
+                                        .height(20.dp)
+                                        .border(
+                                            BorderStroke(1.dp, Color.LightGray),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .background(
+                                            color = backgroundColor,
+                                            RoundedCornerShape(8.dp)
+                                        )
                                 )
                             }
 
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .padding(horizontal = 8.dp)
-                                    .background(color = Color.Gray)
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(modifier = Modifier
-                                    .weight(0.3f),
-                                    text = "설명",
-                                    textAlign = TextAlign.Center
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                                    contentDescription = "duration")
+
+                                Text(
+                                    text = "소요 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
 
-                                Text(modifier = Modifier
-                                    .weight(2.3f),
-                                    text = ": " + wiD.detail.ifBlank { "설명 입력.." },
-                                    style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black, textAlign = TextAlign.Justify),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Text(text = formatDuration(wiD.duration, mode = 1))
                             }
+                        }
+
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                        ) {
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                    contentDescription = "finish")
+
+                                Text(
+                                    text = "시작 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
+
+                                Text(text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")))
+                            }
+
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                    contentDescription = "finish")
+
+                                Text(
+                                    text = "종료 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
+
+                                Text(text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")))
+                            }
+                        }
+
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val detailText = buildAnnotatedString {
+                                wiD.detail.let {
+                                    Icon(modifier = Modifier
+                                        .scale(0.8f),
+                                        painter = painterResource(id = R.drawable.baseline_message_24),
+                                        contentDescription = "detail")
+
+                                    withStyle(
+                                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                                    ) {
+                                        append("설명 ")
+                                    }
+
+                                    withStyle(
+                                        style = SpanStyle(color = if (it.isBlank()) Color.Gray else Color.Black)
+                                    ) {
+                                        append(it.ifBlank { "설명 입력.." })
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = detailText,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }

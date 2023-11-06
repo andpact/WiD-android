@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -415,7 +416,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .fillMaxWidth()
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_message_24),
                                     contentDescription = "detail")
 
@@ -429,7 +431,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_category_24),
                                             contentDescription = "title")
 
@@ -463,7 +466,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                                             contentDescription = "duration")
 
@@ -552,7 +556,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .fillMaxWidth()
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_message_24),
                                     contentDescription = "detail")
 
@@ -566,7 +571,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_category_24),
                                             contentDescription = "title")
 
@@ -600,7 +606,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                                             contentDescription = "duration")
 
@@ -649,7 +656,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .fillMaxWidth()
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_message_24),
                                     contentDescription = "detail")
 
@@ -663,7 +671,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_category_24),
                                             contentDescription = "title")
 
@@ -697,7 +706,8 @@ fun WiDReadCalendarFragment() {
                                     Row(modifier = Modifier
                                         .weight(1f)
                                     ) {
-                                        Icon(
+                                        Icon(modifier = Modifier
+                                            .scale(0.8f),
                                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                                             contentDescription = "duration")
 
@@ -744,7 +754,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -756,7 +767,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -773,7 +785,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -785,7 +798,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -802,7 +816,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -814,7 +829,8 @@ fun WiDReadCalendarFragment() {
                             Row(modifier = Modifier
                                 .weight(1f)
                             ) {
-                                Icon(
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 

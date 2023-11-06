@@ -25,12 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -115,49 +119,25 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             }
         }
 
-//        PieChartView(date = currentDate, forReadDay = true)
-        DayPieChartView(wiDList = wiDList)
+        Text(
+            text = "파이 차트",
+            style = TextStyle(fontWeight = FontWeight.Bold)
+        )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp, 0.dp, 0.dp, 8.dp)
-                .background(
-                    color = colorResource(id = R.color.light_gray),
-                    shape = RoundedCornerShape(8.dp)
-                ),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(8.dp)
+            )
         ) {
-            Box(
-                modifier = Modifier
-                    .size(width = 10.dp, height = 25.dp)
-            )
-
-            Text(text = "순서",
-                modifier = Modifier
-                    .weight(0.3f),
-                textAlign = TextAlign.Center,
-            )
-
-            Text(text = "제목",
-                modifier = Modifier
-                    .weight(0.3f),
-                textAlign = TextAlign.Center)
-
-            Text(text = "시작",
-                modifier = Modifier
-                    .weight(0.7f),
-                textAlign = TextAlign.Center)
-
-            Text(text = "종료",
-                modifier = Modifier
-                    .weight(0.7f),
-                textAlign = TextAlign.Center)
-
-            Text(text = "소요",
-                modifier = Modifier
-                    .weight(0.6f),
-                textAlign = TextAlign.Center)
+            DayPieChartView(wiDList = wiDList)
         }
+
+        Text(
+            text = "WiD 리스트",
+            style = TextStyle(fontWeight = FontWeight.Bold)
+        )
 
         LazyColumn(
             modifier = Modifier
@@ -166,109 +146,155 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
         ) {
             if (wiDList.isEmpty()) {
                 item {
-                    Text(modifier = Modifier
+                    Row(modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                        text = "표시할 WiD가 없습니다.",
-                        style = TextStyle(textAlign = TextAlign.Center, color = Color.LightGray)
-                    )
+                        .padding(vertical = 16.dp)
+                    ) {
+                        Icon(modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.baseline_message_24),
+                            contentDescription = "detail")
+
+                        Text(text = "표시할 데이터가 없습니다.")
+                    }
                 }
             } else {
-                itemsIndexed(wiDList) { index, wiD ->
-                    Row(
+                itemsIndexed(wiDList) { _, wiD ->
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                color = colorResource(id = R.color.light_gray),
+                            .border(
+                                border = BorderStroke(1.dp, Color.Black),
                                 shape = RoundedCornerShape(8.dp)
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val titleColorId = colorMap[wiD.title]
-                        if (titleColorId != null) {
-                            val backgroundColor = Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 10.dp, height = 50.dp)
-                                    .background(
-                                        color = backgroundColor,
-                                        shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
-                                    )
                             )
-                        }
+                            .padding(16.dp)
+                            .clickable {
+                                navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
-
-                                    buttonsVisible.value = false
-                                },
+                                buttonsVisible.value = false
+                            },
+                    ) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
+                            Row(modifier = Modifier
+                                .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Icon(modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_category_24),
+                                    contentDescription = "title")
+
                                 Text(
-                                    text = (index + 1).toString(),
-                                    modifier = Modifier
-                                        .weight(0.3f),
-                                    textAlign = TextAlign.Center
+                                    text = "제목 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
-                                Text(
-                                    text = titleMap[wiD.title] ?: wiD.title,
+
+                                Text(text = titleMap[wiD.title] ?: wiD.title)
+
+                                val titleColorId = colorMap[wiD.title]
+                                val backgroundColor = if (titleColorId != null) {
+                                    Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                                } else {
+                                    colorResource(id = R.color.light_gray)
+                                }
+
+                                Box(
                                     modifier = Modifier
-                                        .weight(0.3f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")),
-                                    modifier = Modifier
-                                        .weight(0.7f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")),
-                                    modifier = Modifier
-                                        .weight(0.7f),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = formatDuration(wiD.duration, mode = 1),
-                                    modifier = Modifier
-                                        .weight(0.6f),
-                                    textAlign = TextAlign.Center
+                                        .width(5.dp)
+                                        .height(20.dp)
+                                        .border(
+                                            BorderStroke(1.dp, Color.LightGray),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .background(
+                                            color = backgroundColor,
+                                            RoundedCornerShape(8.dp)
+                                        )
                                 )
                             }
 
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(1.dp)
-                                    .padding(horizontal = 8.dp)
-                                    .background(color = Color.Gray)
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(modifier = Modifier
-                                    .weight(0.3f),
-                                    text = "설명",
-                                    textAlign = TextAlign.Center,
+                                Icon(modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_timelapse_24),
+                                    contentDescription = "duration")
+
+                                Text(
+                                    text = "소요 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
 
-                                Text(modifier = Modifier
-                                    .weight(2.3f),
-                                    text = ": " + wiD.detail.ifBlank { "설명 입력.." },
-                                    style = TextStyle(color = if (wiD.detail.isBlank()) Color.Gray else Color.Black),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                Text(text = formatDuration(wiD.duration, mode = 1))
                             }
+                        }
+
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                        ) {
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                    contentDescription = "finish")
+
+                                Text(
+                                    text = "시작 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
+
+                                Text(text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")))
+                            }
+
+                            Row(modifier = Modifier
+                                .weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                    contentDescription = "finish")
+
+                                Text(
+                                    text = "종료 ",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
+
+                                Text(text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")))
+                            }
+                        }
+
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val detailText = buildAnnotatedString {
+                                wiD.detail.let {
+                                    Icon(modifier = Modifier.size(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_message_24),
+                                        contentDescription = "detail")
+
+                                    withStyle(
+                                        style = SpanStyle(fontWeight = FontWeight.Bold)
+                                    ) {
+                                        append("설명 ")
+                                    }
+
+                                    withStyle(
+                                        style = SpanStyle(color = if (it.isBlank()) Color.Gray else Color.Black)
+                                    ) {
+                                        append(it.ifBlank { "설명 입력.." })
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = detailText,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }

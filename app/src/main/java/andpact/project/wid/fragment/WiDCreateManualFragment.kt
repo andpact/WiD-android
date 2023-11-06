@@ -25,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -278,6 +279,7 @@ fun WiDCreateManualFragment() {
                                 val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
 
                                 finish = newFinish
+                                startPosition = (finish.hour * 60 + finish.minute).toFloat() / totalMinutes
 
                                 for (existingWiD in wiDList) {
                                     if (existingWiD.start <= start && start <= existingWiD.finish) {
@@ -323,8 +325,6 @@ fun WiDCreateManualFragment() {
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 val dateText = buildAnnotatedString {
@@ -348,7 +348,10 @@ fun WiDCreateManualFragment() {
                     }
                 }
 
-                Text(text = dateText)
+                Text(
+                    text = dateText,
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
             }
 
             item {
@@ -371,6 +374,7 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
+                                .scale(0.8f)
                                 .rotate(90f)
                                 .offset(y = -(screenWidthDp * startPosition * 0.8).dp),
                             painter = painterResource(id = R.drawable.outline_play_arrow_24),
@@ -380,6 +384,7 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
+                                .scale(0.8f)
                                 .rotate(90f)
                                 .offset(y = -(screenWidthDp * finishPosition * 0.8).dp),
                             painter = painterResource(id = R.drawable.baseline_play_arrow_24),
@@ -396,6 +401,11 @@ fun WiDCreateManualFragment() {
             }
 
             item {
+                Text(
+                    text = "New WiD",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
+
                 Column(
                     modifier = Modifier
                         .background(
@@ -407,9 +417,13 @@ fun WiDCreateManualFragment() {
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    Text(text = "날짜")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "날짜"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -423,7 +437,8 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .scale(0.8f)
+                                .padding(8.dp),
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "date")
 
@@ -448,7 +463,7 @@ fun WiDCreateManualFragment() {
 
                         Text(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .padding(8.dp)
                                 .weight(1f),
                             text = dateText,
                         )
@@ -457,13 +472,18 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .scale(0.8f)
+                                .padding(8.dp)
                                 .clickable { showDatePicker = true },
                             painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
                             contentDescription = "showDatePicker")
                     }
 
-                    Text(text = "제목")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "제목"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -477,41 +497,37 @@ fun WiDCreateManualFragment() {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(modifier = Modifier
-                            .padding(16.dp),
+                            .scale(0.8f)
+                            .padding(8.dp),
                             painter = painterResource(id = R.drawable.baseline_category_24),
                             contentDescription = "title")
 
-                        Row(modifier = Modifier
+                        Text(modifier = Modifier
                             .weight(1f)
-                            .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = titleMap[title] ?: title,
-                            )
+                            .padding(8.dp),
+                            text = titleMap[title] ?: title,
+                        )
 
-                            val titleColorId = colorMap[title]
-                            val backgroundColor = if (titleColorId != null) {
-                                Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                            } else {
-                                colorResource(id = R.color.light_gray)
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .width(5.dp)
-                                    .height(20.dp)
-                                    .padding(horizontal = 8.dp)
-                                    .border(
-                                        BorderStroke(1.dp, Color.LightGray),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .background(
-                                        color = backgroundColor,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                            )
+                        val titleColorId = colorMap[title]
+                        val backgroundColor = if (titleColorId != null) {
+                            Color(ContextCompat.getColor(LocalContext.current, titleColorId))
+                        } else {
+                            colorResource(id = R.color.light_gray)
                         }
+
+                        Box(
+                            modifier = Modifier
+                                .width(5.dp)
+                                .height(20.dp)
+                                .border(
+                                    BorderStroke(1.dp, Color.LightGray),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .background(
+                                    color = backgroundColor,
+                                    RoundedCornerShape(8.dp)
+                                )
+                        )
 
                         DropdownMenu(modifier = Modifier
                             .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
@@ -537,13 +553,18 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .scale(0.8f)
+                                .padding(8.dp)
                                 .clickable { titleMenuExpanded = true },
                             painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
                             contentDescription = "titleMenuExpanded")
                     }
 
-                    Text(text = "시작 시간")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "시작 시간"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -558,13 +579,14 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .scale(0.8f)
+                                .padding(8.dp),
                             painter = painterResource(id = R.drawable.outline_play_arrow_24),
                             contentDescription = "start")
 
                         Text(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .padding(8.dp)
                                 .weight(1f),
                             text = start.format(DateTimeFormatter.ofPattern("a h:mm")),
                         )
@@ -573,13 +595,18 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .scale(0.8f)
+                                .padding(8.dp)
                                 .clickable { showStartPicker = true },
                             painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
                             contentDescription = "showStartPicker")
                     }
 
-                    Text(text = "종료 시간")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "종료 시간"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -594,13 +621,14 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .scale(0.8f)
+                                .padding(8.dp),
                             painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                             contentDescription = "finish")
 
                         Text(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .padding(8.dp)
                                 .weight(1f),
                             text = finish.format(DateTimeFormatter.ofPattern("a h:mm")),
                         )
@@ -609,13 +637,18 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .scale(0.8f)
+                                .padding(8.dp)
                                 .clickable { showFinishPicker = true },
                             painter = painterResource(id = R.drawable.baseline_keyboard_arrow_down_24),
                             contentDescription = "showFinishPicker")
                     }
 
-                    Text(text = "지속 시간")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "지속 시간"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -629,17 +662,22 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .scale(0.8f)
+                                .padding(8.dp),
                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                             contentDescription = "duration")
 
                         Text(modifier = Modifier
-                            .padding(16.dp),
+                            .padding(8.dp),
                             text = formatDuration(duration, mode = 2),
                         )
                     }
 
-                    Text(text = "설명")
+                    Text(
+                        modifier = Modifier
+                        .padding(horizontal = 8.dp),
+                        text = "설명"
+                    )
 
                     Row(
                         modifier = Modifier
@@ -653,7 +691,8 @@ fun WiDCreateManualFragment() {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .scale(0.8f)
+                                .padding(8.dp),
                             painter = painterResource(id = R.drawable.baseline_message_24),
                             contentDescription = "detail")
 
@@ -674,7 +713,8 @@ fun WiDCreateManualFragment() {
 
                         Icon(
                             modifier = Modifier
-                                .padding(16.dp)
+                                .scale(0.8f)
+                                .padding(8.dp)
                                 .clickable {
                                     detail = ""
                                 },
@@ -740,11 +780,21 @@ fun WiDCreateManualFragment() {
                             .weight(1f),
                         enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO)
                     ) {
-                        Text(text = "등록",
-                            style = TextStyle(color = Color.White, textAlign = TextAlign.Center)
-                        )
-                    }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(modifier = Modifier
+                                .scale(0.8f),
+                                painter = painterResource(id = R.drawable.outline_add_box_24),
+                                contentDescription = "add",
+                                tint = Color.White)
 
+                            Text(text = "등록",
+                                style = TextStyle(color = Color.White, textAlign = TextAlign.Center)
+                            )
+                        }
+                    }
                 }
             }
         }
