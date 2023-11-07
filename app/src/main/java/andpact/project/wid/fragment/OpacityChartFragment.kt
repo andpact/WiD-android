@@ -1,6 +1,7 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import androidx.compose.foundation.BorderStroke
@@ -26,16 +27,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun OpacityChartView(date: LocalDate, title: String) {
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = wiDService.readDailyWiDListByDate(date, title)
-
+fun OpacityChartView(date: LocalDate, wiDList: List<WiD>) {
     val totalDurationMillis = wiDList.sumOf { it.duration.toMillis() }
-    val maxDurationMillis = if (title == "EXERCISE") {
-        2 * 60 * 60 * 1000
-    } else {
-        10 * 60 * 60 * 1000
-    }
+    val maxDurationMillis = 10 * 60 * 60 * 1000
 
     val opacity = when {
         totalDurationMillis == 0L -> 0.0f
@@ -46,16 +40,17 @@ fun OpacityChartView(date: LocalDate, title: String) {
         else -> 1.0f
     }
 
-    val titleColorId = colorMap[title]
-    val backgroundColor = titleColorId?.let { id ->
-        Color(ContextCompat.getColor(LocalContext.current, id))
-    } ?: colorResource(id = R.color.light_gray)
+    val backgroundColor = if (wiDList.isEmpty()) {
+        colorResource(id = R.color.light_gray)
+    } else {
+        colorResource(id = colorMap[wiDList[0].title] ?: R.color.light_gray)
+    }
 
     Box(modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
         .padding(4.dp)
-        .border(BorderStroke(1.dp, Color.LightGray), RoundedCornerShape(8.dp))
+        .border(BorderStroke(1.dp, Color.LightGray))
         .background(
             color = backgroundColor.copy(alpha = opacity),
             shape = RoundedCornerShape(8.dp)

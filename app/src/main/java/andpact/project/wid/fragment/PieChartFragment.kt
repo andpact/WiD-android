@@ -32,89 +32,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun PieChartView(date: LocalDate) {
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = wiDService.readDailyWiDListByDate(date)
-
-    val pieEntries = mutableListOf<PieEntry>()
-
-    var currentMinute = 0
-
-    for (wiD in wiDList) {
-        val finishMinutes = wiD.finish.hour * 60 + wiD.finish.minute
-
-        // 비어 있는 시간대의 엔트리 추가
-        if (wiD.start.hour * 60 + wiD.start.minute > currentMinute) {
-            val emptyMinutes = wiD.start.hour * 60 + wiD.start.minute - currentMinute
-            pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
-        }
-
-        // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
-        currentMinute = wiD.start.hour * 60 + wiD.start.minute
-        pieEntries.add(PieEntry((finishMinutes - currentMinute).toFloat(), wiD.title))
-
-        // 시작 시간 업데이트
-        currentMinute = wiD.finish.hour * 60 + wiD.finish.minute
-    }
-
-    // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
-    if (currentMinute < 24 * 60) {
-        val emptyMinutes = 24 * 60 - currentMinute
-        pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
-        contentAlignment = Alignment.Center
-    ) {
-        Crossfade(targetState = pieEntries) { pieEntries ->
-            AndroidView(factory = { context ->
-                PieChart(context).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    setUsePercentValues(false) // Use absolute values
-                    description.isEnabled = false // Disable description
-                    legend.isEnabled = false // Disable legend
-
-                    setDrawEntryLabels(false)
-                    setTouchEnabled(false) // Disable touch gestures for zooming
-
-                    isDrawHoleEnabled = true
-                    holeRadius = 80f
-                    setHoleColor(ContextCompat.getColor(context, R.color.transparent))
-
-                    setDrawCenterText(true)
-                    centerText = date.dayOfMonth.toString()
-                    setCenterTextSize(12f)
-
-                    if (wiDList.isEmpty()) {
-                        setCenterTextColor(Color.LightGray.toArgb())
-                    } else {
-                        setCenterTextColor(ContextCompat.getColor(context, R.color.black))
-                    }
-
-                    val dataSet = PieDataSet(pieEntries, "")
-                    val colors = pieEntries.map { entry ->
-                        val label = entry.label ?: ""
-                        val colorId = colorMap[label] ?: R.color.light_gray
-                        ContextCompat.getColor(context, colorId)
-                    }
-                    dataSet.colors = colors
-                    val data = PieData(dataSet)
-                    data.setDrawValues(false)
-                    this.data = data
-                    this.invalidate()
-                }
-            })
-        }
-    }
-}
-
-@Composable
 fun DayPieChartView(wiDList: List<WiD>) {
     val pieEntries = mutableListOf<PieEntry>()
 
@@ -166,7 +83,7 @@ fun DayPieChartView(wiDList: List<WiD>) {
 
                     isDrawHoleEnabled = true
                     holeRadius = 95f
-                    setHoleColor(ContextCompat.getColor(context, R.color.transparent))
+                    setHoleColor(Color.Transparent.toArgb())
 
                     setDrawCenterText(true)
                     centerText = "오후 | 오전"
@@ -175,7 +92,7 @@ fun DayPieChartView(wiDList: List<WiD>) {
                     if (wiDList.isEmpty()) {
                         setCenterTextColor(Color.LightGray.toArgb())
                     } else {
-                        setCenterTextColor(ContextCompat.getColor(context, R.color.black))
+                        setCenterTextColor(Color.Black.toArgb())
                     }
 
                     val dataSet = PieDataSet(pieEntries, "")
@@ -219,6 +136,87 @@ fun DayPieChartView(wiDList: List<WiD>) {
                     drawContext.canvas.nativeCanvas.drawText(hour.toString(), x.toFloat(), y.toFloat(), textPaint)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CalendarPieChartView(date: LocalDate, wiDList: List<WiD>) {
+    val pieEntries = mutableListOf<PieEntry>()
+
+    val totalMinutes = 24 * 60 // 1440분(24시간)
+    var currentMinute = 0
+
+    for (wiD in wiDList) {
+        val finishMinutes = wiD.finish.hour * 60 + wiD.finish.minute
+
+        // 비어 있는 시간대의 엔트리 추가
+        if (wiD.start.hour * 60 + wiD.start.minute > currentMinute) {
+            val emptyMinutes = wiD.start.hour * 60 + wiD.start.minute - currentMinute
+            pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
+        }
+
+        // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
+        currentMinute = wiD.start.hour * 60 + wiD.start.minute
+        pieEntries.add(PieEntry((finishMinutes - currentMinute).toFloat(), wiD.title))
+
+        // 시작 시간 업데이트
+        currentMinute = wiD.finish.hour * 60 + wiD.finish.minute
+    }
+
+    // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
+    if (currentMinute < totalMinutes) {
+        val emptyMinutes = totalMinutes - currentMinute
+        pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f),
+        contentAlignment = Alignment.Center
+    ) {
+        Crossfade(targetState = pieEntries) { pieEntries ->
+            AndroidView(factory = { context ->
+                PieChart(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setUsePercentValues(false) // Use absolute values
+                    description.isEnabled = false // Disable description
+                    legend.isEnabled = false // Disable legend
+
+                    setDrawEntryLabels(false)
+                    setTouchEnabled(false) // Disable touch gestures for zooming
+
+                    isDrawHoleEnabled = true
+                    holeRadius = 80f
+                    setHoleColor(Color.Transparent.toArgb())
+
+                    setDrawCenterText(true)
+                    centerText = date.dayOfMonth.toString()
+                    setCenterTextSize(12f)
+
+                    if (wiDList.isEmpty()) {
+                        setCenterTextColor(Color.LightGray.toArgb())
+                    } else {
+                        setCenterTextColor(Color.Black.toArgb())
+                    }
+
+                    val dataSet = PieDataSet(pieEntries, "")
+                    val colors = pieEntries.map { entry ->
+                        val label = entry.label ?: ""
+                        val colorId = colorMap[label] ?: R.color.light_gray
+                        ContextCompat.getColor(context, colorId)
+                    }
+                    dataSet.colors = colors
+                    val data = PieData(dataSet)
+                    data.setDrawValues(false)
+                    this.data = data
+                    this.invalidate()
+                }
+            })
         }
     }
 }

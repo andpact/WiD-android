@@ -344,7 +344,7 @@ fun WiDCreateManualFragment() {
                         }
                         append(")")
 
-                        append("의 WiD리스트")
+                        append(" WiD리스트")
                     }
                 }
 

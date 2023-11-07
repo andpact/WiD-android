@@ -296,6 +296,32 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             horizontalAlignment = Alignment.Start
         ) {
             if (isEditing) {
+                val dateText = buildAnnotatedString {
+                    date.let {
+                        append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 ")))
+                        append("(")
+                        withStyle(
+                            style = SpanStyle(
+                                color = when (it.dayOfWeek) {
+                                    DayOfWeek.SATURDAY -> Color.Blue
+                                    DayOfWeek.SUNDAY -> Color.Red
+                                    else -> Color.Unspecified
+                                }
+                            )
+                        ) {
+                            append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                        }
+                        append(")")
+
+                        append(" WiD리스트")
+                    }
+                }
+
+                Text(
+                    text = dateText,
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -305,32 +331,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         )
                         .padding(16.dp),
                 ) {
-                    val dateText = buildAnnotatedString {
-                        date.let {
-                            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 ")))
-                            append("(")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = when (it.dayOfWeek) {
-                                        DayOfWeek.SATURDAY -> Color.Blue
-                                        DayOfWeek.SUNDAY -> Color.Red
-                                        else -> Color.Unspecified
-                                    }
-                                )
-                            ) {
-                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                            }
-                            append(")")
-
-                            append("의 WiD리스트")
-                        }
-                    }
-
-                    Text(
-                        text = dateText,
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-
                     val configuration = LocalConfiguration.current
                     val screenWidthDp = configuration.screenWidthDp
 

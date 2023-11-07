@@ -226,20 +226,22 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return wiDList.sortedBy { it.start }
     }
 
-    fun readDailyWiDListByDate(date: LocalDate, title: String): List<WiD> {
-        Log.d("WiDService", "readWiDListByDate executed")
+    fun readWiDListByDateRange(startDate: LocalDate, finishDate: LocalDate): List<WiD> {
+        Log.d("WiDService", "readWiDListByDateRange executed")
 
         val db = readableDatabase
         val wiDList = mutableListOf<WiD>()
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ? AND $COLUMN_TITLE = ?"
-        val selectionArgs = arrayOf(date.toString(), title)
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ?"
+        val selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
         if (cursor.moveToFirst()) {
             do {
                 val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
                 val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
                 val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
                 val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
@@ -253,8 +255,38 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         cursor.close()
         db.close()
 
-        return wiDList.sortedBy { it.start }
+        return wiDList.sortedWith(compareBy<WiD> { it.date }.thenBy { it.start })
     }
+
+//    fun readDailyWiDListByDate(date: LocalDate, title: String): List<WiD> {
+//        Log.d("WiDService", "readWiDListByDate executed")
+//
+//        val db = readableDatabase
+//        val wiDList = mutableListOf<WiD>()
+//
+//        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ? AND $COLUMN_TITLE = ?"
+//        val selectionArgs = arrayOf(date.toString(), title)
+//
+//        val cursor = db.rawQuery(selectQuery, selectionArgs)
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+//                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+//                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+//                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+//                val detail = cursor.getString(cursor.getColumnIndex(COLUMN_DETAIL))
+//
+//                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis, detail)
+//                wiDList.add(wiD)
+//            } while (cursor.moveToNext())
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        return wiDList.sortedBy { it.start }
+//    }
 
     fun readWeeklyWiDListByDate(date: LocalDate): List<WiD> {
         val firstDayOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
