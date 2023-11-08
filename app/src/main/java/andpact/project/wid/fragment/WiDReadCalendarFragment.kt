@@ -44,36 +44,34 @@ import java.util.*
 @Composable
 fun WiDReadCalendarFragment() {
     val wiDService = WiDService(context = LocalContext.current)
-
+    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
     val today = LocalDate.now()
 
+    // 기간 선택(지난 1년, 2023, 2023 ... ) 용 변수
     val yearList = listOf("지난 1년") + wiDService.getYearList()
     var selectedYear by remember { mutableStateOf(yearList[0]) }
 
+    // 제목 선택(전체, 공부, 노동, ... ) 용 변수
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val titles = arrayOf("ALL") + titles
     var selectedTitle by remember { mutableStateOf("ALL") }
 
+    // WiD List를 불러오기 위한 변수
     var finishDate by remember { mutableStateOf(today) }
     var startDate by remember { mutableStateOf(getDate1yearAgo(finishDate)) }
-
     var wiDList by remember { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
 
+    // 특정 기간 및 날짜의 데이터(합계, 평균, 최고, 연속..)를 조회하기 위한 변수
     var selectedDate by remember { mutableStateOf(today) }
     val firstDayOfWeek = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     val lastDayOfWeek = selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 
-    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
-
-    // 합계 기록 용 (전체, 각 제목 용), 최초 화면 에 필요한 Map
+    // 합계 기록 용 (전체, 각 제목 용), 최초 화면에 필요한 Map, 전체 제목에 사용되니까 selectedTitle 파라미터 필요 없음.
     val dailyAllTitleDurationMap = getDailyAllTitleDurationMap(date = selectedDate, wiDList = wiDList)
     val weeklyAllTitleDurationMap = getWeeklyAllTitleDurationMap(date = selectedDate, wiDList = wiDList)
     val monthlyAllTitleDurationMap = getMonthlyAllTitleDurationMap(date = selectedDate, wiDList = wiDList)
-//    val dailyTitleDurationMap = wiDService.getDailyTitleDurationMap(selectedDate)
-//    val weeklyTitleDurationMap = wiDService.getWeeklyTitleDurationMap(selectedDate)
-//    val monthlyTitleDurationMap = wiDService.getMonthlyTitleDurationMap(selectedDate)
 
-    // 최고 기록 용 (각 제목 용)
+    // 최고 기록 용 (각 제목 용), 각 제목에 사용되니까 selectedTitle 파라미터 필요함.
     val weeklyMaxTitleDuration = getWeeklyMaxTitleDuration(date = selectedDate, wiDList = wiDList, title = selectedTitle)
     val monthlyMaxTitleDuration = getMonthlyMaxTitleDuration(date = selectedDate, wiDList = wiDList, title = selectedTitle)
 
@@ -84,9 +82,6 @@ fun WiDReadCalendarFragment() {
     // 연속 기록 용 (각 제목 용)
     var longestStreak by remember { mutableStateOf(wiDService.getLongestStreak(selectedTitle, startDate, finishDate)) }
     var currentStreak by remember { mutableStateOf(wiDService.getCurrentStreak(selectedTitle, getDate1yearAgo(today), today)) }
-
-//    var totalDaysAndDuration by remember { mutableStateOf(wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)) }
-//    var bestDateAndDuration by remember { mutableStateOf(wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)) }
 
     Column(
         modifier = Modifier
@@ -125,9 +120,6 @@ fun WiDReadCalendarFragment() {
                             wiDList = wiDService.readWiDListByDateRange(startDate, finishDate)
 
                             longestStreak = wiDService.getLongestStreak(selectedTitle, startDate, finishDate)
-
-//                            totalDaysAndDuration = wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)
-//                            bestDateAndDuration = wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)
                         },
                         label = {
                             Text(text = yearList[i])
@@ -184,9 +176,6 @@ fun WiDReadCalendarFragment() {
 
                                 longestStreak = wiDService.getLongestStreak(selectedTitle, startDate, finishDate)
                                 currentStreak = wiDService.getCurrentStreak(selectedTitle, getDate1yearAgo(today), today)
-
-//                                totalDaysAndDuration = wiDService.getTotalDaysAndDuration(selectedTitle, startDate, finishDate)
-//                                bestDateAndDuration = wiDService.getBestDateAndDuration(selectedTitle, startDate, finishDate)
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                         )

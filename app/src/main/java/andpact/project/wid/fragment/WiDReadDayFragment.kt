@@ -22,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -148,9 +149,12 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 item {
                     Row(modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp)
+                        .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(modifier = Modifier.size(16.dp),
+                        Icon(modifier = Modifier
+                            .scale(0.8f),
                             painter = painterResource(id = R.drawable.baseline_message_24),
                             contentDescription = "detail")
 
@@ -180,7 +184,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(modifier = Modifier.size(16.dp),
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_category_24),
                                     contentDescription = "title")
 
@@ -217,7 +222,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(modifier = Modifier.size(16.dp),
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_timelapse_24),
                                     contentDescription = "duration")
 
@@ -237,7 +243,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(modifier = Modifier.size(16.dp),
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.outline_play_arrow_24),
                                     contentDescription = "finish")
 
@@ -253,7 +260,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .weight(1f),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(modifier = Modifier.size(16.dp),
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
                                     painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                                     contentDescription = "finish")
 
@@ -272,7 +280,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         ) {
                             val detailText = buildAnnotatedString {
                                 wiD.detail.let {
-                                    Icon(modifier = Modifier.size(16.dp),
+                                    Icon(modifier = Modifier
+                                        .scale(0.8f),
                                         painter = painterResource(id = R.drawable.baseline_message_24),
                                         contentDescription = "detail")
 
