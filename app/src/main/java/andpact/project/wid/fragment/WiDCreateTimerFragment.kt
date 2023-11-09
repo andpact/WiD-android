@@ -9,6 +9,7 @@ import andpact.project.wid.util.titles
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -149,8 +150,8 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
 
     Column(
         modifier = Modifier.fillMaxSize()
-            .padding(32.dp)
-            .wrapContentSize(Alignment.Center),
+            .wrapContentSize(Alignment.Center)
+            .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
         Row(

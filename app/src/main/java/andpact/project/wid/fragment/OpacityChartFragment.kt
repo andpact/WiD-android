@@ -40,20 +40,18 @@ fun OpacityChartView(date: LocalDate, wiDList: List<WiD>) {
         else -> 1.0f
     }
 
-    val backgroundColor = if (wiDList.isEmpty()) {
-        colorResource(id = R.color.light_gray)
-    } else {
-        colorResource(id = colorMap[wiDList[0].title] ?: R.color.light_gray)
-    }
-
     Box(modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
         .padding(4.dp)
-        .border(BorderStroke(1.dp, Color.LightGray))
+//        .border(BorderStroke(1.dp, Color.LightGray))
         .background(
-            color = backgroundColor.copy(alpha = opacity),
-            shape = RoundedCornerShape(8.dp)
+            color = if (wiDList.isEmpty()) {
+                colorResource(id = R.color.light_gray)
+            } else {
+                colorResource(id = colorMap[wiDList[0].title] ?: R.color.light_gray)
+            }.copy(alpha = opacity),
+//            shape = RoundedCornerShape(8.dp)
         )
     ) {
         Text(modifier = Modifier.align(Alignment.Center),
