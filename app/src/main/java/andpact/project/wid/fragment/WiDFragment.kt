@@ -13,13 +13,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -291,37 +294,66 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             }
         }
 
-        Column(
-            modifier = Modifier
+        Column(modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceEvenly
+                .padding(16.dp)
         ) {
-            if (isEditing) {
-                Column {
-                    val barChartText = buildAnnotatedString {
-                        withStyle(style = SpanStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))) {
-                            append("막대 그래프")
-                        }
-                        date.let {
-                            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-                            withStyle(
-                                style = SpanStyle(
-                                    color = when (it.dayOfWeek) {
-                                        DayOfWeek.SATURDAY -> Color.Blue
-                                        DayOfWeek.SUNDAY -> Color.Red
-                                        else -> Color.Unspecified
-                                    }
-                                )
-                            ) {
-                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+            Column(modifier = Modifier
+                .weight(1f),
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                if (isEditing) {
+                    // 막대 그래프
+                    Column {
+                        val barChartText = buildAnnotatedString {
+                            withStyle(style = SpanStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))) {
+                                append("막대 그래프")
                             }
-                            append(")")
+                            date.let {
+                                append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = when (it.dayOfWeek) {
+                                            DayOfWeek.SATURDAY -> Color.Blue
+                                            DayOfWeek.SUNDAY -> Color.Red
+                                            else -> Color.Unspecified
+                                        }
+                                    )
+                                ) {
+                                    append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                }
+                                append(")")
+                            }
+                        }
+
+                        // 가로 막대 차트
+                        Text(text = barChartText)
+
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = Color.White,
+                            shape = RoundedCornerShape(8.dp),
+                            shadowElevation = 4.dp
+                        ) {
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                HorizontalBarChartView(wiDList = wiDList)
+                            }
                         }
                     }
+                }
 
-                    // 가로 막대 차트
-                    Text(text = barChartText)
+                Column {
+                    // Clicked WiD
+                    Text(
+                        text = "클릭된 WiD",
+                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                    )
 
                     Surface(
                         modifier = Modifier
@@ -330,218 +362,193 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         shape = RoundedCornerShape(8.dp),
                         shadowElevation = 4.dp
                     ) {
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            HorizontalBarChartView(wiDList = wiDList)
-                        }
-                    }
-                }
-            }
-
-            Column {
-                // Clicked WiD
-                Text(
-                    text = "WiD No.$wiDId",
-                    style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                )
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 4.dp
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
+                        Column {
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                                contentDescription = "date")
-
-                            val dateText = buildAnnotatedString {
-                                date.let {
-                                    append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-                                    withStyle(
-                                        style = SpanStyle(
-                                            color = when (it.dayOfWeek) {
-                                                DayOfWeek.SATURDAY -> Color.Blue
-                                                DayOfWeek.SUNDAY -> Color.Red
-                                                else -> Color.Unspecified
-                                            }
-                                        )
-                                    ) {
-                                        append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                                    }
-                                    append(")")
-                                }
-                            }
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = dateText,
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(enabled = isEditing) { titleMenuExpanded = true },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(modifier = Modifier
-                                .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                contentDescription = "title")
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = titleMap[title] ?: title,
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .width(5.dp)
-                                    .height(20.dp)
-                                    .padding(16.dp)
-                                    .border(
-                                        BorderStroke(1.dp, Color.LightGray),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .background(
-                                        color = colorResource(id = colorMap[title]!!),
-                                        RoundedCornerShape(8.dp)
-                                    )
-                            )
-
-                            DropdownMenu(modifier = Modifier
-        //                        .padding(horizontal = 32.dp)
-                                .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-                                expanded = titleMenuExpanded,
-                                onDismissRequest = {
-                                    titleMenuExpanded = false
-                                },
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                titles.forEach { menuItem ->
-                                    DropdownMenuItem(modifier = Modifier,
-                                        onClick = {
-                                            title = menuItem
-                                            titleMenuExpanded = false
-                                        },
-                                        text = {
-                                            Text(text = titleMap[menuItem] ?: menuItem)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(enabled = isEditing) { showStartPicker = true }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                contentDescription = "start")
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(enabled = isEditing) { showFinishPicker = true }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                contentDescription = "finish")
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                contentDescription = "duration")
-
-                            Text(modifier = Modifier
-                                .padding(16.dp),
-                                text = formatDuration(duration, mode = 2),
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_message_24),
-                                contentDescription = "detail")
-
-                            if (isEditing) {
-                                OutlinedTextField(
+                                Icon(
                                     modifier = Modifier
+                                        .scale(0.8f)
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                                    contentDescription = "date")
+
+                                val dateText = buildAnnotatedString {
+                                    date.let {
+                                        append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = when (it.dayOfWeek) {
+                                                    DayOfWeek.SATURDAY -> Color.Blue
+                                                    DayOfWeek.SUNDAY -> Color.Red
+                                                    else -> Color.Unspecified
+                                                }
+                                            )
+                                        ) {
+                                            append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                        }
+                                        append(")")
+                                    }
+                                }
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                         .weight(1f),
-                                    value = detail,
-                                    onValueChange = { newText ->
-                                        detail = newText
-                                    },
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.Transparent,
-                                        unfocusedBorderColor = Color.Transparent
-                                    ),
+                                    text = dateText,
                                 )
-                            } else {
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = isEditing) { titleMenuExpanded = true },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(modifier = Modifier
+                                    .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                    contentDescription = "title")
+
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    text = detail.ifEmpty { "설명 입력.." },
+                                    text = titleMap[title] ?: title,
                                 )
+
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .size(10.dp)
+                                        .background(
+                                            color = colorResource(id = colorMap[title]!!),
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                )
+
+                                DropdownMenu(modifier = Modifier
+            //                        .padding(horizontal = 32.dp)
+                                    .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
+                                    expanded = titleMenuExpanded,
+                                    onDismissRequest = {
+                                        titleMenuExpanded = false
+                                    },
+                                ) {
+                                    titles.forEach { menuItem ->
+                                        DropdownMenuItem(modifier = Modifier,
+                                            onClick = {
+                                                title = menuItem
+                                                titleMenuExpanded = false
+                                            },
+                                            text = {
+                                                Text(text = titleMap[menuItem] ?: menuItem)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = isEditing) { showStartPicker = true },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                    contentDescription = "start")
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .weight(1f),
+                                    text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(enabled = isEditing) { showFinishPicker = true },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                    contentDescription = "finish")
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .weight(1f),
+                                    text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                    contentDescription = "duration")
+
+                                Text(modifier = Modifier
+                                    .padding(16.dp),
+                                    text = formatDuration(duration, mode = 2),
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_message_24),
+                                    contentDescription = "detail")
+
+                                if (isEditing) {
+                                    OutlinedTextField(
+                                        modifier = Modifier
+                                            .weight(1f),
+                                        value = detail,
+                                        onValueChange = { newText ->
+                                            detail = newText
+                                        },
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = Color.Transparent,
+                                            unfocusedBorderColor = Color.Transparent
+                                        ),
+                                    )
+                                } else {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = detail.ifEmpty { "설명 입력.." },
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
 
+            // 버튼들
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 IconButton(
                     onClick = {
@@ -564,13 +571,15 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     },
                     modifier = Modifier
                         .background(
-                            color = if (isDeleteButtonPressed) Color.Red else Color.Unspecified,
+                            color = if (isDeleteButtonPressed) colorResource(id = R.color.orange_red) else Color.Unspecified,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .border(
                             BorderStroke(
                                 1.dp,
-                                if (isEditing) Color.Gray else if (isDeleteButtonPressed) Color.Unspecified else Color.Red
+                                if (isEditing) Color.Gray else if (isDeleteButtonPressed) Color.Unspecified else colorResource(
+                                    id = R.color.orange_red
+                                )
                             ),
                             shape = RoundedCornerShape(8.dp)
                         )
@@ -583,10 +592,10 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         Icon(
                             painter = painterResource(id = if (isDeleteButtonPressed) R.drawable.outline_delete_24 else if (isEditing) R.drawable.outline_cancel_24 else R.drawable.baseline_delete_24),
                             contentDescription = "delete confirmed or cancel or delete",
-                            tint = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else Color.Red)
+                            tint = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else colorResource(id = R.color.orange_red))
 
                         Text(text = if (isDeleteButtonPressed) "삭제 확인" else if (isEditing) "취소" else "삭제",
-                            style = TextStyle(color = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else Color.Red, textAlign = TextAlign.Center))
+                            style = TextStyle(color = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else colorResource(id = R.color.orange_red), textAlign = TextAlign.Center))
                     }
                 }
 
@@ -608,9 +617,9 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO) {
                                 Color.LightGray
                             } else if (isEditing) {
-                                Color.Blue
+                                colorResource(id = R.color.deep_sky_blue)
                             } else {
-                                Color.Green
+                                colorResource(id = R.color.lime_green)
                             },
                             shape = RoundedCornerShape(8.dp)
                         )

@@ -15,10 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -286,7 +283,23 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
+            TextButton(
+                onClick = {
+                    if (!isRunning) {
+                        resetWiD()
+                    }
+                },
+                modifier = Modifier
+                    .weight(1f),
+                enabled = !isRunning && !buttonsVisible.value
+            ) {
+                Text(
+                    text = "초기화",
+                    style = TextStyle(fontSize = 20.sp)
+                )
+            }
+
+            TextButton(
                 onClick = {
                     if (!isRunning) startWiD() else finishWiD()
                 },
@@ -301,22 +314,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                         "계속" -> colorResource(id = R.color.play_color)
                         else -> Color.Unspecified
                     },
-                    style = TextStyle(fontSize = 20.sp)
-                )
-            }
-
-            IconButton(
-                onClick = {
-                    if (!isRunning) {
-                        resetWiD()
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f),
-                enabled = !isRunning && !buttonsVisible.value
-            ) {
-                Text(
-                    text = "초기화",
                     style = TextStyle(fontSize = 20.sp)
                 )
             }

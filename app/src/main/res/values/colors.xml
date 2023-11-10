@@ -13,6 +13,7 @@
     <color name="light_gray">#EEEEEE</color>
     <color name="ghost_white">#F8F8FF</color>
 
+<!--    타이틀을 7가지로 분류했을 경우의 색상-->
     <!--    <color name="study">#FF0000</color> &lt;!&ndash; 빨강 &ndash;&gt;-->
 <!--    <color name="work">#FF7F00</color> &lt;!&ndash; 주황 &ndash;&gt;-->
 <!--    <color name="reading">#FFFF00</color> &lt;!&ndash; 노랑 &ndash;&gt;-->
@@ -21,6 +22,7 @@
 <!--    <color name="travel">#00007F</color> &lt;!&ndash; 남색 &ndash;&gt;-->
 <!--    <color name="sleep">#7F00FF</color> &lt;!&ndash; 보라 &ndash;&gt;-->
 
+<!--    타이틀을 10가지로 분류했을 경우의 색상-->
     <color name="study_color">#FF0000</color> <!-- 빨강 -->
     <color name="work_color">#FF7F00</color> <!-- 주황 -->
     <color name="exercise_color">#FFFF00</color> <!-- 노랑 -->
@@ -31,4 +33,9 @@
     <color name="travel_color">#00007F</color> <!-- 남색 -->
     <color name="sleep_color">#7F00FF</color> <!-- 보라 -->
     <color name="etc_color">#7F007F</color> <!-- 자주색 -->
+
+<!--    버튼용 색상-->
+    <color name="deep_sky_blue">#00bfff</color> <!-- 진한 하늘색(파란색 버튼용) -->
+    <color name="orange_red">#ff4500</color> <!-- 붉은 색(빨간 버튼용) -->
+    <color name="lime_green">#32cd32</color> <!-- 라임 녹색(초록 버튼용) -->
 </resources>

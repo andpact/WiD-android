@@ -29,10 +29,13 @@ fun formatDuration(duration: Duration, mode: Int): String {
             val totalHours = hours + (minutes / 60.0)
             when {
                 hours >= 1 && minutes == 0 -> "${hours}시간"
+                hours >= 1000 -> "${String.format("%.2f", totalHours).substring(0, 6)}시간" // 시간의 자리 수가 늘어남에 따라 문자열을 다르게 잘라냄.
+                hours >= 100 -> "${String.format("%.2f", totalHours).substring(0, 5)}시간"
+                hours >= 10 -> "${String.format("%.2f", totalHours).substring(0, 4)}시간"
                 hours >= 1 -> "${String.format("%.2f", totalHours).substring(0, 3)}시간"
                 minutes >= 1 -> "${minutes}분"
                 seconds >= 1 -> "${seconds}초"
-                else -> "•••"
+                else -> "기록 없음"
             }
         }
         2 -> {

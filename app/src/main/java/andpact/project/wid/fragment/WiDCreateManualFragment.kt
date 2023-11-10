@@ -16,6 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,6 +25,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -348,314 +350,315 @@ fun WiDCreateManualFragment() {
         }
 
         // 전체 화면
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         ) {
-            Column {
-                val barChartText = buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))) {
-                        append("막대 그래프")
-                    }
-                    if (isDateAssigned) {
-                        date.let {
-                            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-                            withStyle(
-                                style = SpanStyle(
-                                    color = when (it.dayOfWeek) {
-                                        DayOfWeek.SATURDAY -> Color.Blue
-                                        DayOfWeek.SUNDAY -> Color.Red
-                                        else -> Color.Unspecified
-                                    }
-                                )
-                            ) {
-                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                            }
-                            append(")")
+            Column(modifier = Modifier
+                .weight(1f),
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column {
+                    val barChartText = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))) {
+                            append("막대 그래프")
                         }
-                    }
-                }
-
-                // 가로 막대 차트
-                Text(text = barChartText)
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 4.dp
-                ) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-    //                    val configuration = LocalConfiguration.current
-    //                    val screenWidthDp = configuration.screenWidthDp
-    //                    val density = LocalDensity.current.density
-    //                    val screenWidthPixels = (screenWidthDp * density).toInt()
-    //
-    //                    Box(modifier = Modifier
-    //                        .fillMaxWidth()
-    //                    ) {
-    //                        Icon(
-    //                            modifier = Modifier
-    //                                .scale(0.8f)
-    //                                .rotate(90f)
-    //                                .offset(y = -(screenWidthDp * startPosition * 0.8).dp),
-    //                            painter = painterResource(id = R.drawable.outline_play_arrow_24),
-    //                            contentDescription = "startPosition",
-    //                            tint = if (isStartOverlap || isStartOverCurrentTime) Color.Red else Color.Unspecified
-    //                        )
-    //
-    //                        Icon(
-    //                            modifier = Modifier
-    //                                .scale(0.8f)
-    //                                .rotate(90f)
-    //                                .offset(y = -(screenWidthDp * finishPosition * 0.8).dp),
-    //                            painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-    //                            contentDescription = "finishPosition",
-    //                            tint = if (isFinishOverlap || isFinishOverCurrentTime) Color.Red else Color.Unspecified)
-    //                    }
-
                         if (isDateAssigned) {
-                            HorizontalBarChartView(wiDList = wiDList)
-                        } else {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                                contentDescription = "date",
-                                tint = Color.Gray)
+                            date.let {
+                                append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = when (it.dayOfWeek) {
+                                            DayOfWeek.SATURDAY -> Color.Blue
+                                            DayOfWeek.SUNDAY -> Color.Red
+                                            else -> Color.Unspecified
+                                        }
+                                    )
+                                ) {
+                                    append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                }
+                                append(")")
+                            }
+                        }
+                    }
 
-                            Text(
-                                text = "날짜를 선택해 주세요.",
-                                style = TextStyle(color = Color.Gray)
-                            )
+                    // 가로 막대 차트
+                    Text(text = barChartText)
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+        //                    val configuration = LocalConfiguration.current
+        //                    val screenWidthDp = configuration.screenWidthDp
+        //                    val density = LocalDensity.current.density
+        //                    val screenWidthPixels = (screenWidthDp * density).toInt()
+        //
+        //                    Box(modifier = Modifier
+        //                        .fillMaxWidth()
+        //                    ) {
+        //                        Icon(
+        //                            modifier = Modifier
+        //                                .scale(0.8f)
+        //                                .rotate(90f)
+        //                                .offset(y = -(screenWidthDp * startPosition * 0.8).dp),
+        //                            painter = painterResource(id = R.drawable.outline_play_arrow_24),
+        //                            contentDescription = "startPosition",
+        //                            tint = if (isStartOverlap || isStartOverCurrentTime) Color.Red else Color.Unspecified
+        //                        )
+        //
+        //                        Icon(
+        //                            modifier = Modifier
+        //                                .scale(0.8f)
+        //                                .rotate(90f)
+        //                                .offset(y = -(screenWidthDp * finishPosition * 0.8).dp),
+        //                            painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+        //                            contentDescription = "finishPosition",
+        //                            tint = if (isFinishOverlap || isFinishOverCurrentTime) Color.Red else Color.Unspecified)
+        //                    }
+
+                            if (isDateAssigned) {
+                                HorizontalBarChartView(wiDList = wiDList)
+                            } else {
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                                    contentDescription = "date",
+                                    tint = Color.Gray)
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = "날짜를 선택해 주세요.",
+                                    style = TextStyle(color = Color.Gray)
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            Column {
-                // New WiD
-                Text(
-                    text = "새로운 WiD",
-                    style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                )
+                Column {
+                    // New WiD
+                    Text(
+                        text = "새로운 WiD",
+                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                    )
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 4.dp
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showDatePicker = true }
-                        ) {
-                            Icon(
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 4.dp
+                    ) {
+                        Column {
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                                contentDescription = "date",
-                                tint = if (isDateAssigned) Color.Unspecified else Color.Gray)
+                                    .fillMaxWidth()
+                                    .clickable { showDatePicker = true }
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .scale(0.8f)
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                                    contentDescription = "date",
+                                    tint = if (isDateAssigned) Color.Unspecified else Color.Gray)
 
-                            val dateText = buildAnnotatedString {
-                                if (isDateAssigned) {
-                                    date.let {
-                                        append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                val dateText = buildAnnotatedString {
+                                    if (isDateAssigned) {
+                                        date.let {
+                                            append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                            withStyle(
+                                                style = SpanStyle(
+                                                    color = when (it.dayOfWeek) {
+                                                        DayOfWeek.SATURDAY -> Color.Blue
+                                                        DayOfWeek.SUNDAY -> Color.Red
+                                                        else -> Color.Unspecified
+                                                    }
+                                                )
+                                            ) {
+                                                append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                            }
+                                            append(")")
+                                        }
+                                    } else {
                                         withStyle(
                                             style = SpanStyle(
-                                                color = when (it.dayOfWeek) {
-                                                    DayOfWeek.SATURDAY -> Color.Blue
-                                                    DayOfWeek.SUNDAY -> Color.Red
-                                                    else -> Color.Unspecified
-                                                }
+                                                color = Color.Gray // 텍스트 색상 변경
                                             )
                                         ) {
-                                            append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                            append("날짜")
                                         }
-                                        append(")")
-                                    }
-                                } else {
-                                    withStyle(
-                                        style = SpanStyle(
-                                            color = Color.Gray // 텍스트 색상 변경
-                                        )
-                                    ) {
-                                        append("날짜")
                                     }
                                 }
-                            }
 
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = dateText,
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { titleMenuExpanded = true }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .width(24.dp)
-                                    .height(24.dp),
-                                painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                contentDescription = "title",
-                                tint = if (isTitleAssigned) Color.Unspecified else Color.Gray
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(16.dp),
-                                text = if (isTitleAssigned) titleMap[title] ?: title else "제목",
-                                color = if (isTitleAssigned) Color.Unspecified else Color.Gray
-                            )
-
-                            if (isTitleAssigned) {
-                                Box(
+                                Text(
                                     modifier = Modifier
-                                        .width(5.dp)
-                                        .height(20.dp)
-                                        .border(
-                                            BorderStroke(1.dp, Color.LightGray),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .background(
-                                            color = colorResource(id = colorMap[title]!!),
-                                            RoundedCornerShape(8.dp)
-                                        )
+                                        .padding(16.dp)
+                                        .weight(1f),
+                                    text = dateText,
                                 )
                             }
 
-                            DropdownMenu(modifier = Modifier
-                                .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-                                expanded = titleMenuExpanded,
-                                onDismissRequest = {
-                                    titleMenuExpanded = false
-                                },
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { titleMenuExpanded = true },
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                titles.forEach { menuItem ->
-                                    DropdownMenuItem(modifier = Modifier,
-                                        onClick = {
-                                            title = menuItem
-                                            isTitleAssigned = true
-                                            titleMenuExpanded = false
-                                        },
-                                        text = {
-                                            Text(text = titleMap[menuItem] ?: menuItem)
-                                        }
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                    contentDescription = "title",
+                                    tint = if (isTitleAssigned) Color.Unspecified else Color.Gray
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    text = if (isTitleAssigned) titleMap[title] ?: title else "제목",
+                                    color = if (isTitleAssigned) Color.Unspecified else Color.Gray
+                                )
+
+                                if (isTitleAssigned) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .size(10.dp)
+                                            .background(
+                                                color = colorResource(id = colorMap[title]!!),
+                                                RoundedCornerShape(8.dp)
+                                            )
                                     )
                                 }
+
+                                DropdownMenu(modifier = Modifier
+                                    .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
+                                    expanded = titleMenuExpanded,
+                                    onDismissRequest = {
+                                        titleMenuExpanded = false
+                                    },
+                                ) {
+                                    titles.forEach { menuItem ->
+                                        DropdownMenuItem(modifier = Modifier,
+                                            onClick = {
+                                                title = menuItem
+                                                isTitleAssigned = true
+                                                titleMenuExpanded = false
+                                            },
+                                            text = {
+                                                Text(text = titleMap[menuItem] ?: menuItem)
+                                            }
+                                        )
+                                    }
+                                }
                             }
-                        }
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showStartPicker = true }
-                        ) {
-                            Icon(
+                            Row(
                                 modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showStartPicker = true }
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                    contentDescription = "start",
+                                    tint = if (isStartAssigned) Color.Unspecified else Color.Gray
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .weight(1f),
+                                    text = if (isStartAssigned) start.format(DateTimeFormatter.ofPattern("a h:mm")) else "시작",
+                                    color = if (isStartAssigned) Color.Unspecified else Color.Gray
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showFinishPicker = true }
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                    contentDescription = "finish",
+                                    tint = if (isFinishAssigned) Color.Unspecified else Color.Gray
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .weight(1f),
+                                    text = if (isFinishAssigned) finish.format(DateTimeFormatter.ofPattern("a h:mm")) else "종료",
+                                    color = if (isFinishAssigned) Color.Unspecified else Color.Gray
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                    contentDescription = "duration",
+                                    tint = if (durationExist && isStartAssigned && isFinishAssigned) Color.Unspecified else Color.Gray
+                                )
+
+                                Text(modifier = Modifier
                                     .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                contentDescription = "start",
-                                tint = if (isStartAssigned) Color.Unspecified else Color.Gray
-                            )
+                                    text = if (durationExist && isStartAssigned && isFinishAssigned) formatDuration(duration, mode = 2) else "소요",
+                                    color = if (durationExist && isStartAssigned && isFinishAssigned) Color.Unspecified else Color.Gray
+                                )
+                            }
 
-                            Text(
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = if (isStartAssigned) start.format(DateTimeFormatter.ofPattern("a h:mm")) else "시작",
-                                color = if (isStartAssigned) Color.Unspecified else Color.Gray
-                            )
-                        }
+                                    .fillMaxWidth()
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.outline_message_24),
+                                    contentDescription = "detail",
+                                    tint = if (detailExist) Color.Unspecified else Color.Gray
+                                )
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showFinishPicker = true }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                contentDescription = "finish",
-                                tint = if (isFinishAssigned) Color.Unspecified else Color.Gray
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f),
-                                text = if (isFinishAssigned) finish.format(DateTimeFormatter.ofPattern("a h:mm")) else "종료",
-                                color = if (isFinishAssigned) Color.Unspecified else Color.Gray
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                contentDescription = "duration",
-                                tint = if (durationExist && isStartAssigned && isFinishAssigned) Color.Unspecified else Color.Gray
-                            )
-
-                            Text(modifier = Modifier
-                                .padding(16.dp),
-                                text = if (durationExist && isStartAssigned && isFinishAssigned) formatDuration(duration, mode = 2) else "소요",
-                                color = if (durationExist && isStartAssigned && isFinishAssigned) Color.Unspecified else Color.Gray
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                painter = painterResource(id = R.drawable.outline_message_24),
-                                contentDescription = "detail",
-                                tint = if (detailExist) Color.Unspecified else Color.Gray
-                            )
-
-                            OutlinedTextField(
-                                modifier = Modifier
-                                    .weight(1f),
-                                value = detail,
-                                onValueChange = { newText ->
-                                    detail = newText
-                                    detailExist = newText.isNotEmpty()
-                                },
-                                placeholder = {
-                                    Text(text = "설명(선택사항)",
-                                        color = Color.Gray
-                                    )
-                                },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedBorderColor = Color.Transparent,
-                                    unfocusedBorderColor = Color.Transparent
-                                ),
-                            )
+                                OutlinedTextField(
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    value = detail,
+                                    onValueChange = { newText ->
+                                        detail = newText
+                                        detailExist = newText.isNotEmpty()
+                                    },
+                                    placeholder = {
+                                        Text(text = "설명(선택사항)",
+                                            color = Color.Gray
+                                        )
+                                    },
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color.Transparent,
+                                        unfocusedBorderColor = Color.Transparent
+                                    ),
+                                )
+                            }
                         }
                     }
                 }
@@ -696,9 +699,14 @@ fun WiDCreateManualFragment() {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(0.dp, 0.dp, 0.dp, 16.dp)
                     .background(
-                        color = if (isTimeOverlap || !isWiDAssigned) { Color.LightGray } else { Color.Blue },
+                        color = if (isTimeOverlap || !isWiDAssigned) {
+                            Color.LightGray
+                        } else {
+                            colorResource(
+                                id = R.color.lime_green
+                            )
+                        },
                         shape = RoundedCornerShape(8.dp)
                     ),
                 enabled = !(isTimeOverlap || !isWiDAssigned)

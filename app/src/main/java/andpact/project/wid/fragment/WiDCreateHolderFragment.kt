@@ -43,7 +43,8 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = Color.Black
                     )
-                }
+                },
+                containerColor = Color.White
             ) {
                 Tab(
                     selected = pagerState.currentPage == 0,
@@ -54,7 +55,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "STOPWATCH")
+                        Text(text = "스톱워치")
                     }
                 )
 
@@ -67,7 +68,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "TIMER")
+                        Text(text = "타이머")
                     }
                 )
 
@@ -80,7 +81,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "MANUAL")
+                        Text(text = "직접 입력")
                     }
                 )
             }

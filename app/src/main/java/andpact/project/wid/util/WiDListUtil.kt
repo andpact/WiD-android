@@ -7,6 +7,17 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 
+fun getDailyTotalDuration(wiDList: List<WiD>): Duration {
+    return wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO
+}
+
+fun getDailyTotalDurationPercentage(wiDList: List<WiD>): Int {
+    val totalMinutes = 24 * 60 // 1440분 (24시간)
+    val totalDuration = (wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO).toMinutes().toInt()
+
+    return (totalDuration * 100) / totalMinutes
+}
+
 fun getDailyAllTitleDurationMap(date: LocalDate, wiDList: List<WiD>): Map<String, Duration> {
     val result = mutableMapOf<String, Duration>()
 

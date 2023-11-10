@@ -42,7 +42,8 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = Color.Black
                     )
-                }
+                },
+                containerColor = Color.White
             ) {
                 Tab(
                     selected = pagerState.currentPage == 0,
@@ -53,7 +54,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "DAY")
+                        Text(text = "하루 기록")
                     }
                 )
 
@@ -66,7 +67,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "CALENDAR")
+                        Text(text = "기간 기록")
                     }
                 )
             }

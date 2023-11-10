@@ -44,14 +44,12 @@ fun OpacityChartView(date: LocalDate, wiDList: List<WiD>) {
         .fillMaxWidth()
         .aspectRatio(1f)
         .padding(4.dp)
-//        .border(BorderStroke(1.dp, Color.LightGray))
         .background(
             color = if (wiDList.isEmpty()) {
-                colorResource(id = R.color.light_gray)
+                Color.Unspecified
             } else {
-                colorResource(id = colorMap[wiDList[0].title] ?: R.color.light_gray)
-            }.copy(alpha = opacity),
-//            shape = RoundedCornerShape(8.dp)
+                colorResource(id = colorMap[wiDList[0].title] ?: R.color.light_gray).copy(alpha = opacity)
+            },
         )
     ) {
         Text(modifier = Modifier.align(Alignment.Center),

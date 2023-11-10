@@ -6,15 +6,20 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.formatTime
 import andpact.project.wid.util.titleMap
 import andpact.project.wid.util.titles
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,8 +29,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -134,14 +139,14 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .padding(32.dp)
-            .wrapContentSize(Alignment.Center),
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(32.dp)
+        .wrapContentSize(Alignment.Center),
         verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
+        Row(modifier = Modifier
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AnimatedVisibility(
@@ -155,20 +160,19 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                     animationSpec = tween(500)
                 )
             ) {
-                IconButton(
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                IconButton(modifier = Modifier
+                    .padding(horizontal = 8.dp),
                     onClick = {
                         titleIndex = (titleIndex - 1 + titles.size) % titles.size
                         title = titles[titleIndex]
                     },
                 ) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "prevTitle")
+                    Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous title")
                 }
             }
 
-            Text(
-                modifier = Modifier
-                    .weight(1.0f),
+            Text(modifier = Modifier
+                    .weight(1f),
                 text = titleMap[title] ?: title,
                 style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
             )
@@ -184,69 +188,61 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                     animationSpec = tween(500)
                 )
             ) {
-                IconButton(
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                IconButton(modifier = Modifier
+                    .padding(horizontal = 8.dp),
                     onClick = {
                         titleIndex = (titleIndex + 1) % titles.size
                         title = titles[titleIndex]
                     },
                 ) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "nextTitle")
+                    Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "Next title")
                 }
             }
         }
 
-        Text(
+        Text(modifier = Modifier
+                .fillMaxWidth(),
             text = formatTime(elapsedTime),
-            modifier = Modifier.fillMaxWidth(),
-                style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+            style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        Row(modifier = Modifier
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            IconButton(
-                onClick = {
-                    if (!isRunning) startWiD() else finishWiD()
-                },
-                modifier = Modifier
-                    .weight(1f)
+            TextButton(modifier = Modifier
+                .size(50.dp)
+                .background(if (!(!isRunning && !buttonsVisible.value)) Color.Gray else Color.Black, shape = CircleShape),
+                onClick = { if (!isRunning) { resetWiD() } },
+                enabled = !isRunning && !buttonsVisible.value
             ) {
-                Text(
-                    text = buttonText,
-                    color = when (buttonText) {
-                        "중지" -> Color.Red
-                        "계속" -> colorResource(id = R.color.play_color)
-                        else -> Color.Unspecified
-                    },
-                    style = TextStyle(fontSize = 20.sp)
+                Text(text = "초기화",
+                    style = TextStyle(color = Color.White)
                 )
             }
 
-            IconButton(
+            TextButton(modifier = Modifier
+                .size(50.dp)
+                .background(color = when (buttonText) {
+                    "중지" -> colorResource(id = R.color.orange_red)
+                    "계속" -> colorResource(id = R.color.lime_green)
+                    else -> Color.Black
+                }, shape = CircleShape),
                 onClick = {
-                    if (!isRunning) {
-                        resetWiD()
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f),
-                enabled = !isRunning && !buttonsVisible.value
+                    if (!isRunning) startWiD() else finishWiD()
+                }
             ) {
-                Text(
-                    text = "초기화",
-                    style = TextStyle(fontSize = 20.sp)
+                Text(text = buttonText,
+                    style = TextStyle(color = Color.White)
                 )
             }
         }
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDCreateStopWatchFragmentPreview() {
-//    val buttonsVisible = remember { mutableStateOf(true) }
-//    WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
-//}
+@Preview(showBackground = true)
+@Composable
+fun WiDCreateStopWatchFragmentPreview() {
+    val buttonsVisible = remember { mutableStateOf(true) }
+    WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
+}

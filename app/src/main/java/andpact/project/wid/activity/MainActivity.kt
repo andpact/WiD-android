@@ -12,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -67,9 +68,9 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
         exit = shrinkVertically{ 0 },
     ) {
         NavigationBar(
-            modifier = modifier
+            modifier = modifier.border(1.dp, Color.LightGray)
                 .height(55.dp),
-            containerColor = Color.Transparent,
+            containerColor = Color.White,
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route

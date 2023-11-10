@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -109,13 +111,11 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                         currentDate = wiD.date
 
                         if (currentDate == LocalDate.now()) {
-                            Text(
-                                text = "오늘",
+                            Text(text = "오늘",
                                 style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             )
                         } else if (currentDate == LocalDate.now().minusDays(1)) {
-                            Text(
-                                text = "어제",
+                            Text(text = "어제",
                                 style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             )
                         } else {
@@ -138,8 +138,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 }
                             }
 
-                            Text(
-                                text = dateText,
+                            Text(text = dateText,
                                 style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             )
                         }
@@ -171,7 +170,8 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                             ) {
                                 Row(modifier = Modifier
                                     .weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(modifier = Modifier
                                         .scale(0.8f),
@@ -179,29 +179,18 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         contentDescription = "title")
 
                                     Text(
-                                        text = "제목 ",
+                                        text = "제목",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
                                     Text(text = titleMap[wiD.title] ?: wiD.title)
 
-                                    val titleColorId = colorMap[wiD.title]
-                                    val backgroundColor = if (titleColorId != null) {
-                                        Color(ContextCompat.getColor(LocalContext.current, titleColorId))
-                                    } else {
-                                        colorResource(id = R.color.light_gray)
-                                    }
-
                                     Box(
                                         modifier = Modifier
-                                            .width(5.dp)
-                                            .height(20.dp)
-                                            .border(
-                                                BorderStroke(1.dp, Color.LightGray),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
+                                            .clip(CircleShape)
+                                            .size(10.dp)
                                             .background(
-                                                color = backgroundColor,
+                                                color = colorResource(id = colorMap[wiD.title]!!),
                                                 RoundedCornerShape(8.dp)
                                             )
                                     )
@@ -209,7 +198,8 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
                                 Row(modifier = Modifier
                                     .weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(modifier = Modifier
                                         .scale(0.8f),
@@ -217,7 +207,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         contentDescription = "duration")
 
                                     Text(
-                                        text = "소요 ",
+                                        text = "소요",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -230,7 +220,8 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                             ) {
                                 Row(modifier = Modifier
                                     .weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(modifier = Modifier
                                         .scale(0.8f),
@@ -238,7 +229,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         contentDescription = "finish")
 
                                     Text(
-                                        text = "시작 ",
+                                        text = "시작",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -247,7 +238,8 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
                                 Row(modifier = Modifier
                                     .weight(1f),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(modifier = Modifier
                                         .scale(0.8f),
@@ -255,7 +247,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         contentDescription = "finish")
 
                                     Text(
-                                        text = "종료 ",
+                                        text = "종료",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -265,31 +257,21 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
                             Row(modifier = Modifier
                                 .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                val detailText = buildAnnotatedString {
-                                    wiD.detail.let {
-                                        Icon(modifier = Modifier
-                                            .scale(0.8f),
-                                            painter = painterResource(id = R.drawable.outline_message_24),
-                                            contentDescription = "detail")
-
-                                        withStyle(
-                                            style = SpanStyle(fontWeight = FontWeight.Bold)
-                                        ) {
-                                            append("설명 ")
-                                        }
-
-                                        withStyle(
-                                            style = SpanStyle(color = if (it.isBlank()) Color.Gray else Color.Black)
-                                        ) {
-                                            append(it.ifBlank { "설명 입력.." })
-                                        }
-                                    }
-                                }
+                                Icon(modifier = Modifier
+                                    .scale(0.8f),
+                                    painter = painterResource(id = R.drawable.outline_message_24),
+                                    contentDescription = "detail")
 
                                 Text(
-                                    text = detailText,
+                                    text = "설명",
+                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                )
+
+                                Text(
+                                    text = wiD.detail.ifBlank { "설명 입력.." },
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
