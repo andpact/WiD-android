@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -54,7 +56,9 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "하루 기록")
+                        Text(text = "날짜 별 기록",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 )
 
@@ -67,7 +71,9 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "기간 기록")
+                        Text(text = "기간 별 기록",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 )
             }

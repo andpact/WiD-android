@@ -77,9 +77,9 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
 
             screens.forEach { screen ->
                 NavigationBarItem(
-                    label = {
-                        Text(text = screen.title!!)
-                    },
+//                    label = {
+//                        Text(text = screen.title!!)
+//                    },
                     alwaysShowLabel = false,
                     icon = {
                         Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
@@ -134,17 +134,17 @@ sealed class Destinations(
 ) {
     object WiDCreateHolderFragment : Destinations(
         route = "wid_create_holder_fragment",
-        title = "Add",
+//        title = "Add",
         icon = R.drawable.baseline_post_add_24
     )
     object WiDReadHolderFragment : Destinations(
         route = "wid_read_holder_fragment",
-        title = "List",
+//        title = "List",
         icon = R.drawable.baseline_format_list_bulleted_24
     )
     object WiDSearchFragment : Destinations(
         route = "wid_search_fragment",
-        title = "Search",
+//        title = "Search",
         icon = R.drawable.baseline_search_24
     )
     object WiDViewFragment : Destinations(

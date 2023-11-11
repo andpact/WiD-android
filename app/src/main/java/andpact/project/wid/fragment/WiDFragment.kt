@@ -114,28 +114,25 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         .fillMaxSize())
     {
         if (showStartPicker) {
-            AlertDialog(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = colorResource(id = R.color.light_gray),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
+            AlertDialog(modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = colorResource(id = R.color.light_gray),
+                    shape = RoundedCornerShape(8.dp)
+                ),
                 onDismissRequest = { showStartPicker = false }
             ) {
-                Column(
-                    modifier = Modifier
-                        .background(color = Color.LightGray.copy(alpha = 0.3f))
-                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                Column(modifier = Modifier
+                    .background(color = Color.LightGray.copy(alpha = 0.3f))
+                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TimePicker(state = startTimePickerState)
 
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
+                    Row(modifier = Modifier
+                        .padding(top = 12.dp)
+                        .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showStartPicker = false }
@@ -204,30 +201,27 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         }
 
         if (showFinishPicker) {
-            AlertDialog(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = colorResource(id = R.color.light_gray),
-                        shape = RoundedCornerShape(8.dp)
-                    ),
+            AlertDialog(modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = colorResource(id = R.color.light_gray),
+                    shape = RoundedCornerShape(8.dp)
+                ),
                 onDismissRequest = { showFinishPicker = false }
             ) {
-                Column(
-                    modifier = Modifier
-                        .background(
-                            color = Color.LightGray.copy(alpha = 0.3f)
-                        )
-                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                Column(modifier = Modifier
+                    .background(
+                        color = Color.LightGray.copy(alpha = 0.3f)
+                    )
+                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TimePicker(state = finishTimePickerState)
 
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 12.dp)
-                            .fillMaxWidth(),
+                    Row(modifier = Modifier
+                        .padding(top = 12.dp)
+                        .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showFinishPicker = false }
@@ -295,8 +289,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         }
 
         Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+            .fillMaxSize()
+            .padding(16.dp)
         ) {
             Column(modifier = Modifier
                 .weight(1f),
@@ -305,33 +299,41 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 if (isEditing) {
                     // 막대 그래프
                     Column {
-                        val barChartText = buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))) {
-                                append("막대 그래프")
-                            }
-                            date.let {
-                                append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = when (it.dayOfWeek) {
-                                            DayOfWeek.SATURDAY -> Color.Blue
-                                            DayOfWeek.SUNDAY -> Color.Red
-                                            else -> Color.Unspecified
-                                        }
-                                    )
-                                ) {
-                                    append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                        // 가로 막대 차트
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "막대 그래프",
+                                style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                            )
+
+                            val barChartText = buildAnnotatedString {
+                                date.let {
+                                    append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = when (it.dayOfWeek) {
+                                                DayOfWeek.SATURDAY -> Color.Blue
+                                                DayOfWeek.SUNDAY -> Color.Red
+                                                else -> Color.Unspecified
+                                            }
+                                        )
+                                    ) {
+                                        append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+                                    }
+                                    append(")")
                                 }
-                                append(")")
                             }
+
+                            Text(text = barChartText,
+                                style = TextStyle(fontSize = 12.sp)
+                            )
                         }
 
-                        // 가로 막대 차트
-                        Text(text = barChartText)
-
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                        Surface(modifier = Modifier
+                            .fillMaxWidth(),
                             color = Color.White,
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 4.dp
@@ -350,28 +352,24 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
                 Column {
                     // Clicked WiD
-                    Text(
-                        text = "클릭된 WiD",
+                    Text(text = "클릭된 WiD",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                    Surface(modifier = Modifier
+                        .fillMaxWidth(),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
                         shadowElevation = 4.dp
                     ) {
                         Column {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
+                            Row(modifier = Modifier
+                                .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .scale(0.8f)
-                                        .padding(16.dp),
+                                Icon(modifier = Modifier
+                                    .scale(0.8f)
+                                    .padding(16.dp),
                                     painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                                     contentDescription = "date")
 
@@ -393,18 +391,16 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                     }
                                 }
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
+                                Text(modifier = Modifier
+                                    .padding(16.dp)
+                                    .weight(1f),
                                     text = dateText,
                                 )
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = isEditing) { titleMenuExpanded = true },
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = isEditing) { titleMenuExpanded = true },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(modifier = Modifier
@@ -412,20 +408,15 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                     painter = painterResource(id = R.drawable.outline_subtitles_24),
                                     contentDescription = "title")
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
+                                Text(modifier = Modifier
+                                    .padding(16.dp),
                                     text = titleMap[title] ?: title,
                                 )
 
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .size(10.dp)
-                                        .background(
-                                            color = colorResource(id = colorMap[title]!!),
-                                            RoundedCornerShape(8.dp)
-                                        )
+                                Box(modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(10.dp)
+                                    .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
                                 )
 
                                 DropdownMenu(modifier = Modifier
@@ -450,54 +441,46 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                 }
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = isEditing) { showStartPicker = true },
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = isEditing) { showStartPicker = true },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
+                                Icon(modifier = Modifier
+                                    .padding(16.dp),
                                     painter = painterResource(id = R.drawable.outline_play_arrow_24),
                                     contentDescription = "start")
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
+                                Text(modifier = Modifier
+                                    .padding(16.dp)
+                                    .weight(1f),
                                     text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
                                 )
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = isEditing) { showFinishPicker = true },
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(enabled = isEditing) { showFinishPicker = true },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
+                                Icon(modifier = Modifier
+                                    .padding(16.dp),
                                     painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                                     contentDescription = "finish")
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
+                                Text(modifier = Modifier
+                                    .padding(16.dp)
+                                    .weight(1f),
                                     text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
                                 )
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
+                            Row(modifier = Modifier
+                                .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
+                                Icon(modifier = Modifier
+                                    .padding(16.dp),
                                     painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
                                     contentDescription = "duration")
 
@@ -507,21 +490,18 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                 )
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
+                            Row(modifier = Modifier
+                                .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
+                                Icon(modifier = Modifier
+                                    .padding(16.dp),
                                     painter = painterResource(id = R.drawable.outline_message_24),
                                     contentDescription = "detail")
 
                                 if (isEditing) {
-                                    OutlinedTextField(
-                                        modifier = Modifier
-                                            .weight(1f),
+                                    OutlinedTextField(modifier = Modifier
+                                        .weight(1f),
                                         value = detail,
                                         onValueChange = { newText ->
                                             detail = newText
@@ -532,9 +512,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                         ),
                                     )
                                 } else {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
+                                    Text(modifier = Modifier
+                                        .padding(16.dp),
                                         text = detail.ifEmpty { "설명 입력.." },
                                     )
                                 }

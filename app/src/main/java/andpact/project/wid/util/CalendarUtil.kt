@@ -1,16 +1,36 @@
 package andpact.project.wid.util
 
+import andpact.project.wid.R
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
 
 fun formatTime(time: Long): String {
-    val hours = (time / 3600000).toString().padStart(2, '0')
+    val hours = (time / 3600000).toString().padStart(1, '0')
     val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
     val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
 //    val milliseconds = (time % 1000 / 10).toString().padStart(2, '0')
     return "$hours:$minutes:$seconds"
+}
+
+fun formatStopWatchTime(time: Long): AnnotatedString {
+    val hours = (time / 3600000).toString().padStart(1, '0')
+    val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
+    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
+
+    return buildAnnotatedString {
+        withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))) {
+            append("$hours\n$minutes\n$seconds")
+        }
+    }
 }
 
 fun formatDuration(duration: Duration, mode: Int): String {

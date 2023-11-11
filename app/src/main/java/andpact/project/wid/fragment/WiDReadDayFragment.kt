@@ -126,15 +126,14 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            Column {
-                Text(
-                    text = "파이 차트",
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(text = "⭕️ 파이 차트",
                     style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                 )
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                Surface(modifier = Modifier
+                    .fillMaxWidth(),
                     color = Color.White,
                     shape = RoundedCornerShape(8.dp),
                     shadowElevation = 4.dp
@@ -151,7 +150,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         Column(modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                            verticalArrangement = Arrangement.Center,
+                            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(text = "기록된 시간",
@@ -170,23 +169,21 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 }
             }
 
-            Column {
-                Text(
-                    text = "WiD 리스트",
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(text = "📜 WiD 리스트",
                     style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                 )
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                LazyColumn(modifier = Modifier
+                    .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (wiDList.isEmpty()) {
                         item {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(0.dp, 0.dp, 0.dp, 16.dp),
+                            Surface(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PaddingValues(bottom = 16.dp)),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
                                 shadowElevation = 4.dp
@@ -194,7 +191,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 Row(modifier = Modifier
                                     .padding(vertical = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                 ) {
                                     Icon(modifier = Modifier
                                         .scale(0.8f),
@@ -202,9 +199,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                         tint = Color.Gray,
                                         contentDescription = "detail")
 
-                                    Spacer(modifier = Modifier.width(8.dp))
-
-                                    Text(text = "표시할 데이터가 없습니다.",
+                                    Text(text = "표시할 WiD가 없습니다.",
                                         style = TextStyle(color = Color.Gray)
                                     )
                                 }
@@ -212,27 +207,25 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         }
                     } else {
                         itemsIndexed(wiDList) { index, wiD ->
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .then(
-                                        if (index == wiDList.size - 1) {
-                                            Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
-                                        } else {
-                                            Modifier
-                                        }
-                                    ),
+                            Surface(modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (index == wiDList.size - 1) {
+                                        Modifier.padding(PaddingValues(bottom = 16.dp))
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
                                 shadowElevation = 4.dp
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .clickable {
-                                            navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
-                                            buttonsVisible.value = false
-                                        },
+                                Column(modifier = Modifier
+                                    .padding(16.dp)
+                                    .clickable {
+                                        navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
+                                        buttonsVisible.value = false
+                                    },
                                 ) {
                                     Row(modifier = Modifier
                                         .fillMaxWidth(),
@@ -258,10 +251,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                                 modifier = Modifier
                                                     .clip(CircleShape)
                                                     .size(10.dp)
-                                                    .background(
-                                                        color = colorResource(id = colorMap[wiD.title]!!),
-                                                        RoundedCornerShape(8.dp)
-                                                    )
+                                                    .background(color = colorResource(id = colorMap[wiD.title] ?: R.color.light_gray))
                                             )
                                         }
 
@@ -342,7 +332,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                                         Text(
                                             text = wiD.detail.ifBlank { "설명 입력.." },
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
                                     }

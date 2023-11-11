@@ -14,6 +14,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -21,12 +23,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
     val pagerState = rememberPagerState(pageCount = { 3 })
-
     val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
+    Column(modifier = Modifier
+        .fillMaxSize(),
     ) {
         AnimatedVisibility(
             visible = buttonsVisible.value,
@@ -55,7 +55,9 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "스톱워치")
+                        Text(text = "스톱워치",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 )
 
@@ -68,7 +70,9 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "타이머")
+                        Text(text = "타이머",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 )
 
@@ -81,7 +85,9 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "직접 입력")
+                        Text(text = "직접 입력",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 )
             }

@@ -3,33 +3,25 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.formatTime
-import andpact.project.wid.util.titleMap
-import andpact.project.wid.util.titles
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import andpact.project.wid.util.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,14 +30,15 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
     val wiDService = WiDService(context = LocalContext.current)
 
     var date: LocalDate = LocalDate.now()
 
-    var titleIndex by remember { mutableStateOf(0) }
-    var title by remember { mutableStateOf(titles[titleIndex]) }
+    var titleMenuExpanded by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf(titles[0]) }
 
     var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
@@ -131,6 +124,8 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         while (isRunning) {
             currentTime = System.currentTimeMillis()
             elapsedTime = currentTime - startTime
+
+            // 12시간이 넘어가면 자동으로 WiD가 등록되도록 함.
             if (60 * 60 * 12 * 1000 <= elapsedTime) {
                 finishWiD()
                 resetWiD()
@@ -139,101 +134,98 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
+    // 전체 화면
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(32.dp)
-        .wrapContentSize(Alignment.Center),
-        verticalArrangement = Arrangement.spacedBy(40.dp)
+        .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AnimatedVisibility(
-                visible = buttonsVisible.value,
-                enter = fadeIn(
-                    initialAlpha = 0.1f,
-                    animationSpec = tween(500)
-                ),
-                exit = fadeOut(
-                    targetAlpha = 0.1f,
-                    animationSpec = tween(500)
-                )
-            ) {
-                IconButton(modifier = Modifier
-                    .padding(horizontal = 8.dp),
-                    onClick = {
-                        titleIndex = (titleIndex - 1 + titles.size) % titles.size
-                        title = titles[titleIndex]
-                    },
-                ) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowLeft, contentDescription = "Previous title")
-                }
-            }
-
-            Text(modifier = Modifier
-                    .weight(1f),
-                text = titleMap[title] ?: title,
-                style = TextStyle(textAlign = TextAlign.Center, fontSize = 40.sp)
-            )
-
-            AnimatedVisibility(
-                visible = buttonsVisible.value,
-                enter = fadeIn(
-                    initialAlpha = 0.1f,
-                    animationSpec = tween(500)
-                ),
-                exit = fadeOut(
-                    targetAlpha = 0.1f,
-                    animationSpec = tween(500)
-                )
-            ) {
-                IconButton(modifier = Modifier
-                    .padding(horizontal = 8.dp),
-                    onClick = {
-                        titleIndex = (titleIndex + 1) % titles.size
-                        title = titles[titleIndex]
-                    },
-                ) {
-                    Icon(imageVector = Icons.Filled.KeyboardArrowRight, contentDescription = "Next title")
-                }
-            }
-        }
-
         Text(modifier = Modifier
-                .fillMaxWidth(),
-            text = formatTime(elapsedTime),
-            style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
+            .weight(1f)
+            .padding(PaddingValues(top = 80.dp)),
+            text = formatStopWatchTime(elapsedTime),
+            style = TextStyle(textAlign = TextAlign.End)
         )
 
         Row(modifier = Modifier
             .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Box(modifier = Modifier
+                .clip(CircleShape)
+                .size(10.dp)
+                .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+            )
+
+            ExposedDropdownMenuBox(modifier = Modifier
+                .weight(1f),
+                expanded = titleMenuExpanded,
+                onExpandedChange = { if (!isRunning && buttonsVisible.value) titleMenuExpanded = !titleMenuExpanded },
+            ) {
+                TextField(modifier = Modifier
+                    .menuAnchor(),
+                    readOnly = true,
+                    value = titleMap[title] ?: "공부",
+                    textStyle = TextStyle(fontWeight = FontWeight.Bold),
+                    onValueChange = {},
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                )
+
+                ExposedDropdownMenu(
+                    expanded = titleMenuExpanded,
+                    onDismissRequest = { titleMenuExpanded = false }
+                ) {
+                    titles.forEach { menuTitle ->
+                        DropdownMenuItem(
+                            text = { Text(text = titleMap[menuTitle] ?: "공부") },
+                            onClick = {
+                                title = menuTitle
+                                titleMenuExpanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
+
             TextButton(modifier = Modifier
-                .size(50.dp)
-                .background(if (!(!isRunning && !buttonsVisible.value)) Color.Gray else Color.Black, shape = CircleShape),
+                .weight(1f)
+                .background(
+                    if (!(!isRunning && !buttonsVisible.value)) Color.LightGray else Color.Black,
+                    shape = RoundedCornerShape(8.dp)
+                ),
                 onClick = { if (!isRunning) { resetWiD() } },
                 enabled = !isRunning && !buttonsVisible.value
             ) {
                 Text(text = "초기화",
-                    style = TextStyle(color = Color.White)
+                    style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
             TextButton(modifier = Modifier
-                .size(50.dp)
-                .background(color = when (buttonText) {
-                    "중지" -> colorResource(id = R.color.orange_red)
-                    "계속" -> colorResource(id = R.color.lime_green)
-                    else -> Color.Black
-                }, shape = CircleShape),
+                .weight(1f)
+                .background(
+                    color = when (buttonText) {
+                        "중지" -> colorResource(id = R.color.orange_red)
+                        "계속" -> colorResource(id = R.color.lime_green)
+                        else -> colorResource(id = R.color.deep_sky_blue)
+                    }, shape = RoundedCornerShape(8.dp)
+                ),
                 onClick = {
                     if (!isRunning) startWiD() else finishWiD()
                 }
             ) {
                 Text(text = buttonText,
-                    style = TextStyle(color = Color.White)
+                    style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold)
                 )
             }
         }

@@ -56,20 +56,18 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
     val lazyListState = rememberLazyListState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp),
     ) {
-        OutlinedTextField(
+        OutlinedTextField(modifier = Modifier
+            .fillMaxWidth(),
             value = searchText,
             onValueChange = { newText ->
                 searchText = newText
 
                 wiDList = wiDService.readWiDListByDetail(newText)
             },
-            modifier = Modifier
-                .fillMaxWidth(),
             placeholder = {
                 Text(text = "검색..")
             },
@@ -84,7 +82,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
                 Icon(modifier = Modifier
                     .scale(0.8f),
@@ -93,16 +91,15 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                     tint = Color.Gray
                 )
 
-                Text(
-                    text = "설명으로 WiD를 검색해 보세요.",
+                Text(text = "설명으로 WiD를 검색해 보세요.",
                     style = TextStyle(color = Color.Gray)
                 )
             }
         } else {
             var currentDate: LocalDate? = null
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
+            LazyColumn(modifier = Modifier
+                .fillMaxWidth(),
                 state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
@@ -144,26 +141,24 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                         }
                     }
 
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(if (index == wiDList.size - 1) {
-                                Modifier.padding(0.dp, 0.dp, 0.dp, 16.dp)
-                            } else {
-                                Modifier
-                            }),
+                    Surface(modifier = Modifier
+                        .fillMaxWidth()
+                        .then(if (index == wiDList.size - 1) {
+                            Modifier.padding(PaddingValues(bottom = 16.dp))
+                        } else {
+                            Modifier
+                        }),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
                         shadowElevation = 4.dp
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .clickable {
-                                    navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
+                        Column(modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
 
-                                    buttonsVisible.value = false
-                                },
+                                buttonsVisible.value = false
+                            },
                         ) {
                             Row(modifier = Modifier
                                 .fillMaxWidth(),
@@ -178,21 +173,16 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         painter = painterResource(id = R.drawable.outline_subtitles_24),
                                         contentDescription = "title")
 
-                                    Text(
-                                        text = "제목",
+                                    Text(text = "제목",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
                                     Text(text = titleMap[wiD.title] ?: wiD.title)
 
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .size(10.dp)
-                                            .background(
-                                                color = colorResource(id = colorMap[wiD.title]!!),
-                                                RoundedCornerShape(8.dp)
-                                            )
+                                    Box(modifier = Modifier
+                                        .clip(CircleShape)
+                                        .size(10.dp)
+                                        .background(color = colorResource(id = colorMap[wiD.title] ?: R.color.light_gray))
                                     )
                                 }
 
@@ -206,8 +196,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
                                         contentDescription = "duration")
 
-                                    Text(
-                                        text = "소요",
+                                    Text(text = "소요",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -228,8 +217,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         painter = painterResource(id = R.drawable.outline_play_arrow_24),
                                         contentDescription = "finish")
 
-                                    Text(
-                                        text = "시작",
+                                    Text(text = "시작",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -246,8 +234,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                         painter = painterResource(id = R.drawable.baseline_play_arrow_24),
                                         contentDescription = "finish")
 
-                                    Text(
-                                        text = "종료",
+                                    Text(text = "종료",
                                         style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
 
@@ -265,14 +252,12 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                     painter = painterResource(id = R.drawable.outline_message_24),
                                     contentDescription = "detail")
 
-                                Text(
-                                    text = "설명",
+                                Text(text = "설명",
                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
 
-                                Text(
-                                    text = wiD.detail.ifBlank { "설명 입력.." },
-                                    maxLines = 2,
+                                Text(text = wiD.detail.ifBlank { "설명 입력.." },
+                                    maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
