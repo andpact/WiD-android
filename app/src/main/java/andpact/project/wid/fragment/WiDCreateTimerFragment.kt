@@ -3,10 +3,8 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.formatTime
-import andpact.project.wid.util.titleMap
-import andpact.project.wid.util.titles
+import andpact.project.wid.util.*
+import android.widget.NumberPicker
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -63,8 +61,8 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     var buttonText by remember { mutableStateOf("시작") }
 
     // 버튼 활성화 여부를 나타내는 상태 변수 추가
-    var minusButtonEnabled by remember { mutableStateOf(false) }
-    var plusButtonEnabled by remember { mutableStateOf(true) }
+//    var minusButtonEnabled by remember { mutableStateOf(false) }
+//    var plusButtonEnabled by remember { mutableStateOf(true) }
 
     fun startWiD() {
         isRunning = true
@@ -134,7 +132,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         buttonText = "시작"
 
         buttonsVisible.value = true
-        minusButtonEnabled = false
     }
 
     LaunchedEffect(isRunning) {
@@ -150,81 +147,19 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
+    // 전체 화면
     Box(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp),
     ) {
-        Row(modifier = Modifier
+        // 타이머 남은 시간 텍스트 뷰
+        Text(modifier = Modifier
             .fillMaxWidth()
+            .padding(PaddingValues(bottom = 140.dp))
             .align(Alignment.Center),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AnimatedVisibility(
-                visible = buttonsVisible.value,
-                enter = fadeIn(
-                    initialAlpha = 0.1f,
-                    animationSpec = tween(500)
-                ),
-                exit = fadeOut(
-                    targetAlpha = 0.1f,
-                    animationSpec = tween(500)
-                )
-            ) {
-                IconButton(
-                    onClick = {
-                        if (remainingTime > 0) {
-                            finishTime -= 3_600_000
-                            remainingTime = finishTime - currentTime
-                        }
-                        if (remainingTime <= 0) {
-                            minusButtonEnabled = false
-                        }
-                        if (remainingTime < 12 * 3_600_000) {
-                            plusButtonEnabled = true
-                        }
-                    },
-                    enabled = minusButtonEnabled
-                ) {
-                    Icon(painter = painterResource(id = R.drawable.baseline_remove_24), contentDescription = "minus1Hour")
-                }
-            }
-
-            // 남은 시간 텍스트 뷰
-            Text(modifier = Modifier
-                .weight(1f),
-                text = formatTime(time = remainingTime),
-                color = if (minusButtonEnabled) Color.Unspecified else Color.LightGray,
-                style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))
-            )
-
-            AnimatedVisibility(
-                visible = buttonsVisible.value,
-                enter = fadeIn(
-                    initialAlpha = 0.1f,
-                    animationSpec = tween(500)
-                ),
-                exit = fadeOut(
-                    targetAlpha = 0.1f,
-                    animationSpec = tween(500)
-                )
-            ) {
-                IconButton(
-                    onClick = {
-                        finishTime += 3_600_000
-                        remainingTime = finishTime - currentTime
-                        if (remainingTime > 0) {
-                            minusButtonEnabled = true
-                        }
-                        if (remainingTime >= 12 * 3_600_000) {
-                            plusButtonEnabled = false
-                        }
-                    },
-                    enabled = plusButtonEnabled
-                ) {
-                    Icon(imageVector = Icons.Filled.Add, contentDescription = "plus1Hour")
-                }
-            }
-        }
+            text = formatTimerTime(time = remainingTime),
+            style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))
+        )
 
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -247,9 +182,9 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                     .menuAnchor(),
                     readOnly = true,
                     value = titleMap[title] ?: "공부",
-                    textStyle = TextStyle(fontWeight = FontWeight.Bold),
+                    textStyle = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
                     onValueChange = {},
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                    trailingIcon = { if (!isRunning && buttonsVisible.value) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -294,9 +229,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
             TextButton(modifier = Modifier
                 .weight(1f)
                 .background(
-                    if (!minusButtonEnabled) {
-                        Color.LightGray
-                    } else if (buttonText == "중지") {
+                    if (buttonText == "중지") {
                         colorResource(id = R.color.orange_red)
                     } else if (buttonText == "계속") {
                         colorResource(id = R.color.lime_green)
@@ -307,7 +240,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 onClick = {
                     if (!isRunning) startWiD() else finishWiD()
                 },
-                enabled = minusButtonEnabled
             ) {
                 Text(text = buttonText,
                     style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold)

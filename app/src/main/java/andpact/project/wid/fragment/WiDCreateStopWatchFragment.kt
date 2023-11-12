@@ -135,20 +135,22 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
     }
 
     // 전체 화면
-    Column(modifier = Modifier
+    Box(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // 스톱워치 시간 표시
         Text(modifier = Modifier
-            .weight(1f)
-            .padding(PaddingValues(top = 80.dp)),
+            .padding(PaddingValues(bottom = 140.dp))
+            .align(Alignment.Center),
             text = formatStopWatchTime(elapsedTime),
             style = TextStyle(textAlign = TextAlign.End)
         )
 
+        // 제목 선택 및 버튼 모음
         Row(modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .align(Alignment.BottomCenter),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -161,15 +163,15 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
             ExposedDropdownMenuBox(modifier = Modifier
                 .weight(1f),
                 expanded = titleMenuExpanded,
-                onExpandedChange = { if (!isRunning && buttonsVisible.value) titleMenuExpanded = !titleMenuExpanded },
+                onExpandedChange = { if (!isRunning && buttonsVisible.value) titleMenuExpanded = !titleMenuExpanded }
             ) {
                 TextField(modifier = Modifier
                     .menuAnchor(),
                     readOnly = true,
                     value = titleMap[title] ?: "공부",
-                    textStyle = TextStyle(fontWeight = FontWeight.Bold),
+                    textStyle = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
                     onValueChange = {},
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                    trailingIcon = { if (!isRunning && buttonsVisible.value) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
                     colors = ExposedDropdownMenuDefaults.textFieldColors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,

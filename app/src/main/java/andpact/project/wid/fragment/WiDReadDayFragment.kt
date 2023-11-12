@@ -50,7 +50,8 @@ import java.util.*
 
 @Composable
 fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
-    var currentDate by remember { mutableStateOf(LocalDate.now()) }
+    val today = LocalDate.now()
+    var currentDate by remember { mutableStateOf(today) }
 
     val wiDService = WiDService(context = LocalContext.current)
     val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
@@ -98,8 +99,9 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
             IconButton(
                 onClick = {
-                    currentDate = LocalDate.now()
+                    currentDate = today
                 },
+                enabled = currentDate != today,
             ) {
                 Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Today")
             }
@@ -116,7 +118,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 onClick = {
                     currentDate = currentDate.plusDays(1)
                 },
-                enabled = currentDate != LocalDate.now(),
+                enabled = currentDate != today
             ) {
                 Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Next day")
             }

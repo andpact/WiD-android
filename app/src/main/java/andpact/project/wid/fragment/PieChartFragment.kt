@@ -2,27 +2,28 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
+import android.content.Context
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -33,6 +34,8 @@ import kotlin.math.sin
 
 @Composable
 fun DayPieChartView(wiDList: List<WiD>) {
+    val context = LocalContext.current // 폰트 불러오기 위해 선언함.
+
     val pieEntries = mutableListOf<PieEntry>()
 
     val totalMinutes = 24 * 60 // 1440분(24시간)
@@ -61,10 +64,9 @@ fun DayPieChartView(wiDList: List<WiD>) {
         pieEntries.add(PieEntry(emptyMinutes.toFloat(), ""))
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
         Crossfade(targetState = pieEntries) { pieEntries ->
@@ -87,7 +89,8 @@ fun DayPieChartView(wiDList: List<WiD>) {
 
                     setDrawCenterText(true)
                     centerText = "오후 | 오전"
-                    setCenterTextSize(16f)
+                    setCenterTextSize(14f)
+                    setCenterTextOffset(0f, 40f)
 
                     if (wiDList.isEmpty()) {
                         setCenterTextColor(Color.LightGray.toArgb())
@@ -121,6 +124,7 @@ fun DayPieChartView(wiDList: List<WiD>) {
                     color = Color.Black.toArgb()
                     textSize = 30f
                     textAlign = Paint.Align.CENTER
+                    typeface = ResourcesCompat.getFont(context, R.font.agbalumo_regular)
                 }
 
                 for (i in 0 until 24) {
@@ -221,41 +225,41 @@ fun CalendarPieChartView(date: LocalDate, wiDList: List<WiD>) {
     }
 }
 
-@Composable
-fun EmptyPieChartView() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
-        contentAlignment = Alignment.Center
-    ) {
-        AndroidView(factory = { context ->
-            PieChart(context).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                setUsePercentValues(false) // Use absolute values
-                description.isEnabled = false // Disable description
-                legend.isEnabled = false // Disable legend
-
-                setDrawEntryLabels(false)
-                setTouchEnabled(false) // Disable touch gestures for zooming
-
-//                isDrawHoleEnabled = true
-//                holeRadius = 70f // Hole radius as percentage of the chart
-//                setHoleColor(ContextCompat.getColor(context, R.color.transparent))
-
-                val dataSet = PieDataSet(listOf(PieEntry(1.0F, "")), "")
-                dataSet.colors = listOf(ContextCompat.getColor(context, R.color.transparent))
-                val data = PieData(dataSet)
-                data.setDrawValues(false)
-                this.data = data
-                this.invalidate()
-            }
-        })
-    }
-}
+//@Composable
+//fun EmptyPieChartView() {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .aspectRatio(1f),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        AndroidView(factory = { context ->
+//            PieChart(context).apply {
+//                layoutParams = LinearLayout.LayoutParams(
+//                    ViewGroup.LayoutParams.MATCH_PARENT,
+//                    ViewGroup.LayoutParams.MATCH_PARENT
+//                )
+//                setUsePercentValues(false) // Use absolute values
+//                description.isEnabled = false // Disable description
+//                legend.isEnabled = false // Disable legend
+//
+//                setDrawEntryLabels(false)
+//                setTouchEnabled(false) // Disable touch gestures for zooming
+//
+////                isDrawHoleEnabled = true
+////                holeRadius = 70f // Hole radius as percentage of the chart
+////                setHoleColor(ContextCompat.getColor(context, R.color.transparent))
+//
+//                val dataSet = PieDataSet(listOf(PieEntry(1.0F, "")), "")
+//                dataSet.colors = listOf(ContextCompat.getColor(context, R.color.transparent))
+//                val data = PieData(dataSet)
+//                data.setDrawValues(false)
+//                this.data = data
+//                this.invalidate()
+//            }
+//        })
+//    }
+//}
 
 @Preview(showBackground = true)
 @Composable

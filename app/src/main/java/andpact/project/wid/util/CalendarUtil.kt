@@ -1,19 +1,18 @@
 package andpact.project.wid.util
 
 import andpact.project.wid.R
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.sp
 import java.time.Duration
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.temporal.WeekFields
 
-fun formatTime(time: Long): String {
+fun formatTimerTime(time: Long): String {
     val hours = (time / 3600000).toString().padStart(1, '0')
     val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
     val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
@@ -22,13 +21,53 @@ fun formatTime(time: Long): String {
 }
 
 fun formatStopWatchTime(time: Long): AnnotatedString {
-    val hours = (time / 3600000).toString().padStart(1, '0')
-    val minutes = ((time % 3600000) / 60000).toString().padStart(2, '0')
-    val seconds = ((time % 60000) / 1000).toString().padStart(2, '0')
+    val hours = (time / 3_600_000).toInt()
+    val minutes = ((time % 3_600_000) / 60_000).toInt()
+    val seconds = ((time % 60_000) / 1_000).toInt()
+
+    val hoursText = hours.toString().padStart(1, '0')
+
+    val minutesText = if (0 < hours) {
+        minutes.toString().padStart(2, '0')
+    } else {
+        minutes.toString().padStart(1, '0')
+    }
+
+    val secondsText = if (0 < minutes || 0 < hours) {
+        seconds.toString().padStart(2, '0')
+    } else {
+        seconds.toString().padStart(1, '0')
+    }
 
     return buildAnnotatedString {
-        withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.tektur_variablefont_wdth_wght)))) {
-            append("$hours\n$minutes\n$seconds")
+        withStyle(style = ParagraphStyle(lineHeight = 80.sp)) {
+            if (0 < hours) {
+                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+                    append(hoursText)
+                }
+
+                withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+                    append("h\n")
+                }
+            }
+
+            if (0 < minutes || 0 < hours) {
+                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+                    append(minutesText)
+                }
+
+                withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+                    append("m\n")
+                }
+            }
+
+            withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+                append(secondsText)
+            }
+
+            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+                append("s\n")
+            }
         }
     }
 }
