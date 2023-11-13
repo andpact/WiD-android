@@ -66,8 +66,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         ) {
             Text(text = "WiD",
                 style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
@@ -94,7 +94,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             Text(modifier = Modifier
                 .weight(1f),
                 text = dateText,
-                textAlign = TextAlign.Center
+                style = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             )
 
             IconButton(
