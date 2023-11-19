@@ -252,7 +252,7 @@ fun WiDReadCalendarFragment() {
                         .fillMaxWidth(),
                     color = Color.White,
                     shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 4.dp
+                    shadowElevation = 2.dp
                 ) {
                     Column {
                         Row(
@@ -422,7 +422,7 @@ fun WiDReadCalendarFragment() {
                                     .fillMaxWidth(),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(modifier = Modifier
                                     .padding(16.dp)
@@ -561,7 +561,7 @@ fun WiDReadCalendarFragment() {
                                 .fillMaxWidth(),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(modifier = Modifier
                                     .padding(16.dp)
@@ -665,7 +665,7 @@ fun WiDReadCalendarFragment() {
                                     .padding(PaddingValues(bottom = 16.dp)), // 아래쪽 패딩을 설정해서 elevation이 보이도록 하고 여유 공간을 만듬
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(modifier = Modifier
                                     .padding(16.dp)
@@ -753,7 +753,7 @@ fun WiDReadCalendarFragment() {
                                     .fillMaxWidth(),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -863,7 +863,7 @@ fun WiDReadCalendarFragment() {
                                     .fillMaxWidth(),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -944,7 +944,7 @@ fun WiDReadCalendarFragment() {
                                     .fillMaxWidth(),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -1026,7 +1026,7 @@ fun WiDReadCalendarFragment() {
                                     .padding(PaddingValues(bottom = 16.dp)),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(
                                     modifier = Modifier

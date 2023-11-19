@@ -372,9 +372,12 @@ fun WiDCreateManualFragment() {
                             }
                         }
 
-                        Text(text = barChartText,
-                            style = TextStyle(fontSize = 12.sp)
-                        )
+                        if (isDateAssigned) {
+                            Text(
+                                text = barChartText,
+                                style = TextStyle(fontSize = 12.sp)
+                            )
+                        }
                     }
 
                     Surface(
@@ -382,7 +385,7 @@ fun WiDCreateManualFragment() {
                             .fillMaxWidth(),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
+                        shadowElevation = 2.dp
                     ) {
                         Row(modifier = Modifier
                             .fillMaxWidth()
@@ -447,7 +450,7 @@ fun WiDCreateManualFragment() {
                             .fillMaxWidth(),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
+                        shadowElevation = 2.dp
                     ) {
                         Column {
                             Row(modifier = Modifier

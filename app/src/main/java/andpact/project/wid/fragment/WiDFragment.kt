@@ -336,7 +336,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             .fillMaxWidth(),
                             color = Color.White,
                             shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 4.dp
+                            shadowElevation = 2.dp
                         ) {
                             Row(modifier = Modifier
                                 .fillMaxWidth()
@@ -360,7 +360,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         .fillMaxWidth(),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
+                        shadowElevation = 2.dp
                     ) {
                         Column {
                             Row(modifier = Modifier

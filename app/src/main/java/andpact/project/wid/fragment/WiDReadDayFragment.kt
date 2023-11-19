@@ -138,7 +138,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     .fillMaxWidth(),
                     color = Color.White,
                     shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 4.dp
+                    shadowElevation = 2.dp
                 ) {
                     Row(modifier = Modifier
                         .height(IntrinsicSize.Min)
@@ -188,7 +188,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .padding(PaddingValues(bottom = 16.dp)),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Row(modifier = Modifier
                                     .padding(vertical = 16.dp),
@@ -220,7 +220,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 ),
                                 color = Color.White,
                                 shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 4.dp
+                                shadowElevation = 2.dp
                             ) {
                                 Column(modifier = Modifier
                                     .padding(16.dp)

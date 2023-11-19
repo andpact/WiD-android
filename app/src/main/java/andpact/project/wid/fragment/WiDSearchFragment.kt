@@ -150,7 +150,7 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                         }),
                         color = Color.White,
                         shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 4.dp
+                        shadowElevation = 2.dp
                     ) {
                         Column(modifier = Modifier
                             .padding(16.dp)
