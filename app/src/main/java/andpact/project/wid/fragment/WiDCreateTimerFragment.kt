@@ -50,46 +50,44 @@ import java.time.LocalTime
 fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     val wiDService = WiDService(context = LocalContext.current)
 
-    // 날짜 관련 변수
+    // 날짜
     var date: LocalDate = LocalDate.now()
 
-    // 제목 관련 변수
-    var titleMenuExpanded by remember { mutableStateOf(false) }
+    // 제목
     var title by remember { mutableStateOf(titles[0]) }
+    var titleMenuExpanded by remember { mutableStateOf(false) }
 
-    // 시작 및 종료 시간 관련 변수
+    // 시작 시간
     var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
+
+    // 종료 시간
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
-    // 타이머 표시용 변수
+    // 타이머
     var isRunning by remember { mutableStateOf(false) }
     var finishTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
     var remainingTime by remember { mutableStateOf(0L) }
-
-    // 버튼 상태용 변수
     var buttonText by remember { mutableStateOf("시작") }
-
-    // Picker 관련 변수
     val itemHeight = 30.dp
     val pickerHeight = itemHeight * 3 + 16.dp * 2 // 아이템 사이의 여백 16을 두 번 추가해줌.
     val coroutineScope = rememberCoroutineScope()
 
-    // 시간 선택 관련 변수
+    // 타이머 시간 선택
     var selectedHour by remember { mutableStateOf(0) }
     val lazyHourListState = rememberLazyListState(Int.MAX_VALUE / 2 - 16) // 정중앙의 0을 찾기 위해서 마이너스 16 해줌.
     val isHourScrollInProgress = remember { derivedStateOf { lazyHourListState.isScrollInProgress } }
     val currentHourIndex = remember { derivedStateOf { lazyHourListState.firstVisibleItemIndex } }
     val currentHourScrollOffset = remember { derivedStateOf { lazyHourListState.firstVisibleItemScrollOffset } }
 
-    // 분 선택 관련 변수
+    // 타이머 분 선택
     var selectedMinute by remember { mutableStateOf(0) }
     val lazyMinuteListState = rememberLazyListState(Int.MAX_VALUE / 2 - 4) // 정중앙의 0을 찾기 위해서 마이너스 4 해줌.
     val isMinuteScrollInProgress = remember { derivedStateOf { lazyMinuteListState.isScrollInProgress } }
     val currentMinuteIndex = remember { derivedStateOf { lazyMinuteListState.firstVisibleItemIndex } }
     val currentMinuteScrollOffset = remember { derivedStateOf { lazyMinuteListState.firstVisibleItemScrollOffset } }
 
-    // 초 선택 관련 변수
+    // 타이머 초 선택
     var selectedSecond by remember { mutableStateOf(0) }
     val lazySecondListState = rememberLazyListState(Int.MAX_VALUE / 2 - 4) // 정중앙의 0을 찾기 위해서 마이너스 4 해줌.
     val isSecondScrollInProgress = remember { derivedStateOf { lazySecondListState.isScrollInProgress } }
@@ -128,7 +126,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 start = start,
                 finish = midnight.plusSeconds(-1),
                 duration = Duration.between(start, midnight.plusSeconds(-1)),
-                detail = ""
             )
             wiDService.createWiD(firstWiD)
 
@@ -139,7 +136,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 start = midnight,
                 finish = finish,
                 duration = Duration.between(midnight, finish),
-                detail = ""
             )
             wiDService.createWiD(secondWiD)
         } else {
@@ -150,7 +146,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
                 start = start,
                 finish = finish,
                 duration = Duration.between(start, finish),
-                detail = ""
             )
             wiDService.createWiD(newWiD)
         }

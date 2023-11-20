@@ -99,7 +99,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
     var isDurationUnderMin by remember { mutableStateOf(false) }
 
     // 설명
-    var detail by remember { mutableStateOf(clickedWiD.detail) }
     var isEditing by remember { mutableStateOf(false) }
 
     LaunchedEffect(isDeleteButtonPressed) {
@@ -492,35 +491,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                     text = formatDuration(duration, mode = 2),
                                 )
                             }
-
-                            Row(modifier = Modifier
-                                .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(modifier = Modifier
-                                    .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_message_24),
-                                    contentDescription = "detail")
-
-                                if (isEditing) {
-                                    OutlinedTextField(modifier = Modifier
-                                        .weight(1f),
-                                        value = detail,
-                                        onValueChange = { newText ->
-                                            detail = newText
-                                        },
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = Color.Transparent,
-                                            unfocusedBorderColor = Color.Transparent
-                                        ),
-                                    )
-                                } else {
-                                    Text(modifier = Modifier
-                                        .padding(16.dp),
-                                        text = detail.ifEmpty { "설명 입력.." },
-                                    )
-                                }
-                            }
                         }
                     }
                 }
@@ -546,7 +516,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             start = clickedWiD.start
                             finish = clickedWiD.finish
                             duration = clickedWiD.duration
-                            detail = clickedWiD.detail
                         } else {
                             isDeleteButtonPressed = true
                         }
@@ -584,7 +553,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                 IconButton(
                     onClick = {
                         if (isEditing) {
-                            wiDService.updateWiD(id = wiDId, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
+                            wiDService.updateWiD(id = wiDId, date = date, title = title, start = start, finish = finish, duration = duration)
 
                             isEditing = false
                         } else {
@@ -615,9 +584,11 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         Icon(
                             painter = painterResource(id = if (isEditing) R.drawable.outline_check_box_24 else R.drawable.baseline_edit_24),
                             contentDescription = "edit & complete",
-                            tint = Color.White)
+                            tint = Color.White
+                        )
 
-                        Text(text = if (isEditing) "완료" else "수정",
+                        Text(
+                            text = if (isEditing) "완료" else "수정",
                             style = TextStyle(color = Color.White, textAlign = TextAlign.Center),
                         )
                     }

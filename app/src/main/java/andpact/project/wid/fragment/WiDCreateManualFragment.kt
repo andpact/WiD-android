@@ -84,10 +84,6 @@ fun WiDCreateManualFragment() {
     var duration by remember { mutableStateOf(Duration.ZERO) }
     var durationExist by remember { mutableStateOf(false) }
 
-    // 설명
-    var detail by remember { mutableStateOf("") }
-    var detailExist by remember { mutableStateOf(false) }
-
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
     var wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
@@ -596,35 +592,6 @@ fun WiDCreateManualFragment() {
                                     color = if (durationExist && isStartAssigned && isFinishAssigned) Color.Unspecified else Color.Gray
                                 )
                             }
-
-                            Row(modifier = Modifier
-                                .fillMaxWidth()
-                            ) {
-                                Icon(modifier = Modifier
-                                    .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_message_24),
-                                    contentDescription = "detail",
-                                    tint = if (detailExist) Color.Unspecified else Color.Gray
-                                )
-
-                                OutlinedTextField(modifier = Modifier
-                                    .weight(1f),
-                                    value = detail,
-                                    onValueChange = { newText ->
-                                        detail = newText
-                                        detailExist = newText.isNotEmpty()
-                                    },
-                                    placeholder = {
-                                        Text(text = "설명(선택사항)",
-                                            color = Color.Gray
-                                        )
-                                    },
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color.Transparent,
-                                        unfocusedBorderColor = Color.Transparent
-                                    ),
-                                )
-                            }
                         }
                     }
                 }
@@ -632,7 +599,7 @@ fun WiDCreateManualFragment() {
 
             IconButton(
                 onClick = {
-                    val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration, detail = detail)
+                    val newWiD = WiD(id = 0, date = date, title = title, start = start, finish = finish, duration = duration)
                     wiDService.createWiD(newWiD)
 
                     wiDList = wiDService.readDailyWiDListByDate(date)

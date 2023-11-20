@@ -111,12 +111,12 @@ data class BarChartData (val value: Float, val color: Color)
 @Composable
 fun HorizontalBarChartViewPreview() {
     val temporaryWiDList = listOf(
-        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofHours(1), "Details 1"),
-//        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofSeconds(60), "Details 1"),
-        WiD(1, LocalDate.now(), "ETC", LocalTime.of(3, 0), LocalTime.of(4, 0), Duration.ofHours(1), "Details 1"),
-        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(8, 0), LocalTime.of(9, 0), Duration.ofHours(1), "Details 1"),
-        WiD(2, LocalDate.now(), "WORK", LocalTime.of(10, 0), LocalTime.of(11, 0), Duration.ofHours(1), "Details 2"),
-        WiD(3, LocalDate.now(), "HOBBY", LocalTime.of(13, 0), LocalTime.of(15, 0), Duration.ofHours(2), "Details 3"),
+        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofHours(1)),
+//        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofSeconds(60)),
+        WiD(1, LocalDate.now(), "ETC", LocalTime.of(3, 0), LocalTime.of(4, 0), Duration.ofHours(1)),
+        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(8, 0), LocalTime.of(9, 0), Duration.ofHours(1)),
+        WiD(2, LocalDate.now(), "WORK", LocalTime.of(10, 0), LocalTime.of(11, 0), Duration.ofHours(1)),
+        WiD(3, LocalDate.now(), "HOBBY", LocalTime.of(13, 0), LocalTime.of(15, 0), Duration.ofHours(2)),
     )
 
     HorizontalBarChartView(temporaryWiDList)

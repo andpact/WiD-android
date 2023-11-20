@@ -33,22 +33,27 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
+    // WiD
     val wiDService = WiDService(context = LocalContext.current)
 
+    // 날짜
     var date: LocalDate = LocalDate.now()
 
-    var titleMenuExpanded by remember { mutableStateOf(false) }
+    // 제목
     var title by remember { mutableStateOf(titles[0]) }
+    var titleMenuExpanded by remember { mutableStateOf(false) }
 
+    // 시작 시간
     var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
+
+    // 종료 시간
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
+    // 스톱워치
     var isRunning by remember { mutableStateOf(false) }
-
     var elapsedTime by remember { mutableStateOf(0L) }
     var startTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
-
     var buttonText by remember { mutableStateOf("시작") }
 
     fun startWiD() {
@@ -84,7 +89,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 start = start,
                 finish = midnight.plusSeconds(-1),
                 duration = Duration.between(start, midnight.plusSeconds(-1)),
-                detail = ""
             )
             wiDService.createWiD(firstWiD)
 
@@ -95,7 +99,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 start = midnight,
                 finish = finish,
                 duration = Duration.between(midnight, finish),
-                detail = ""
             )
             wiDService.createWiD(secondWiD)
         } else {
@@ -106,7 +109,6 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 start = start,
                 finish = finish,
                 duration = Duration.between(start, finish),
-                detail = ""
             )
             wiDService.createWiD(newWiD)
         }
@@ -197,12 +199,13 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 }
             }
 
-            TextButton(modifier = Modifier
-                .weight(1f)
-                .background(
-                    if (!(!isRunning && !buttonsVisible.value)) Color.LightGray else Color.Black,
-                    shape = RoundedCornerShape(8.dp)
-                ),
+            TextButton(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(
+                        if (!(!isRunning && !buttonsVisible.value)) Color.LightGray else Color.Black,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
                 onClick = { if (!isRunning) { resetWiD() } },
                 enabled = !isRunning && !buttonsVisible.value
             ) {
@@ -213,15 +216,16 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
                 )
             }
 
-            TextButton(modifier = Modifier
-                .weight(1f)
-                .background(
-                    color = when (buttonText) {
-                        "중지" -> colorResource(id = R.color.orange_red)
-                        "계속" -> colorResource(id = R.color.lime_green)
-                        else -> colorResource(id = R.color.deep_sky_blue)
-                    }, shape = RoundedCornerShape(8.dp)
-                ),
+            TextButton(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(
+                        color = when (buttonText) {
+                            "중지" -> colorResource(id = R.color.orange_red)
+                            "계속" -> colorResource(id = R.color.lime_green)
+                            else -> colorResource(id = R.color.deep_sky_blue)
+                        }, shape = RoundedCornerShape(8.dp)
+                    ),
                 onClick = {
                     if (!isRunning) startWiD() else finishWiD()
                 }

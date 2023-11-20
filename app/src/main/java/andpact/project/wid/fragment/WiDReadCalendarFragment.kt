@@ -51,7 +51,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDReadCalendarFragment() {
-    // 데이터베이스
+    // WiD
     val wiDService = WiDService(context = LocalContext.current)
 
     // 날짜
@@ -65,7 +65,7 @@ fun WiDReadCalendarFragment() {
     val lastDayOfWeek = selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
     val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
 
-    // 데이터베이스
+    // WiD
     var wiDList by remember { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
 
     // 제목
@@ -411,7 +411,8 @@ fun WiDReadCalendarFragment() {
                                     append(") 기준")
                                 }
 
-                                Text(text = dayTotalText,
+                                Text(
+                                    text = dayTotalText,
                                     style = TextStyle(fontSize = 12.sp)
                                 )
                             }
@@ -423,33 +424,39 @@ fun WiDReadCalendarFragment() {
                                 shape = RoundedCornerShape(8.dp),
                                 shadowElevation = 2.dp
                             ) {
-                                Column(modifier = Modifier
-                                    .padding(16.dp)
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
                                 ) {
                                     if (dailyAllTitleDurationMap.isEmpty()) {
-                                        Row(modifier = Modifier
-                                            .fillMaxWidth(),
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                         ) {
-                                            Icon(modifier = Modifier
-                                                .scale(0.8f),
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_textsms_24),
                                                 contentDescription = "No day total",
                                                 tint = Color.Gray
                                             )
 
-                                            Text(text = "표시할 데이터가 없습니다.",
+                                            Text(
+                                                text = "표시할 데이터가 없습니다.",
                                                 style = TextStyle(color = Color.Gray)
                                             )
                                         }
                                     } else {
                                         for ((title, dayTotal) in dailyAllTitleDurationMap) {
-                                            Row(modifier = Modifier
-                                                .fillMaxWidth()
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
                                             ) {
-                                                Row(modifier = Modifier
-                                                    .weight(1f),
+                                                Row(
+                                                    modifier = Modifier
+                                                        .weight(1f),
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                                 ) {

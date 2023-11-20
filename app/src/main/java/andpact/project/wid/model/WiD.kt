@@ -10,8 +10,7 @@ data class WiD (
     val title: String,
     val start: LocalTime,
     val finish: LocalTime,
-    val duration: Duration,
-    val detail: String
+    val duration: Duration
 ) {
     constructor(
         id: Long,
@@ -19,15 +18,13 @@ data class WiD (
         title: String,
         start: LocalTime,
         finish: LocalTime,
-        durationMillis: Long,
-        detail: String
+        durationMillis: Long
     ) : this(
         id,
         date,
         title,
         start,
         finish,
-        Duration.ofMillis(durationMillis),
-        detail
+        Duration.ofMillis(durationMillis)
     )
 }
