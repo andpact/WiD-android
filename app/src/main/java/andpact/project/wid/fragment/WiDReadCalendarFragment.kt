@@ -51,28 +51,27 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDReadCalendarFragment() {
+    // 데이터베이스
     val wiDService = WiDService(context = LocalContext.current)
-    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
+
+    // 날짜
     val today = LocalDate.now()
-
-    // 기간 선택(지난 1년, 2023, 2023 ... ) 용 변수
-    val yearList = listOf("지난 1년") + wiDService.getYearList()
+    val yearList = listOf("최근 1년") + wiDService.getYearList()
     var selectedYear by remember { mutableStateOf(yearList[0]) }
-
-    // 제목 선택(전체, 공부, 노동, ... ) 용 변수
-    var titleMenuExpanded by remember { mutableStateOf(false) }
-    val titles = arrayOf("ALL") + titles
-    var selectedTitle by remember { mutableStateOf("ALL") }
-
-    // WiD List를 불러오기 위한 변수
     var finishDate by remember { mutableStateOf(today) }
     var startDate by remember { mutableStateOf(getDate1yearAgo(finishDate)) }
-    var wiDList by remember { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
-
-    // 특정 기간 및 날짜의 데이터(합계, 평균, 최고, 연속..)를 조회하기 위한 변수
     var selectedDate by remember { mutableStateOf(today) }
     val firstDayOfWeek = selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     val lastDayOfWeek = selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
+
+    // 데이터베이스
+    var wiDList by remember { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+
+    // 제목
+    var titleMenuExpanded by remember { mutableStateOf(false) }
+    val titles = arrayOf("ALL") + titles
+    var selectedTitle by remember { mutableStateOf("ALL") }
 
     // 합계 기록 용 (전체, 각 제목 용), 최초 화면에 필요한 Map, 전체 제목에 사용되니까 selectedTitle 파라미터 필요 없음.
     val dailyAllTitleDurationMap = getDailyAllTitleDurationMap(date = selectedDate, wiDList = wiDList)
@@ -117,7 +116,7 @@ fun WiDReadCalendarFragment() {
                         onClick = {
                             selectedYear = yearList[i]
 
-                            if (selectedYear == "지난 1년") {
+                            if (selectedYear == "최근 1년") {
                                 finishDate = today
                                 startDate = getDate1yearAgo(finishDate)
                             } else if (selectedYear.matches("\\d{4}".toRegex())) {

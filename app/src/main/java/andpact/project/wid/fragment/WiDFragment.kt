@@ -52,6 +52,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableState<Boolean>) {
+    // 데이터베이스
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)
 
@@ -63,40 +64,43 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         return
     }
 
+    // 날짜
     val today: LocalDate = LocalDate.now()
     val date by remember { mutableStateOf(clickedWiD.date) }
-
-    var titleMenuExpanded by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf(clickedWiD.title) }
-
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
 //    val totalMinutes = 24 * 60 // 1440분 (24시간)
 
+    // 데이터베이스
+    val wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
+    var isDeleteButtonPressed by remember { mutableStateOf(false) }
+
+    // 제목
+    var titleMenuExpanded by remember { mutableStateOf(false) }
+    var title by remember { mutableStateOf(clickedWiD.title) }
+
+    // 시작 시간
     var start by remember { mutableStateOf(clickedWiD.start) }
     var showStartPicker by remember { mutableStateOf(false) }
-    val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute)
+    val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
     var isStartOverlap by remember { mutableStateOf(false) }
     var isStartOverCurrentTime by remember { mutableStateOf(false) }
 //    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
 
+    // 종료 시간
     var finish by remember { mutableStateOf(clickedWiD.finish) }
     var showFinishPicker by remember { mutableStateOf(false) }
-    val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute)
+    val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
     var isFinishOverlap by remember { mutableStateOf(false) }
     var isFinishOverCurrentTime by remember { mutableStateOf(false) }
 //    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
 
+    // 소요 시간
     var duration by remember { mutableStateOf(clickedWiD.duration) }
     var isDurationUnderMin by remember { mutableStateOf(false) }
 
+    // 설명
     var detail by remember { mutableStateOf(clickedWiD.detail) }
-
     var isEditing by remember { mutableStateOf(false) }
-
-    var isDeleteButtonPressed by remember { mutableStateOf(false) }
-
-    val wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
-//    val currentIndex = wiDList.indexOf(wiD)
 
     LaunchedEffect(isDeleteButtonPressed) {
         if (isDeleteButtonPressed) {
@@ -339,7 +343,6 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             shadowElevation = 2.dp
                         ) {
                             Row(modifier = Modifier
-                                .fillMaxWidth()
                                 .padding(vertical = 32.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center

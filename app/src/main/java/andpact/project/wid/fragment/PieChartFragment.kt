@@ -114,7 +114,8 @@ fun DayPieChartView(wiDList: List<WiD>) {
 
             Canvas(modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)) {
+                .aspectRatio(1f)
+            ) {
 //                val radius: Float = size.minDimension / 1.9f // 원의 반지름
                 val radius: Float = size.minDimension / 2.0f // 원의 반지름
                 val centerX = center.x

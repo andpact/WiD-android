@@ -47,8 +47,10 @@ fun HorizontalBarChartView(wiDList: List<WiD>) {
 
             // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
             val durationMinutes = wiD.duration.toMinutes().toInt()
-            val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorResource(id = colorMap[wiD.title] ?: R.color.black))
-            barChartData.add(widBarChartData)
+            if (1 <= durationMinutes) { // 1분 이상의 기록만 막대차트로 보여줌.(막대 차트의 weight에 0.1 미만의 작은 값이 들어갈 수 없기때문)
+                val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorResource(id = colorMap[wiD.title] ?: R.color.black))
+                barChartData.add(widBarChartData)
+            }
 
             // 시작 시간 업데이트
             currentMinute = startMinutes + durationMinutes
@@ -110,6 +112,7 @@ data class BarChartData (val value: Float, val color: Color)
 fun HorizontalBarChartViewPreview() {
     val temporaryWiDList = listOf(
         WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofHours(1), "Details 1"),
+//        WiD(1, LocalDate.now(), "STUDY", LocalTime.of(0, 0), LocalTime.of(1, 0), Duration.ofSeconds(60), "Details 1"),
         WiD(1, LocalDate.now(), "ETC", LocalTime.of(3, 0), LocalTime.of(4, 0), Duration.ofHours(1), "Details 1"),
         WiD(1, LocalDate.now(), "STUDY", LocalTime.of(8, 0), LocalTime.of(9, 0), Duration.ofHours(1), "Details 1"),
         WiD(2, LocalDate.now(), "WORK", LocalTime.of(10, 0), LocalTime.of(11, 0), Duration.ofHours(1), "Details 2"),

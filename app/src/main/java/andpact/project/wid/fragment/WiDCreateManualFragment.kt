@@ -36,12 +36,13 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDCreateManualFragment() {
-    // 날짜 관련 변수
+    // 날짜
     val today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
     var isDateAssigned by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis(),
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis(),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return utcTimeMillis <= System.currentTimeMillis()
@@ -53,21 +54,15 @@ fun WiDCreateManualFragment() {
             }
         }
     )
+    val currentTime: LocalTime = LocalTime.now().withSecond(0)
+//    val totalMinutes = 24 * 60 // 1440분 (24시간)
 
-    // WiD List 관련 변수
-    val wiDService = WiDService(context = LocalContext.current)
-    var wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
-
-    // 제목(공부, 노동, ...) 관련 변수
+    // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("STUDY") }
     var isTitleAssigned by remember { mutableStateOf(false) }
 
-    // 시간 관련 변수
-    val currentTime: LocalTime = LocalTime.now().withSecond(0)
-    val totalMinutes = 24 * 60 // 1440분 (24시간)
-
-    // 시작 시간 관련 변수
+    // 시작 시간
     var start by remember { mutableStateOf(currentTime) }
     var isStartAssigned by remember { mutableStateOf(false) }
     var showStartPicker by remember { mutableStateOf(false) }
@@ -76,7 +71,7 @@ fun WiDCreateManualFragment() {
     var isStartOverCurrentTime by remember { mutableStateOf(false) }
 //    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
 
-    // 종료 시간 관련 변수
+    // 종료 시간
     var finish by remember { mutableStateOf(currentTime) }
     var isFinishAssigned by remember { mutableStateOf(false) }
     var showFinishPicker by remember { mutableStateOf(false) }
@@ -85,22 +80,24 @@ fun WiDCreateManualFragment() {
     var isFinishOverCurrentTime by remember { mutableStateOf(false) }
 //    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
 
-    // 소요 시간 관련 변수
+    // 소요 시간
     var duration by remember { mutableStateOf(Duration.ZERO) }
     var durationExist by remember { mutableStateOf(false) }
 
-    // 설명 관련 변수
+    // 설명
     var detail by remember { mutableStateOf("") }
     var detailExist by remember { mutableStateOf(false) }
 
-    // 등록 가능 상태 확인 변수
+    // WiD
+    val wiDService = WiDService(context = LocalContext.current)
+    var wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
     val isWiDAssigned = isDateAssigned && isTitleAssigned && isStartAssigned && isFinishAssigned && durationExist
     val isTimeOverlap = isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime
 
     Box(modifier = Modifier
         .fillMaxSize()
     ) {
-        // 날짜 선택 도구
+        // 날짜 선택
         if (showDatePicker) {
             DatePickerDialog(
                 shape = RoundedCornerShape(8.dp),
@@ -169,7 +166,7 @@ fun WiDCreateManualFragment() {
             }
         }
 
-        // 시작 시간 선택 도구
+        // 시작 시간 선택
         if (showStartPicker) {
             AlertDialog(
                 modifier = Modifier
@@ -251,7 +248,7 @@ fun WiDCreateManualFragment() {
             }
         }
 
-        // 종료 시간 선택 도구
+        // 종료 시간 선택
         if (showFinishPicker) {
             AlertDialog(
                 modifier = Modifier
