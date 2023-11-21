@@ -1,10 +1,7 @@
 package andpact.project.wid.activity
 
 import andpact.project.wid.R
-import andpact.project.wid.fragment.WiDCreateHolderFragment
-import andpact.project.wid.fragment.WiDReadHolderFragment
-import andpact.project.wid.fragment.WiDSearchFragment
-import andpact.project.wid.fragment.WiDView
+import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,9 +10,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -30,11 +25,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // window inset(시스템 네비게이션 바가 차지하는 공간)을 자동이 아닌 수동으로 설정하겠다.
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
@@ -56,8 +53,15 @@ fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableSta
             WiDSearchFragment(navController, buttonsVisible)
         }
         composable(Destinations.WiDViewFragment.route + "/{wiDId}") { backStackEntry ->
-            val wiDId = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
-            WiDView(wiDId = wiDId, navController = navController, buttonsVisible = buttonsVisible)
+            val wiDID = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
+            WiDView(wiDId = wiDID, navController = navController, buttonsVisible = buttonsVisible)
+        }
+        composable(Destinations.DiaryFragment.route + "/{date}") { backStackEntry ->
+            val date = run {
+                val dateString = backStackEntry.arguments?.getString("date") ?: ""
+                LocalDate.parse(dateString)
+            }
+            DiaryFragment(date = date, navController = navController, buttonsVisible = buttonsVisible)
         }
     }
 }
@@ -72,7 +76,8 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
         exit = shrinkVertically{ 0 },
     ) {
         NavigationBar(
-            modifier = modifier.border(1.dp, Color.LightGray)
+            modifier = modifier
+                .border(1.dp, Color.LightGray)
                 .height(55.dp),
             containerColor = Color.White,
         ) {
@@ -118,12 +123,20 @@ fun WiDMainActivity() {
         Scaffold(
             bottomBar = {
                 BottomBar(
+//                    modifier = Modifier
+//                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
+//                        .windowInsetsPadding( // 좀 더 정교한 위와 같은 방식
+//                            WindowInsets.systemBars.only(
+//                                WindowInsetsSides.Vertical
+//                            )
+//                        ),
                     navController = navController,
                     state = buttonsVisible,
                 )
             }) { paddingValues ->
             Box(
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier
+                    .padding(paddingValues)
             ) {
                 NavigationGraph(navController = navController, buttonsVisible = buttonsVisible)
             }
@@ -153,6 +166,9 @@ sealed class Destinations(
     )
     object WiDViewFragment : Destinations(
         route = "wid_view_fragment",
+    )
+    object DiaryFragment : Destinations(
+        route = "diary_fragment",
     )
 }
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -51,7 +52,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
     // 날짜
@@ -66,9 +66,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
-    var diaryContent by remember { mutableStateOf("") }
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val bottomSheetState = rememberModalBottomSheetState()
 
     // 전체 화면
     Column(
@@ -76,103 +73,6 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             .fillMaxSize()
             .padding(horizontal = 16.dp),
     ) {
-        // 다이어리 입력
-        if (openBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { openBottomSheet = false },
-                sheetState = bottomSheetState,
-                containerColor = colorResource(id = R.color.ghost_white)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .navigationBarsPadding(), // 화면 하단의 네비게이션 바(시스템 바) 만큼 패딩을 적용함.
-//                        .windowInsetsPadding(
-//                            WindowInsets.systemBars.only(
-//                                WindowInsetsSides.Vertical
-//                            )
-//                        ),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "다이어리 작성",
-                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        )
-
-                        TextButton(
-                            onClick = {
-                                openBottomSheet = false
-                            },
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_clear_24),
-                                contentDescription = "Clear bottom sheet",
-                                tint = Color.Black
-                            )
-                        }
-                    }
-
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        value = diaryContent,
-                        onValueChange = { diaryContent = it },
-                        placeholder = { Text(text = "내용 입력..") },
-                        minLines = 5,
-                        maxLines = 20,
-                        shape = RectangleShape,
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        TextButton(
-                            modifier = Modifier
-                                .weight(1f),
-//                            .background(
-//                                color = Color.LightGray,
-//                                shape = RoundedCornerShape(8.dp)
-//                            ),
-                            onClick = {
-                                openBottomSheet = false
-                            }
-                        ) {
-                            Text(
-                                text = "취소",
-                                style = TextStyle(color = Color.Black, fontWeight = FontWeight.Bold)
-                            )
-                        }
-
-                        TextButton(
-                            modifier = Modifier
-                                .weight(1f)
-                                .background(
-                                    color = colorResource(id = R.color.deep_sky_blue),
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            onClick = {
-                                openBottomSheet = false
-                            }
-                        ) {
-                            Text(
-                                text = "완료",
-                                style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
         // 날짜
         Row(
             modifier = Modifier
@@ -324,7 +224,9 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                         TextButton(
                             onClick = {
-                                openBottomSheet = !openBottomSheet
+                                navController.navigate(Destinations.DiaryFragment.route + "/${currentDate}")
+
+                                buttonsVisible.value = false
                             },
                         ) {
                             Text(text = "수정")

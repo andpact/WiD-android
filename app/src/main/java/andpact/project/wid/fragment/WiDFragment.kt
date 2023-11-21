@@ -291,10 +291,25 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
             }
         }
 
+        // 전체 화면
         Column(modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
         ) {
+            Row(modifier = Modifier
+                .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                TextButton(
+                    onClick = {
+                        navController.popBackStack()
+                        buttonsVisible.value = true
+                    },
+                ) {
+                    Text(text = "뒤로")
+                }
+            }
+
             Column(modifier = Modifier
                 .weight(1f),
                 verticalArrangement = Arrangement.SpaceEvenly

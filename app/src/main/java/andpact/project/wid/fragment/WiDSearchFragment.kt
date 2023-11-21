@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.WiD
+import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
@@ -19,10 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +47,10 @@ import java.util.*
 
 @Composable
 fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
+    // 다이어리
+    val diaryService = DiaryService(LocalContext.current)
+    val diaryList = remember { diaryService.getAllDiaries() }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,7 +58,52 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "임시 페이지")
+        if (diaryList.isEmpty()) {
+            Text(text = "다이어리가 없습니다.")
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(diaryList.size) { index ->
+                    val diary = diaryList[index]
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = "${diary.date}",
+                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp),
+                                modifier = Modifier
+                                    .padding(bottom = 8.dp)
+                            )
+
+                            Text(
+                                text = diary.title,
+                                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp),
+                                modifier = Modifier
+                                    .padding(bottom = 8.dp)
+                            )
+
+                            Text(
+                                text = diary.content,
+                                style = TextStyle(fontSize = 16.sp),
+                                modifier = Modifier
+                                    .padding(bottom = 8.dp)
+                            )
+                            // 필요에 따라 다른 다이어리 정보를 추가로 표시할 수 있습니다.
+                        }
+                    }
+                }
+            }
+        }
     }
 //    val wiDService = WiDService(context = LocalContext.current)
 //
