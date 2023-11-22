@@ -42,7 +42,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
-    NavHost(navController = navController, startDestination = Destinations.WiDCreateHolderFragment.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Destinations.WiDCreateHolderFragment.route
+    ) {
         composable(Destinations.WiDCreateHolderFragment.route) {
             WiDCreateHolderFragment(buttonsVisible)
         }
@@ -80,6 +83,7 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
                 .border(1.dp, Color.LightGray)
                 .height(55.dp),
             containerColor = Color.White,
+//            containerColor = colorResource(id = R.color.ghost_white),
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
@@ -104,8 +108,10 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        unselectedTextColor = Color.LightGray, selectedTextColor = Color.Black,
-                        unselectedIconColor = Color.LightGray, selectedIconColor = Color.Black,
+                        unselectedTextColor = Color.LightGray,
+                        selectedTextColor = Color.Black,
+                        unselectedIconColor = Color.LightGray,
+                        selectedIconColor = Color.Black,
                         indicatorColor = colorResource(id = R.color.transparent)
                     ),
                 )

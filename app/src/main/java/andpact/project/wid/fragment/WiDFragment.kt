@@ -108,7 +108,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         }
     }
 
-    BackHandler(enabled = true) { // 휴대폰 뒤로 가기 버튼 클릭 시
+    // 휴대폰 뒤로 가기 버튼 클릭 시
+    BackHandler(enabled = true) {
         navController.popBackStack()
         buttonsVisible.value = true
     }
@@ -294,7 +295,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         // 전체 화면
         Column(modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         ) {
             Row(modifier = Modifier
                 .fillMaxWidth(),
@@ -306,7 +307,11 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         buttonsVisible.value = true
                     },
                 ) {
-                    Text(text = "뒤로")
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
                 }
             }
 

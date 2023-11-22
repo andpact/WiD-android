@@ -220,7 +220,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //                // The current date is the same as the previous one, continue to the next date.
 //                continue
 //            }
-        else {
+            else {
                 // The current date breaks the range.
                 if (currentRangeStart != null && currentRangeEnd != null) {
                     // Update the longest range if necessary.

@@ -107,7 +107,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 modifier = Modifier
                     .weight(1f),
                 text = dateText,
-                style = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                style = TextStyle(textAlign = TextAlign.Center)
             )
 
             IconButton(
@@ -157,7 +157,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "⭕️ 파이 차트",
+                        text = "시간 기록",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 
@@ -193,12 +193,19 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                                 Text(
                                     text = "${getDailyTotalDurationPercentage(wiDList = wiDList)}%",
-                                    style = TextStyle(fontSize = 40.sp, color = if (wiDList.isEmpty()) { Color.Gray } else { Color.Unspecified }, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                                    style = TextStyle(
+                                        fontSize = 40.sp,
+                                        color = if (wiDList.isEmpty()) { Color.Gray } else { Color.Unspecified },
+                                        fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                                    )
                                 )
 
                                 Text(
                                     text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getDailyTotalDuration(wiDList = wiDList), mode = 1)} / 24시간" },
-                                    style = TextStyle(fontSize = 12.sp, color = Color.Gray)
+                                    style = TextStyle(
+                                        fontSize = 12.sp,
+                                        color = Color.Gray
+                                    )
                                 )
                             }
                         }
@@ -211,27 +218,10 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "다이어리",
-                            style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                        )
-
-                        TextButton(
-                            onClick = {
-                                navController.navigate(Destinations.DiaryFragment.route + "/${currentDate}")
-
-                                buttonsVisible.value = false
-                            },
-                        ) {
-                            Text(text = "수정")
-                        }
-                    }
+                    Text(
+                        text = "다이어리",
+                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                    )
 
                     Surface(
                         modifier = Modifier
@@ -240,18 +230,17 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         shape = RoundedCornerShape(8.dp),
                         shadowElevation = 2.dp
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                        ) {
-                            if (diary == null) {
+                        if (diary == null) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                            ) {
                                 Icon(
                                     modifier = Modifier
                                         .scale(0.8f)
-                                        .padding(vertical = 16.dp),
+                                        .padding(vertical = 32.dp),
                                     painter = painterResource(id = R.drawable.outline_textsms_24),
                                     contentDescription = "No diary content",
                                     tint = Color.Gray
@@ -259,14 +248,48 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                                 Text(
                                     modifier = Modifier
-                                        .padding(vertical = 16.dp),
+                                        .padding(vertical = 32.dp),
                                     text = "이 날의 다이어리를 작성해 보세요.",
                                     style = TextStyle(color = Color.Gray)
                                 )
-                            } else {
-                                Text(diary.content)
+                            }
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = diary.title,
+                                    style = TextStyle(fontWeight = FontWeight.Bold),
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
+                                Text(
+                                    text = diary.content,
+                                    maxLines = 5
+                                )
                             }
                         }
+                    }
+
+                    TextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = colorResource(id = R.color.lime_green),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        onClick = {
+                            navController.navigate(Destinations.DiaryFragment.route + "/${currentDate}")
+
+                            buttonsVisible.value = false
+                        },
+                    ) {
+                        Text(
+                            text = "다이어리 수정",
+                            style = TextStyle(color = Color.White)
+                        )
                     }
                 }
             }
@@ -277,7 +300,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "합계",
+                        text = "합계 기록",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 
@@ -290,7 +313,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     ) {
                         Column(
                             modifier = Modifier
-                                .padding(8.dp),
+                                .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             if (dailyAllTitleDurationMap.isEmpty()) {
@@ -302,6 +325,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 ) {
                                     Icon(
                                         modifier = Modifier
+                                            .padding(vertical = 32.dp)
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         contentDescription = "No day total",
@@ -309,6 +333,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     )
 
                                     Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp),
                                         text = "표시할 합계 기록이 없습니다.",
                                         style = TextStyle(color = Color.Gray)
                                     )
@@ -318,64 +344,30 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(
-                                            text = titleMap[title] ?: title,
-                                            style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                                        )
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(text = titleMap[title] ?: title)
 
-                                        Box(
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .size(10.dp)
-                                                .background(
-                                                    color = colorResource(
-                                                        id = colorMap[title] ?: R.color.light_gray
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(CircleShape)
+                                                    .size(10.dp)
+                                                    .background(
+                                                        color = colorResource(
+                                                            id = colorMap[title] ?: R.color.light_gray
+                                                        )
                                                     )
-                                                )
-                                        )
+                                            )
+                                        }
 
-                                        Spacer(modifier = Modifier.weight(1f))
-
-                                        Text(
-                                            text = formatDuration(dayTotal, mode = 2),
-                                            style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                                        )
+                                        Text(text = formatDuration(dayTotal, mode = 2))
                                     }
                                 }
                             }
-                        }
-                    }
-                }
-            }
-
-            item {
-                // 비율
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "⭕️ 비율",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                        )
-                    )
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = Color.White,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 2.dp
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = "비율표시")
                         }
                     }
                 }
@@ -387,7 +379,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "📜 WiD 리스트",
+                        text = "WiD 리스트",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 
@@ -407,12 +399,13 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(vertical = 8.dp),
+                                        .padding(vertical = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                 ) {
                                     Icon(
                                         modifier = Modifier
+                                            .padding(vertical = 32.dp)
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         tint = Color.Gray,
@@ -420,6 +413,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     )
 
                                     Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp),
                                         text = "표시할 WiD가 없습니다.",
                                         style = TextStyle(color = Color.Gray)
                                     )
@@ -443,7 +438,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 ) {
                                     Column(
                                         modifier = Modifier
-                                            .padding(8.dp)
+                                            .padding(16.dp)
                                             .clickable {
                                                 navController.navigate(Destinations.WiDViewFragment.route + "/${wiD.id}")
                                                 buttonsVisible.value = false

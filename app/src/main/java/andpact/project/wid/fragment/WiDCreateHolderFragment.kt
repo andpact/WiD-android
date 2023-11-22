@@ -55,9 +55,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "스톱워치",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "스톱워치")
                     }
                 )
 
@@ -70,9 +68,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "타이머",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "타이머")
                     }
                 )
 
@@ -85,9 +81,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "직접 입력",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "직접 입력")
                     }
                 )
             }

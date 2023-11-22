@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -39,6 +40,8 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     fun createDiary(diary: Diary): Long {
+        Log.d("DiaryService", "createDiary executed")
+
         val db = writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_DATE, diary.date.toString())
@@ -84,12 +87,11 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
         val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ?"
         val selectionArgs = arrayOf(date.toString())
-
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
         var diary: Diary? = null
 
-        return with(cursor) {
+        with(cursor) {
             if (moveToFirst()) {
                 val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
                 val storedDate = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
@@ -98,17 +100,21 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
                 diary = Diary(id, storedDate, title, content)
             }
-
             close()
-            diary
         }
+
+        db.close()
+
+        return diary
     }
 
     fun getAllDiaries(): List<Diary> {
-        val diaries = mutableListOf<Diary>()
-        val selectQuery = "SELECT * FROM $TABLE_NAME"
         val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME"
         val cursor = db.rawQuery(selectQuery, null)
+
+        val diaries = mutableListOf<Diary>()
 
         with(cursor) {
             while (moveToNext()) {
@@ -123,6 +129,8 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             close()
         }
 
+        db.close()
+
         return diaries
     }
 
@@ -134,11 +142,20 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             put(COLUMN_CONTENT, content)
         }
 
-        return db.update(TABLE_NAME, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
+        val rowID = db.update(TABLE_NAME, values, "$COLUMN_ID = ?", arrayOf(id.toString()))
+
+        db.close()
+
+        return rowID
     }
 
     fun deleteDiary(id: Long): Int {
         val db = writableDatabase
-        return db.delete(TABLE_NAME, "$COLUMN_ID = ?", arrayOf(id.toString()))
+
+        val rowID = db.delete(TABLE_NAME, "$COLUMN_ID = ?", arrayOf(id.toString()))
+
+        db.close()
+
+        return rowID
     }
 }

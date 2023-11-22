@@ -24,7 +24,7 @@ val titleMap = mapOf(
     "MEAL" to "식사",
     "SHOWER" to "샤워",
     "TRAVEL" to "이동",
-    "SLEEP" to "취침",
+    "SLEEP" to "수면",
     "ETC" to "기타"
 )
 

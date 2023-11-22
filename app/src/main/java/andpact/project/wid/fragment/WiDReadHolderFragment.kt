@@ -56,9 +56,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "날짜 별 기록",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "날짜 별 기록")
                     }
                 )
 
@@ -71,9 +69,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "기간 별 기록",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                        Text(text = "기간 별 기록")
                     }
                 )
             }
@@ -82,7 +78,8 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
         HorizontalPager(state = pagerState) {page ->
             when (page) {
                 0 -> WiDReadDayFragment(navController = navController, buttonsVisible = buttonsVisible)
-                1 -> WiDReadCalendarFragment()
+//                1 -> WiDReadCalendarFragment()
+                1 -> PeriodBasedFragment()
             }
         }
     }
