@@ -6,10 +6,10 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import java.time.*
-import java.time.format.DateTimeFormatter
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjusters
 
 class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {

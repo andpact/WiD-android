@@ -7,8 +7,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 import java.time.Duration
-import java.time.LocalDate
-import java.time.YearMonth
 
 import java.text.SimpleDateFormat
 import java.util.*
@@ -165,15 +163,4 @@ fun formatDuration(duration: Duration, mode: Int): String {
         }
         else -> throw IllegalArgumentException("Invalid mode value")
     }
-}
-
-fun getFirstDayOfMonth(date: LocalDate): LocalDate {
-    val yearMonth = YearMonth.from(date)
-    return yearMonth.atDay(1)
-}
-
-fun getDate1yearAgo(date: LocalDate): LocalDate {
-    val oneYearAgo = date.minusDays(364)
-//    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-    return oneYearAgo
 }

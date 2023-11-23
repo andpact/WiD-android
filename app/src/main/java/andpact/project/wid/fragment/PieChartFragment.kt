@@ -33,7 +33,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun DayPieChartView(wiDList: List<WiD>) {
+fun DateBasedPieChartFragment(wiDList: List<WiD>) {
     val context = LocalContext.current // 폰트 불러오기 위해 선언함.
 
     val pieEntries = mutableListOf<PieEntry>()
@@ -146,7 +146,7 @@ fun DayPieChartView(wiDList: List<WiD>) {
 }
 
 @Composable
-fun CalendarPieChartView(date: LocalDate, wiDList: List<WiD>) {
+fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
     val pieEntries = mutableListOf<PieEntry>()
 
     val totalMinutes = 24 * 60 // 1440분(24시간)
@@ -264,6 +264,6 @@ fun CalendarPieChartView(date: LocalDate, wiDList: List<WiD>) {
 
 @Preview(showBackground = true)
 @Composable
-fun DayPieChartViewPreview() {
-    DayPieChartView(emptyList())
+fun DateBasedPieChartFragmentPreview() {
+    DateBasedPieChartFragment(emptyList())
 }

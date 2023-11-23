@@ -28,7 +28,46 @@ val titleMap = mapOf(
     "ETC" to "기타"
 )
 
+val titlesWithAll = arrayOf(
+    "ALL", // 전체
+    "STUDY", // 공부
+    "WORK", // 노동
+    "EXERCISE", // 운동
+    "HOBBY", // 취미
+    "PLAY", // 놀기
+    "MEAL", // 식사
+    "SHOWER", // 샤워
+    "TRAVEL", // 이동
+    "SLEEP", // 취침
+    "ETC" // 기타
+)
+
+val titleMapWithAll = mapOf(
+    "ALL" to "전체",
+    "STUDY" to "공부",
+    "WORK" to "노동",
+    "EXERCISE" to "운동",
+    "HOBBY" to "취미",
+    "PLAY" to "놀기",
+    "MEAL" to "식사",
+    "SHOWER" to "샤워",
+    "TRAVEL" to "이동",
+    "SLEEP" to "수면",
+    "ETC" to "기타"
+)
+
+val periods = arrayOf(
+    "WEEK",
+    "MONTH"
+)
+
+val periodMap = mapOf(
+    "WEEK" to "일주일",
+    "MONTH" to "한달",
+)
+
 val colorMap = mapOf(
+    "ALL" to R.color.light_gray,
     "STUDY" to R.color.study_color,
     "WORK" to R.color.work_color,
     "EXERCISE" to R.color.exercise_color,
@@ -41,7 +80,7 @@ val colorMap = mapOf(
     "ETC" to R.color.etc_color
 )
 
-val daysOfWeek = listOf(
+val daysOfWeekFromSunday = listOf(
     "일",
     "월",
     "화",
@@ -49,4 +88,14 @@ val daysOfWeek = listOf(
     "목",
     "금",
     "토"
+)
+
+val daysOfWeekFromMonday = listOf(
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
 )

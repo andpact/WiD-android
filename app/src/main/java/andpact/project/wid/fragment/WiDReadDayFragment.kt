@@ -61,94 +61,24 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
     val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
-    val dailyAllTitleDurationMap = getDailyAllTitleDurationMap(date = currentDate, wiDList = wiDList)
 
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
 
+    // 합계
+    val totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+
     // 전체 화면
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .fillMaxSize(),
     ) {
-        // 날짜
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = "WiD",
-                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
-            )
-
-            val dateText = buildAnnotatedString {
-                currentDate.let {
-                    append(it.format(DateTimeFormatter.ofPattern("M월 d일 (")))
-                    withStyle(
-                        style = SpanStyle(
-                            color = when (it.dayOfWeek) {
-                                DayOfWeek.SATURDAY -> Color.Blue
-                                DayOfWeek.SUNDAY -> Color.Red
-                                else -> Color.Black
-                            }
-                        )
-                    ) {
-                        append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                    }
-                    append(")")
-                }
-            }
-
-            Text(
-                modifier = Modifier
-                    .weight(1f),
-                text = dateText,
-                style = TextStyle(textAlign = TextAlign.Center)
-            )
-
-            IconButton(
-                onClick = {
-                    currentDate = today
-                },
-                enabled = currentDate != today,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Today"
-                )
-            }
-
-            IconButton(
-                onClick = {
-                    currentDate = currentDate.minusDays(1)
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "Previous day"
-                )
-            }
-
-            IconButton(
-                onClick = {
-                    currentDate = currentDate.plusDays(1)
-                },
-                enabled = currentDate != today
-            ) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Next day"
-                )
-            }
-        }
-
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(32.dp) // item 간에 32.Dp의 공간이 설정됨.
         ) {
             item {
@@ -176,7 +106,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 modifier = Modifier
                                     .weight(2f)
                             ) {
-                                DayPieChartView(wiDList = wiDList)
+                                DateBasedPieChartFragment(wiDList = wiDList)
                             }
 
                             Column(
@@ -187,12 +117,12 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "기록된 시간",
+                                    text = "기록률",
                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                 )
 
                                 Text(
-                                    text = "${getDailyTotalDurationPercentage(wiDList = wiDList)}%",
+                                    text = "${getTotalDurationPercentage(wiDList = wiDList)}%",
                                     style = TextStyle(
                                         fontSize = 40.sp,
                                         color = if (wiDList.isEmpty()) { Color.Gray } else { Color.Unspecified },
@@ -201,7 +131,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 )
 
                                 Text(
-                                    text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getDailyTotalDuration(wiDList = wiDList), mode = 1)} / 24시간" },
+                                    text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getTotalDuration(wiDList = wiDList), mode = 1)} / 24시간" },
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         color = Color.Gray
@@ -316,7 +246,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            if (dailyAllTitleDurationMap.isEmpty()) {
+                            if (totalDurationMap.isEmpty()) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth(),
@@ -340,7 +270,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     )
                                 }
                             } else {
-                                for ((title, dayTotal) in dailyAllTitleDurationMap) {
+                                for ((title, totalDuration) in totalDurationMap) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth(),
@@ -348,6 +278,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Row(
+                                            verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Text(text = titleMap[title] ?: title)
@@ -364,7 +295,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                             )
                                         }
 
-                                        Text(text = formatDuration(dayTotal, mode = 2))
+                                        Text(text = formatDuration(totalDuration, mode = 2))
                                     }
                                 }
                             }
@@ -555,6 +486,63 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         }
                     }
                 }
+            }
+        }
+
+        // 날짜 표시 및 버튼
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .border(1.dp, Color.LightGray),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        ) {
+            Text(
+                text = "WiD",
+                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
+            )
+
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = getDayString(date = currentDate),
+                style = TextStyle(textAlign = TextAlign.Center)
+            )
+
+            IconButton(
+                onClick = {
+                    currentDate = today
+                },
+                enabled = currentDate != today,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "Today"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    currentDate = currentDate.minusDays(1)
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "Previous day"
+                )
+            }
+
+            IconButton(
+                onClick = {
+                    currentDate = currentDate.plusDays(1)
+                },
+                enabled = currentDate != today
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Next day"
+                )
             }
         }
     }
