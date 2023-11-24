@@ -67,7 +67,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
 
     // 합계
-    val totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+    val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
 
     // 전체 화면
     Column(
@@ -122,7 +122,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 )
 
                                 Text(
-                                    text = "${getTotalDurationPercentage(wiDList = wiDList)}%",
+                                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
                                     style = TextStyle(
                                         fontSize = 40.sp,
                                         color = if (wiDList.isEmpty()) { Color.Gray } else { Color.Unspecified },
@@ -131,7 +131,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 )
 
                                 Text(
-                                    text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getTotalDuration(wiDList = wiDList), mode = 1)} / 24시간" },
+                                    text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간" },
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         color = Color.Gray

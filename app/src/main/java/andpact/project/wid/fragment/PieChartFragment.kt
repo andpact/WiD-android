@@ -188,6 +188,7 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
+
                     setUsePercentValues(false) // Use absolute values
                     description.isEnabled = false // Disable description
                     legend.isEnabled = false // Disable legend

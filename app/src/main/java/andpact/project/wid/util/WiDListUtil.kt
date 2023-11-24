@@ -7,18 +7,18 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 
-fun getTotalDuration(wiDList: List<WiD>): Duration {
+fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
     return wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO
 }
 
-fun getTotalDurationPercentage(wiDList: List<WiD>): Int {
+fun getTotalDurationPercentageFromWiDList(wiDList: List<WiD>): Int {
     val totalMinutes = 24 * 60 // 1440분 (24시간)
     val totalDuration = (wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO).toMinutes().toInt()
 
     return (totalDuration * 100) / totalMinutes
 }
 
-fun getTotalDurationMap(wiDList: List<WiD>): Map<String, Duration> {
+fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
     val result = mutableMapOf<String, Duration>()
 
     for (wiD in wiDList) {
@@ -39,6 +39,25 @@ fun getTotalDurationMap(wiDList: List<WiD>): Map<String, Duration> {
 
     // 정렬된 결과를 새로운 Map으로 반환
     return sortedResult.associate { it.toPair() }
+}
+
+fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
+    val result = mutableMapOf<LocalDate, Duration>()
+
+    for (wiD in wiDList) {
+        val date = wiD.date
+        val duration = wiD.duration
+
+        // 날짜 별로 소요 시간을 누적
+        val totalDuration = result[date]
+        if (totalDuration != null) {
+            result[date] = totalDuration.plus(duration)
+        } else {
+            result[date] = duration
+        }
+    }
+
+    return result
 }
 
 //fun getWeeklyAllTitleDurationMap(date: LocalDate, wiDList: List<WiD>): Map<String, Duration> {

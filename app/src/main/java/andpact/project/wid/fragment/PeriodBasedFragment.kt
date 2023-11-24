@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.Diary
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
 import androidx.compose.foundation.background
@@ -52,10 +53,6 @@ fun PeriodBasedFragment() {
     var startDate by remember { mutableStateOf(getFirstDayOfWeek(today)) }
     var finishDate by remember { mutableStateOf(getLastDayOfWeek(today)) }
 
-    // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    var wiDList = remember(startDate, finishDate) { wiDService.readWiDListByDateRange(startDate, finishDate) }
-//    var wiDList by remember { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
 
     // 제목
     val coroutineScope = rememberCoroutineScope()
@@ -63,13 +60,20 @@ fun PeriodBasedFragment() {
     var showTitleBottomSheet by rememberSaveable { mutableStateOf(false) }
     val titleBottomSheetState = rememberModalBottomSheetState()
 
+    // WiD
+    val wiDService = WiDService(context = LocalContext.current)
+//    var wiDList = remember(startDate, finishDate) { wiDService.readWiDListByDateRange(startDate, finishDate) }
+    var wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+    var filteredWiDListByTitle by remember(wiDList, selectedTitle) { mutableStateOf(wiDList.filter { it.title == selectedTitle }) }
+
     // 기간
     var selectedPeriod by remember { mutableStateOf(periods[0]) }
     var showPeriodBottomSheet by rememberSaveable { mutableStateOf(false) }
     val periodBottomSheetState = rememberModalBottomSheetState()
 
     // 합계
-    var totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//    var totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+    var totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
 
 //    LaunchedEffect(Unit) {
 //        titleBottomSheetState.hide()
@@ -88,6 +92,7 @@ fun PeriodBasedFragment() {
                     }
                 }
             },
+            containerColor = Color.White,
             sheetState = titleBottomSheetState,
             dragHandle = null,
         ) {
@@ -140,25 +145,27 @@ fun PeriodBasedFragment() {
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .clickable {
+                                // 기존 제목과 다른 제목을 선택하면 selectedTitle이 갱신됨.
+                                if (selectedTitle != titlesWithAll[if (1 < index) index - 1 else index]) {
+                                    selectedTitle = titlesWithAll[if (1 < index) index - 1 else index]
+
+//                                    filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
+                                }
+
+                                coroutineScope.launch {
+                                    titleBottomSheetState.hide()
+
+                                    if (!titleBottomSheetState.isVisible) {
+                                        showTitleBottomSheet = false
+                                    }
+                                }
+                            },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
-                            modifier = Modifier
-                                .clickable {
-                                    // 기존 제목을 다시 선택하면 반응 없도록 해야함.
-
-                                    selectedTitle = titlesWithAll[if (1 < index) index - 1 else index]
-
-                                    coroutineScope.launch {
-                                        titleBottomSheetState.hide()
-
-                                        if (!titleBottomSheetState.isVisible) {
-                                            showTitleBottomSheet = false
-                                        }
-                                    }
-                                },
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -180,7 +187,12 @@ fun PeriodBasedFragment() {
                         RadioButton(
                             selected = selectedTitle == titlesWithAll[if (1 < index) index - 1 else index],
                             onClick = { // 라디오 버튼도 온 클릭을 지정해줘야 함.
-                                selectedTitle = titlesWithAll[if (1 < index) index - 1 else index]
+                                // 기존 제목과 다른 제목을 선택하면 selectedTitle이 갱신됨.
+                                if (selectedTitle != titlesWithAll[if (1 < index) index - 1 else index]) {
+                                    selectedTitle = titlesWithAll[if (1 < index) index - 1 else index]
+
+//                                    filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
+                                }
 
                                 coroutineScope.launch {
                                     titleBottomSheetState.hide()
@@ -213,6 +225,7 @@ fun PeriodBasedFragment() {
                     }
                 }
             },
+            containerColor = Color.White,
             sheetState = periodBottomSheetState,
             dragHandle = null
         ) {
@@ -264,6 +277,14 @@ fun PeriodBasedFragment() {
                             .clickable {
                                 // 선택된 기간을 다시 누르면 아무 반응 없도록.
                                 if (selectedPeriod == periods[index]) {
+                                    coroutineScope.launch {
+                                        periodBottomSheetState.hide()
+
+                                        if (!periodBottomSheetState.isVisible) {
+                                            showPeriodBottomSheet = false
+                                        }
+                                    }
+
                                     return@clickable
                                 }
 
@@ -277,8 +298,10 @@ fun PeriodBasedFragment() {
                                     finishDate = getLastDayOfMonth(today)
                                 }
 
-                                wiDList = wiDService.readWiDListByDateRange(startDate, finishDate)
-                                totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//                                wiDList = wiDService.readWiDListByDateRange(startDate, finishDate)
+//                                totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+
+//                                filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
 
                                 coroutineScope.launch {
                                     periodBottomSheetState.hide()
@@ -298,6 +321,14 @@ fun PeriodBasedFragment() {
                             onClick = {
                                 // 선택된 기간을 다시 누르면 아무 반응 없도록.
                                 if (selectedPeriod == periods[index]) {
+                                    coroutineScope.launch {
+                                        periodBottomSheetState.hide()
+
+                                        if (!periodBottomSheetState.isVisible) {
+                                            showPeriodBottomSheet = false
+                                        }
+                                    }
+
                                     return@RadioButton
                                 }
 
@@ -311,8 +342,10 @@ fun PeriodBasedFragment() {
                                     finishDate = getLastDayOfMonth(today)
                                 }
 
-                                wiDList = wiDService.readWiDListByDateRange(startDate, finishDate)
-                                totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//                                wiDList = wiDService.readWiDListByDateRange(startDate, finishDate)
+//                                totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+
+//                                filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
 
                                 coroutineScope.launch {
                                     periodBottomSheetState.hide()
@@ -341,8 +374,8 @@ fun PeriodBasedFragment() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
                 .border(1.dp, Color.LightGray)
+                .padding(horizontal = 16.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -455,42 +488,8 @@ fun PeriodBasedFragment() {
                     shape = RoundedCornerShape(8.dp),
                     shadowElevation = 2.dp
                 ) {
-                    Column { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                        ) {
-                            if (selectedPeriod == periods[0]) {
-                                daysOfWeekFromMonday.forEachIndexed { index, day ->
-                                    val textColor = when (index) {
-                                        5 -> Color.Blue // "토"의 인덱스는 5
-                                        6 -> Color.Red  // "일"의 인덱스는 6
-                                        else -> Color.Unspecified
-                                    }
-
-                                    Text(
-                                        text = day,
-                                        modifier = Modifier.weight(1f),
-                                        style = TextStyle(textAlign = TextAlign.Center, color = textColor)
-                                    )
-                                }
-                            } else if (selectedPeriod == periods[1]) {
-                                daysOfWeekFromSunday.forEachIndexed { index, day ->
-                                    val textColor = when (index) {
-                                        0 -> Color.Red  // "일"의 인덱스는 0
-                                        6 -> Color.Blue // "토"의 인덱스는 6
-                                        else -> Color.Unspecified
-                                    }
-
-                                    Text(
-                                        text = day,
-                                        modifier = Modifier.weight(1f),
-                                        style = TextStyle(textAlign = TextAlign.Center, color = textColor)
-                                    )
-                                }
-                            }
-
+                    if (selectedTitle == titlesWithAll[0]) { // 제목이 "전체" 일 때 파이차트 표시
+                        Column { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -514,135 +513,130 @@ fun PeriodBasedFragment() {
                                     )
                                 }
                             }
-                        }
 
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                            columns = GridCells.Fixed(7)
-                        ) {
-                            if (selectedPeriod == periods[1]) {
-                                items(startDate.dayOfWeek.value % 7) {
-                                    // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                            LazyVerticalGrid(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                columns = GridCells.Fixed(7)
+                            ) {
+                                if (selectedPeriod == periods[1]) {
+                                    items(startDate.dayOfWeek.value % 7) {
+                                        // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                    }
+                                }
+
+                                items(ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) { index: Int ->
+                                    val indexDate = startDate.plusDays(index.toLong())
+                                    val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
+
+                                    PeriodBasedPieChartFragment(date = indexDate, wiDList = filteredWiDListByDate)
                                 }
                             }
-
-                            items(ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) { index: Int ->
-                                val indexDate = startDate.plusDays(index.toLong())
-                                val filteredWiDList = wiDList.filter { it.date == indexDate }
-
-                                PeriodBasedPieChartFragment(date = indexDate, wiDList = filteredWiDList)
-                            }
                         }
+                    } else { // 제목이 "전체"가 아닐 때
+                        LineChartFragment(wiDList = filteredWiDListByTitle, startDate = startDate, finishDate = finishDate)
                     }
                 }
             }
 
             item {
-                // 합계
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "합계 기록",
-                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
-                    )
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        color = Color.White,
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 2.dp
+                if (selectedTitle == titlesWithAll[0]) {
+                    // 합계
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (totalDurationMap.isEmpty()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp)
-                                            .scale(0.8f),
-                                        painter = painterResource(id = R.drawable.outline_textsms_24),
-                                        contentDescription = "No week total",
-                                        tint = Color.Gray
-                                    )
+                        Text(
+                            text = "합계 기록",
+                            style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                        )
 
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp),
-                                        text = "표시할 합계 기록이 없습니다.",
-                                        style = TextStyle(color = Color.Gray)
-                                    )
-                                }
-                            } else {
-                                for ((title, totalDuration) in totalDurationMap) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = Color.White,
+                            shape = RoundedCornerShape(8.dp),
+                            shadowElevation = 2.dp
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (totalDurationMap.isEmpty()) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                     ) {
+                                        Icon(
+                                            modifier = Modifier
+                                                .padding(vertical = 32.dp)
+                                                .scale(0.8f),
+                                            painter = painterResource(id = R.drawable.outline_textsms_24),
+                                            contentDescription = "No week total",
+                                            tint = Color.Gray
+                                        )
+
+                                        Text(
+                                            modifier = Modifier
+                                                .padding(vertical = 32.dp),
+                                            text = "표시할 합계 기록이 없습니다.",
+                                            style = TextStyle(color = Color.Gray)
+                                        )
+                                    }
+                                } else {
+                                    for ((title, totalDuration) in totalDurationMap) {
                                         Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Text(text = titleMap[title] ?: title)
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Text(text = titleMap[title] ?: title)
 
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .size(10.dp)
-                                                    .background(
-                                                        color = colorResource(
-                                                            id = colorMap[title]
-                                                                ?: R.color.light_gray
+                                                Box(
+                                                    modifier = Modifier
+                                                        .clip(CircleShape)
+                                                        .size(10.dp)
+                                                        .background(
+                                                            color = colorResource(
+                                                                id = colorMap[title]
+                                                                    ?: R.color.light_gray
+                                                            )
                                                         )
-                                                    )
-                                            )
-                                        }
+                                                )
+                                            }
 
-                                        Text(text = formatDuration(totalDuration, mode = 2))
+                                            Text(text = formatDuration(totalDuration, mode = 2))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    Text("각 제목별 데이터")
                 }
             }
-
-//            item {
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Text(text = getDayString(date = startDate))
-//
-//                    Text(text = getDayString(date = finishDate))
-//                }
-//            }
         }
 
         // 기간 표시 및 버튼
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .border(1.dp, Color.LightGray),
+                .border(1.dp, Color.LightGray)
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
+                modifier = Modifier
+                    .weight(1f),
                 text = when (selectedPeriod) {
                     periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
                     periods[1] -> getMonthString(date = startDate)
@@ -665,8 +659,10 @@ fun PeriodBasedFragment() {
                             }
                         }
 
-                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
-                        totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
+//                        totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+
+//                        filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
                     },
                     enabled = when (selectedPeriod) {
                         periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
@@ -693,8 +689,10 @@ fun PeriodBasedFragment() {
                             }
                         }
 
-                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
-                        totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
+//                        totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+
+//                        filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
                     },
                 ) {
                     Icon(
@@ -716,8 +714,10 @@ fun PeriodBasedFragment() {
                             }
                         }
 
-                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
-                        totalDurationMap = getTotalDurationMap(wiDList = wiDList)
+//                        wiDList = wiDService.readWiDListByDateRange(startDate = startDate, finishDate = finishDate)
+//                        totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+
+//                        filteredWiDListByTitle = wiDList.filter { it.title == selectedTitle }
                     },
                     enabled = when (selectedPeriod) {
                         periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
