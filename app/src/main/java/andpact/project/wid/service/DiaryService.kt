@@ -108,6 +108,37 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         return diary
     }
 
+    fun getDiaryListByContent(content: String): List<Diary> {
+        if (content.isBlank()) {
+            return emptyList()
+        }
+
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_CONTENT LIKE ?"
+        val selectionArgs = arrayOf("%$content%")
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+        val diaryList = mutableListOf<Diary>()
+
+        with(cursor) {
+            while (moveToNext()) {
+                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                val storedDate = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val storedContent = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
+
+                val diary = Diary(id, storedDate, title, storedContent)
+                diaryList.add(diary)
+            }
+            close()
+        }
+
+        db.close()
+
+        return diaryList
+    }
+
     fun getAllDiaries(): List<Diary> {
         val db = readableDatabase
 

@@ -328,7 +328,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "막대 그래프",
+                            Text(text = "시간 그래프",
                                 style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                             )
 

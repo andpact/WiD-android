@@ -343,7 +343,7 @@ fun WiDCreateManualFragment() {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         // 가로 막대 차트
-                        Text(text = "📊 막대 그래프",
+                        Text(text = "시간 그래프",
                             style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                         )
 
@@ -435,7 +435,7 @@ fun WiDCreateManualFragment() {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // New WiD
-                    Text(text = "🆕 새로운 WiD",
+                    Text(text = "새로운 WiD",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 

@@ -34,7 +34,7 @@ import kotlin.math.sin
 
 @Composable
 fun DateBasedPieChartFragment(wiDList: List<WiD>) {
-    val context = LocalContext.current // 폰트 불러오기 위해 선언함.
+    val localContext = LocalContext.current // 폰트 불러오기 위해 선언함.
 
     val pieEntries = mutableListOf<PieEntry>()
 
@@ -79,6 +79,9 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     setUsePercentValues(false) // Use absolute values
                     description.isEnabled = false // Disable description
                     legend.isEnabled = false // Disable legend
+
+                    animateX(500)
+                    animateY(500)
 
                     setDrawEntryLabels(false)
                     setTouchEnabled(false) // Disable touch gestures for zooming
@@ -125,7 +128,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     color = Color.Black.toArgb()
                     textSize = 30f
                     textAlign = Paint.Align.CENTER
-                    typeface = ResourcesCompat.getFont(context, R.font.agbalumo_regular)
+                    typeface = ResourcesCompat.getFont(localContext, R.font.agbalumo_regular)
                 }
 
                 for (i in 0 until 24) {
@@ -181,13 +184,15 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
+        // Crossfade 적용 안하면 차트 갱신이 안된다.
         Crossfade(targetState = pieEntries) { pieEntries ->
             AndroidView(factory = { context ->
                 PieChart(context).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
+                    // 설정
+                    layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+                    animateX(500)
+                    animateY(500)
 
                     setUsePercentValues(false) // Use absolute values
                     description.isEnabled = false // Disable description

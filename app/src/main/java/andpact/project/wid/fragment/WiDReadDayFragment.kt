@@ -87,7 +87,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "시간 기록",
+                        text = "시간 그래프",
                         style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
                     )
 
@@ -493,8 +493,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .border(1.dp, Color.LightGray),
+                .border(1.dp, Color.LightGray)
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         ) {

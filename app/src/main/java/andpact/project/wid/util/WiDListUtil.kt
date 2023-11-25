@@ -60,6 +60,63 @@ fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
     return result
 }
 
+fun getAverageDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    val result = mutableMapOf<String, Duration>()
+
+    val totalDurationMapByTitleByDate = mutableMapOf<String, MutableMap<LocalDate, Duration>>()
+
+    // 각 제목에 대한 날짜별 총 소요 시간을 계산
+    for (wiD in wiDList) {
+        val title = wiD.title
+        val date = wiD.date
+        val duration = wiD.duration
+
+        val titleMap = totalDurationMapByTitleByDate.computeIfAbsent(title) { mutableMapOf() }
+        titleMap[date] = titleMap.getOrDefault(date, Duration.ZERO) + duration
+    }
+
+    // 각 제목에 대한 평균 소요 시간을 계산하여 result 맵에 할당
+    for ((title, totalDurationMapByDate) in totalDurationMapByTitleByDate) {
+        val totalDuration = totalDurationMapByDate.values.reduce(Duration::plus)
+        val averageDuration = totalDuration.dividedBy(totalDurationMapByDate.size.toLong())
+        result[title] = averageDuration
+    }
+
+    // 소요 시간을 기준으로 내림차순으로 정렬
+    val sortedResult = result.entries.sortedByDescending { it.value }
+
+    // 정렬된 결과를 새로운 Map으로 반환
+    return sortedResult.associate { it.toPair() }
+}
+
+fun getMaxDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    val result = mutableMapOf<String, Duration>()
+
+    val totalDurationMapByTitleByDate = mutableMapOf<String, MutableMap<LocalDate, Duration>>()
+
+    // 각 제목에 대한 날짜별 총 소요 시간을 계산
+    for (wiD in wiDList) {
+        val title = wiD.title
+        val date = wiD.date
+        val duration = wiD.duration
+
+        val titleMap = totalDurationMapByTitleByDate.computeIfAbsent(title) { mutableMapOf() }
+        titleMap[date] = titleMap.getOrDefault(date, Duration.ZERO) + duration
+    }
+
+    // 각 제목에 대한 최대 소요 시간을 계산하여 result 맵에 할당
+    for ((title, totalDurationMapByDate) in totalDurationMapByTitleByDate) {
+        val maxDuration = totalDurationMapByDate.values.maxOrNull() ?: Duration.ZERO
+        result[title] = maxDuration
+    }
+
+    // 소요 시간을 기준으로 내림차순으로 정렬
+    val sortedResult = result.entries.sortedByDescending { it.value }
+
+    // 정렬된 결과를 새로운 Map으로 반환
+    return sortedResult.associate { it.toPair() }
+}
+
 //fun getWeeklyAllTitleDurationMap(date: LocalDate, wiDList: List<WiD>): Map<String, Duration> {
 //    val result = mutableMapOf<String, Duration>()
 //
