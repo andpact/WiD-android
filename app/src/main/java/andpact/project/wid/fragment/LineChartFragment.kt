@@ -23,6 +23,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -66,7 +67,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                     // 설정
                     layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                     legend.isEnabled = false
-                    description.isEnabled = false
+                    description.text = "단위 : 시간"
                     setTouchEnabled(true)
                     isDragEnabled = false
                     setScaleEnabled(true)
@@ -133,9 +134,9 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                             override fun getFormattedValue(value: Float): String {
                                 // 값이 정수인 경우 소수점을 표시하지 않음
                                 return if (value % 1 == 0f) {
-                                    "${value.toInt()}h"
+                                    "${value.toInt()}"
                                 } else {
-                                    String.format("%.1fh", value)
+                                    String.format("%.1f", value)
                                 }
                             }
                         }

@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.*
 
-@Composable
 fun getDayString(date: LocalDate): AnnotatedString {
     val today = LocalDate.now()
     val yesterday = today.minusDays(1)
@@ -42,6 +41,35 @@ fun getDayString(date: LocalDate): AnnotatedString {
     }
 }
 
+fun getDayStringWith2Lines(date: LocalDate): AnnotatedString {
+    val today = LocalDate.now()
+    val yesterday = today.minusDays(1)
+
+    return buildAnnotatedString {
+        if (date == today) {
+            append("오늘\n")
+        } else if (date == yesterday) {
+            append("어제\n")
+        } else {
+            append(date.format(DateTimeFormatter.ofPattern("yyyy년\n")))
+            append(date.format(DateTimeFormatter.ofPattern("M월 d일 (")))
+
+            withStyle(
+                style = SpanStyle(
+                    color = when (date.dayOfWeek) {
+                        DayOfWeek.SATURDAY -> Color.Blue
+                        DayOfWeek.SUNDAY -> Color.Red
+                        else -> Color.Black
+                    }
+                )
+            ) {
+                append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+            }
+            append(")")
+        }
+    }
+}
+
 fun getFirstDayOfWeek(date: LocalDate): LocalDate {
     return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }
@@ -50,7 +78,6 @@ fun getLastDayOfWeek(date: LocalDate): LocalDate {
     return date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 }
 
-@Composable
 fun getWeekString(date: LocalDate): AnnotatedString {
     val today = LocalDate.now()
 
@@ -110,7 +137,6 @@ fun getWeekString(date: LocalDate): AnnotatedString {
     }
 }
 
-@Composable
 fun getWeekString(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
     val today = LocalDate.now()
 

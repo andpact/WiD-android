@@ -140,7 +140,8 @@ fun WiDCreateStopWatchFragment(buttonsVisible: MutableState<Boolean>) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(colorResource(id = R.color.ghost_white))
+            .padding(16.dp)
     ) {
         // 스톱워치 시간 표시
         Text(

@@ -66,25 +66,25 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return newRowId
     }
 
-    fun getYearList(): List<String> {
-        val years = mutableListOf<String>()
-        val query = "SELECT DISTINCT substr($COLUMN_DATE, 1, 4) AS year FROM $TABLE_NAME ORDER BY year DESC"
-
-        val db = readableDatabase
-        val cursor = db.rawQuery(query, null)
-
-        if (cursor.moveToFirst()) {
-            do {
-                val year = cursor.getString(cursor.getColumnIndex("year"))
-                years.add(year)
-            } while (cursor.moveToNext())
-        }
-
-        cursor.close()
-        db.close()
-
-        return years
-    }
+//    fun getYearList(): List<String> {
+//        val years = mutableListOf<String>()
+//        val query = "SELECT DISTINCT substr($COLUMN_DATE, 1, 4) AS year FROM $TABLE_NAME ORDER BY year DESC"
+//
+//        val db = readableDatabase
+//        val cursor = db.rawQuery(query, null)
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                val year = cursor.getString(cursor.getColumnIndex("year"))
+//                years.add(year)
+//            } while (cursor.moveToNext())
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        return years
+//    }
 
     fun readWiDById(id: Long): WiD? {
         val db = readableDatabase
@@ -96,17 +96,19 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 
         var wiD: WiD? = null
 
-        if (cursor.moveToFirst()) {
-            val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
-            val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
-            val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
-            val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
-            val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+        with(cursor) {
+            if (moveToFirst()) {
+                val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val startTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_START)))
+                val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
+                val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-            wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+            }
+            close()
         }
 
-        cursor.close()
         db.close()
 
         return wiD
@@ -118,28 +120,30 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val db = readableDatabase
         val wiDList = mutableListOf<WiD>()
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ?"
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ? ORDER BY $COLUMN_START ASC"
         val selectionArgs = arrayOf(date.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
-                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
-                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
-                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
-                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+        with(cursor) {
+            if (moveToFirst()) {
+                do {
+                    val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                    val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                    val startTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_START)))
+                    val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
+                    val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
-                wiDList.add(wiD)
-            } while (cursor.moveToNext())
+                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+                    wiDList.add(wiD)
+                } while (moveToNext())
+            }
+            close()
         }
 
-        cursor.close()
         db.close()
 
-        return wiDList.sortedBy { it.start }
+        return wiDList
     }
 
     fun readWiDListByDateRange(startDate: LocalDate, finishDate: LocalDate): List<WiD> {
@@ -148,171 +152,194 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val db = readableDatabase
         val wiDList = mutableListOf<WiD>()
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ?"
+//        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ?"
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ? ORDER BY $COLUMN_DATE, $COLUMN_START"
         val selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
 
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
-                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
-                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
-                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
-                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
-                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+        with(cursor) {
+            if (moveToFirst()) {
+                do {
+                    val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                    val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                    val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                    val startTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_START)))
+                    val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
+                    val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
-                wiDList.add(wiD)
-            } while (cursor.moveToNext())
+                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+                    wiDList.add(wiD)
+                } while (moveToNext())
+            }
+            close()
         }
 
-        cursor.close()
         db.close()
 
-        return wiDList.sortedWith(compareBy<WiD> { it.date }.thenBy { it.start })
+        return wiDList
+
+//        if (cursor.moveToFirst()) {
+//            do {
+//                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
+//                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
+//                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
+//                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
+//                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
+//                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
+//
+//                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+//                wiDList.add(wiD)
+//            } while (cursor.moveToNext())
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+////        return wiDList.sortedWith(compareBy<WiD> { it.date }.thenBy { it.start })
+//        return wiDList
     }
 
-    fun getLongestStreak(title: String, startDate: LocalDate, finishDate: LocalDate): Pair<LocalDate, LocalDate>? {
-        val db = readableDatabase
-        var currentRangeStart: LocalDate? = null
-        var currentRangeEnd: LocalDate? = null
-        var longestRangeStart: LocalDate? = null
-        var longestRangeEnd: LocalDate? = null
-
-        val selectQuery: String
-        val selectionArgs: Array<String>
-
-        if (title == "ALL") {
-            selectQuery = """
-                SELECT DISTINCT $COLUMN_DATE
-                FROM $TABLE_NAME
-                WHERE $COLUMN_DATE BETWEEN ? AND ?
-                ORDER BY $COLUMN_DATE ASC
-            """.trimIndent()
-            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
-        } else {
-            selectQuery = """
-                SELECT DISTINCT $COLUMN_DATE
-                FROM $TABLE_NAME
-                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
-                ORDER BY $COLUMN_DATE ASC
-            """.trimIndent()
-            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
-        }
-
-
-        val cursor = db.rawQuery(selectQuery, selectionArgs)
-        var previousDate: LocalDate? = null
-
-        while (cursor.moveToNext()) {
-            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
-            val currentDate = LocalDate.parse(dateString)
-
-            if (previousDate == null) {
-                currentRangeStart = currentDate
-                currentRangeEnd = currentDate
-            } else if (previousDate.plusDays(1) == currentDate) {
-                // The current date continues the range.
-                currentRangeEnd = currentDate
-            }
-//            else if (previousDate == currentDate) {
-//                // The current date is the same as the previous one, continue to the next date.
-//                continue
+//    fun getLongestStreak(title: String, startDate: LocalDate, finishDate: LocalDate): Pair<LocalDate, LocalDate>? {
+//        val db = readableDatabase
+//        var currentRangeStart: LocalDate? = null
+//        var currentRangeEnd: LocalDate? = null
+//        var longestRangeStart: LocalDate? = null
+//        var longestRangeEnd: LocalDate? = null
+//
+//        val selectQuery: String
+//        val selectionArgs: Array<String>
+//
+//        if (title == "ALL") {
+//            selectQuery = """
+//                SELECT DISTINCT $COLUMN_DATE
+//                FROM $TABLE_NAME
+//                WHERE $COLUMN_DATE BETWEEN ? AND ?
+//                ORDER BY $COLUMN_DATE ASC
+//            """.trimIndent()
+//            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
+//        } else {
+//            selectQuery = """
+//                SELECT DISTINCT $COLUMN_DATE
+//                FROM $TABLE_NAME
+//                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+//                ORDER BY $COLUMN_DATE ASC
+//            """.trimIndent()
+//            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
+//        }
+//
+//
+//        val cursor = db.rawQuery(selectQuery, selectionArgs)
+//        var previousDate: LocalDate? = null
+//
+//        while (cursor.moveToNext()) {
+//            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
+//            val currentDate = LocalDate.parse(dateString)
+//
+//            if (previousDate == null) {
+//                currentRangeStart = currentDate
+//                currentRangeEnd = currentDate
+//            } else if (previousDate.plusDays(1) == currentDate) {
+//                // The current date continues the range.
+//                currentRangeEnd = currentDate
 //            }
-            else {
-                // The current date breaks the range.
-                if (currentRangeStart != null && currentRangeEnd != null) {
-                    // Update the longest range if necessary.
-                    if (longestRangeStart == null || ChronoUnit.DAYS.between(longestRangeStart, longestRangeEnd) < ChronoUnit.DAYS.between(currentRangeStart, currentRangeEnd)) {
-                        longestRangeStart = currentRangeStart
-                        longestRangeEnd = currentRangeEnd
-                    }
-                }
-                currentRangeStart = currentDate
-                currentRangeEnd = currentDate
-            }
-
-            previousDate = currentDate
-        }
-
-        // Check if the last range is the longest.
-        if (currentRangeStart != null && currentRangeEnd != null) {
-            if (longestRangeStart == null || ChronoUnit.DAYS.between(longestRangeStart, longestRangeEnd) < ChronoUnit.DAYS.between(currentRangeStart, currentRangeEnd)) {
-                longestRangeStart = currentRangeStart
-                longestRangeEnd = currentRangeEnd
-            }
-        }
-
-        cursor.close()
-        db.close()
-
-        return if (longestRangeStart != null && longestRangeEnd != null) {
-            Pair(longestRangeStart, longestRangeEnd)
-        } else {
-            null
-        }
-    }
-
-    fun getCurrentStreak(title: String, startDate: LocalDate, finishDate: LocalDate): LocalDate? {
-        val db = readableDatabase
-
-        val selectQuery: String
-        val selectionArgs: Array<String>
-
-        if (title == "ALL") {
-            selectQuery = """
-                SELECT DISTINCT $COLUMN_DATE
-                FROM $TABLE_NAME
-                WHERE $COLUMN_DATE BETWEEN ? AND ?
-                ORDER BY $COLUMN_DATE DESC
-            """.trimIndent()
-            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
-        } else {
-            selectQuery = """
-                SELECT DISTINCT $COLUMN_DATE
-                FROM $TABLE_NAME
-                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
-                ORDER BY $COLUMN_DATE DESC
-            """.trimIndent()
-            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
-        }
-
-        val cursor = db.rawQuery(selectQuery, selectionArgs)
-        var previousDate: LocalDate? = null
-
-        while (cursor.moveToNext()) {
-            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
-            val date = LocalDate.parse(dateString)
-
-            if (cursor.isFirst && date != finishDate) {
-                cursor.close()
-                db.close()
-                return null
-            }
-
-//            if (previousDate != null && previousDate == date) {
-//                // Skip duplicate dates.
-//                continue
+////            else if (previousDate == currentDate) {
+////                // The current date is the same as the previous one, continue to the next date.
+////                continue
+////            }
+//            else {
+//                // The current date breaks the range.
+//                if (currentRangeStart != null && currentRangeEnd != null) {
+//                    // Update the longest range if necessary.
+//                    if (longestRangeStart == null || ChronoUnit.DAYS.between(longestRangeStart, longestRangeEnd) < ChronoUnit.DAYS.between(currentRangeStart, currentRangeEnd)) {
+//                        longestRangeStart = currentRangeStart
+//                        longestRangeEnd = currentRangeEnd
+//                    }
+//                }
+//                currentRangeStart = currentDate
+//                currentRangeEnd = currentDate
 //            }
-
-            if (previousDate == null || previousDate == date.plusDays(1)) {
-                // Continuation of consecutive days or the first day.
-                previousDate = date
-            } else {
-                // Streak is broken.
-                cursor.close()
-                db.close()
-                return previousDate
-            }
-        }
-
-        cursor.close()
-        db.close()
-
-        // If we have a consecutive streak, return the finish date.
-        return previousDate
-    }
+//
+//            previousDate = currentDate
+//        }
+//
+//        // Check if the last range is the longest.
+//        if (currentRangeStart != null && currentRangeEnd != null) {
+//            if (longestRangeStart == null || ChronoUnit.DAYS.between(longestRangeStart, longestRangeEnd) < ChronoUnit.DAYS.between(currentRangeStart, currentRangeEnd)) {
+//                longestRangeStart = currentRangeStart
+//                longestRangeEnd = currentRangeEnd
+//            }
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        return if (longestRangeStart != null && longestRangeEnd != null) {
+//            Pair(longestRangeStart, longestRangeEnd)
+//        } else {
+//            null
+//        }
+//    }
+//
+//    fun getCurrentStreak(title: String, startDate: LocalDate, finishDate: LocalDate): LocalDate? {
+//        val db = readableDatabase
+//
+//        val selectQuery: String
+//        val selectionArgs: Array<String>
+//
+//        if (title == "ALL") {
+//            selectQuery = """
+//                SELECT DISTINCT $COLUMN_DATE
+//                FROM $TABLE_NAME
+//                WHERE $COLUMN_DATE BETWEEN ? AND ?
+//                ORDER BY $COLUMN_DATE DESC
+//            """.trimIndent()
+//            selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
+//        } else {
+//            selectQuery = """
+//                SELECT DISTINCT $COLUMN_DATE
+//                FROM $TABLE_NAME
+//                WHERE $COLUMN_TITLE = ? AND $COLUMN_DATE BETWEEN ? AND ?
+//                ORDER BY $COLUMN_DATE DESC
+//            """.trimIndent()
+//            selectionArgs = arrayOf(title, startDate.toString(), finishDate.toString())
+//        }
+//
+//        val cursor = db.rawQuery(selectQuery, selectionArgs)
+//        var previousDate: LocalDate? = null
+//
+//        while (cursor.moveToNext()) {
+//            val dateString = cursor.getString(cursor.getColumnIndex(COLUMN_DATE))
+//            val date = LocalDate.parse(dateString)
+//
+//            if (cursor.isFirst && date != finishDate) {
+//                cursor.close()
+//                db.close()
+//                return null
+//            }
+//
+////            if (previousDate != null && previousDate == date) {
+////                // Skip duplicate dates.
+////                continue
+////            }
+//
+//            if (previousDate == null || previousDate == date.plusDays(1)) {
+//                // Continuation of consecutive days or the first day.
+//                previousDate = date
+//            } else {
+//                // Streak is broken.
+//                cursor.close()
+//                db.close()
+//                return previousDate
+//            }
+//        }
+//
+//        cursor.close()
+//        db.close()
+//
+//        // If we have a consecutive streak, return the finish date.
+//        return previousDate
+//    }
 
     fun updateWiD(id: Long, date: LocalDate, title: String, start: LocalTime, finish: LocalTime, duration: Duration) {
         val db = writableDatabase

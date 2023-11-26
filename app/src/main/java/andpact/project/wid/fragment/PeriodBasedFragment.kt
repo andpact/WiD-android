@@ -364,12 +364,14 @@ fun PeriodBasedFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(colorResource(id = R.color.ghost_white))
     ) {
         // 기간 및 제목 선택
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color.LightGray)
+                .height(45.dp)
+                .background(Color.White)
                 .padding(horizontal = 16.dp)
         ) {
             Row(
@@ -461,6 +463,8 @@ fun PeriodBasedFragment() {
             }
         }
 
+        HorizontalDivider()
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -470,6 +474,8 @@ fun PeriodBasedFragment() {
             if (selectedTitle == titlesWithAll[0]) { // 제목이 "전체" 일 때
                 item {
                     Column(
+                        modifier = Modifier
+                            .padding(top = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -487,48 +493,73 @@ fun PeriodBasedFragment() {
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 2.dp
                         ) {
-                            Column { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
+                            if (wiDList.isEmpty()) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
+                                        .padding(vertical = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                 ) {
-                                    val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp)
+                                            .scale(0.8f),
+                                        painter = painterResource(id = R.drawable.outline_textsms_24),
+                                        tint = Color.Gray,
+                                        contentDescription = "detail"
+                                    )
 
-                                    daysOfWeek.forEachIndexed { index, day ->
-                                        val textColor = when (index) {
-                                            0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
-                                            5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
-                                            6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
-                                            else -> Color.Unspecified
-                                        }
-
-                                        Text(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            text = day,
-                                            style = TextStyle(textAlign = TextAlign.Center, color = textColor)
-                                        )
-                                    }
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp),
+                                        text = "표시할 그래프가 없습니다.",
+                                        style = TextStyle(color = Color.Gray)
+                                    )
                                 }
+                            } else {
+                                Column { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                    ) {
+                                        val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
 
-                                LazyVerticalGrid(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                                    columns = GridCells.Fixed(7)
-                                ) {
-                                    if (selectedPeriod == periods[1]) {
-                                        items(startDate.dayOfWeek.value % 7) {
-                                            // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                        daysOfWeek.forEachIndexed { index, day ->
+                                            val textColor = when (index) {
+                                                0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
+                                                5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
+                                                6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
+                                                else -> Color.Unspecified
+                                            }
+
+                                            Text(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                                text = day,
+                                                style = TextStyle(textAlign = TextAlign.Center, color = textColor)
+                                            )
                                         }
                                     }
 
-                                    items(ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) { index: Int ->
-                                        val indexDate = startDate.plusDays(index.toLong())
-                                        val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
+                                    LazyVerticalGrid(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                        columns = GridCells.Fixed(7)
+                                    ) {
+                                        if (selectedPeriod == periods[1]) {
+                                            items(startDate.dayOfWeek.value % 7) {
+                                                // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                            }
+                                        }
 
-                                        PeriodBasedPieChartFragment(date = indexDate, wiDList = filteredWiDListByDate)
+                                        items(ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) { index: Int ->
+                                            val indexDate = startDate.plusDays(index.toLong())
+                                            val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
+
+                                            PeriodBasedPieChartFragment(date = indexDate, wiDList = filteredWiDListByDate)
+                                        }
                                     }
                                 }
                             }
@@ -599,8 +630,7 @@ fun PeriodBasedFragment() {
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(16.dp)
                             ) {
                                 if (selectedMap.isEmpty()) {
                                     Row(
@@ -630,14 +660,24 @@ fun PeriodBasedFragment() {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Row(
+                                                modifier = Modifier
+                                                    .weight(1f),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
-                                                Text(text = titleMap[title] ?: title)
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .scale(0.8f),
+                                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                                    contentDescription = "title"
+                                                )
+
+                                                Text(
+                                                    text = titleMap[title] ?: title,
+                                                    style = TextStyle(fontWeight = FontWeight.Bold)
+                                                )
 
                                                 Box(
                                                     modifier = Modifier
@@ -652,7 +692,21 @@ fun PeriodBasedFragment() {
                                                 )
                                             }
 
-                                            Text(text = formatDuration(duration, mode = 2))
+                                            Row(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .scale(0.8f),
+                                                    painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                                    contentDescription = "duration"
+                                                )
+
+                                                Text(text = formatDuration(duration, mode = 2))
+                                            }
                                         }
                                     }
                                 }
@@ -663,6 +717,8 @@ fun PeriodBasedFragment() {
             } else { // 제목이 "전체"가 아닐 때
                 item {
                     Column(
+                        modifier = Modifier
+                            .padding(top = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -680,7 +736,32 @@ fun PeriodBasedFragment() {
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 2.dp
                         ) {
-                            LineChartFragment(title = selectedTitle, wiDList = filteredWiDListByTitle, startDate = startDate, finishDate = finishDate)
+                            if (filteredWiDListByTitle.isEmpty()) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(vertical = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp)
+                                            .scale(0.8f),
+                                        painter = painterResource(id = R.drawable.outline_textsms_24),
+                                        tint = Color.Gray,
+                                        contentDescription = "detail"
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp),
+                                        text = "표시할 그래프가 없습니다.",
+                                        style = TextStyle(color = Color.Gray)
+                                    )
+                                }
+                            } else {
+                                LineChartFragment(title = selectedTitle, wiDList = filteredWiDListByTitle, startDate = startDate, finishDate = finishDate)
+                            }
                         }
                     }
                 }
@@ -704,42 +785,156 @@ fun PeriodBasedFragment() {
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 2.dp
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                            if (filteredWiDListByTitle.isEmpty()) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
+                                        .padding(vertical = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                                 ) {
-                                    Text(text = "합계")
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp)
+                                            .scale(0.8f),
+                                        painter = painterResource(id = R.drawable.outline_textsms_24),
+                                        tint = Color.Gray,
+                                        contentDescription = "detail"
+                                    )
 
-                                    Text(text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(vertical = 32.dp),
+                                        text = "표시할 기록이 없습니다.",
+                                        style = TextStyle(color = Color.Gray)
+                                    )
                                 }
-
-                                Row(
+                            } else {
+                                Column(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                        .padding(16.dp),
                                 ) {
-                                    Text(text = "평균")
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_analytics_24),
+                                                contentDescription = "Total duration"
+                                            )
 
-                                    Text(text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
-                                }
+                                            Text(
+                                                text = "합계",
+                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = "최고")
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                                contentDescription = "duration"
+                                            )
 
-                                    Text(text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
+                                            Text(text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
+                                        }
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_analytics_24),
+                                                contentDescription = "Average duration"
+                                            )
+
+                                            Text(
+                                                text = "평균",
+                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                                contentDescription = "duration"
+                                            )
+
+                                            Text(text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
+                                        }
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_analytics_24),
+                                                contentDescription = "Max duration"
+                                            )
+
+                                            Text(
+                                                text = "최고",
+                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                                contentDescription = "duration"
+                                            )
+
+                                            Text(text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -748,23 +943,26 @@ fun PeriodBasedFragment() {
             }
         }
 
+        HorizontalDivider()
+
         // 기간 표시 및 버튼
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color.LightGray)
+                .height(45.dp)
+                .background(Color.White)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                modifier = Modifier
-                    .weight(1f),
                 text = when (selectedPeriod) {
                     periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
                     periods[1] -> getMonthString(date = startDate)
-                    else -> buildAnnotatedString { append("") } // 다른 경우에 대한 처리 추가
+                    else -> buildAnnotatedString { append("") }
                 },
-                overflow = TextOverflow.Clip
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Row{

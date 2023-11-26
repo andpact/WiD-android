@@ -72,7 +72,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
     // 전체 화면
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(colorResource(id = R.color.ghost_white))
     ) {
         LazyColumn(
             modifier = Modifier
@@ -84,6 +85,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             item {
                 // 파이 차트
                 Column(
+                    modifier = Modifier
+                        .padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -207,7 +210,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = colorResource(id = R.color.lime_green),
+                                color = colorResource(id = R.color.deep_sky_blue),
                                 shape = RoundedCornerShape(8.dp)
                             ),
                         onClick = {
@@ -216,10 +219,20 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                             buttonsVisible.value = false
                         },
                     ) {
-                        Text(
-                            text = "다이어리 수정",
-                            style = TextStyle(color = Color.White)
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_edit_24),
+                                contentDescription = "Edit diary",
+                                tint = Color.White
+                            )
+
+                            Text(
+                                text = "다이어리 수정",
+                                style = TextStyle(color = Color.White)
+                            )
+                        }
                     }
                 }
             }
@@ -243,8 +256,7 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                     ) {
                         Column(
                             modifier = Modifier
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                .padding(16.dp)
                         ) {
                             if (totalDurationMap.isEmpty()) {
                                 Row(
@@ -274,14 +286,24 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Row(
+                                            modifier = Modifier
+                                                .weight(1f),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            Text(text = titleMap[title] ?: title)
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                                contentDescription = "title"
+                                            )
+
+                                            Text(
+                                                text = titleMap[title] ?: title,
+                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                            )
 
                                             Box(
                                                 modifier = Modifier
@@ -289,13 +311,28 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                                     .size(10.dp)
                                                     .background(
                                                         color = colorResource(
-                                                            id = colorMap[title] ?: R.color.light_gray
+                                                            id = colorMap[title]
+                                                                ?: R.color.light_gray
                                                         )
                                                     )
                                             )
                                         }
 
-                                        Text(text = formatDuration(totalDuration, mode = 2))
+                                        Row(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .scale(0.8f),
+                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
+                                                contentDescription = "duration"
+                                            )
+
+                                            Text(text = formatDuration(totalDuration, mode = 2))
+                                        }
                                     }
                                 }
                             }
@@ -356,13 +393,14 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                                 Surface(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .then(
-                                            if (index == wiDList.size - 1) {
-                                                Modifier.padding(PaddingValues(bottom = 16.dp))
-                                            } else {
-                                                Modifier
-                                            }
-                                        ),
+                                        .padding(bottom = if (index == wiDList.size - 1) 16.dp else 0.dp),
+//                                        .then(
+//                                            if (index == wiDList.size - 1) {
+//                                                Modifier.padding(PaddingValues(bottom = 16.dp))
+//                                            } else {
+//                                                Modifier
+//                                            }
+//                                        ),
                                     color = Color.White,
                                     shape = RoundedCornerShape(8.dp),
                                     shadowElevation = 2.dp
@@ -489,60 +527,59 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
             }
         }
 
+        HorizontalDivider()
+
         // 날짜 표시 및 버튼
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, Color.LightGray)
+                .height(45.dp)
+                .background(Color.White)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "WiD",
-                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(Font(R.font.acme_regular)))
-            )
-
             Text(
                 modifier = Modifier
                     .weight(1f),
-                text = getDayString(date = currentDate),
-                style = TextStyle(textAlign = TextAlign.Center)
+                text = getDayString(date = currentDate)
             )
 
-            IconButton(
-                onClick = {
-                    currentDate = today
-                },
-                enabled = currentDate != today,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Today"
-                )
-            }
+            Row {
+                IconButton(
+                    onClick = {
+                        currentDate = today
+                    },
+                    enabled = currentDate != today,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Today"
+                    )
+                }
 
-            IconButton(
-                onClick = {
-                    currentDate = currentDate.minusDays(1)
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "Previous day"
-                )
-            }
+                IconButton(
+                    onClick = {
+                        currentDate = currentDate.minusDays(1)
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Previous day"
+                    )
+                }
 
-            IconButton(
-                onClick = {
-                    currentDate = currentDate.plusDays(1)
-                },
-                enabled = currentDate != today
-            ) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Next day"
-                )
+                IconButton(
+                    onClick = {
+                        currentDate = currentDate.plusDays(1)
+                    },
+                    enabled = currentDate != today
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next day"
+                    )
+                }
             }
         }
     }

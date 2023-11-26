@@ -188,6 +188,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     // 전체 화면
     Box(modifier = Modifier
         .fillMaxSize()
+        .background(colorResource(id = R.color.ghost_white))
         .padding(16.dp),
     ) {
         // 타이머 초기 화면

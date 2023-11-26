@@ -6,7 +6,9 @@ import andpact.project.wid.ui.theme.WiDTheme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // window inset(시스템 네비게이션 바가 차지하는 공간)을 자동이 아닌 수동으로 설정하겠다.
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             WiDMainActivity()
@@ -44,7 +46,19 @@ class MainActivity : ComponentActivity() {
 fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
     NavHost(
         navController = navController,
-        startDestination = Destinations.WiDCreateHolderFragment.route
+        startDestination = Destinations.WiDCreateHolderFragment.route,
+//        enterTransition = {
+//            slideIntoContainer(
+//                AnimatedContentTransitionScope.SlideDirection.Left,
+//                animationSpec = tween(500)
+//            )
+//        },
+//        exitTransition = {
+//            slideOutOfContainer(
+//                AnimatedContentTransitionScope.SlideDirection.Right,
+//                animationSpec = tween(500)
+//            )
+//        }
     ) {
         composable(Destinations.WiDCreateHolderFragment.route) {
             WiDCreateHolderFragment(buttonsVisible)
@@ -78,43 +92,42 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
         enter = expandVertically{ 0 },
         exit = shrinkVertically{ 0 },
     ) {
-        NavigationBar(
-            modifier = modifier
-                .border(1.dp, Color.LightGray)
-                .height(55.dp),
-            containerColor = Color.White,
-//            containerColor = colorResource(id = R.color.ghost_white),
-        ) {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
+        Column {
+            HorizontalDivider()
 
-            screens.forEach { screen ->
-                NavigationBarItem(
-//                    label = {
-//                        Text(text = screen.title!!)
-//                    },
-                    alwaysShowLabel = false,
-                    icon = {
-                        Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
-                    },
-                    selected = currentRoute == screen.route,
-                    onClick = {
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
+            NavigationBar(
+                modifier = modifier
+                    .height(45.dp),
+                containerColor = Color.White,
+            ) {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                screens.forEach { screen ->
+                    NavigationBarItem(
+                        alwaysShowLabel = false,
+                        icon = {
+                            Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
+                        },
+                        selected = currentRoute == screen.route,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedTextColor = Color.LightGray,
-                        selectedTextColor = Color.Black,
-                        unselectedIconColor = Color.LightGray,
-                        selectedIconColor = Color.Black,
-                        indicatorColor = colorResource(id = R.color.transparent)
-                    ),
-                )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            unselectedTextColor = Color.LightGray,
+                            selectedTextColor = Color.Black,
+                            unselectedIconColor = Color.LightGray,
+                            selectedIconColor = Color.Black,
+                            indicatorColor = colorResource(id = R.color.transparent)
+                        ),
+                    )
+                }
             }
         }
     }
@@ -129,13 +142,13 @@ fun WiDMainActivity() {
         Scaffold(
             bottomBar = {
                 BottomBar(
-//                    modifier = Modifier
+                    modifier = Modifier
 //                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
-//                        .windowInsetsPadding( // 좀 더 정교한 위와 같은 방식
-//                            WindowInsets.systemBars.only(
-//                                WindowInsetsSides.Vertical
-//                            )
-//                        ),
+                        .windowInsetsPadding( // 좀 더 정교한 위와 같은 방식
+                            WindowInsets.navigationBars.only(
+                                WindowInsetsSides.Vertical
+                            )
+                        ),
                     navController = navController,
                     state = buttonsVisible,
                 )

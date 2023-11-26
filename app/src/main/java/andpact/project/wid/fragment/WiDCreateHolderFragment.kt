@@ -37,7 +37,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp),
+                    .height(45.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
@@ -86,6 +86,8 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                 )
             }
         }
+
+        HorizontalDivider()
 
         HorizontalPager(state = pagerState, userScrollEnabled = buttonsVisible.value) {page ->
             when (page) {

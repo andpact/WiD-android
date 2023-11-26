@@ -2,22 +2,18 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
-import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.formatDuration
-import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.getDayStringWith2Lines
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,61 +22,66 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Composable
 fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
     // 검색
     var searchText by remember { mutableStateOf("") }
-//    val lazyListState = rememberLazyListState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
+    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
 
     // 다이어리
     val diaryService = DiaryService(LocalContext.current)
-    val diaryList = remember(searchText) { diaryService.getDiaryListByContent(content = searchText) }
+    val diaryList = remember(searchText) { diaryService.getDiaryListByTitleOrContent(searchText = searchText) }
 
+    // 전체화면
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(colorResource(id = R.color.ghost_white))
+            .padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // 검색창
         OutlinedTextField(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = CircleShape,
             value = searchText,
             onValueChange = { newText ->
                 searchText = newText
             },
             placeholder = {
-                Text(text = "다이어리 검색..")
+                Text(text = "제목 또는 내용으로 검색..")
             },
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "search")
             },
-            singleLine = true
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                disabledContainerColor = Color.White,
+                errorContainerColor = Color.White
+            )
         )
 
+        // 겸색 결과
         Column(
             modifier = Modifier
                 .weight(1f)
+                .padding(horizontal = 16.dp)
         ) {
             if (diaryList.isEmpty()) {
                 Row(
@@ -107,45 +108,70 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(3), // 3 columns
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    state = lazyGridState,
+                    columns = GridCells.Fixed(3),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(diaryList.size) { index ->
-                        val diary = diaryList[index]
-
-                        ElevatedCard(
+                    itemsIndexed(diaryList) { index: Int, diary: Diary ->
+                        Column(
                             modifier = Modifier
+                                .padding(bottom = if (diaryList.size - 1 == index) 16.dp else 0.dp) // 마지막 아이템에 아래쪽 패딩을 설정함.
                                 .fillMaxWidth()
-                                .height(100.dp)
+                                .aspectRatio(0.5f)
                                 .clickable {
+                                    navController.navigate(Destinations.DiaryFragment.route + "/${diary.date}")
 
+                                    buttonsVisible.value = false
                                 },
-                            elevation = CardDefaults.cardElevation(2.dp)
                         ) {
-                            Column(
+                            ElevatedCard(
                                 modifier = Modifier
-                                    .padding(16.dp)
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                elevation = CardDefaults.cardElevation(2.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = diary.title,
+                                        style = TextStyle(fontWeight = FontWeight.Bold),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
+                                    Text(
+                                        text = diary.content,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "${diary.date}",
-                                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp),
-                                    modifier = Modifier
-                                        .padding(bottom = 8.dp)
+                                    text = getDayStringWith2Lines(diary.date),
+                                    style = TextStyle(fontSize = 12.sp),
+                                    overflow = TextOverflow.Ellipsis
                                 )
 
-                                Text(
-                                    text = diary.title,
-                                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 18.sp),
+                                Icon(
                                     modifier = Modifier
-                                        .padding(bottom = 8.dp)
-                                )
-
-                                Text(
-                                    text = diary.content,
-                                    style = TextStyle(fontSize = 16.sp),
-                                    modifier = Modifier
-                                        .padding(bottom = 8.dp)
+                                        .scale(0.6f),
+                                    painter = painterResource(id = R.drawable.baseline_edit_24),
+                                    contentDescription = "Edit diary",
+                                    tint = colorResource(id = R.color.deep_sky_blue)
                                 )
                             }
                         }

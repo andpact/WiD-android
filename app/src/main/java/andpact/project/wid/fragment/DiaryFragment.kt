@@ -3,31 +3,26 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
+import andpact.project.wid.util.getDayString
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Composable
 fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible: MutableState<Boolean>) {
@@ -58,56 +53,38 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 날짜
-        Box(
+        // 상단 바
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(45.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextButton(
-                modifier = Modifier
-                    .align(Alignment.CenterStart),
-                onClick = {
-                    keyboardController?.hide()
-
-                    navController.popBackStack()
-                    buttonsVisible.value = true
-                },
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
-            }
+                TextButton(
+                    onClick = {
+                        keyboardController?.hide()
 
-            val dateText = buildAnnotatedString {
-                date.let {
-                    append(it.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-                    withStyle(
-                        style = SpanStyle(
-                            color = when (it.dayOfWeek) {
-                                DayOfWeek.SATURDAY -> Color.Blue
-                                DayOfWeek.SUNDAY -> Color.Red
-                                else -> Color.Black
-                            }
-                        )
-                    ) {
-                        append(it.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-                    }
-                    append(")")
+                        navController.popBackStack()
+                        buttonsVisible.value = true
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                        contentDescription = "Back",
+                        tint = Color.Black
+                    )
                 }
-            }
 
-            Text(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                text = dateText,
-            )
+                Text(text = "${getDayString(date)}의 다이어리")
+            }
 
             TextButton(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd),
                 onClick = {
                     keyboardController?.hide()
 

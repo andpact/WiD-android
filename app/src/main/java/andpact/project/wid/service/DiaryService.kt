@@ -108,6 +108,37 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         return diary
     }
 
+    fun getDiaryListByTitle(title: String): List<Diary> {
+        if (title.isBlank()) {
+            return emptyList()
+        }
+
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_TITLE LIKE ? ORDER BY $COLUMN_DATE ASC"
+        val selectionArgs = arrayOf("%$title%")
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+        val diaryList = mutableListOf<Diary>()
+
+        with(cursor) {
+            while (moveToNext()) {
+                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                val storedDate = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val storedTitle = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val storedContent = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
+
+                val diary = Diary(id, storedDate, storedTitle, storedContent)
+                diaryList.add(diary)
+            }
+            close()
+        }
+
+        db.close()
+
+        return diaryList
+    }
+
     fun getDiaryListByContent(content: String): List<Diary> {
         if (content.isBlank()) {
             return emptyList()
@@ -115,7 +146,7 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
         val db = readableDatabase
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_CONTENT LIKE ?"
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_CONTENT LIKE ? ORDER BY $COLUMN_DATE ASC"
         val selectionArgs = arrayOf("%$content%")
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
@@ -139,31 +170,62 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         return diaryList
     }
 
-    fun getAllDiaries(): List<Diary> {
+    fun getDiaryListByTitleOrContent(searchText: String): List<Diary> {
+        if (searchText.isBlank()) {
+            return emptyList()
+        }
+
         val db = readableDatabase
 
-        val selectQuery = "SELECT * FROM $TABLE_NAME"
-        val cursor = db.rawQuery(selectQuery, null)
+        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_TITLE LIKE ? OR $COLUMN_CONTENT LIKE ? ORDER BY $COLUMN_DATE ASC"
+        val selectionArgs = arrayOf("%$searchText%", "%$searchText%")
+        val cursor = db.rawQuery(selectQuery, selectionArgs)
 
-        val diaries = mutableListOf<Diary>()
+        val diaryList = mutableListOf<Diary>()
 
         with(cursor) {
             while (moveToNext()) {
                 val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
-                val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
-                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
-                val content = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
+                val storedDate = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val storedTitle = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val storedContent = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
 
-                val diary = Diary(id, date, title, content)
-                diaries.add(diary)
+                val diary = Diary(id, storedDate, storedTitle, storedContent)
+                diaryList.add(diary)
             }
             close()
         }
 
         db.close()
 
-        return diaries
+        return diaryList
     }
+
+//    fun getAllDiaries(): List<Diary> {
+//        val db = readableDatabase
+//
+//        val selectQuery = "SELECT * FROM $TABLE_NAME ORDER BY $COLUMN_DATE ASC"
+//        val cursor = db.rawQuery(selectQuery, null)
+//
+//        val diaries = mutableListOf<Diary>()
+//
+//        with(cursor) {
+//            while (moveToNext()) {
+//                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+//                val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+//                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+//                val content = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
+//
+//                val diary = Diary(id, date, title, content)
+//                diaries.add(diary)
+//            }
+//            close()
+//        }
+//
+//        db.close()
+//
+//        return diaries
+//    }
 
     fun updateDiary(id: Long, date: LocalDate, title: String, content: String): Int {
         val db = writableDatabase

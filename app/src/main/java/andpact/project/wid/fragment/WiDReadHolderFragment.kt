@@ -38,7 +38,7 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp),
+                    .height(45.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
@@ -74,6 +74,8 @@ fun WiDReadHolderFragment(navController: NavController, buttonsVisible: MutableS
                 )
             }
         }
+
+        HorizontalDivider()
 
         HorizontalPager(state = pagerState) {page ->
             when (page) {
