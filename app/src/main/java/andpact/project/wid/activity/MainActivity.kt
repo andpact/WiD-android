@@ -3,7 +3,10 @@ package andpact.project.wid.activity
 import andpact.project.wid.R
 import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
+import android.app.PendingIntent.getActivity
+import android.content.Context
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -35,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
         // window inset(시스템 네비게이션 바가 차지하는 공간)을 자동이 아닌 수동으로 설정하겠다.
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         setContent {
             WiDMainActivity()
@@ -143,12 +148,12 @@ fun WiDMainActivity() {
             bottomBar = {
                 BottomBar(
                     modifier = Modifier
-//                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
-                        .windowInsetsPadding( // 좀 더 정교한 위와 같은 방식
-                            WindowInsets.navigationBars.only(
-                                WindowInsetsSides.Vertical
-                            )
-                        ),
+//                        .windowInsetsPadding( // 좀 더 정교한 아래와와 같은 방식
+//                            WindowInsets.navigationBars.only(
+//                                WindowInsetsSides.Bottom
+//                            )
+//                        ),
+                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
                     navController = navController,
                     state = buttonsVisible,
                 )

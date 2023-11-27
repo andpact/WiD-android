@@ -101,45 +101,69 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
                         shape = RoundedCornerShape(8.dp),
                         shadowElevation = 2.dp
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .height(IntrinsicSize.Min)
-                        ) {
-                            Box(
+                        if (wiDList.isEmpty()) {
+                            Row(
                                 modifier = Modifier
-                                    .weight(2f)
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                             ) {
-                                DateBasedPieChartFragment(wiDList = wiDList)
+                                Icon(
+                                    modifier = Modifier
+                                        .scale(0.8f)
+                                        .padding(vertical = 32.dp),
+                                    painter = painterResource(id = R.drawable.outline_textsms_24),
+                                    contentDescription = "No graph",
+                                    tint = Color.Gray
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(vertical = 32.dp),
+                                    text = "표시할 그래프가 없습니다.",
+                                    style = TextStyle(color = Color.Gray)
+                                )
                             }
-
-                            Column(
+                        } else {
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .height(IntrinsicSize.Min)
                             ) {
-                                Text(
-                                    text = "기록률",
-                                    style = TextStyle(fontWeight = FontWeight.Bold)
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(2f)
+                                ) {
+                                    DateBasedPieChartFragment(wiDList = wiDList)
+                                }
 
-                                Text(
-                                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                                    style = TextStyle(
-                                        fontSize = 40.sp,
-                                        color = if (wiDList.isEmpty()) { Color.Gray } else { Color.Unspecified },
-                                        fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "기록률",
+                                        style = TextStyle(fontWeight = FontWeight.Bold)
                                     )
-                                )
 
-                                Text(
-                                    text = if (wiDList.isEmpty()) { "기록 없음" } else { "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간" },
-                                    style = TextStyle(
-                                        fontSize = 12.sp,
-                                        color = Color.Gray
+                                    Text(
+                                        text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                                        style = TextStyle(
+                                            fontSize = 40.sp,
+                                            fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                                        )
                                     )
-                                )
+
+                                    Text(
+                                        text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                                        style = TextStyle(
+                                            fontSize = 12.sp,
+                                            color = Color.Gray
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -200,7 +224,8 @@ fun WiDReadDayFragment(navController: NavController, buttonsVisible: MutableStat
 
                                 Text(
                                     text = diary.content,
-                                    maxLines = 5
+                                    maxLines = 5,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }

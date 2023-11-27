@@ -318,7 +318,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         )
                     }
 
-                    Text("${getDayString(date)}의 WiD")
+                    Text("WiD : ${getDayString(date)}")
                 }
             }
 

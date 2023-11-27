@@ -138,12 +138,7 @@ fun PeriodBasedFragment() {
             LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .windowInsetsPadding(
-                        WindowInsets.navigationBars.only(
-                            WindowInsetsSides.Vertical
-                        )
-                    ),
+                    .padding(horizontal = 16.dp),
                 columns = GridCells.Fixed(2)
             ) {
                 items(titlesWithAll.size + 1) { index ->
@@ -269,11 +264,6 @@ fun PeriodBasedFragment() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .windowInsetsPadding(
-                        WindowInsets.navigationBars.only(
-                            WindowInsetsSides.Vertical
-                        )
-                    ),
             ) {
                 items(periods.size) { index ->
                     Row(

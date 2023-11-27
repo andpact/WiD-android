@@ -24,7 +24,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WiD"
         tools:targetApi="31">
-<!--        android:windowSoftInputMode="adjustResize"-->
 
 <!--        액티비티를 네비게이션 스택에서 제거하길 원할 때-->
 <!--        android:noHistory="true"-->
@@ -41,6 +40,7 @@
 
         <activity
             android:name=".activity.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true" />
 
 <!--        실제 앱 WiD ID-->
