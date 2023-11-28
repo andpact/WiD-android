@@ -48,7 +48,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableState<Boolean>) {
+fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 데이터베이스
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)
@@ -108,32 +108,36 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        buttonsVisible.value = true
+        mainTopBottomBarVisible.value = true
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         if (showStartPicker) {
-            AlertDialog(modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = colorResource(id = R.color.light_gray),
-                    shape = RoundedCornerShape(8.dp)
-                ),
+            AlertDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.light_gray),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
                 onDismissRequest = { showStartPicker = false }
             ) {
-                Column(modifier = Modifier
-                    .background(color = Color.LightGray.copy(alpha = 0.3f))
-                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                Column(
+                    modifier = Modifier
+                        .background(color = Color.LightGray.copy(alpha = 0.3f))
+                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TimePicker(state = startTimePickerState)
 
-                    Row(modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showStartPicker = false }
@@ -202,27 +206,30 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
         }
 
         if (showFinishPicker) {
-            AlertDialog(modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = colorResource(id = R.color.light_gray),
-                    shape = RoundedCornerShape(8.dp)
-                ),
+            AlertDialog(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colorResource(id = R.color.light_gray),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
                 onDismissRequest = { showFinishPicker = false }
             ) {
-                Column(modifier = Modifier
-                    .background(
-                        color = Color.LightGray.copy(alpha = 0.3f)
-                    )
-                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                Column(
+                    modifier = Modifier
+                        .background(
+                            color = Color.LightGray.copy(alpha = 0.3f)
+                        )
+                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TimePicker(state = finishTimePickerState)
 
-                    Row(modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = { showFinishPicker = false }
@@ -308,7 +315,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                     TextButton(
                         onClick = {
                             navController.popBackStack()
-                            buttonsVisible.value = true
+                            mainTopBottomBarVisible.value = true
                         },
                     ) {
                         Icon(
@@ -318,7 +325,8 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                         )
                     }
 
-                    Text("WiD : ${getDayString(date)}")
+                    // AnnotatedString 끼리 결합해야 TextStyle 적용된다.
+                    Text(buildAnnotatedString { append("WiD : ") } + getDayString(date))
                 }
             }
 
@@ -529,7 +537,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
                                 if (isDeleteButtonPressed) {
                                     wiDService.deleteWiDById(id = wiDId)
                                     navController.popBackStack()
-                                    buttonsVisible.value = true
+                                    mainTopBottomBarVisible.value = true
                                 } else if (isEditing) {
                                     isEditing = false
 
@@ -637,7 +645,7 @@ fun WiDView(wiDId: Long, navController: NavController, buttonsVisible: MutableSt
 
 @Preview(showBackground = true)
 @Composable
-fun WiDViewPreview() {
-    val buttonsVisible = remember { mutableStateOf(true) }
-    WiDView(0, NavController(LocalContext.current), buttonsVisible)
+fun WiDFragmentPreview() {
+    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
+    WiDFragment(0, NavController(LocalContext.current), mainTopBottomBarVisible)
 }

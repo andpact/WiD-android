@@ -2,34 +2,33 @@ package andpact.project.wid.fragment
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+    val pagerState = rememberPagerState(pageCount = { 2 })
+
     val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
-        .fillMaxSize(),
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
     ) {
         AnimatedVisibility(
-            visible = buttonsVisible.value,
+            visible = mainTopBottomBarVisible.value,
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
@@ -55,7 +54,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "스톱워치")
+                        Text(text = "날짜 별 기록")
                     }
                 )
 
@@ -68,20 +67,7 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
                     text = {
-                        Text(text = "타이머")
-                    }
-                )
-
-                Tab(
-                    selected = pagerState.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(2)
-                        }},
-                    selectedContentColor = Color.Black,
-                    unselectedContentColor = Color.LightGray,
-                    text = {
-                        Text(text = "직접 입력")
+                        Text(text = "기간 별 기록")
                     }
                 )
             }
@@ -89,12 +75,17 @@ fun WiDCreateHolderFragment(buttonsVisible: MutableState<Boolean>) {
 
         HorizontalDivider()
 
-        HorizontalPager(state = pagerState, userScrollEnabled = buttonsVisible.value) {page ->
+        HorizontalPager(state = pagerState) {page ->
             when (page) {
-                0 -> WiDCreateStopWatchFragment(buttonsVisible = buttonsVisible)
-                1 -> WiDCreateTimerFragment(buttonsVisible = buttonsVisible)
-                2 -> WiDCreateManualFragment()
+                0 -> DateBasedFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+                1 -> PeriodBasedFragment()
             }
         }
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun ListFragmentPreview() {
+//    ListFragment()
+//}

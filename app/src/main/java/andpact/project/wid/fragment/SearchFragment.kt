@@ -5,16 +5,15 @@ import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.util.getDayStringWith2Lines
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -26,18 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState<Boolean>) {
+fun SearchFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 검색
     var searchText by remember { mutableStateOf("") }
     val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
@@ -51,34 +47,9 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white)),
-//            .padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 검색창
-//        OutlinedTextField(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp),
-//            shape = CircleShape,
-//            value = searchText,
-//            onValueChange = { newText ->
-//                searchText = newText
-//            },
-//            placeholder = {
-//                Text(text = "제목 또는 내용으로 검색..")
-//            },
-//            leadingIcon = {
-//                Icon(imageVector = Icons.Default.Search, contentDescription = "search")
-//            },
-//            singleLine = true,
-//            colors = TextFieldDefaults.colors(
-//                focusedContainerColor = Color.White,
-//                unfocusedContainerColor = Color.White,
-//                disabledContainerColor = Color.White,
-//                errorContainerColor = Color.White
-//            )
-//        )
-
         BasicTextField(
             value = searchText,
             onValueChange = { newText ->
@@ -165,9 +136,9 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
                                 .fillMaxWidth()
                                 .aspectRatio(0.5f)
                                 .clickable {
-                                    navController.navigate(Destinations.DiaryFragment.route + "/${diary.date}")
+                                    navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
 
-                                    buttonsVisible.value = false
+                                    mainTopBottomBarVisible.value = false
                                 },
                         ) {
                             ElevatedCard(
@@ -227,6 +198,6 @@ fun WiDSearchFragment(navController: NavController, buttonsVisible: MutableState
 
 //@Preview(showBackground = true)
 //@Composable
-//fun WiDSearchFragmentPreview() {
-//    WiDSearchFragment()
+//fun SearchFragmentPreview() {
+//    SearchFragment()
 //}

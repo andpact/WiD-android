@@ -23,7 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import java.time.*
@@ -32,7 +31,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDCreateManualFragment() {
+fun ManualFragment() {
     // 날짜
     val today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
@@ -457,7 +456,8 @@ fun WiDCreateManualFragment() {
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .weight(1f),
-                                text = if (isDateAssigned) getDayString(date) else buildAnnotatedString { append("") },
+                                text = if (isDateAssigned) getDayString(date) else buildAnnotatedString { append("날짜") },
+                                color = if (isDateAssigned) Color.Unspecified else Color.Gray
                             )
                         }
 
@@ -656,6 +656,6 @@ fun WiDCreateManualFragment() {
 
 @Preview(showBackground = true)
 @Composable
-fun WiDCreateManualFragmentPreview() {
-    WiDCreateManualFragment()
+fun ManualFragmentPreview() {
+    ManualFragment()
 }

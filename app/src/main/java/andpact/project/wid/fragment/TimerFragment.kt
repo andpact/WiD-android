@@ -4,20 +4,15 @@ import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
-import android.widget.NumberPicker
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -38,7 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.IconCompat
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -47,11 +43,16 @@ import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
-    val wiDService = WiDService(context = LocalContext.current)
-
+fun TimerFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 날짜
     var date: LocalDate = LocalDate.now()
+
+    // WiD
+    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList = remember(date) { wiDService.readDailyWiDListByDate(date) }
+
+    // 합계
+//    val totalDurationMap = remember(wiDList) { getTotalDurationMapByTitle(wiDList = wiDList) }
 
     // 제목
     var title by remember { mutableStateOf(titles[0]) }
@@ -64,13 +65,16 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
     // 타이머
-    var isRunning by remember { mutableStateOf(false) }
+    var isRecording by remember { mutableStateOf(false) }
+    var isRecordingStop by remember { mutableStateOf(false) }
+    var isTimerReset by remember { mutableStateOf(true) }
     var finishTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
     var remainingTime by remember { mutableStateOf(0L) }
     var buttonText by remember { mutableStateOf("시작") }
     val itemHeight = 30.dp
     val pickerHeight = itemHeight * 3 + 16.dp * 2 // 아이템 사이의 여백 16을 두 번 추가해줌.
+    var timerTopBottomBarVisible by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
     // 타이머 시간 선택
@@ -94,21 +98,29 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
     val currentSecondIndex = remember { derivedStateOf { lazySecondListState.firstVisibleItemIndex } }
     val currentSecondScrollOffset = remember { derivedStateOf { lazySecondListState.firstVisibleItemScrollOffset } }
 
-    fun startWiD() {
-        isRunning = true
+    fun startTimer() {
+        isRecording = true
+        isRecordingStop = false
+        isTimerReset = false
+
+        coroutineScope.launch {
+            delay(3000)
+            if (isRecording) {
+                timerTopBottomBarVisible = false
+            }
+        }
 
         date = LocalDate.now()
         start = LocalTime.now()
-
-        buttonsVisible.value = false
 
         buttonText = "중지"
 
         finishTime = System.currentTimeMillis() + remainingTime
     }
 
-    fun finishWiD() {
-        isRunning = false
+    fun finishTimer() {
+        isRecording = false
+        isRecordingStop = true
 
         finish = LocalTime.now()
 
@@ -151,7 +163,11 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         }
     }
 
-    fun resetWiD() {
+    fun resetTimer() {
+        isRecordingStop = false
+        isTimerReset = true
+
+        timerTopBottomBarVisible = true
 //        finishTime = 0
 //        currentTime = 0
 
@@ -168,34 +184,95 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
         remainingTime = 0
 
         buttonText = "시작"
-
-        buttonsVisible.value = true
     }
 
-    LaunchedEffect(isRunning) {
-        while (isRunning) {
+    LaunchedEffect(isRecording) {
+        val today = LocalDate.now()
+
+        // 날짜가 변경되면 갱신해줌.
+        if (date != today) {
+            date = today
+        }
+
+        while (isRecording) {
             currentTime = System.currentTimeMillis() // currentTime은 1초마다 갱신 되어야 함.
             if (currentTime < finishTime) {
+                delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
                 remainingTime = finishTime - currentTime
-            } else { // 시간이 0초가 되면 종료 후 리셋시킴
-                finishWiD()
-                resetWiD()
+            } else { // 시간이 0초가 되면 종료
+                finishTimer()
+                resetTimer()
             }
-            delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
+        }
+    }
+
+    // 휴대폰 뒤로 가기 버튼 클릭 시
+    BackHandler(enabled = true) {
+        navController.popBackStack()
+        mainTopBottomBarVisible.value = true
+
+        if (isRecording) {
+            finishTimer()
         }
     }
 
     // 전체 화면
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(colorResource(id = R.color.ghost_white))
-        .padding(16.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(id = R.color.ghost_white))
+            .clickable(enabled = isRecording) {
+                coroutineScope.launch {
+                    timerTopBottomBarVisible = true
+                    delay(3000)
+                    if (isRecording) {
+                        timerTopBottomBarVisible = false
+                    }
+                }
+            }
     ) {
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.TopCenter),
+            visible = timerTopBottomBarVisible,
+            enter = expandVertically{ 0 },
+            exit = shrinkVertically{ 0 },
+        ) {
+            // 상단 바
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            navController.popBackStack()
+                            mainTopBottomBarVisible.value = true
+
+                            finishTimer()
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "Back",
+                            tint = Color.Black
+                        )
+                    }
+
+                    Text(text = "타이머")
+                }
+            }
+        }
+
         // 타이머 초기 화면
-        if (!isRunning && buttonsVisible.value) {
+        if (isTimerReset) {
             Column(
                 modifier = Modifier
-                    .padding(PaddingValues(bottom = 150.dp))
                     .align(Alignment.Center),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -375,7 +452,6 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(PaddingValues(bottom = 140.dp))
                     .align(Alignment.Center),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -435,92 +511,117 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
             }
         }
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .align(Alignment.BottomCenter),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter),
+            visible = timerTopBottomBarVisible,
+            enter = expandVertically{ 0 },
+            exit = shrinkVertically{ 0 },
         ) {
-            Box(modifier = Modifier
-                .clip(CircleShape)
-                .size(10.dp)
-                .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
-            )
-
-            ExposedDropdownMenuBox(modifier = Modifier
-                .weight(1f),
-                expanded = titleMenuExpanded,
-                onExpandedChange = { if (!isRunning && buttonsVisible.value) titleMenuExpanded = !titleMenuExpanded },
+            // 하단 바
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TextField(modifier = Modifier
-                    .menuAnchor(),
-                    readOnly = true,
-                    value = titleMap[title] ?: "공부",
-                    textStyle = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
-                    onValueChange = {},
-                    trailingIcon = { if (!isRunning && buttonsVisible.value) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                )
-
-                ExposedDropdownMenu(
-                    expanded = titleMenuExpanded,
-                    onDismissRequest = { titleMenuExpanded = false }
+                Row(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    titles.forEach { menuTitle ->
-                        DropdownMenuItem(
-                            text = { Text(text = titleMap[menuTitle] ?: "공부") },
-                            onClick = {
-                                title = menuTitle
-                                titleMenuExpanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(10.dp)
+                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = titleMenuExpanded,
+                        onExpandedChange = { if (!isRecording && isTimerReset) titleMenuExpanded = !titleMenuExpanded },
+                    ) {
+                        TextField(
+                            modifier = Modifier
+                                .menuAnchor(),
+                            readOnly = true,
+                            value = titleMap[title] ?: "공부",
+                            textStyle = TextStyle(textAlign = TextAlign.Center),
+                            onValueChange = {},
+                            trailingIcon = { if (!isRecording && isTimerReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                        )
+
+                        ExposedDropdownMenu(
+                            modifier = Modifier
+                                .background(Color.White),
+                            expanded = titleMenuExpanded,
+                            onDismissRequest = { titleMenuExpanded = false }
+                        ) {
+                            titles.forEach { menuTitle ->
+                                DropdownMenuItem(
+                                    text = { Text(text = titleMap[menuTitle] ?: "공부") },
+                                    onClick = {
+                                        title = menuTitle
+                                        titleMenuExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .size(10.dp)
+                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
+                                        )
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .weight(2f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                ) {
+                    if (isRecordingStop) {
+                        TextButton(
+                            shape = RectangleShape,
+                            onClick = { resetTimer() },
+                        ) {
+                            Text(
+                                text = "초기화",
+                                style = TextStyle(color = Color.Black)
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        shape = RectangleShape,
+                        onClick = { if (isRecording) finishTimer() else startTimer() },
+                        enabled = remainingTime != 0L
+                    ) {
+                        Text(text = buttonText,
+                            style = TextStyle(
+                                color = if (remainingTime == 0L) {
+                                    Color.LightGray
+                                } else if (buttonText == "중지") {
+                                    colorResource(id = R.color.orange_red)
+                                } else if (buttonText == "계속") {
+                                    colorResource(id = R.color.lime_green)
+                                } else {
+                                    colorResource(id = R.color.deep_sky_blue)
+                                }
+                            )
                         )
                     }
                 }
-            }
-
-            TextButton(modifier = Modifier
-                .weight(1f)
-                .background(
-                    if (!(!isRunning && !buttonsVisible.value)) Color.LightGray else Color.Black,
-                    shape = RoundedCornerShape(8.dp)
-                ),
-                onClick = { if (!isRunning) { resetWiD() } },
-                enabled = !isRunning && !buttonsVisible.value
-            ) {
-                Text(text = "초기화",
-                    style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            TextButton(modifier = Modifier
-                .weight(1f)
-                .background(
-                    if (remainingTime == 0L) {
-                        Color.LightGray
-                    } else if (buttonText == "중지") {
-                        colorResource(id = R.color.orange_red)
-                    } else if (buttonText == "계속") {
-                        colorResource(id = R.color.lime_green)
-                    } else {
-                        colorResource(id = R.color.deep_sky_blue)
-                    }, shape = RoundedCornerShape(8.dp)
-                ),
-                onClick = {
-                    if (!isRunning) startWiD() else finishWiD()
-                },
-                enabled = remainingTime != 0L
-            ) {
-                Text(text = buttonText,
-                    style = TextStyle(color = Color.White, fontWeight = FontWeight.Bold)
-                )
             }
         }
     }
@@ -528,7 +629,7 @@ fun WiDCreateTimerFragment(buttonsVisible: MutableState<Boolean>) {
 
 @Preview(showBackground = true)
 @Composable
-fun WiDCreateTimerFragmentPreview() {
-    val buttonsVisible = remember { mutableStateOf(true) }
-    WiDCreateTimerFragment(buttonsVisible = buttonsVisible)
+fun TimerFragmentPreview() {
+    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
+    TimerFragment(NavController(LocalContext.current), mainTopBottomBarVisible = mainTopBottomBarVisible)
 }

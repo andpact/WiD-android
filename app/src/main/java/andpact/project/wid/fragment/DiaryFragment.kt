@@ -4,14 +4,8 @@ import andpact.project.wid.R
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.util.getDayString
-import android.graphics.Point
-import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.interaction.FocusInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardActions
@@ -21,28 +15,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.*
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible: MutableState<Boolean>) {
+fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val clickedDiary = diaryService.getDiaryByDate(date)
@@ -61,7 +50,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        buttonsVisible.value = true
+        mainTopBottomBarVisible.value = true
     }
 
     LaunchedEffect(Unit) {
@@ -92,7 +81,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
                         keyboardController?.hide()
 
                         navController.popBackStack()
-                        buttonsVisible.value = true
+                        mainTopBottomBarVisible.value = true
                     },
                 ) {
                     Icon(
@@ -102,7 +91,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
                     )
                 }
 
-                Text(text = "다이어리 : ${getDayString(date)}")
+                Text(text = buildAnnotatedString { append("다이어리 : ") } + getDayString(date))
             }
 
             TextButton(
@@ -117,7 +106,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
                     }
 
                     navController.popBackStack()
-                    buttonsVisible.value = true
+                    mainTopBottomBarVisible.value = true
                 },
                 enabled = diaryTitle.isNotBlank() && diaryContent.isNotBlank()
             ) {
@@ -160,10 +149,10 @@ fun DiaryFragment(date: LocalDate, navController: NavController, buttonsVisible:
             value = diaryContent,
             placeholder = { Text(text = "내용을 입력해 주세요.") },
             onValueChange = { diaryContent = it },
-//            colors = OutlinedTextFieldDefaults.colors(
-//                focusedBorderColor = Color.Transparent,
-//                unfocusedBorderColor = Color.Transparent,
-//            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+            ),
         )
     }
 }

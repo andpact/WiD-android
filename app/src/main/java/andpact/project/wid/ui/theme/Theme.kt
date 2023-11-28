@@ -23,8 +23,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-//    primary = Purple40,
-    primary = Color.White,
+    primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
 
@@ -58,6 +57,7 @@ fun WiDTheme(
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
+//            (view.context as Activity).window.statusBarColor = Color.Transparent.toArgb()
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
         }
     }

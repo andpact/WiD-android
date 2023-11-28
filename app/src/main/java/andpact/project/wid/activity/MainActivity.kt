@@ -48,10 +48,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableState<Boolean>) {
+fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>) {
     NavHost(
         navController = navController,
-        startDestination = Destinations.WiDCreateHolderFragment.route,
+        startDestination = Destinations.HomeFragmentDestination.route,
 //        enterTransition = {
 //            slideIntoContainer(
 //                AnimatedContentTransitionScope.SlideDirection.Left,
@@ -65,35 +65,44 @@ fun NavigationGraph(navController: NavHostController, buttonsVisible: MutableSta
 //            )
 //        }
     ) {
-        composable(Destinations.WiDCreateHolderFragment.route) {
-            WiDCreateHolderFragment(buttonsVisible)
+        composable(Destinations.HomeFragmentDestination.route) {
+            HomeFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
         }
-        composable(Destinations.WiDReadHolderFragment.route) {
-            WiDReadHolderFragment(navController, buttonsVisible)
+        composable(Destinations.StopWatchFragmentDestination.route) {
+            StopWatchFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
         }
-        composable(Destinations.WiDSearchFragment.route) {
-            WiDSearchFragment(navController, buttonsVisible)
+        composable(Destinations.TimerFragmentDestination.route) {
+            TimerFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
         }
-        composable(Destinations.WiDViewFragment.route + "/{wiDId}") { backStackEntry ->
-            val wiDID = backStackEntry.arguments?.getString("wiDId")?.toLongOrNull() ?: -1L
-            WiDView(wiDId = wiDID, navController = navController, buttonsVisible = buttonsVisible)
+        composable(Destinations.ManualFragmentDestination.route) {
+            ManualFragment()
         }
-        composable(Destinations.DiaryFragment.route + "/{date}") { backStackEntry ->
+        composable(Destinations.ListFragmentDestination.route) {
+            ListFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+        }
+        composable(Destinations.SearchFragmentDestination.route) {
+            SearchFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+        }
+        composable(Destinations.WiDFragmentDestination.route + "/{wiDID}") { backStackEntry ->
+            val wiDID = backStackEntry.arguments?.getString("wiDID")?.toLongOrNull() ?: -1L
+            WiDFragment(wiDId = wiDID, navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+        }
+        composable(Destinations.DiaryFragmentDestination.route + "/{date}") { backStackEntry ->
             val date = run {
                 val dateString = backStackEntry.arguments?.getString("date") ?: ""
                 LocalDate.parse(dateString)
             }
-            DiaryFragment(date = date, navController = navController, buttonsVisible = buttonsVisible)
+            DiaryFragment(date = date, navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
         }
     }
 }
 
 @Composable
-fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    val screens = listOf(Destinations.WiDCreateHolderFragment, Destinations.WiDReadHolderFragment, Destinations.WiDSearchFragment)
+fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
+    val screens = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
 
     AnimatedVisibility(
-        visible = state.value,
+        visible = mainTopBottomBarVisible.value,
         enter = expandVertically{ 0 },
         exit = shrinkVertically{ 0 },
     ) {
@@ -142,27 +151,22 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
 fun WiDMainActivity() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
-        val buttonsVisible = remember { mutableStateOf(true) }
+        val mainTopBottomBarVisible = remember { mutableStateOf(true) }
 
         Scaffold(
             bottomBar = {
                 BottomBar(
                     modifier = Modifier
-//                        .windowInsetsPadding( // 좀 더 정교한 아래와와 같은 방식
-//                            WindowInsets.navigationBars.only(
-//                                WindowInsetsSides.Bottom
-//                            )
-//                        ),
                         .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
                     navController = navController,
-                    state = buttonsVisible,
+                    mainTopBottomBarVisible = mainTopBottomBarVisible,
                 )
             }) { paddingValues ->
             Box(
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                NavigationGraph(navController = navController, buttonsVisible = buttonsVisible)
+                NavigationGraph(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
             }
         }
     }
@@ -173,25 +177,31 @@ sealed class Destinations(
     val title: String? = null,
     val icon: Int? = null
 ) {
-    object WiDCreateHolderFragment : Destinations(
-        route = "wid_create_holder_fragment",
-//        title = "Add",
-        icon = R.drawable.baseline_post_add_24
+    object HomeFragmentDestination : Destinations(
+        route = "home_fragment",
+        icon = R.drawable.baseline_home_24
     )
-    object WiDReadHolderFragment : Destinations(
-        route = "wid_read_holder_fragment",
-//        title = "List",
+    object StopWatchFragmentDestination : Destinations(
+        route = "stopwatch_fragment",
+    )
+    object TimerFragmentDestination : Destinations(
+        route = "timer_fragment",
+    )
+    object ManualFragmentDestination : Destinations(
+        route = "manual_fragment",
+    )
+    object ListFragmentDestination : Destinations(
+        route = "list_fragment",
         icon = R.drawable.baseline_format_list_bulleted_24
     )
-    object WiDSearchFragment : Destinations(
-        route = "wid_search_fragment",
-//        title = "Search",
+    object SearchFragmentDestination : Destinations(
+        route = "search_fragment",
         icon = R.drawable.baseline_search_24
     )
-    object WiDViewFragment : Destinations(
-        route = "wid_view_fragment",
+    object WiDFragmentDestination : Destinations(
+        route = "wid_fragment",
     )
-    object DiaryFragment : Destinations(
+    object DiaryFragmentDestination : Destinations(
         route = "diary_fragment",
     )
 }

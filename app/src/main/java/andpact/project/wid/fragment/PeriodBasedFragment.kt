@@ -673,12 +673,7 @@ fun PeriodBasedFragment() {
                                                     modifier = Modifier
                                                         .clip(CircleShape)
                                                         .size(10.dp)
-                                                        .background(
-                                                            color = colorResource(
-                                                                id = colorMap[title]
-                                                                    ?: R.color.light_gray
-                                                            )
-                                                        )
+                                                        .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
                                                 )
                                             }
 
