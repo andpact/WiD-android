@@ -16,15 +16,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import java.time.LocalDate
@@ -43,9 +46,9 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val bringIntoViewRequester = remember { BringIntoViewRequester() }
-    val coroutineScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
+//    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+//    val coroutineScope = rememberCoroutineScope()
+//    val scrollState = rememberScrollState()
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
@@ -83,6 +86,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                         navController.popBackStack()
                         mainTopBottomBarVisible.value = true
                     },
+                    shape = RectangleShape
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_arrow_back_24),
@@ -91,7 +95,15 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                     )
                 }
 
-                Text(text = buildAnnotatedString { append("다이어리 : ") } + getDayString(date))
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("다이어리")
+                        }
+                        append(" - ")
+                        append(getDayString(date))
+                    }
+                )
             }
 
             TextButton(
@@ -108,6 +120,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                     navController.popBackStack()
                     mainTopBottomBarVisible.value = true
                 },
+                shape = RectangleShape,
                 enabled = diaryTitle.isNotBlank() && diaryContent.isNotBlank()
             ) {
                 Text(text = "완료")

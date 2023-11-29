@@ -79,7 +79,7 @@ fun PeriodBasedFragment() {
     // 최고
     val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
 
-    // 나타낼 맵
+    // 맵
     var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
     var selectedMapText by remember { mutableStateOf("합계") }
 

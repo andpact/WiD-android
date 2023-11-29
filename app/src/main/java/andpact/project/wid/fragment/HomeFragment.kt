@@ -39,11 +39,12 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
         )
     )
 
+    // 전체 화면
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
             .background(colorResource(id = R.color.ghost_white))
+            .padding(16.dp)
     ) {
         Box(
             modifier = Modifier
@@ -84,9 +85,8 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     TextButton(
                         shape = RectangleShape,
                         onClick = {
-                            mainTopBottomBarVisible.value = false
-
                             navController.navigate(Destinations.StopWatchFragmentDestination.route)
+                            mainTopBottomBarVisible.value = false
                         }
                     ) {
                         Box(
@@ -125,7 +125,6 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         shape = RectangleShape,
                         onClick = {
                             navController.navigate(Destinations.TimerFragmentDestination.route)
-
                             mainTopBottomBarVisible.value = false
                         }
                     ) {
@@ -168,7 +167,6 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     shape = RectangleShape,
                     onClick = {
                         navController.navigate(Destinations.ManualFragmentDestination.route)
-
                         mainTopBottomBarVisible.value = false
                     }
                 ) {

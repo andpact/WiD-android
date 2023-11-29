@@ -25,12 +25,15 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,7 +76,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     var remainingTime by remember { mutableStateOf(0L) }
     var buttonText by remember { mutableStateOf("시작") }
     val itemHeight = 30.dp
-    val pickerHeight = itemHeight * 3 + 16.dp * 2 // 아이템 사이의 여백 16을 두 번 추가해줌.
+    val pickerHeight = itemHeight * 3 + (16.dp * 2) // 아이템 사이의 여백 16을 두 번 추가해줌.
     var timerTopBottomBarVisible by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -242,9 +245,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp),
+                    .height(45.dp)
+                    .padding(end = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -256,6 +260,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
 
                             finishTimer()
                         },
+                        shape = RectangleShape
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_arrow_back_24),
@@ -264,7 +269,21 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         )
                     }
 
-                    Text(text = "타이머")
+                    Text(
+                        text = "타이머",
+                        style = TextStyle(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                if (isRecording || isRecordingStop) {
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("종료 시간 ")
+                            }
+                            append(formatTime(time = finishTime, "a H시 mm분 ss초"))
+                        }
+                    )
                 }
             }
         }
@@ -302,7 +321,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     )
                 }
 
-                HorizontalDivider()
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
 
                 Row {
                     // 시간 선택
@@ -445,7 +467,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     }
                 }
 
-                HorizontalDivider()
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
             }
         } else {
             // 타이머 남은 시간 텍스트 뷰
@@ -459,55 +484,50 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     modifier = Modifier
                         .fillMaxWidth(),
                     text = formatTimerTime(time = remainingTime),
-                    style = TextStyle(fontSize = 50.sp, textAlign = TextAlign.Center, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))
+                    style = TextStyle(
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        fontFamily = FontFamily(Font(R.font.wellfleet_regular))
+                    )
                 )
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .scale(0.8f),
-                        painter = painterResource(id = R.drawable.outline_timer_24),
-                        contentDescription = "Finish Time")
-
-                    Text(
-                        text = formatTime(time = finishTime)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    TextButton(onClick = {
-                        finishTime += 5 * 60 * 1000
-                    }) {
-                        Text("+ 5m")
-                    }
-
-                    TextButton(onClick = {
-                        finishTime += 15 * 60 * 1000
-                    }) {
-                        Text("+ 15m")
-                    }
-
-                    TextButton(onClick = {
-                        finishTime += 30 * 60 * 1000
-                    }) {
-                        Text("+ 30m")
-                    }
-
-                    TextButton(onClick = {
-                        finishTime += 60 * 60 * 1000
-                    }) {
-                        Text("+ 60m")
-                    }
-                }
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceEvenly
+//                ) {
+//                    TextButton(
+//                        onClick = {
+//                            finishTime += 5 * 60 * 1000
+//                        }
+//                    ) {
+//                        Text("+ 5m")
+//                    }
+//
+//                    TextButton(
+//                        onClick = {
+//                            finishTime += 15 * 60 * 1000
+//                        }
+//                    ) {
+//                        Text("+ 15m")
+//                    }
+//
+//                    TextButton(
+//                        onClick = {
+//                            finishTime += 30 * 60 * 1000
+//                        }
+//                    ) {
+//                        Text("+ 30m")
+//                    }
+//
+//                    TextButton(
+//                        onClick = {
+//                            finishTime += 60 * 60 * 1000
+//                        }
+//                    ) {
+//                        Text("+ 60m")
+//                    }
+//                }
             }
         }
 
@@ -523,7 +543,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     modifier = Modifier
@@ -534,7 +553,11 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(10.dp)
-                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+                            .background(
+                                color = colorResource(
+                                    id = colorMap[title] ?: R.color.light_gray
+                                )
+                            )
                     )
 
                     ExposedDropdownMenuBox(
@@ -575,7 +598,12 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .size(10.dp)
-                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
+                                                .background(
+                                                    color = colorResource(
+                                                        id = colorMap[menuTitle]
+                                                            ?: R.color.light_gray
+                                                    )
+                                                )
                                         )
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -607,7 +635,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         onClick = { if (isRecording) finishTimer() else startTimer() },
                         enabled = remainingTime != 0L
                     ) {
-                        Text(text = buttonText,
+                        Text(
+                            text = buttonText,
                             style = TextStyle(
                                 color = if (remainingTime == 0L) {
                                     Color.LightGray

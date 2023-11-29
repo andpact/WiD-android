@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -49,15 +50,18 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
-    // 데이터베이스
+    // WiD
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)
 
     if (clickedWiD == null) {
-        Text(modifier = Modifier
-            .fillMaxSize(),
+        Text(
+            modifier = Modifier
+                .fillMaxSize(),
             text = "WiD not found",
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center
+        )
+
         return
     }
 
@@ -65,11 +69,12 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
     val today: LocalDate = LocalDate.now()
     val date by remember { mutableStateOf(clickedWiD.date) }
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
-//    val totalMinutes = 24 * 60 // 1440분 (24시간)
 
-    // 데이터베이스
+    // WiD
     val wiDList by remember { mutableStateOf(wiDService.readDailyWiDListByDate(date)) }
+    val clickedWiDIndex = wiDList.indexOf(clickedWiD)
     var isDeleteButtonPressed by remember { mutableStateOf(false) }
+    var isEditing by remember { mutableStateOf(false) }
 
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -77,26 +82,38 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
 
     // 시작 시간
     var start by remember { mutableStateOf(clickedWiD.start) }
+    var startLimit = if (0 < clickedWiDIndex) {
+        wiDList[clickedWiDIndex - 1].finish.plusMinutes(1).withSecond(0)
+    } else {
+        LocalTime.MIDNIGHT
+    }
     var showStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
-    var isStartOverlap by remember { mutableStateOf(false) }
-    var isStartOverCurrentTime by remember { mutableStateOf(false) }
-//    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
+    var isStartOverlap by remember(start) { mutableStateOf(start < startLimit)}
+    var isStartOverCurrentTime by remember(start) { mutableStateOf(date == today && currentTime < start) }
 
     // 종료 시간
     var finish by remember { mutableStateOf(clickedWiD.finish) }
+    var finishLimit = if (clickedWiDIndex < wiDList.size - 1) {
+        wiDList[clickedWiDIndex + 1].start.minusMinutes(1).withSecond(0)
+    } else if (date == today) {
+        currentTime
+    } else {
+        LocalTime.MIDNIGHT.minusSeconds(1)
+    }
     var showFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
-    var isFinishOverlap by remember { mutableStateOf(false) }
-    var isFinishOverCurrentTime by remember { mutableStateOf(false) }
-//    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
+    var isFinishOverlap by remember(finish) { mutableStateOf(finishLimit < finish) }
+    var isFinishOverCurrentTime by remember(finish) { mutableStateOf(date == today && currentTime < finish) }
 
     // 소요 시간
-    var duration by remember { mutableStateOf(clickedWiD.duration) }
-    var isDurationUnderMin by remember { mutableStateOf(false) }
+//    var duration by remember { mutableStateOf(clickedWiD.duration) }
+    var duration by remember(start, finish) { mutableStateOf(Duration.between(start, finish)) }
+//    var isDurationUnderMin by remember { mutableStateOf(false) }
+    var durationExist by remember(duration) { mutableStateOf(Duration.ZERO < duration) }
 
-    // 설명
-    var isEditing by remember { mutableStateOf(false) }
+    // WiD
+    val isTimeOverlap = isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime
 
     LaunchedEffect(isDeleteButtonPressed) {
         if (isDeleteButtonPressed) {
@@ -115,6 +132,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         modifier = Modifier
             .fillMaxSize()
     ) {
+        // 시작 시간 선택
         if (showStartPicker) {
             AlertDialog(
                 modifier = Modifier
@@ -140,7 +158,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showStartPicker = false }
+                        TextButton(
+                            onClick = { showStartPicker = false }
                         ) {
                             Text(text = "취소")
                         }
@@ -151,51 +170,50 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
 
                                 start = newStart
-//                                startPosition = (start.hour * 60 + start.minute).toFloat() / totalMinutes
 
-                                for (existingWiD in wiDList) {
-                                    // wiDList속의 clickedWiD를 사용할 필요가 없기 때문에 continue
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
+//                                for (existingWiD in wiDList) {
+//                                    // wiDList속의 clickedWiD를 사용할 필요가 없기 때문에 continue
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
+//                                        isStartOverlap = true
+//                                        break
+//                                    } else {
+//                                        isStartOverlap = false
+//                                    }
+//                                }
+//
+//                                for (existingWiD in wiDList) {
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+//                                        isFinishOverlap = true
+//                                        break
+//                                    } else {
+//                                        isFinishOverlap = false
+//                                    }
+//                                }
+//
+//                                for (existingWiD in wiDList) {
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
+//                                        isStartOverlap = true
+//                                        isFinishOverlap = true
+//                                        break
+//                                    }
+//                                }
 
-                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                        isStartOverlap = true
-                                        break
-                                    } else {
-                                        isStartOverlap = false
-                                    }
-                                }
+//                                isStartOverCurrentTime = date == today && currentTime < start
 
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
-
-                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                        isFinishOverlap = true
-                                        break
-                                    } else {
-                                        isFinishOverlap = false
-                                    }
-                                }
-
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
-
-                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                        isStartOverlap = true
-                                        isFinishOverlap = true
-                                        break
-                                    }
-                                }
-
-                                isStartOverCurrentTime = date == today && currentTime < start
-
-                                duration = Duration.between(start, finish)
-                                isDurationUnderMin = duration <= Duration.ZERO
+//                                duration = Duration.between(start, finish)
+//                                isDurationUnderMin = duration <= Duration.ZERO
                             }
                         ) {
                             Text(text = "확인")
@@ -205,6 +223,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             }
         }
 
+        // 종료 시간 선택
         if (showFinishPicker) {
             AlertDialog(
                 modifier = Modifier
@@ -217,9 +236,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             ) {
                 Column(
                     modifier = Modifier
-                        .background(
-                            color = Color.LightGray.copy(alpha = 0.3f)
-                        )
+                        .background(color = Color.LightGray.copy(alpha = 0.3f))
                         .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -232,7 +249,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showFinishPicker = false }
+                        TextButton(
+                            onClick = { showFinishPicker = false }
                         ) {
                             Text(text = "취소")
                         }
@@ -243,50 +261,49 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
 
                                 finish = newFinish
-//                                finishPosition = (finish.hour * 60 + finish.minute).toFloat() / totalMinutes
 
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
+//                                for (existingWiD in wiDList) {
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
+//                                        isStartOverlap = true
+//                                        break
+//                                    } else {
+//                                        isStartOverlap = false
+//                                    }
+//                                }
+//
+//                                for (existingWiD in wiDList) {
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+//                                        isFinishOverlap = true
+//                                        break
+//                                    } else {
+//                                        isFinishOverlap = false
+//                                    }
+//                                }
+//
+//                                for (existingWiD in wiDList) {
+//                                    if (existingWiD == clickedWiD) {
+//                                        continue
+//                                    }
+//
+//                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
+//                                        isStartOverlap = true
+//                                        isFinishOverlap = true
+//                                        break
+//                                    }
+//                                }
 
-                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                        isStartOverlap = true
-                                        break
-                                    } else {
-                                        isStartOverlap = false
-                                    }
-                                }
+//                                isFinishOverCurrentTime = date == today && currentTime < finish
 
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
-
-                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                        isFinishOverlap = true
-                                        break
-                                    } else {
-                                        isFinishOverlap = false
-                                    }
-                                }
-
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD == clickedWiD) {
-                                        continue
-                                    }
-
-                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                        isStartOverlap = true
-                                        isFinishOverlap = true
-                                        break
-                                    }
-                                }
-
-                                isFinishOverCurrentTime = date == today && currentTime < finish
-
-                                duration = Duration.between(start, finish)
-                                isDurationUnderMin = duration <= Duration.ZERO
+//                                duration = Duration.between(start, finish)
+//                                isDurationUnderMin = duration <= Duration.ZERO
                             }
                         ) {
                             Text(text = "확인")
@@ -307,7 +324,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -317,6 +334,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             navController.popBackStack()
                             mainTopBottomBarVisible.value = true
                         },
+                        shape = RectangleShape
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_arrow_back_24),
@@ -326,53 +344,63 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     }
 
                     // AnnotatedString 끼리 결합해야 TextStyle 적용된다.
-                    Text(buildAnnotatedString { append("WiD : ") } + getDayString(date))
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("WiD")
+                            }
+                            append(" - ")
+                            append(getDayString(date))
+                        }
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        if (isEditing) {
+                            wiDService.updateWiD(
+                                id = wiDId,
+                                date = date,
+                                title = title,
+                                start = start,
+                                finish = finish,
+                                duration = duration
+                            )
+
+                            isEditing = false
+                        } else {
+                            isEditing = true
+                        }
+                    },
+                    shape = RectangleShape,
+                    enabled = !isTimeOverlap && durationExist
+                ) {
+                    Text(
+                        text = if (isEditing) "완료" else "수정",
+                        style = TextStyle(
+                            color = if (!(!isTimeOverlap && durationExist)) {
+                                Color.LightGray
+                            } else if (isEditing) {
+                                colorResource(id = R.color.lime_green)
+                            } else {
+                                colorResource(id = R.color.deep_sky_blue)
+                            }
+                        )
+                    )
                 }
             }
 
+            // 컨텐츠
             Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
             ) {
-                if (isEditing) {
-                    // 막대 그래프
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // 가로 막대 차트
-                        Text(
-                            text = "시간 그래프",
-                            style = TextStyle(
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                            )
-                        )
-
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 32.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                HorizontalBarChartView(wiDList = wiDList)
-                            }
-                        }
-                    }
-                }
-
+                // Clicked WiD
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Clicked WiD
                     Text(
                         text = "WiD",
                         style = TextStyle(
@@ -399,7 +427,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                         .scale(0.8f)
                                         .padding(16.dp),
                                     painter = painterResource(id = R.drawable.baseline_calendar_today_24),
-                                    contentDescription = "date"
+                                    contentDescription = "Date"
                                 )
 
                                 Text(
@@ -414,52 +442,76 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable(enabled = isEditing) { titleMenuExpanded = true },
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                    contentDescription = "title"
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = titleMap[title] ?: title,
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .size(10.dp)
-                                        .background(
-                                            color = colorResource(
-                                                id = colorMap[title] ?: R.color.light_gray
-                                            )
-                                        )
-                                )
-
-                                DropdownMenu(
-                                    modifier = Modifier
-            //                        .padding(horizontal = 32.dp)
-                                        .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-                                    expanded = titleMenuExpanded,
-                                    onDismissRequest = {
-                                        titleMenuExpanded = false
-                                    },
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    titles.forEach { menuItem ->
-                                        DropdownMenuItem(
-                                            onClick = {
-                                                title = menuItem
-                                                titleMenuExpanded = false
-                                            },
-                                            text = {
-                                                Text(text = titleMap[menuItem] ?: menuItem)
-                                            }
-                                        )
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                        contentDescription = "Title"
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = titleMap[title] ?: title,
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .size(10.dp)
+                                            .background(
+                                                color = colorResource(
+                                                    id = colorMap[title] ?: R.color.light_gray
+                                                )
+                                            )
+                                    )
+
+                                    DropdownMenu(
+                                        modifier = Modifier
+                                            .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
+                                        expanded = titleMenuExpanded,
+                                        onDismissRequest = {
+                                            titleMenuExpanded = false
+                                        },
+                                    ) {
+                                        titles.forEach { menuTitle ->
+                                            DropdownMenuItem(
+                                                onClick = {
+                                                    title = menuTitle
+                                                    titleMenuExpanded = false
+                                                },
+                                                trailingIcon = {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(CircleShape)
+                                                            .size(10.dp)
+                                                            .background(
+                                                                color = colorResource(
+                                                                    id = colorMap[menuTitle]
+                                                                        ?: R.color.light_gray
+                                                                )
+                                                            )
+                                                    )
+                                                },
+                                                text = { Text(text = titleMap[menuTitle] ?: menuTitle) }
+                                            )
+                                        }
                                     }
+                                }
+
+                                if (isEditing) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                        contentDescription = "Edit title"
+                                    )
                                 }
                             }
 
@@ -467,42 +519,68 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable(enabled = isEditing) { showStartPicker = true },
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                    contentDescription = "start"
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                        contentDescription = "Start"
+                                    )
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
-                                    text = start.format(DateTimeFormatter.ofPattern("a h:mm:ss")),
-                                )
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = formatTime(start, "a h:mm:ss")
+                                    )
+                                }
+
+                                if (isEditing) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                        contentDescription = "Edit start"
+                                    )
+                                }
                             }
 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable(enabled = isEditing) { showFinishPicker = true },
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                    contentDescription = "finish"
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                        contentDescription = "Finish"
+                                    )
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
-                                    text = finish.format(DateTimeFormatter.ofPattern("a h:mm:ss"))
-                                )
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = formatTime(finish, "a h:mm:ss")
+                                    )
+                                }
+
+                                if (isEditing) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                        contentDescription = "Edit finish"
+                                    )
+                                }
                             }
 
                             Row(
@@ -514,7 +592,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                     modifier = Modifier
                                         .padding(16.dp),
                                     painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                    contentDescription = "duration"
+                                    contentDescription = "Duration"
                                 )
 
                                 Text(
@@ -525,118 +603,72 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             }
                         }
                     }
+                }
+            }
 
-                    // 버튼
-                    Row(
+            // 하단 바
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp)
+                    .padding(start = 16.dp)
+            ) {
+                if (isEditing) {
+                    Text(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                if (isDeleteButtonPressed) {
-                                    wiDService.deleteWiDById(id = wiDId)
-                                    navController.popBackStack()
-                                    mainTopBottomBarVisible.value = true
-                                } else if (isEditing) {
-                                    isEditing = false
+                            .align(Alignment.CenterStart),
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("선택 가능한 시간")
+                            }
+                            append(" - ")
+                            append(
+                                formatTime(
+                                    time = startLimit,
+                                    patten = "a H:mm"
+                                )
+                            )
+                            append(" ~ ")
+                            append(
+                                formatTime(
+                                    time = finishLimit,
+                                    patten = "a H:mm"
+                                )
+                            )
+                        }
+                    )
+                }
 
-                                    // date는 애초에 변경 불가로 설정함.
-                                    title = clickedWiD.title
-                                    start = clickedWiD.start
-                                    finish = clickedWiD.finish
-                                    duration = clickedWiD.duration
-                                } else {
-                                    isDeleteButtonPressed = true
+                TextButton(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd),
+                    onClick = {
+                        if (isDeleteButtonPressed) {
+                            wiDService.deleteWiDById(id = wiDId)
+                            navController.popBackStack()
+                            mainTopBottomBarVisible.value = true
+                        } else {
+                            isDeleteButtonPressed = true
+                        }
+                    },
+                    shape = RectangleShape
+                ) {
+                    Text(
+                        text = if (isDeleteButtonPressed) buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = colorResource(id = R.color.orange_red))) {
+                                append("삭제 확인")
+                            }
+                        } else {
+                            buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = Color.Black)) {
+                                    append("WiD ")
                                 }
-                            },
-                            modifier = Modifier
-                                .background(
-                                    color = if (isDeleteButtonPressed) colorResource(id = R.color.orange_red) else Color.Unspecified,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .border(
-                                    BorderStroke(
-                                        1.dp,
-                                        if (isEditing) Color.Gray else if (isDeleteButtonPressed) Color.Unspecified else colorResource(
-                                            id = R.color.orange_red
-                                        )
-                                    ),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .weight(1f)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = if (isDeleteButtonPressed) R.drawable.outline_delete_24 else if (isEditing) R.drawable.outline_cancel_24 else R.drawable.baseline_delete_24),
-                                    contentDescription = "delete confirmed or cancel or delete",
-                                    tint = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else colorResource(id = R.color.orange_red)
-                                )
-
-                                Text(
-                                    text = if (isDeleteButtonPressed) "삭제 확인" else if (isEditing) "취소" else "삭제",
-                                    style = TextStyle(
-                                        color = if (isDeleteButtonPressed) Color.White else if (isEditing) Color.Gray else colorResource(id = R.color.orange_red),
-                                        textAlign = TextAlign.Center
-                                    )
-                                )
+                                withStyle(style = SpanStyle(color = colorResource(id = R.color.orange_red))) {
+                                    append("삭제")
+                                }
                             }
                         }
-
-                        IconButton(
-                            onClick = {
-                                if (isEditing) {
-                                    wiDService.updateWiD(
-                                        id = wiDId,
-                                        date = date,
-                                        title = title,
-                                        start = start,
-                                        finish = finish,
-                                        duration = duration
-                                    )
-
-                                    isEditing = false
-                                } else {
-                                    isEditing = true
-
-                                    // 수정 버튼을 누르면 삭제 버튼을 누른 상태를 해제함.
-                                    isDeleteButtonPressed = false
-                                }
-                            },
-                            modifier = Modifier
-                                .background(
-                                    color = if (isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO) {
-                                        Color.LightGray
-                                    } else if (isEditing) {
-                                        colorResource(id = R.color.deep_sky_blue)
-                                    } else {
-                                        colorResource(id = R.color.lime_green)
-                                    },
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .weight(1f),
-                            enabled = !(isStartOverlap || isStartOverCurrentTime || isFinishOverlap || isFinishOverCurrentTime || isDurationUnderMin || duration == Duration.ZERO)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = if (isEditing) R.drawable.outline_check_box_24 else R.drawable.baseline_edit_24),
-                                    contentDescription = "edit & complete",
-                                    tint = Color.White
-                                )
-
-                                Text(
-                                    text = if (isEditing) "완료" else "수정",
-                                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center),
-                                )
-                            }
-                        }
-                    }
+                    )
                 }
             }
         }

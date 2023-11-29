@@ -21,8 +21,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -42,6 +46,13 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     val diaryService = DiaryService(LocalContext.current)
     val diaryList = remember(searchText) { diaryService.getDiaryListByTitleOrContent(searchText = searchText) }
 
+    // 키보드
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     // 전체화면
     Column(
         modifier = Modifier
@@ -51,6 +62,8 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     ) {
         // 검색창
         BasicTextField(
+            modifier = Modifier
+                .focusRequester(focusRequester = focusRequester),
             value = searchText,
             onValueChange = { newText ->
                 searchText = newText

@@ -72,7 +72,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                     isDragEnabled = false
                     setScaleEnabled(true)
                     setPinchZoom(true)
-                    animateY(500)
+//                    animateY(500)
 
                     // x축
                     xAxis.apply {

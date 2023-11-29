@@ -161,7 +161,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Text(
                         text = "다이어리",
-                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                        )
                     )
 
                     Surface(
@@ -357,7 +360,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Text(
                         text = "WiD 리스트",
-                        style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(R.font.black_han_sans_regular)))
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                        )
                     )
 
                     Column(
@@ -503,7 +509,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                                 )
 
-                                                Text(text = wiD.start.format(DateTimeFormatter.ofPattern("a h:mm")))
+                                                Text(text = formatTime(wiD.start, "a h:mm"))
                                             }
 
                                             Row(
@@ -524,7 +530,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                                 )
 
-                                                Text(text = wiD.finish.format(DateTimeFormatter.ofPattern("a h:mm")))
+                                                Text(text = formatTime(wiD.finish, "a h:mm"))
                                             }
                                         }
                                     }

@@ -191,8 +191,8 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
                     // 설정
                     layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
-                    animateX(500)
-                    animateY(500)
+//                    animateX(500)
+//                    animateY(500)
 
                     setUsePercentValues(false) // Use absolute values
                     description.isEnabled = false // Disable description

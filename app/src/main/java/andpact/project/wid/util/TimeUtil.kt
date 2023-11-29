@@ -9,11 +9,17 @@ import androidx.compose.ui.unit.sp
 import java.time.Duration
 
 import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun formatTime(time: Long): String {
-    val dateFormat = SimpleDateFormat("a H시 mm분 ss초", Locale.getDefault())
+fun formatTime(time: Long, pattern: String): String {
+    val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     return dateFormat.format(Date(time))
+}
+
+fun formatTime(time: LocalTime, patten: String): String {
+    return time.format(DateTimeFormatter.ofPattern(patten))
 }
 
 fun formatTimerTime(time: Long): AnnotatedString {

@@ -66,40 +66,66 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
 //        }
     ) {
         composable(Destinations.HomeFragmentDestination.route) {
-            HomeFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            HomeFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.StopWatchFragmentDestination.route) {
-            StopWatchFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            StopWatchFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.TimerFragmentDestination.route) {
-            TimerFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            TimerFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.ManualFragmentDestination.route) {
-            ManualFragment()
+            ManualFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.ListFragmentDestination.route) {
-            ListFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            ListFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.SearchFragmentDestination.route) {
-            SearchFragment(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            SearchFragment(
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.WiDFragmentDestination.route + "/{wiDID}") { backStackEntry ->
             val wiDID = backStackEntry.arguments?.getString("wiDID")?.toLongOrNull() ?: -1L
-            WiDFragment(wiDId = wiDID, navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            WiDFragment(
+                wiDId = wiDID,
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
         composable(Destinations.DiaryFragmentDestination.route + "/{date}") { backStackEntry ->
             val date = run {
                 val dateString = backStackEntry.arguments?.getString("date") ?: ""
                 LocalDate.parse(dateString)
             }
-            DiaryFragment(date = date, navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+            DiaryFragment(
+                date = date,
+                navController = navController,
+                mainTopBottomBarVisible = mainTopBottomBarVisible
+            )
         }
     }
 }
 
 @Composable
 fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    val screens = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
+    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
 
     AnimatedVisibility(
         visible = mainTopBottomBarVisible.value,
@@ -117,20 +143,18 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                screens.forEach { screen ->
+                destinationList.forEach { destination ->
                     NavigationBarItem(
                         alwaysShowLabel = false,
-                        icon = {
-                            Icon(painter = painterResource(id = screen.icon!!), contentDescription = "")
-                        },
-                        selected = currentRoute == screen.route,
+                        icon = { Icon(painter = painterResource(id = destination.icon!!), contentDescription = "") },
+                        selected = currentRoute == destination.route,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
+                            navController.navigate(destination.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
                                     saveState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                                launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
+                                restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
@@ -166,7 +190,10 @@ fun WiDMainActivity() {
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                NavigationGraph(navController = navController, mainTopBottomBarVisible = mainTopBottomBarVisible)
+                NavigationGraph(
+                    navController = navController,
+                    mainTopBottomBarVisible = mainTopBottomBarVisible
+                )
             }
         }
     }

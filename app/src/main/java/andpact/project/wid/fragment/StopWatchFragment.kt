@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -217,7 +218,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     )
                 }
 
-                Text(text = "스탑워치")
+                Text(
+                    text = "스탑워치",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
             }
         }
 
@@ -241,8 +245,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -253,16 +255,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(10.dp)
-                            .background(
-                                color = colorResource(
-                                    id = colorMap[title] ?: R.color.light_gray
-                                )
-                            )
+                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
                     )
 
                     ExposedDropdownMenuBox(
-                        modifier = Modifier
-                            .weight(1f),
                         expanded = titleMenuExpanded,
                         onExpandedChange = { if (!isRecording && isStopWatchReset) titleMenuExpanded = !titleMenuExpanded }
                     ) {
@@ -300,12 +296,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .size(10.dp)
-                                                .background(
-                                                    color = colorResource(
-                                                        id = colorMap[menuTitle]
-                                                            ?: R.color.light_gray
-                                                    )
-                                                )
+                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
                                         )
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
