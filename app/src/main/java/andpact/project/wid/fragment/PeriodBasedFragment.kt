@@ -5,6 +5,7 @@ import andpact.project.wid.model.Diary
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -55,10 +57,8 @@ fun PeriodBasedFragment() {
     var finishDate by remember { mutableStateOf(getLastDayOfWeek(today)) }
 
     // 제목
-    val coroutineScope = rememberCoroutineScope()
     var selectedTitle by remember { mutableStateOf(titlesWithAll[0]) }
-    var showTitleBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val titleBottomSheetState = rememberModalBottomSheetState()
+    var titleMenuExpanded by remember { mutableStateOf(false) }
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
@@ -67,8 +67,6 @@ fun PeriodBasedFragment() {
 
     // 기간
     var selectedPeriod by remember { mutableStateOf(periods[0]) }
-    var showPeriodBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val periodBottomSheetState = rememberModalBottomSheetState()
 
     // 합계
     val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
@@ -88,327 +86,64 @@ fun PeriodBasedFragment() {
 //        periodBottomSheetState.hide()
 //    }
 
-    // 제목 변경
-    if (showTitleBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                coroutineScope.launch {
-                    titleBottomSheetState.hide()
-
-                    if (!titleBottomSheetState.isVisible) {
-                        showTitleBottomSheet = false
-                    }
-                }
-            },
-            containerColor = Color.White,
-            sheetState = titleBottomSheetState,
-            dragHandle = null,
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "조회할 제목 선택",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
-
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            titleBottomSheetState.hide()
-
-                            if (!titleBottomSheetState.isVisible) {
-                                showTitleBottomSheet = false
-                            }
-                        }
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_clear_24),
-                        contentDescription = "Close title bottom sheet",
-                        tint = Color.Black
-                    )
-                }
-            }
-
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                columns = GridCells.Fixed(2)
-            ) {
-                items(titlesWithAll.size + 1) { index ->
-                    if (index == 1) {
-                        return@items
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                // 기존 제목과 다른 제목을 선택하면 selectedTitle이 갱신됨.
-                                if (selectedTitle != titlesWithAll[if (1 < index) index - 1 else index]) {
-                                    selectedTitle =
-                                        titlesWithAll[if (1 < index) index - 1 else index]
-                                }
-
-                                coroutineScope.launch {
-                                    titleBottomSheetState.hide()
-
-                                    if (!titleBottomSheetState.isVisible) {
-                                        showTitleBottomSheet = false
-                                    }
-                                }
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(text = titleMapWithAll[titlesWithAll[if (1 < index) index - 1 else index]] ?: "")
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(10.dp)
-                                    .background(
-                                        color = colorResource(
-                                            id = colorMap[titlesWithAll[if (1 < index) index - 1 else index]]
-                                                ?: R.color.light_gray
-                                        )
-                                    )
-                            )
-                        }
-
-                        RadioButton(
-                            selected = selectedTitle == titlesWithAll[if (1 < index) index - 1 else index],
-                            onClick = { // 라디오 버튼도 온 클릭을 지정해줘야 함.
-                                // 기존 제목과 다른 제목을 선택하면 selectedTitle이 갱신됨.
-                                if (selectedTitle != titlesWithAll[if (1 < index) index - 1 else index]) {
-                                    selectedTitle = titlesWithAll[if (1 < index) index - 1 else index]
-                                }
-
-                                coroutineScope.launch {
-                                    titleBottomSheetState.hide()
-
-                                    if (!titleBottomSheetState.isVisible) {
-                                        showTitleBottomSheet = false
-                                    }
-                                }
-                            },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = Color.Black
-                            ),
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // 기간 변경
-    if (showPeriodBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                coroutineScope.launch {
-                    periodBottomSheetState.hide()
-
-                    if (!periodBottomSheetState.isVisible) {
-                        showPeriodBottomSheet = false
-                    }
-                }
-            },
-            containerColor = Color.White,
-            sheetState = periodBottomSheetState,
-            dragHandle = null
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "조회할 기간 선택",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
-
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            periodBottomSheetState.hide()
-
-                            if (!periodBottomSheetState.isVisible) {
-                                showPeriodBottomSheet = false
-                            }
-                        }
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_clear_24),
-                        contentDescription = "Close period bottom sheet",
-                        tint = Color.Black
-                    )
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                items(periods.size) { index ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                // 선택된 기간을 다시 누르면 아무 반응 없도록.
-                                if (selectedPeriod == periods[index]) {
-                                    coroutineScope.launch {
-                                        periodBottomSheetState.hide()
-
-                                        if (!periodBottomSheetState.isVisible) {
-                                            showPeriodBottomSheet = false
-                                        }
-                                    }
-
-                                    return@clickable
-                                }
-
-                                selectedPeriod = periods[index]
-
-                                if (selectedPeriod == periods[0]) { // 일주일
-                                    startDate = getFirstDayOfWeek(today)
-                                    finishDate = getLastDayOfWeek(today)
-                                } else if (selectedPeriod == periods[1]) { // 한달
-                                    startDate = getFirstDayOfMonth(today)
-                                    finishDate = getLastDayOfMonth(today)
-                                }
-
-                                coroutineScope.launch {
-                                    periodBottomSheetState.hide()
-
-                                    if (!periodBottomSheetState.isVisible) {
-                                        showPeriodBottomSheet = false
-                                    }
-                                }
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = periodMap[periods[index]] ?: "")
-
-                        RadioButton(
-                            selected = selectedPeriod == periods[index],
-                            onClick = {
-                                // 선택된 기간을 다시 누르면 아무 반응 없도록.
-                                if (selectedPeriod == periods[index]) {
-                                    coroutineScope.launch {
-                                        periodBottomSheetState.hide()
-
-                                        if (!periodBottomSheetState.isVisible) {
-                                            showPeriodBottomSheet = false
-                                        }
-                                    }
-
-                                    return@RadioButton
-                                }
-
-                                selectedPeriod = periods[index]
-
-                                if (selectedPeriod == periods[0]) { // 일주일
-                                    startDate = getFirstDayOfWeek(today)
-                                    finishDate = getLastDayOfWeek(today)
-                                } else if (selectedPeriod == periods[1]) { // 한달
-                                    startDate = getFirstDayOfMonth(today)
-                                    finishDate = getLastDayOfMonth(today)
-                                }
-
-                                coroutineScope.launch {
-                                    periodBottomSheetState.hide()
-
-                                    if (!periodBottomSheetState.isVisible) {
-                                        showPeriodBottomSheet = false
-                                    }
-                                }
-                            },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = Color.Black
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     // 전체 화면
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 기간 및 제목 선택
+        // 상단 바
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp)
+                .height(50.dp)
                 .background(Color.White)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             Row(
                 modifier = Modifier
-                    .weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .weight(2f)
             ) {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch{
-                            showTitleBottomSheet = true
-                            titleBottomSheetState.partialExpand()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .scale(0.8f),
-                            painter = painterResource(id = R.drawable.outline_subtitles_24),
-                            contentDescription = "Title"
-                        )
-
-                        Text(text = titleMapWithAll[selectedTitle] ?: "")
-
-                        Box(modifier = Modifier
-                            .clip(CircleShape)
-                            .size(10.dp)
-                            .background(
-                                color = colorResource(
-                                    id = colorMap[selectedTitle] ?: R.color.light_gray
-                                )
+                SingleChoiceSegmentedButtonRow {
+                    periods.forEachIndexed { index: Int, _: String ->
+                        val shape = when (index) {
+                            0 -> RoundedCornerShape(
+                                topStart = 8.dp,
+                                topEnd = 0.dp,
+                                bottomStart = 8.dp,
+                                bottomEnd = 0.dp
                             )
-                        )
+                            periods.size - 1 -> RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 8.dp,
+                                bottomStart = 0.dp,
+                                bottomEnd = 8.dp
+                            )
+                            else -> RectangleShape
+                        }
 
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_drop_down_24),
-                            contentDescription = "Show title bottom sheet"
-                        )
+                        SegmentedButton(
+                            modifier = Modifier
+                                .height(40.dp),
+                            selected = selectedPeriod == periods[index],
+                            shape = shape,
+                            icon = {},
+                            onClick = {
+                                selectedPeriod = periods[index]
+
+                                if (selectedPeriod == periods[0]) { // 일주일
+                                    startDate = getFirstDayOfWeek(today)
+                                    finishDate = getLastDayOfWeek(today)
+                                } else if (selectedPeriod == periods[1]) { // 한달
+                                    startDate = getFirstDayOfMonth(today)
+                                    finishDate = getLastDayOfMonth(today)
+                                }
+                            }
+                        ) {
+                            Text(text = periodMap[periods[index]] ?: "")
+                        }
                     }
                 }
             }
@@ -417,37 +152,66 @@ fun PeriodBasedFragment() {
                 modifier = Modifier
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch{
-                            showPeriodBottomSheet = true
-                            periodBottomSheetState.partialExpand()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.Black
-                    )
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(10.dp)
+                        .background(
+                            color = colorResource(
+                                id = colorMap[selectedTitle] ?: R.color.light_gray
+                            )
+                        )
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = titleMenuExpanded,
+                    onExpandedChange = { titleMenuExpanded = !titleMenuExpanded }
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .menuAnchor(),
+                        readOnly = true,
+                        value = titleMapWithAll[selectedTitle] ?: "공부",
+                        textStyle = TextStyle(textAlign = TextAlign.Center),
+                        onValueChange = {},
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                    )
+
+                    ExposedDropdownMenu(
+                        modifier = Modifier
+                            .background(Color.White),
+                        expanded = titleMenuExpanded,
+                        onDismissRequest = { titleMenuExpanded = false }
                     ) {
-                        Icon(
-                            modifier = Modifier
-                                .scale(0.8f),
-                            painter = painterResource(id = R.drawable.baseline_edit_calendar_24),
-                            contentDescription = "Period"
-                        )
-
-                        Text(text = periodMap[selectedPeriod] ?: "")
-
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_drop_down_24),
-                            contentDescription = "Show period bottom sheet"
-                        )
+                        titlesWithAll.forEach { menuTitle ->
+                            DropdownMenuItem(
+                                text = { Text(text = titleMapWithAll[menuTitle] ?: "공부") },
+                                onClick = {
+                                    selectedTitle = menuTitle
+                                    titleMenuExpanded = false
+                                },
+                                trailingIcon = {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(CircleShape)
+                                            .size(10.dp)
+                                            .background(
+                                                color = colorResource(
+                                                    id = colorMap[menuTitle] ?: R.color.light_gray
+                                                )
+                                            )
+                                    )
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
+                        }
                     }
                 }
             }
@@ -455,6 +219,7 @@ fun PeriodBasedFragment() {
 
         HorizontalDivider()
 
+        // 컨텐츠
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -496,7 +261,7 @@ fun PeriodBasedFragment() {
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         tint = Color.Gray,
-                                        contentDescription = "detail"
+                                        contentDescription = "No graph"
                                     )
 
                                     Text(
@@ -661,7 +426,7 @@ fun PeriodBasedFragment() {
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                                    contentDescription = "title"
+                                                    contentDescription = "Title"
                                                 )
 
                                                 Text(
@@ -673,7 +438,12 @@ fun PeriodBasedFragment() {
                                                     modifier = Modifier
                                                         .clip(CircleShape)
                                                         .size(10.dp)
-                                                        .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+                                                        .background(
+                                                            color = colorResource(
+                                                                id = colorMap[title]
+                                                                    ?: R.color.light_gray
+                                                            )
+                                                        )
                                                 )
                                             }
 
@@ -687,7 +457,7 @@ fun PeriodBasedFragment() {
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                    contentDescription = "duration"
+                                                    contentDescription = "Duration"
                                                 )
 
                                                 Text(text = formatDuration(duration, mode = 2))
@@ -734,7 +504,7 @@ fun PeriodBasedFragment() {
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         tint = Color.Gray,
-                                        contentDescription = "detail"
+                                        contentDescription = "No graph"
                                     )
 
                                     Text(
@@ -745,7 +515,12 @@ fun PeriodBasedFragment() {
                                     )
                                 }
                             } else {
-                                LineChartFragment(title = selectedTitle, wiDList = filteredWiDListByTitle, startDate = startDate, finishDate = finishDate)
+                                LineChartFragment(
+                                    title = selectedTitle,
+                                    wiDList = filteredWiDListByTitle,
+                                    startDate = startDate,
+                                    finishDate = finishDate
+                                )
                             }
                         }
                     }
@@ -783,7 +558,7 @@ fun PeriodBasedFragment() {
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         tint = Color.Gray,
-                                        contentDescription = "detail"
+                                        contentDescription = "No data"
                                     )
 
                                     Text(
@@ -813,7 +588,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Total duration"
+                                                contentDescription = "Total"
                                             )
 
                                             Text(
@@ -832,7 +607,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "duration"
+                                                contentDescription = "Total duration"
                                             )
 
                                             Text(text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
@@ -854,7 +629,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Average duration"
+                                                contentDescription = "Average"
                                             )
 
                                             Text(
@@ -873,7 +648,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "duration"
+                                                contentDescription = "Average duration"
                                             )
 
                                             Text(text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
@@ -895,7 +670,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Max duration"
+                                                contentDescription = "Max"
                                             )
 
                                             Text(
@@ -914,7 +689,7 @@ fun PeriodBasedFragment() {
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "duration"
+                                                contentDescription = "Max duration"
                                             )
 
                                             Text(text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
@@ -930,11 +705,11 @@ fun PeriodBasedFragment() {
 
         HorizontalDivider()
 
-        // 기간 표시 및 버튼
+        // 하단 바
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp)
+                .height(50.dp)
                 .background(Color.White)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,

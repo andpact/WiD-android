@@ -323,7 +323,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp),
+                    .height(50.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
@@ -610,7 +610,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp)
+                    .height(50.dp)
                     .padding(start = 16.dp)
             ) {
                 if (isEditing) {

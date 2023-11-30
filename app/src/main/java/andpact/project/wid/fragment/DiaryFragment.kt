@@ -72,7 +72,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp),
+                .height(50.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

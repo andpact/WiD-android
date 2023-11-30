@@ -77,12 +77,12 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Row(
                         modifier = Modifier
-                            .height(45.dp)
+                            .height(50.dp)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "search")
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
 
                         Box(
                             modifier = Modifier
@@ -122,7 +122,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .padding(vertical = 32.dp)
                             .scale(0.8f),
                         painter = painterResource(id = R.drawable.outline_textsms_24),
-                        contentDescription = "No diary list",
+                        contentDescription = "No diary",
                         tint = Color.Gray
                     )
 

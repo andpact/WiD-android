@@ -198,7 +198,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp),
+                    .height(50.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
@@ -244,7 +244,8 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .height(50.dp)
+                    .padding(start = 16.dp)
             ) {
                 Row(
                     modifier = Modifier

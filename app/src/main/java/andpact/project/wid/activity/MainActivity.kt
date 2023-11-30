@@ -36,10 +36,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // window inset(시스템 네비게이션 바가 차지하는 공간)을 자동이 아닌 수동으로 설정하겠다.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
-//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        // window inset을 수동으로 설정할 때
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             WiDMainActivity()
@@ -137,7 +135,7 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
 
             NavigationBar(
                 modifier = modifier
-                    .height(45.dp),
+                    .height(50.dp),
                 containerColor = Color.White,
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -180,8 +178,8 @@ fun WiDMainActivity() {
         Scaffold(
             bottomBar = {
                 BottomBar(
-                    modifier = Modifier
-                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
+//                    modifier = Modifier
+//                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
                     navController = navController,
                     mainTopBottomBarVisible = mainTopBottomBarVisible,
                 )

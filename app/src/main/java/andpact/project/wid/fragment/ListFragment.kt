@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     val pagerState = rememberPagerState(pageCount = { 2 })
 
-    val scope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -36,7 +36,7 @@ fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp),
+                    .height(50.dp),
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
@@ -47,33 +47,23 @@ fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableS
             ) {
                 Tab(
                     selected = pagerState.currentPage == 0,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(0)
-                        }},
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
-                    text = {
-                        Text(text = "날짜 별 기록")
-                    }
+                    text = { Text(text = "날짜 별 기록") }
                 )
 
                 Tab(
                     selected = pagerState.currentPage == 1,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }},
+                    onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
-                    text = {
-                        Text(text = "기간 별 기록")
-                    }
+                    text = { Text(text = "기간 별 기록") }
                 )
             }
         }
 
-        HorizontalDivider()
+//        HorizontalDivider()
 
         HorizontalPager(state = pagerState) {page ->
             when (page) {

@@ -44,7 +44,8 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         initialSelectedDateMillis = System.currentTimeMillis(),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                // System.currentTimeMillis()가 9시간 전의 시간을 가져오는 듯.
+                // utcTimeMillis는 KST를 반환하는 듯하고,
+                // System.currentTimeMillis()가 (KST -9시간)을 반환하는 듯.
                 return utcTimeMillis <= System.currentTimeMillis() + (9 * 60 * 60 * 1000)
             }
 
@@ -69,7 +70,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
     var isStartOverlap by remember { mutableStateOf(false) }
 //    var isStartOverCurrentTime by remember { mutableStateOf(false) }
-    var isStartOverCurrentTime by remember(start) { mutableStateOf(date == today && currentTime < start) }
+    val isStartOverCurrentTime by remember(date, start) { mutableStateOf(date == today && currentTime <= start) }
 //    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
 
     // 종료 시간
@@ -79,14 +80,14 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
     var isFinishOverlap by remember { mutableStateOf(false) }
 //    var isFinishOverCurrentTime by remember { mutableStateOf(false) }
-    var isFinishOverCurrentTime by remember(finish) { mutableStateOf(date == today && currentTime < finish) }
+    val isFinishOverCurrentTime by remember(date, finish) { mutableStateOf(date == today && currentTime <= finish) }
 //    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
 
     // 소요 시간
 //    var duration by remember { mutableStateOf(Duration.ZERO) }
-    var duration by remember(start, finish) { mutableStateOf(Duration.between(start, finish)) }
+    val duration by remember(start, finish) { mutableStateOf(Duration.between(start, finish)) }
 //    var durationExist by remember { mutableStateOf(false) }
-    var durationExist by remember(duration) { mutableStateOf(Duration.ZERO < duration) }
+    val durationExist by remember(duration) { mutableStateOf(Duration.ZERO < duration) }
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
@@ -120,10 +121,12 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                         isDateAssigned = true
 
+                        // wiDList가 비어 있으면, 시간이 겹칠 가능성이 없음.
                         if (wiDList.isEmpty()) {
                             isStartOverlap = false
                             isFinishOverlap = false
                         } else {
+                            // 생성할 WiD의 시작 시간이 겹치는지 확인
                             for (existingWiD in wiDList) {
                                 if (existingWiD.start <= start && start <= existingWiD.finish) {
                                     isStartOverlap = true
@@ -133,6 +136,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 }
                             }
 
+                            // 생성할 WiD의 종료 시간이 겹치는지 확인
                             for (existingWiD in wiDList) {
                                 if (existingWiD.start <= finish && finish <= existingWiD.finish) {
                                     isFinishOverlap = true
@@ -142,6 +146,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 }
                             }
 
+                            // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
                             for (existingWiD in wiDList) {
                                 if (start <= existingWiD.start && existingWiD.finish <= finish) {
                                     isStartOverlap = true
@@ -155,9 +160,9 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                    }) {
+                    TextButton(
+                        onClick = { showDatePicker = false }
+                    ) {
                         Text(text = "취소")
                     }
                 }
@@ -185,7 +190,12 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 Column(
                     modifier = Modifier
                         .background(color = Color.LightGray.copy(alpha = 0.3f))
-                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                        .padding(
+                            top = 28.dp,
+                            start = 20.dp,
+                            end = 20.dp,
+                            bottom = 12.dp
+                        ),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -197,7 +207,8 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = { showStartPicker = false }
+                        TextButton(
+                            onClick = { showStartPicker = false }
                         ) {
                             Text(text = "취소")
                         }
@@ -265,7 +276,12 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 Column(
                     modifier = Modifier
                         .background(color = Color.LightGray.copy(alpha = 0.3f))
-                        .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                        .padding(
+                            top = 28.dp,
+                            start = 20.dp,
+                            end = 20.dp,
+                            bottom = 12.dp
+                        ),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -341,7 +357,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp),
+                    .height(50.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -357,7 +373,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "Manual create",
+                            contentDescription = "Back",
                             tint = Color.Black
                         )
                     }
@@ -539,22 +555,32 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { showDatePicker = true }
+                                    .clickable { showDatePicker = true },
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Row() {
+                                    Icon(
+                                        modifier = Modifier
+                                            .scale(0.8f)
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                                        contentDescription = "Date",
+                                        tint = if (isDateAssigned) Color.Unspecified else Color.Gray
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = if (isDateAssigned) getDayString(date) else buildAnnotatedString { append("날짜") },
+                                        color = if (isDateAssigned) Color.Unspecified else Color.Gray
+                                    )
+                                }
+
                                 Icon(
                                     modifier = Modifier
-                                        .scale(0.8f)
                                         .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.baseline_calendar_today_24),
-                                    contentDescription = "Date",
-                                    tint = if (isDateAssigned) Color.Unspecified else Color.Gray
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = if (isDateAssigned) getDayString(date) else buildAnnotatedString { append("날짜") },
-                                    color = if (isDateAssigned) Color.Unspecified else Color.Gray
+                                    painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                    contentDescription = "Edit date"
                                 )
                             }
 
@@ -562,111 +588,141 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { titleMenuExpanded = true },
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.outline_subtitles_24),
+                                        contentDescription = "Title",
+                                        tint = if (isTitleAssigned) Color.Unspecified else Color.Gray
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = if (isTitleAssigned) titleMap[title] ?: title else "제목",
+                                        color = if (isTitleAssigned) Color.Unspecified else Color.Gray
+                                    )
+
+                                    if (isTitleAssigned) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .size(10.dp)
+                                                .background(
+                                                    color = colorResource(
+                                                        id = colorMap[title] ?: R.color.light_gray
+                                                    )
+                                                )
+                                        )
+                                    }
+
+                                    DropdownMenu(
+                                        modifier = Modifier
+                                            .background(
+                                                color = colorResource(id = R.color.white),
+                                                shape = RoundedCornerShape(8.dp)
+                                            ),
+                                        expanded = titleMenuExpanded,
+                                        onDismissRequest = { titleMenuExpanded = false },
+                                    ) {
+                                        titles.forEach { menuTitle ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = titleMap[menuTitle] ?: menuTitle) },
+                                                onClick = {
+                                                    title = menuTitle
+                                                    isTitleAssigned = true
+                                                    titleMenuExpanded = false
+                                                },
+                                                trailingIcon = {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(CircleShape)
+                                                            .size(10.dp)
+                                                            .background(
+                                                                color = colorResource(
+                                                                    id = colorMap[menuTitle]
+                                                                        ?: R.color.light_gray
+                                                                )
+                                                            )
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+
                                 Icon(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                    contentDescription = "Title",
-                                    tint = if (isTitleAssigned) Color.Unspecified else Color.Gray
+                                    painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                    contentDescription = "Edit title"
                                 )
+                            }
 
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = if (isTitleAssigned) titleMap[title] ?: title else "제목",
-                                    color = if (isTitleAssigned) Color.Unspecified else Color.Gray
-                                )
-
-                                if (isTitleAssigned) {
-                                    Box(
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showStartPicker = true },
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row {
+                                    Icon(
                                         modifier = Modifier
-                                            .clip(CircleShape)
-                                            .size(10.dp)
-                                            .background(
-                                                color = colorResource(
-                                                    id = colorMap[title] ?: R.color.light_gray
-                                                )
-                                            )
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.outline_play_arrow_24),
+                                        contentDescription = "Start",
+                                        tint = if (isStartAssigned) Color.Unspecified else Color.Gray
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = if (isStartAssigned) formatTime(start, "a h:mm") else "시작",
+                                        color = if (isStartAssigned) Color.Unspecified else Color.Gray
                                     )
                                 }
 
-                                DropdownMenu(
+                                Icon(
                                     modifier = Modifier
-                                        .background(
-                                            color = colorResource(id = R.color.white),
-                                            shape = RoundedCornerShape(8.dp)
-                                        ),
-                                    expanded = titleMenuExpanded,
-                                    onDismissRequest = { titleMenuExpanded = false },
-                                ) {
-                                    titles.forEach { menuTitle ->
-                                        DropdownMenuItem(
-                                            text = { Text(text = titleMap[menuTitle] ?: menuTitle) },
-                                            onClick = {
-                                                title = menuTitle
-                                                isTitleAssigned = true
-                                                titleMenuExpanded = false
-                                            },
-                                            trailingIcon = {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .clip(CircleShape)
-                                                        .size(10.dp)
-                                                        .background(
-                                                            color = colorResource(
-                                                                id = colorMap[menuTitle]
-                                                                    ?: R.color.light_gray
-                                                            )
-                                                        )
-                                                )
-                                            }
-                                        )
-                                    }
+                                        .padding(16.dp),
+                                    painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                    contentDescription = "Edit start"
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showFinishPicker = true },
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row() {
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        painter = painterResource(id = R.drawable.baseline_play_arrow_24),
+                                        contentDescription = "Finish",
+                                        tint = if (isFinishAssigned) Color.Unspecified else Color.Gray
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = if (isFinishAssigned) formatTime(finish, "a h:mm") else "종료",
+                                        color = if (isFinishAssigned) Color.Unspecified else Color.Gray
+                                    )
                                 }
-                            }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showStartPicker = true }
-                            ) {
                                 Icon(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                    contentDescription = "Start",
-                                    tint = if (isStartAssigned) Color.Unspecified else Color.Gray
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = if (isStartAssigned) formatTime(start, "a h:mm") else "시작",
-                                    color = if (isStartAssigned) Color.Unspecified else Color.Gray
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { showFinishPicker = true }
-                            ) {
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                    contentDescription = "Finish",
-                                    tint = if (isFinishAssigned) Color.Unspecified else Color.Gray
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .weight(1f),
-                                    text = if (isFinishAssigned) formatTime(finish, "a h:mm") else "종료",
-                                    color = if (isFinishAssigned) Color.Unspecified else Color.Gray
+                                    painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                    contentDescription = "Edit finish"
                                 )
                             }
 

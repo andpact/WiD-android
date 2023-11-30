@@ -59,6 +59,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
+        // 컨텐츠
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -186,7 +187,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         .scale(0.8f)
                                         .padding(vertical = 32.dp),
                                     painter = painterResource(id = R.drawable.outline_textsms_24),
-                                    contentDescription = "No diary content",
+                                    contentDescription = "No diary",
                                     tint = Color.Gray
                                 )
 
@@ -282,7 +283,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             .padding(vertical = 32.dp)
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
-                                        contentDescription = "No day total",
+                                        contentDescription = "No total duration",
                                         tint = Color.Gray
                                     )
 
@@ -309,7 +310,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                                contentDescription = "title"
+                                                contentDescription = "Title"
                                             )
 
                                             Text(
@@ -340,7 +341,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                 modifier = Modifier
                                                     .scale(0.8f),
                                                 painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "duration"
+                                                contentDescription = "Total duration"
                                             )
 
                                             Text(text = formatDuration(totalDuration, mode = 2))
@@ -392,7 +393,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             .scale(0.8f),
                                         painter = painterResource(id = R.drawable.outline_textsms_24),
                                         tint = Color.Gray,
-                                        contentDescription = "detail"
+                                        contentDescription = "No WiD"
                                     )
 
                                     Text(
@@ -442,7 +443,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                                    contentDescription = "title"
+                                                    contentDescription = "Title"
                                                 )
 
                                                 Text(
@@ -475,7 +476,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                    contentDescription = "duration"
+                                                    contentDescription = "Duration"
                                                 )
 
                                                 Text(
@@ -501,7 +502,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.outline_play_arrow_24),
-                                                    contentDescription = "finish"
+                                                    contentDescription = "Start"
                                                 )
 
                                                 Text(
@@ -522,7 +523,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     modifier = Modifier
                                                         .scale(0.8f),
                                                     painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-                                                    contentDescription = "finish"
+                                                    contentDescription = "Finish"
                                                 )
 
                                                 Text(
@@ -544,11 +545,11 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
         HorizontalDivider()
 
-        // 날짜 표시 및 버튼
+        // 하단 바
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(45.dp)
+                .height(50.dp)
                 .background(Color.White)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,

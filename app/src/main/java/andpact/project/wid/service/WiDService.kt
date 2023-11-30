@@ -178,26 +178,6 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         db.close()
 
         return wiDList
-
-//        if (cursor.moveToFirst()) {
-//            do {
-//                val id = cursor.getLong(cursor.getColumnIndex(COLUMN_ID))
-//                val title = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE))
-//                val date = LocalDate.parse(cursor.getString(cursor.getColumnIndex(COLUMN_DATE)))
-//                val startTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_START)))
-//                val finishTime = LocalTime.parse(cursor.getString(cursor.getColumnIndex(COLUMN_FINISH)))
-//                val durationMillis = cursor.getLong(cursor.getColumnIndex(COLUMN_DURATION))
-//
-//                val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
-//                wiDList.add(wiD)
-//            } while (cursor.moveToNext())
-//        }
-//
-//        cursor.close()
-//        db.close()
-//
-////        return wiDList.sortedWith(compareBy<WiD> { it.date }.thenBy { it.start })
-//        return wiDList
     }
 
 //    fun getLongestStreak(title: String, startDate: LocalDate, finishDate: LocalDate): Pair<LocalDate, LocalDate>? {

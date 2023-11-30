@@ -245,7 +245,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(45.dp)
+                    .height(50.dp)
                     .padding(end = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -542,7 +542,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .height(50.dp)
+                    .padding(start = 16.dp),
             ) {
                 Row(
                     modifier = Modifier
@@ -553,11 +554,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(10.dp)
-                            .background(
-                                color = colorResource(
-                                    id = colorMap[title] ?: R.color.light_gray
-                                )
-                            )
+                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
                     )
 
                     ExposedDropdownMenuBox(
@@ -598,12 +595,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .size(10.dp)
-                                                .background(
-                                                    color = colorResource(
-                                                        id = colorMap[menuTitle]
-                                                            ?: R.color.light_gray
-                                                    )
-                                                )
+                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
                                         )
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,

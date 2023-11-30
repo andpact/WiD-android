@@ -145,7 +145,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd),
                                 painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
-                                contentDescription = "StopWatch",
+                                contentDescription = "Timer",
                                 tint = Color.Black
                             )
                         }
@@ -189,7 +189,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                             modifier = Modifier
                                 .align(Alignment.CenterEnd),
                             painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
-                            contentDescription = "StopWatch",
+                            contentDescription = "Create manual",
                             tint = Color.Black
                         )
                     }
