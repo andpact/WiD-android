@@ -170,50 +170,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
 
                                 start = newStart
-
-//                                for (existingWiD in wiDList) {
-//                                    // wiDList속의 clickedWiD를 사용할 필요가 없기 때문에 continue
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-//                                        isStartOverlap = true
-//                                        break
-//                                    } else {
-//                                        isStartOverlap = false
-//                                    }
-//                                }
-//
-//                                for (existingWiD in wiDList) {
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-//                                        isFinishOverlap = true
-//                                        break
-//                                    } else {
-//                                        isFinishOverlap = false
-//                                    }
-//                                }
-//
-//                                for (existingWiD in wiDList) {
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-//                                        isStartOverlap = true
-//                                        isFinishOverlap = true
-//                                        break
-//                                    }
-//                                }
-
-//                                isStartOverCurrentTime = date == today && currentTime < start
-
-//                                duration = Duration.between(start, finish)
-//                                isDurationUnderMin = duration <= Duration.ZERO
                             }
                         ) {
                             Text(text = "확인")
@@ -261,49 +217,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
 
                                 finish = newFinish
-
-//                                for (existingWiD in wiDList) {
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-//                                        isStartOverlap = true
-//                                        break
-//                                    } else {
-//                                        isStartOverlap = false
-//                                    }
-//                                }
-//
-//                                for (existingWiD in wiDList) {
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-//                                        isFinishOverlap = true
-//                                        break
-//                                    } else {
-//                                        isFinishOverlap = false
-//                                    }
-//                                }
-//
-//                                for (existingWiD in wiDList) {
-//                                    if (existingWiD == clickedWiD) {
-//                                        continue
-//                                    }
-//
-//                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-//                                        isStartOverlap = true
-//                                        isFinishOverlap = true
-//                                        break
-//                                    }
-//                                }
-
-//                                isFinishOverCurrentTime = date == today && currentTime < finish
-
-//                                duration = Duration.between(start, finish)
-//                                isDurationUnderMin = duration <= Duration.ZERO
                             }
                         ) {
                             Text(text = "확인")
@@ -322,38 +235,21 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             // 상단 바
             Row(
                 modifier = Modifier
+                    .padding(start = 16.dp)
                     .fillMaxWidth()
                     .height(50.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        onClick = {
-                            navController.popBackStack()
-                            mainTopBottomBarVisible.value = true
-                        },
-                        shape = RectangleShape
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
-                    }
-
-                    // AnnotatedString 끼리 결합해야 TextStyle 적용된다.
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("WiD")
-                            }
-                            append(" - ")
-                            append(getDayString(date))
+                // AnnotatedString 끼리 결합해야 TextStyle 적용된다.
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("WiD")
                         }
-                    )
-                }
+                        append(" - ")
+                        append(getDayString(date))
+                    }
+                )
 
                 TextButton(
                     onClick = {

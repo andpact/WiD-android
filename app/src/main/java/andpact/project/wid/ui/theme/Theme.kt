@@ -39,7 +39,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun WiDTheme(
+fun WiDTheme( // 메인 액티비티에 적용되는 테마
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
@@ -56,9 +56,10 @@ fun WiDTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-//            (view.context as Activity).window.statusBarColor = Color.Transparent.toArgb()
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+//            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
+            (view.context as Activity).window.statusBarColor = Color.White.toArgb() // 상태 바 색상 변경
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바의 내용물이 어둡게 함.
+//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
         }
     }
 

@@ -208,8 +208,9 @@ fun getMonthString(date: LocalDate): AnnotatedString {
         append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월")))
     }
 }
-fun getDate1yearAgo(date: LocalDate): LocalDate {
-    val oneYearAgo = date.minusDays(364)
-//    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-    return oneYearAgo
-}
+
+//fun getDate1yearAgo(date: LocalDate): LocalDate {
+//    val oneYearAgo = date.minusDays(364)
+////    return oneYearAgo.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+//    return oneYearAgo
+//}

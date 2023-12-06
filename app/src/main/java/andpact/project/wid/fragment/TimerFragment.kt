@@ -246,34 +246,14 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .padding(end = 16.dp),
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        onClick = {
-                            navController.popBackStack()
-                            mainTopBottomBarVisible.value = true
-
-                            finishTimer()
-                        },
-                        shape = RectangleShape
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
-                    }
-
-                    Text(
-                        text = "타이머",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-                }
+                Text(
+                    text = "타이머",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
 
                 if (isRecording || isRecordingStop) {
                     Text(

@@ -2,7 +2,8 @@
 <resources>
 
     <style name="Theme.WiD" parent="android:Theme.Material.Light.NoActionBar" >
-        <item name="android:statusBarColor" >@color/black</item>
-        <item name="android:windowLightStatusBar" >true</item>
+<!--        아래는 현재 스플래쉬 화면에 적용되는 코드 인듯.-->
+<!--        <item name="android:statusBarColor" >@color/black</item>-->
+<!--        <item name="android:windowLightStatusBar" >true</item>-->
     </style>
 </resources>

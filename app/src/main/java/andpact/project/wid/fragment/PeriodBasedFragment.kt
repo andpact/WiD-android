@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -78,8 +79,8 @@ fun PeriodBasedFragment() {
     val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
 
     // 맵
-    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
     var selectedMapText by remember { mutableStateOf("합계") }
+    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
 
 //    LaunchedEffect(Unit) {
 //        titleBottomSheetState.hide()
@@ -378,7 +379,8 @@ fun PeriodBasedFragment() {
 
                         Surface(
                             modifier = Modifier
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
                             color = Color.White,
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 2.dp
@@ -540,7 +542,8 @@ fun PeriodBasedFragment() {
 
                         Surface(
                             modifier = Modifier
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
                             color = Color.White,
                             shape = RoundedCornerShape(8.dp),
                             shadowElevation = 2.dp
@@ -712,20 +715,25 @@ fun PeriodBasedFragment() {
                 .height(50.dp)
                 .background(Color.White)
                 .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = when (selectedPeriod) {
-                    periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
-                    periods[1] -> getMonthString(date = startDate)
-                    else -> buildAnnotatedString { append("") }
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            LazyRow(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                item {
+                    Text(
+                        text = when (selectedPeriod) {
+                            periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
+                            periods[1] -> getMonthString(date = startDate)
+                            else -> buildAnnotatedString { append("") }
+                        },
+                        maxLines = 1 // 설정 안해도 될 듯?
+                    )
+                }
+            }
 
-            Row{
+            Row {
                 IconButton(
                     onClick = {
                         when (selectedPeriod) {
@@ -738,6 +746,8 @@ fun PeriodBasedFragment() {
                                 finishDate = getLastDayOfMonth(today)
                             }
                         }
+
+                        selectedMapText = "합계"
                     },
                     enabled = when (selectedPeriod) {
                         periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
@@ -763,6 +773,8 @@ fun PeriodBasedFragment() {
                                 finishDate = getLastDayOfMonth(finishDate.minusDays(45))
                             }
                         }
+
+                        selectedMapText = "합계"
                     },
                 ) {
                     Icon(
@@ -783,6 +795,8 @@ fun PeriodBasedFragment() {
                                 finishDate = getLastDayOfMonth(finishDate.plusDays(15))
                             }
                         }
+
+                        selectedMapText = "합계"
                     },
                     enabled = when (selectedPeriod) {
                         periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))

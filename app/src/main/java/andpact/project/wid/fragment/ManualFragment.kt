@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
@@ -41,7 +42,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     var isDateAssigned by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis(),
+        initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 // utcTimeMillis는 KST를 반환하는 듯하고,
@@ -69,8 +70,7 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     var showStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
     var isStartOverlap by remember { mutableStateOf(false) }
-//    var isStartOverCurrentTime by remember { mutableStateOf(false) }
-    val isStartOverCurrentTime by remember(date, start) { mutableStateOf(date == today && currentTime <= start) }
+    val isStartOverCurrentTime by remember(date, start) { mutableStateOf(date == today && currentTime < start) }
 //    var startPosition by remember { mutableStateOf((start.hour * 60 + start.minute).toFloat() / totalMinutes) }
 
     // 종료 시간
@@ -79,14 +79,11 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     var showFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
     var isFinishOverlap by remember { mutableStateOf(false) }
-//    var isFinishOverCurrentTime by remember { mutableStateOf(false) }
-    val isFinishOverCurrentTime by remember(date, finish) { mutableStateOf(date == today && currentTime <= finish) }
+    val isFinishOverCurrentTime by remember(date, finish) { mutableStateOf(date == today && currentTime < finish) }
 //    var finishPosition by remember { mutableStateOf((finish.hour * 60 + finish.minute).toFloat() / totalMinutes) }
 
     // 소요 시간
-//    var duration by remember { mutableStateOf(Duration.ZERO) }
     val duration by remember(start, finish) { mutableStateOf(Duration.between(start, finish)) }
-//    var durationExist by remember { mutableStateOf(false) }
     val durationExist by remember(duration) { mutableStateOf(Duration.ZERO < duration) }
 
     // WiD
@@ -101,6 +98,38 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         mainTopBottomBarVisible.value = true
     }
 
+    fun isNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
+        for (existingWiD in wiDList) {
+            if (existingWiD.start <= start && start <= existingWiD.finish) {
+                isStartOverlap = true
+                break
+            } else {
+                isStartOverlap = false
+            }
+        }
+    }
+
+    fun isNewFinishOverlap() { // 생성할 WiD의 종료 시간이 겹치는지 확인
+        for (existingWiD in wiDList) {
+            if (existingWiD.start <= finish && finish <= existingWiD.finish) {
+                isFinishOverlap = true
+                break
+            } else {
+                isFinishOverlap = false
+            }
+        }
+    }
+
+    fun isNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
+        for (existingWiD in wiDList) {
+            if (start <= existingWiD.start && existingWiD.finish <= finish) {
+                isStartOverlap = true
+                isFinishOverlap = true
+                break
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,49 +142,27 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 colors = DatePickerDefaults.colors(containerColor = Color.White),
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
-                    TextButton(onClick = {
-                        showDatePicker = false
-                        date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                    TextButton(
+                        onClick = {
+                            showDatePicker = false
+                            date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
 
-//                        wiDList = wiDService.readDailyWiDListByDate(date)
+                            // 날짜를 변경하면 이 Button scope의 내용이 먼저 실행된 후, remember에 의한 갱신이 발생한다.
+                            wiDList = wiDService.readDailyWiDListByDate(date)
 
-                        isDateAssigned = true
+                            isDateAssigned = true
 
-                        // wiDList가 비어 있으면, 시간이 겹칠 가능성이 없음.
-                        if (wiDList.isEmpty()) {
-                            isStartOverlap = false
-                            isFinishOverlap = false
-                        } else {
-                            // 생성할 WiD의 시작 시간이 겹치는지 확인
-                            for (existingWiD in wiDList) {
-                                if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                    isStartOverlap = true
-                                    break
-                                } else {
-                                    isStartOverlap = false
-                                }
-                            }
-
-                            // 생성할 WiD의 종료 시간이 겹치는지 확인
-                            for (existingWiD in wiDList) {
-                                if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                    isFinishOverlap = true
-                                    break
-                                } else {
-                                    isFinishOverlap = false
-                                }
-                            }
-
-                            // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
-                            for (existingWiD in wiDList) {
-                                if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                    isStartOverlap = true
-                                    isFinishOverlap = true
-                                    break
-                                }
+                            // wiDList가 비어 있으면, 시간이 겹칠 가능성이 없음.
+                            if (wiDList.isEmpty()) {
+                                isStartOverlap = false
+                                isFinishOverlap = false
+                            } else {
+                                isNewStartOverlap()
+                                isNewFinishOverlap()
+                                isNewWiDOverlap()
                             }
                         }
-                    }) {
+                    ) {
                         Text(text = "확인")
                     }
                 },
@@ -223,36 +230,14 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                                 isStartAssigned = true
 
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                        isStartOverlap = true
-                                        break
-                                    } else {
-                                        isStartOverlap = false
-                                    }
+                                if (wiDList.isEmpty()) {
+                                    isStartOverlap = false
+                                    isFinishOverlap = false
+                                } else {
+                                    isNewStartOverlap()
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
                                 }
-
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                        isFinishOverlap = true
-                                        break
-                                    } else {
-                                        isFinishOverlap = false
-                                    }
-                                }
-
-                                for (existingWiD in wiDList) {
-                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                        isStartOverlap = true
-                                        isFinishOverlap = true
-                                        break
-                                    }
-                                }
-
-//                                isStartOverCurrentTime = date == today && currentTime < start
-
-//                                duration = Duration.between(start, finish)
-//                                durationExist = Duration.ZERO < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -308,36 +293,14 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                                 isFinishAssigned = true
 
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                        isStartOverlap = true
-                                        break
-                                    } else {
-                                        isStartOverlap = false
-                                    }
+                                if (wiDList.isEmpty()) {
+                                    isStartOverlap = false
+                                    isFinishOverlap = false
+                                } else {
+                                    isNewStartOverlap()
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
                                 }
-
-                                for (existingWiD in wiDList) {
-                                    if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                        isFinishOverlap = true
-                                        break
-                                    } else {
-                                        isFinishOverlap = false
-                                    }
-                                }
-
-                                for (existingWiD in wiDList) {
-                                    if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                        isStartOverlap = true
-                                        isFinishOverlap = true
-                                        break
-                                    }
-                                }
-
-//                                isFinishOverCurrentTime = date == today && currentTime < finish
-
-//                                duration = Duration.between(start, finish)
-//                                durationExist = Duration.ZERO < duration
                             }
                         ) {
                             Text(text = "확인")
@@ -361,25 +324,10 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(
-                        shape = RectangleShape,
-                        onClick = {
-                            navController.popBackStack()
-                            mainTopBottomBarVisible.value = true
-                        },
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "Back",
-                            tint = Color.Black
-                        )
-                    }
-
-                    Text(text = "직접 입력")
-                }
+                Text(
+                    text = "직접 입력",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
 
                 TextButton(
                     onClick = {
@@ -393,34 +341,12 @@ fun ManualFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                         )
                         wiDService.createWiD(newWiD)
 
-                        // wiDList를 불러와야 방금 생성한 WiD를 표시할 수 있음.
+                        // wiDList를 갱신해야 방금 생성한 WiD를 표시하고 사용할 수 있음.
                         wiDList = wiDService.readDailyWiDListByDate(date)
 
-                        for (existingWiD in wiDList) {
-                            if (existingWiD.start <= start && start <= existingWiD.finish) {
-                                isStartOverlap = true
-                                break
-                            } else {
-                                isStartOverlap = false
-                            }
-                        }
-
-                        for (existingWiD in wiDList) {
-                            if (existingWiD.start <= finish && finish <= existingWiD.finish) {
-                                isFinishOverlap = true
-                                break
-                            } else {
-                                isFinishOverlap = false
-                            }
-                        }
-
-                        for (existingWiD in wiDList) {
-                            if (start <= existingWiD.start && existingWiD.finish <= finish) {
-                                isStartOverlap = true
-                                isFinishOverlap = true
-                                break
-                            }
-                        }
+                        isNewStartOverlap()
+                        isNewFinishOverlap()
+                        isNewWiDOverlap()
                     },
                     shape = RectangleShape,
                     enabled = !isTimeOverlap && isWiDAssigned

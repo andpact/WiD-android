@@ -58,24 +58,28 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
     // 스톱워치
-    var isRecording by remember { mutableStateOf(false) }
-    var isRecordingStop by remember { mutableStateOf(false) }
-    var isStopWatchReset by remember { mutableStateOf(true) }
+    var stopWatchStarted by remember { mutableStateOf(false) }
+    var stopWatchPaused by remember { mutableStateOf(false) }
+    var stopWatchReset by remember { mutableStateOf(true) }
     var elapsedTime by remember { mutableStateOf(0L) }
     var startTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
+    
+    // 화면
     var buttonText by remember { mutableStateOf("시작") }
     var stopWatchTopBottomBarVisible by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
     fun startStopWatch() {
-        isRecording = true
-        isRecordingStop = false
-        isStopWatchReset = false
+        stopWatchStarted = true
+        stopWatchPaused = false
+        stopWatchReset = false
 
         coroutineScope.launch {
             delay(3000)
-            stopWatchTopBottomBarVisible = false
+            if (stopWatchStarted) {
+                stopWatchTopBottomBarVisible = false
+            }
         }
 
         date = LocalDate.now()
@@ -86,9 +90,9 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         buttonText = "중지"
     }
 
-    fun finishStopWatch() {
-        isRecording = false
-        isRecordingStop = true
+    fun pauseStopWatch() {
+        stopWatchStarted = false
+        stopWatchPaused = true
 
         finish = LocalTime.now()
 //        finish = LocalTime.now().plusHours(10).plusMinutes(33).plusSeconds(33)
@@ -133,29 +137,29 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     }
 
     fun resetStopWatch() {
-        isRecordingStop = false
-        isStopWatchReset = true
+        stopWatchPaused = false
+        stopWatchReset = true
 
         elapsedTime = 0
 
         buttonText = "시작"
     }
 
-    LaunchedEffect(isRecording) {
-        while (isRecording) {
-            val today = LocalDate.now()
-
-            // 날짜가 변경되면 갱신해줌.
-            if (date != today) {
-                date = today
-            }
+    LaunchedEffect(stopWatchStarted) {
+        while (stopWatchStarted) {
+//            val today = LocalDate.now()
+//
+//            // 날짜가 변경되면 갱신해줌.
+//            if (date != today) {
+//                date = today
+//            }
 
             currentTime = System.currentTimeMillis()
             elapsedTime = currentTime - startTime
 
             // 12시간이 넘어가면 자동으로 WiD가 등록되도록 함.
             if (60 * 60 * 12 * 1000 <= elapsedTime) {
-                finishStopWatch()
+                pauseStopWatch()
                 resetStopWatch()
             }
             delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
@@ -167,8 +171,8 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         navController.popBackStack()
         mainTopBottomBarVisible.value = true
 
-        if (isRecording) {
-            finishStopWatch()
+        if (stopWatchStarted) {
+            pauseStopWatch()
         }
     }
 
@@ -177,11 +181,11 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
-            .clickable(enabled = isRecording) {
+            .clickable(enabled = stopWatchStarted) {
                 coroutineScope.launch {
                     stopWatchTopBottomBarVisible = true
                     delay(3000)
-                    if (isRecording) {
+                    if (stopWatchStarted) {
                         stopWatchTopBottomBarVisible = false
                     }
                 }
@@ -197,27 +201,12 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             // 상단 바
             Row(
                 modifier = Modifier
+                    .padding(start = 16.dp)
                     .fillMaxWidth()
                     .height(50.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                TextButton(
-                    shape = RectangleShape,
-                    onClick = {
-                        navController.popBackStack()
-                        mainTopBottomBarVisible.value = true
-
-                        finishStopWatch()
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
-
                 Text(
                     text = "스탑워치",
                     style = TextStyle(fontWeight = FontWeight.Bold)
@@ -225,7 +214,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             }
         }
 
-        // 스톱워치 시간 표시
+        // 컨텐츠
         Text(
             modifier = Modifier
                 .align(Alignment.Center),
@@ -261,7 +250,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                     ExposedDropdownMenuBox(
                         expanded = titleMenuExpanded,
-                        onExpandedChange = { if (!isRecording && isStopWatchReset) titleMenuExpanded = !titleMenuExpanded }
+                        onExpandedChange = { if (!stopWatchStarted && stopWatchReset) titleMenuExpanded = !titleMenuExpanded }
                     ) {
                         OutlinedTextField(
                             modifier = Modifier
@@ -270,7 +259,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             value = titleMap[title] ?: "공부",
                             textStyle = TextStyle(textAlign = TextAlign.Center),
                             onValueChange = {},
-                            trailingIcon = { if (!isRecording && isStopWatchReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                            trailingIcon = { if (!stopWatchStarted && stopWatchReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
                             colors = ExposedDropdownMenuDefaults.textFieldColors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -312,7 +301,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         .weight(2f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    if (isRecordingStop) {
+                    if (stopWatchPaused) {
                         TextButton(
                             shape = RectangleShape,
                             onClick = { resetStopWatch() },
@@ -326,7 +315,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                     TextButton(
                         shape = RectangleShape,
-                        onClick = { if (isRecording) finishStopWatch() else startStopWatch() }
+                        onClick = { if (stopWatchStarted) pauseStopWatch() else startStopWatch() }
                     ) {
                         Text(
                             text = buttonText,

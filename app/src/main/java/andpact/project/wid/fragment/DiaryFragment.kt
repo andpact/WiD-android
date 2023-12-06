@@ -76,35 +76,15 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(
-                    onClick = {
-                        keyboardController?.hide()
-
-                        navController.popBackStack()
-                        mainTopBottomBarVisible.value = true
-                    },
-                    shape = RectangleShape
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
-
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("다이어리")
-                        }
-                        append(" - ")
-                        append(getDayString(date))
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("다이어리")
                     }
-                )
-            }
+                    append(" - ")
+                    append(getDayString(date))
+                }
+            )
 
             TextButton(
                 onClick = {
