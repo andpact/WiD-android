@@ -238,6 +238,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     .padding(start = 16.dp)
                     .fillMaxWidth()
                     .height(50.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // AnnotatedString 끼리 결합해야 TextStyle 적용된다.

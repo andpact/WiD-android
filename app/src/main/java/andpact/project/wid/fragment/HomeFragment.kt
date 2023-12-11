@@ -63,135 +63,94 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
             )
         }
 
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1.5f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .weight(1f)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Surface(
+                color = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                shadowElevation = 2.dp
             ) {
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1f),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 2.dp
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TextButton(
+                        modifier = Modifier
+                            .weight(1f),
                         shape = RectangleShape,
                         onClick = {
                             navController.navigate(Destinations.StopWatchFragmentDestination.route)
                             mainTopBottomBarVisible.value = false
                         }
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "스탑워치",
-                                style = TextStyle(
-                                    fontSize = 25.sp,
-                                    color = Color.Black,
-                                    fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                                )
-                            )
-
                             Icon(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd),
-                                painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                painter = painterResource(id = R.drawable.outline_alarm_24),
                                 contentDescription = "StopWatch",
                                 tint = Color.Black
                             )
+
+                            Text(
+                                text = "스탑워치",
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
                         }
                     }
-                }
 
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1f),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 2.dp
-                ) {
                     TextButton(
+                        modifier = Modifier
+                            .weight(1f),
                         shape = RectangleShape,
                         onClick = {
                             navController.navigate(Destinations.TimerFragmentDestination.route)
                             mainTopBottomBarVisible.value = false
                         }
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "타이머",
-                                style = TextStyle(
-                                    fontSize = 25.sp,
-                                    color = Color.Black,
-                                    fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                                )
-                            )
-
                             Icon(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd),
-                                painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
+                                painter = painterResource(id = R.drawable.outline_timer_24),
                                 contentDescription = "Timer",
                                 tint = Color.Black
                             )
+
+                            Text(
+                                text = "타이머",
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
                         }
                     }
-                }
-            }
 
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                color = Color.White,
-                shape = RoundedCornerShape(8.dp),
-                shadowElevation = 2.dp
-            ) {
-                TextButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(5f),
-                    shape = RectangleShape,
-                    onClick = {
-                        navController.navigate(Destinations.ManualFragmentDestination.route)
-                        mainTopBottomBarVisible.value = false
-                    }
-                ) {
-                    Box(
+                    TextButton(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f),
+                        shape = RectangleShape,
+                        onClick = {
+                            navController.navigate(Destinations.NewWiDFragmentDestination.route)
+                            mainTopBottomBarVisible.value = false
+                        }
                     ) {
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart),
-                            text = "직접 입력",
-                            style = TextStyle(
-                                fontSize = 25.sp,
-                                color = Color.Black,
-                                fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_add_box_24),
+                                contentDescription = "New WiD",
+                                tint = Color.Black
                             )
-                        )
 
-                        Icon(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd),
-                            painter = painterResource(id = R.drawable.baseline_arrow_forward_24),
-                            contentDescription = "Create manual",
-                            tint = Color.Black
-                        )
+                            Text(
+                                text = "새로운 WiD",
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }

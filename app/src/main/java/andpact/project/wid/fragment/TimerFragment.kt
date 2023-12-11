@@ -68,9 +68,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
     // 타이머
-    var isRecording by remember { mutableStateOf(false) }
-    var isRecordingStop by remember { mutableStateOf(false) }
-    var isTimerReset by remember { mutableStateOf(true) }
+    var timerStarted by remember { mutableStateOf(false) }
+    var timerPaused by remember { mutableStateOf(false) }
+    var timerReset by remember { mutableStateOf(true) }
     var finishTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
     var remainingTime by remember { mutableStateOf(0L) }
@@ -102,16 +102,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     val currentSecondScrollOffset = remember { derivedStateOf { lazySecondListState.firstVisibleItemScrollOffset } }
 
     fun startTimer() {
-        isRecording = true
-        isRecordingStop = false
-        isTimerReset = false
-
-        coroutineScope.launch {
-            delay(3000)
-            if (isRecording) {
-                timerTopBottomBarVisible = false
-            }
-        }
+        timerStarted = true
+        timerPaused = false
+        timerReset = false
 
         date = LocalDate.now()
         start = LocalTime.now()
@@ -122,8 +115,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     }
 
     fun finishTimer() {
-        isRecording = false
-        isRecordingStop = true
+        timerStarted = false
+        timerPaused = true
 
         finish = LocalTime.now()
 
@@ -167,10 +160,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     }
 
     fun resetTimer() {
-        isRecordingStop = false
-        isTimerReset = true
+        timerPaused = false
+        timerReset = true
 
-        timerTopBottomBarVisible = true
 //        finishTime = 0
 //        currentTime = 0
 
@@ -189,7 +181,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         buttonText = "시작"
     }
 
-    LaunchedEffect(isRecording) {
+    LaunchedEffect(timerStarted) {
         val today = LocalDate.now()
 
         // 날짜가 변경되면 갱신해줌.
@@ -197,7 +189,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             date = today
         }
 
-        while (isRecording) {
+        while (timerStarted) {
             currentTime = System.currentTimeMillis() // currentTime은 1초마다 갱신 되어야 함.
             if (currentTime < finishTime) {
                 delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
@@ -214,7 +206,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         navController.popBackStack()
         mainTopBottomBarVisible.value = true
 
-        if (isRecording) {
+        if (timerStarted) {
             finishTimer()
         }
     }
@@ -224,14 +216,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
-            .clickable(enabled = isRecording) {
-                coroutineScope.launch {
-                    timerTopBottomBarVisible = true
-                    delay(3000)
-                    if (isRecording) {
-                        timerTopBottomBarVisible = false
-                    }
-                }
+            .clickable(enabled = timerStarted) {
+                timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
     ) {
         AnimatedVisibility(
@@ -255,21 +241,25 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     style = TextStyle(fontWeight = FontWeight.Bold)
                 )
 
-                if (isRecording || isRecordingStop) {
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("종료 시간 ")
-                            }
-                            append(formatTime(time = finishTime, "a H시 mm분 ss초"))
-                        }
-                    )
+                if (timerStarted || timerPaused) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_timer_24),
+                            contentDescription = "Finish Time",
+                            tint = Color.Black
+                        )
+
+                        Text(formatTime(time = finishTime, "a H시 mm분 ss초"))
+                    }
                 }
             }
         }
 
         // 타이머 초기 화면
-        if (isTimerReset) {
+        if (timerReset) {
             Column(
                 modifier = Modifier
                     .align(Alignment.Center),
@@ -523,7 +513,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .padding(start = 16.dp),
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     modifier = Modifier
@@ -534,12 +525,16 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(10.dp)
-                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+                            .background(
+                                color = colorResource(
+                                    id = colorMap[title] ?: R.color.light_gray
+                                )
+                            )
                     )
 
                     ExposedDropdownMenuBox(
                         expanded = titleMenuExpanded,
-                        onExpandedChange = { if (!isRecording && isTimerReset) titleMenuExpanded = !titleMenuExpanded },
+                        onExpandedChange = { if (!timerStarted && timerReset) titleMenuExpanded = !titleMenuExpanded },
                     ) {
                         TextField(
                             modifier = Modifier
@@ -548,7 +543,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                             value = titleMap[title] ?: "공부",
                             textStyle = TextStyle(textAlign = TextAlign.Center),
                             onValueChange = {},
-                            trailingIcon = { if (!isRecording && isTimerReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
+                            trailingIcon = { if (!timerStarted && timerReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
                             colors = ExposedDropdownMenuDefaults.textFieldColors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -575,7 +570,12 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .size(10.dp)
-                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
+                                                .background(
+                                                    color = colorResource(
+                                                        id = colorMap[menuTitle]
+                                                            ?: R.color.light_gray
+                                                    )
+                                                )
                                         )
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -588,27 +588,61 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 Row(
                     modifier = Modifier
                         .weight(2f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isRecordingStop) {
-                        TextButton(
-                            shape = RectangleShape,
-                            onClick = { resetTimer() },
+                    if (timerPaused) {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    resetTimer()
+                                },
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "초기화",
-                                style = TextStyle(color = Color.Black)
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_refresh_16),
+                                contentDescription = "Reset timer",
+                                tint = Color.Black
                             )
+
+                            Text(text = "초기화")
                         }
                     }
 
-                    TextButton(
-                        shape = RectangleShape,
-                        onClick = { if (isRecording) finishTimer() else startTimer() },
-                        enabled = remainingTime != 0L
+                    Row(
+                        modifier = Modifier
+                            .clickable(enabled = remainingTime != 0L) {
+                                if (timerStarted) {
+                                    finishTimer()
+                                } else {
+                                    startTimer()
+                                }
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = buttonText,
+                        Icon(
+                            painter = painterResource(
+                                id = if (buttonText == "중지") {
+                                    R.drawable.baseline_pause_16
+                                } else {
+                                    R.drawable.baseline_play_arrow_16
+                                }
+                            ),
+                            contentDescription = "Start & pause timer",
+                            tint = if (remainingTime == 0L) {
+                                Color.LightGray
+                            } else if (buttonText == "중지") {
+                                colorResource(id = R.color.orange_red)
+                            } else if (buttonText == "계속") {
+                                colorResource(id = R.color.lime_green)
+                            } else {
+                                colorResource(id = R.color.deep_sky_blue)
+                            }
+                        )
+
+                        Text(text = buttonText,
                             style = TextStyle(
                                 color = if (remainingTime == 0L) {
                                     Color.LightGray

@@ -411,24 +411,17 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(bottom = if (index == wiDList.size - 1) 16.dp else 0.dp),
-//                                        .then(
-//                                            if (index == wiDList.size - 1) {
-//                                                Modifier.padding(PaddingValues(bottom = 16.dp))
-//                                            } else {
-//                                                Modifier
-//                                            }
-//                                        ),
                                     color = Color.White,
                                     shape = RoundedCornerShape(8.dp),
                                     shadowElevation = 2.dp
                                 ) {
                                     Column(
                                         modifier = Modifier
-                                            .padding(16.dp)
                                             .clickable {
                                                 navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
                                                 mainTopBottomBarVisible.value = false
-                                            },
+                                            }
+                                            .padding(16.dp)
                                     ) {
                                         Row(
                                             modifier = Modifier

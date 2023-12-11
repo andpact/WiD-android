@@ -71,6 +71,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         // 상단 바
         Row(
             modifier = Modifier
+                .padding(start = 16.dp)
                 .fillMaxWidth()
                 .height(50.dp),
             verticalAlignment = Alignment.CenterVertically,

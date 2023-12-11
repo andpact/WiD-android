@@ -68,19 +68,11 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 화면
     var buttonText by remember { mutableStateOf("시작") }
     var stopWatchTopBottomBarVisible by remember { mutableStateOf(true) }
-    val coroutineScope = rememberCoroutineScope()
 
     fun startStopWatch() {
         stopWatchStarted = true
         stopWatchPaused = false
         stopWatchReset = false
-
-        coroutineScope.launch {
-            delay(3000)
-            if (stopWatchStarted) {
-                stopWatchTopBottomBarVisible = false
-            }
-        }
 
         date = LocalDate.now()
         start = LocalTime.now()
@@ -182,13 +174,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
             .clickable(enabled = stopWatchStarted) {
-                coroutineScope.launch {
-                    stopWatchTopBottomBarVisible = true
-                    delay(3000)
-                    if (stopWatchStarted) {
-                        stopWatchTopBottomBarVisible = false
-                    }
-                }
+                stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
             }
     ) {
         AnimatedVisibility(
@@ -201,7 +187,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             // 상단 바
             Row(
                 modifier = Modifier
-                    .padding(start = 16.dp)
+                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
                     .height(50.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -234,7 +220,8 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .padding(start = 16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     modifier = Modifier
@@ -245,7 +232,11 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(10.dp)
-                            .background(color = colorResource(id = colorMap[title] ?: R.color.light_gray))
+                            .background(
+                                color = colorResource(
+                                    id = colorMap[title] ?: R.color.light_gray
+                                )
+                            )
                     )
 
                     ExposedDropdownMenuBox(
@@ -286,7 +277,12 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .size(10.dp)
-                                                .background(color = colorResource(id = colorMap[menuTitle] ?: R.color.light_gray))
+                                                .background(
+                                                    color = colorResource(
+                                                        id = colorMap[menuTitle]
+                                                            ?: R.color.light_gray
+                                                    )
+                                                )
                                         )
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -299,26 +295,57 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 Row(
                     modifier = Modifier
                         .weight(2f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (stopWatchPaused) {
-                        TextButton(
-                            shape = RectangleShape,
-                            onClick = { resetStopWatch() },
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    resetStopWatch()
+                                },
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "초기화",
-                                style = TextStyle(color = Color.Black)
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_refresh_16),
+                                contentDescription = "Reset stopwatch",
+                                tint = Color.Black
                             )
+
+                            Text(text = "초기화")
                         }
                     }
 
-                    TextButton(
-                        shape = RectangleShape,
-                        onClick = { if (stopWatchStarted) pauseStopWatch() else startStopWatch() }
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                if (stopWatchStarted) {
+                                    pauseStopWatch()
+                                } else {
+                                    startStopWatch()
+                                }
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = buttonText,
+                        Icon(
+                            painter = painterResource(
+                                id = if (buttonText == "중지") {
+                                    R.drawable.baseline_pause_16
+                                } else {
+                                    R.drawable.baseline_play_arrow_16
+                                }
+                            ),
+                            contentDescription = "Start & pause stopwatch",
+                            tint = when (buttonText) {
+                                "중지" -> colorResource(id = R.color.orange_red)
+                                "계속" -> colorResource(id = R.color.lime_green)
+                                else -> colorResource(id = R.color.deep_sky_blue)
+                            }
+                        )
+
+                        Text(text = buttonText,
                             style = TextStyle(
                                 color = when (buttonText) {
                                     "중지" -> colorResource(id = R.color.orange_red)

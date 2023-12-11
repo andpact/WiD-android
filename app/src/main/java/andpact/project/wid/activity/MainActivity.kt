@@ -81,8 +81,8 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
                 mainTopBottomBarVisible = mainTopBottomBarVisible
             )
         }
-        composable(Destinations.ManualFragmentDestination.route) {
-            ManualFragment(
+        composable(Destinations.NewWiDFragmentDestination.route) {
+            NewWiDFragment(
                 navController = navController,
                 mainTopBottomBarVisible = mainTopBottomBarVisible
             )
@@ -212,8 +212,8 @@ sealed class Destinations(
     object TimerFragmentDestination : Destinations(
         route = "timer_fragment",
     )
-    object ManualFragmentDestination : Destinations(
-        route = "manual_fragment",
+    object NewWiDFragmentDestination : Destinations(
+        route = "newWiD_fragment",
     )
     object ListFragmentDestination : Destinations(
         route = "list_fragment",
