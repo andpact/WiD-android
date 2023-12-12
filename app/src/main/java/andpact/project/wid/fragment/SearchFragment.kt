@@ -113,22 +113,18 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             if (diaryList.isEmpty()) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(48.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                 ) {
                     Icon(
-                        modifier = Modifier
-                            .padding(vertical = 32.dp)
-                            .scale(0.8f),
-                        painter = painterResource(id = R.drawable.outline_textsms_24),
+                        painter = painterResource(id = R.drawable.outline_sms_16),
                         contentDescription = "No diary",
                         tint = Color.Gray
                     )
 
                     Text(
-                        modifier = Modifier
-                            .padding(vertical = 32.dp),
                         text = "검색으로 다이어리를 찾아보세요.",
                         style = TextStyle(color = Color.Gray)
                     )
@@ -145,9 +141,8 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     itemsIndexed(diaryList) { index: Int, diary: Diary ->
                         Column(
                             modifier = Modifier
-                                .padding(bottom = if (diaryList.size - 1 == index) 16.dp else 0.dp) // 마지막 아이템에 아래쪽 패딩을 설정함.
                                 .fillMaxWidth()
-                                .aspectRatio(0.5f)
+                                .aspectRatio(1f / 2f) // 가로 1, 세로 2 비율
                                 .clickable {
                                     navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
 
@@ -159,7 +154,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     .fillMaxWidth()
                                     .weight(1f),
                                 shape = RoundedCornerShape(8.dp),
-                                elevation = CardDefaults.cardElevation(2.dp),
+                                elevation = CardDefaults.cardElevation(1.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White)
                             ) {
                                 Column(
@@ -194,14 +189,19 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 )
 
                                 Icon(
-                                    modifier = Modifier
-                                        .scale(0.6f),
-                                    painter = painterResource(id = R.drawable.baseline_edit_24),
+                                    painter = painterResource(id = R.drawable.baseline_edit_16),
                                     contentDescription = "Edit diary",
                                     tint = colorResource(id = R.color.deep_sky_blue)
                                 )
                             }
                         }
+                    }
+
+                    item {
+                        Spacer(
+                            modifier = Modifier
+                                .height(16.dp)
+                        )
                     }
                 }
             }

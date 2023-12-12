@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -376,9 +379,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             ) {
                 // 가로 막대 차트
                 item {
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
+
                     Column(
                         modifier = Modifier
-                            .padding(16.dp, 16.dp, 16.dp),
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
@@ -398,55 +406,22 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             )
                         }
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            Row(
+                        if (wiDList.isEmpty()) {
+                            createEmptyView(text = "표시할 그래프가 없습니다.")()
+                        } else {
+                            Surface(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 32.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(
-                                    8.dp,
-                                    Alignment.CenterHorizontally
-                                )
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
                             ) {
-            //                    val configuration = LocalConfiguration.current
-            //                    val screenWidthDp = configuration.screenWidthDp
-            //                    val density = LocalDensity.current.density
-            //                    val screenWidthPixels = (screenWidthDp * density).toInt()
-            //
-            //                    Box(modifier = Modifier
-            //                        .fillMaxWidth()
-            //                    ) {
-            //                        Icon(
-            //                            modifier = Modifier
-            //                                .scale(0.8f)
-            //                                .rotate(90f)
-            //                                .offset(y = -(screenWidthDp * startPosition * 0.8).dp),
-            //                            painter = painterResource(id = R.drawable.outline_play_arrow_24),
-            //                            contentDescription = "startPosition",
-            //                            tint = if (isStartOverlap || isStartOverCurrentTime) Color.Red else Color.Unspecified
-            //                        )
-            //
-            //                        Icon(
-            //                            modifier = Modifier
-            //                                .scale(0.8f)
-            //                                .rotate(90f)
-            //                                .offset(y = -(screenWidthDp * finishPosition * 0.8).dp),
-            //                            painter = painterResource(id = R.drawable.baseline_play_arrow_24),
-            //                            contentDescription = "finishPosition",
-            //                            tint = if (isFinishOverlap || isFinishOverCurrentTime) Color.Red else Color.Unspecified)
-            //                    }
-
-                                if (wiDList.isEmpty()) {
-                                    Text("표시할 그래프가 없습니다.")
-                                } else {
-                                    HorizontalBarChartFragment(wiDList = wiDList)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                ) {
+                                    StackedHorizontalBarChartFragment(wiDList = wiDList)
                                 }
                             }
                         }
@@ -470,7 +445,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 .fillMaxWidth(),
                             color = Color.White,
                             shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
+                            shadowElevation = 1.dp
                         ) {
                             Column {
                                 Row(
@@ -494,8 +469,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     }
 
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_16),
-                                        contentDescription = "Edit date"
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Show date picker",
                                     )
                                 }
 
@@ -568,8 +543,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     }
 
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_16),
-                                        contentDescription = "Edit title"
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Show title menu",
                                     )
                                 }
 
@@ -590,12 +565,12 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             contentDescription = "Start"
                                         )
 
-                                        Text(text = formatTime(start, "a h:mm:ss"))
+                                        Text(text = formatTime(start, "a hh:mm:ss"))
                                     }
 
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_16),
-                                        contentDescription = "Edit start"
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Show start picker",
                                     )
                                 }
 
@@ -616,12 +591,12 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             contentDescription = "Finish"
                                         )
 
-                                        Text(text = formatTime(finish, "a h:mm:ss"))
+                                        Text(text = formatTime(finish, "a hh:mm:ss"))
                                     }
 
                                     Icon(
-                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_16),
-                                        contentDescription = "Edit finish"
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Show finish picker",
                                     )
                                 }
 
@@ -648,7 +623,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 item {
                     Column(
                         modifier = Modifier
-                            .padding(16.dp, 0.dp, 16.dp, 16.dp),
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -657,8 +632,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                         )
 
                         if (emptyWiDList.isEmpty()) {
-    //                        createEmptyView(text = "표시할 시간대가 없습니다.")
-                            Text(text = "표시할 시간대가 없습니다.")
+                            createEmptyView(text = "표시할 시간대가 없습니다.")()
                         } else {
                             emptyWiDList.forEach { emptyWiD: WiD ->
                                 Surface(
@@ -666,7 +640,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         .fillMaxWidth(),
                                     color = Color.White,
                                     shape = RoundedCornerShape(8.dp),
-                                    shadowElevation = 2.dp
+                                    shadowElevation = 1.dp
                                 ) {
                                     Column(
                                         modifier = Modifier
@@ -716,12 +690,12 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         ) {
                                             Column {
                                                 Text(
-                                                    text = formatTime(emptyWiD.start, "a h:mm:ss"),
+                                                    text = formatTime(emptyWiD.start, "a hh:mm:ss"),
                                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                                 )
 
                                                 Text(
-                                                    text = formatTime(emptyWiD.finish, "a h:mm:ss"),
+                                                    text = formatTime(emptyWiD.finish, "a hh:mm:ss"),
                                                     style = TextStyle(fontWeight = FontWeight.Bold)
                                                 )
                                             }
@@ -736,6 +710,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             }
                         }
                     }
+
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
                 }
             }
 

@@ -21,27 +21,25 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun createEmptyView(text: String): @Composable () -> Unit = {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         color = Color.White,
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 2.dp
+        shadowElevation = 1.dp
     ) {
         Row(
-            modifier = Modifier.padding(vertical = 16.dp),
+            modifier = Modifier
+                .padding(vertical = 48.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
         ) {
             Icon(
-                modifier = Modifier
-                    .padding(vertical = 32.dp)
-                    .scale(0.8f),
-                painter = painterResource(id = R.drawable.outline_textsms_24),
+                painter = painterResource(id = R.drawable.outline_sms_16),
                 tint = Color.Gray,
                 contentDescription = text
             )
 
             Text(
-                modifier = Modifier.padding(vertical = 32.dp),
                 text = text,
                 style = TextStyle(color = Color.Gray)
             )

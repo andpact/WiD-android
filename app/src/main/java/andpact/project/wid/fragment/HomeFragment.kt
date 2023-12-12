@@ -70,7 +70,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
             Surface(
                 color = Color.White,
                 shape = RoundedCornerShape(8.dp),
-                shadowElevation = 2.dp
+                shadowElevation = 1.dp
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -223,56 +224,43 @@ fun PeriodBasedFragment() {
         // 컨텐츠
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            if (selectedTitle == titlesWithAll[0]) { // 제목이 "전체" 일 때
+            /*
+                제목이 "전체" 일 때
+                제목이 "전체" 일 때
+                제목이 "전체" 일 때
+                제목이 "전체" 일 때
+                제목이 "전체" 일 때
+             */
+            if (selectedTitle == titlesWithAll[0]) {
                 item {
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
+
                     Column(
                         modifier = Modifier
-                            .padding(top = 16.dp),
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "시간 그래프",
-                            style = TextStyle(
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                            )
+                            style = TextStyle(fontWeight = FontWeight.Bold)
                         )
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            if (wiDList.isEmpty()) {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(vertical = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp)
-                                            .scale(0.8f),
-                                        painter = painterResource(id = R.drawable.outline_textsms_24),
-                                        tint = Color.Gray,
-                                        contentDescription = "No graph"
-                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp),
-                                        text = "표시할 그래프가 없습니다.",
-                                        style = TextStyle(color = Color.Gray)
-                                    )
-                                }
-                            } else {
+                        if (wiDList.isEmpty()) {
+                            createEmptyView(text = "표시할 그래프가 없습니다.")()
+                        } else {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
                                 Column { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
                                     Row(
                                         modifier = Modifier
@@ -326,6 +314,8 @@ fun PeriodBasedFragment() {
                 item {
                     // 합계, 평균, 최고
                     Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
@@ -336,10 +326,7 @@ fun PeriodBasedFragment() {
                         ) {
                             Text(
                                 text = "$selectedMapText 기록",
-                                style = TextStyle(
-                                    fontSize = 18.sp,
-                                    fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                                )
+                                style = TextStyle(fontWeight = FontWeight.Bold)
                             )
 
                             Row(
@@ -377,146 +364,124 @@ fun PeriodBasedFragment() {
                             }
                         }
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                            ) {
-                                if (selectedMap.isEmpty()) {
+                        if (selectedMap.isEmpty()) {
+                            createEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
+                        } else {
+                            for ((title, duration) in selectedMap) {
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    shape = RoundedCornerShape(8.dp),
+                                    shadowElevation = 1.dp
+                                ) {
                                     Row(
                                         modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                                            .fillMaxWidth()
+                                            .background(
+                                                brush = Brush.linearGradient(
+                                                    colors = listOf(
+                                                        colorResource(
+                                                            id = colorMap[title]
+                                                                ?: R.color.light_gray
+                                                        ),
+                                                        Color.White,
+                                                    )
+                                                ),
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .padding(16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Icon(
-                                            modifier = Modifier
-                                                .padding(vertical = 32.dp)
-                                                .scale(0.8f),
-                                            painter = painterResource(id = R.drawable.outline_textsms_24),
-                                            contentDescription = "No $selectedMapText total",
-                                            tint = Color.Gray
+                                        Text(
+                                            text = titleMap[title] ?: title,
+                                            style = TextStyle(
+                                                fontSize = 20.sp,
+                                                fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                            )
                                         )
 
                                         Text(
-                                            modifier = Modifier
-                                                .padding(vertical = 32.dp),
-                                            text = "표시할 $selectedMapText 기록이 없습니다.",
-                                            style = TextStyle(color = Color.Gray)
+                                            text = formatDuration(duration, mode = 3),
+                                            style = TextStyle(
+                                                fontSize = 20.sp,
+                                                fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                            )
                                         )
-                                    }
-                                } else {
-                                    for ((title, duration) in selectedMap) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .weight(1f),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .scale(0.8f),
-                                                    painter = painterResource(id = R.drawable.outline_subtitles_24),
-                                                    contentDescription = "Title"
-                                                )
-
-                                                Text(
-                                                    text = titleMap[title] ?: title,
-                                                    style = TextStyle(fontWeight = FontWeight.Bold)
-                                                )
-
-                                                Box(
-                                                    modifier = Modifier
-                                                        .clip(CircleShape)
-                                                        .size(10.dp)
-                                                        .background(
-                                                            color = colorResource(
-                                                                id = colorMap[title]
-                                                                    ?: R.color.light_gray
-                                                            )
-                                                        )
-                                                )
-                                            }
-
-                                            Row(
-                                                modifier = Modifier
-                                                    .weight(1f),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                            ) {
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .scale(0.8f),
-                                                    painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                    contentDescription = "Duration"
-                                                )
-
-                                                Text(text = formatDuration(duration, mode = 2))
-                                            }
-                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            } else { // 제목이 "전체"가 아닐 때
+
                 item {
                     Column(
                         modifier = Modifier
-                            .padding(top = 16.dp),
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "기록률",
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
+
+                        if (wiDList.isEmpty()) {
+                            createEmptyView(text = "표시할 기록률이 없습니다.")()
+                        } else {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
+                                VerticalBarChartFragment(
+                                    wiDList = wiDList,
+                                    startDate = startDate,
+                                    finishDate = finishDate
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
+                }
+                /*
+                    제목이 "전체"가 아닐 때
+                    제목이 "전체"가 아닐 때
+                    제목이 "전체"가 아닐 때
+                    제목이 "전체"가 아닐 때
+                    제목이 "전체"가 아닐 때
+                 */
+            } else {
+                item {
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "시간 그래프",
-                            style = TextStyle(
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                            )
+                            style = TextStyle(fontWeight = FontWeight.Bold)
                         )
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            if (filteredWiDListByTitle.isEmpty()) {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(vertical = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp)
-                                            .scale(0.8f),
-                                        painter = painterResource(id = R.drawable.outline_textsms_24),
-                                        tint = Color.Gray,
-                                        contentDescription = "No graph"
-                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp),
-                                        text = "표시할 그래프가 없습니다.",
-                                        style = TextStyle(color = Color.Gray)
-                                    )
-                                }
-                            } else {
+                        if (filteredWiDListByTitle.isEmpty()) {
+                            createEmptyView(text = "표시할 그래프가 없습니다.")()
+                        } else {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
                                 LineChartFragment(
                                     title = selectedTitle,
                                     wiDList = filteredWiDListByTitle,
@@ -530,178 +495,150 @@ fun PeriodBasedFragment() {
 
                 item {
                     Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "시간 기록",
-                            style = TextStyle(
-                                fontSize = 18.sp,
-                                fontFamily = FontFamily(Font(R.font.black_han_sans_regular))
-                            )
+                            style = TextStyle(fontWeight = FontWeight.Bold)
                         )
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 2.dp
-                        ) {
-                            if (filteredWiDListByTitle.isEmpty()) {
+                        if (filteredWiDListByTitle.isEmpty()) {
+                            createEmptyView(text = "표시할 기록이 없습니다.")()
+                        } else {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(vertical = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                                        .fillMaxWidth()
+                                        .background(
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(
+                                                    colorResource(
+                                                        id = R.color.light_gray
+                                                    ),
+                                                    Color.White,
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp)
-                                            .scale(0.8f),
-                                        painter = painterResource(id = R.drawable.outline_textsms_24),
-                                        tint = Color.Gray,
-                                        contentDescription = "No data"
+                                    Text(
+                                        text = "합계",
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
                                     )
 
                                     Text(
-                                        modifier = Modifier
-                                            .padding(vertical = 32.dp),
-                                        text = "표시할 기록이 없습니다.",
-                                        style = TextStyle(color = Color.Gray)
+                                        text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
                                     )
                                 }
-                            } else {
-                                Column(
+                            }
+
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
+                                Row(
                                     modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(
+                                                    colorResource(
+                                                        id = R.color.light_gray
+                                                    ),
+                                                    Color.White,
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
                                         .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Total"
-                                            )
+                                    Text(
+                                        text = "평균",
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
+                                    )
 
-                                            Text(
-                                                text = "합계",
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
+                                    Text(
+                                        text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
+                                    )
+                                }
+                            }
 
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "Total duration"
-                                            )
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = Color.White,
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(
+                                                    colorResource(
+                                                        id = R.color.light_gray
+                                                    ),
+                                                    Color.White,
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "최고",
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
+                                    )
 
-                                            Text(text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
-                                        }
-                                    }
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Average"
-                                            )
-
-                                            Text(
-                                                text = "평균",
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
-
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "Average duration"
-                                            )
-
-                                            Text(text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
-                                        }
-                                    }
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_analytics_24),
-                                                contentDescription = "Max"
-                                            )
-
-                                            Text(
-                                                text = "최고",
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
-
-                                        Row(
-                                            modifier = Modifier
-                                                .weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                modifier = Modifier
-                                                    .scale(0.8f),
-                                                painter = painterResource(id = R.drawable.outline_hourglass_empty_24),
-                                                contentDescription = "Max duration"
-                                            )
-
-                                            Text(text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 2))
-                                        }
-                                    }
+                                    Text(
+                                        text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                        )
+                                    )
                                 }
                             }
                         }
                     }
+
+                    Spacer(
+                        modifier = Modifier
+                            .height(16.dp)
+                    )
                 }
             }
         }
