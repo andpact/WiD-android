@@ -10,9 +10,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -508,143 +511,138 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            // 하단 바
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
+                AnimatedVisibility(
+                    visible = titleMenuExpanded,
+                    enter = expandVertically { 0 },
+                    exit = shrinkVertically { 0 },
                 ) {
-                    Box(
+                    LazyVerticalGrid(
                         modifier = Modifier
-                            .clip(CircleShape)
-                            .size(10.dp)
-                            .background(
-                                color = colorResource(
-                                    id = colorMap[title] ?: R.color.light_gray
-                                )
-                            )
-                    )
-
-                    ExposedDropdownMenuBox(
-                        expanded = titleMenuExpanded,
-                        onExpandedChange = { if (!timerStarted && timerReset) titleMenuExpanded = !titleMenuExpanded },
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        columns = GridCells.Fixed(5),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        TextField(
-                            modifier = Modifier
-                                .menuAnchor(),
-                            readOnly = true,
-                            value = titleMap[title] ?: "공부",
-                            textStyle = TextStyle(textAlign = TextAlign.Center),
-                            onValueChange = {},
-                            trailingIcon = { if (!timerStarted && timerReset) ExposedDropdownMenuDefaults.TrailingIcon(expanded = titleMenuExpanded) },
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                        )
-
-                        ExposedDropdownMenu(
-                            modifier = Modifier
-                                .background(Color.White),
-                            expanded = titleMenuExpanded,
-                            onDismissRequest = { titleMenuExpanded = false }
-                        ) {
-                            titles.forEach { menuTitle ->
-                                DropdownMenuItem(
-                                    text = { Text(text = titleMap[menuTitle] ?: "공부") },
+                        titles.forEach { chipTitle ->
+                            item {
+                                FilterChip(
+                                    selected = title == chipTitle,
                                     onClick = {
-                                        title = menuTitle
+                                        title = chipTitle
                                         titleMenuExpanded = false
                                     },
-                                    trailingIcon = {
-                                        Box(
+                                    label = {
+                                        Text(
                                             modifier = Modifier
-                                                .clip(CircleShape)
-                                                .size(10.dp)
-                                                .background(
-                                                    color = colorResource(
-                                                        id = colorMap[menuTitle]
-                                                            ?: R.color.light_gray
-                                                    )
-                                                )
+                                                .fillMaxWidth(),
+                                            text = titleMap[chipTitle] ?: chipTitle,
+                                            style = TextStyle(textAlign = TextAlign.Center)
                                         )
                                     },
-                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = Color.LightGray
+                                    )
                                 )
                             }
                         }
                     }
                 }
 
+                // 하단 바
                 Row(
                     modifier = Modifier
-                        .weight(2f),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (timerPaused) {
+                    Row(
+                        modifier = Modifier
+                            .clickable(timerReset) {
+                                titleMenuExpanded = !titleMenuExpanded
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(10.dp)
+                                .background(
+                                    color = colorResource(
+                                        id = colorMap[title] ?: R.color.light_gray
+                                    )
+                                )
+                        )
+
+                        Text(titleMap[title] ?: "공부")
+
+                        Icon(
+                            imageVector = if (titleMenuExpanded) {
+                                Icons.Default.KeyboardArrowUp
+                            } else {
+                                Icons.Default.KeyboardArrowDown
+                            },
+                            contentDescription = "Expand title menu",
+                            tint = if (timerReset) {
+                                Color.Black
+                            } else {
+                                Color.LightGray
+                            }
+                        )
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (timerPaused) {
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        resetTimer()
+                                    },
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_refresh_16),
+                                    contentDescription = "Reset timer",
+                                    tint = Color.Black
+                                )
+
+                                Text(text = "초기화")
+                            }
+                        }
+
                         Row(
                             modifier = Modifier
-                                .clickable {
-                                    resetTimer()
+                                .clickable(enabled = remainingTime != 0L) {
+                                    if (timerStarted) {
+                                        finishTimer()
+                                    } else {
+                                        startTimer()
+                                        titleMenuExpanded = false
+                                    }
                                 },
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.baseline_refresh_16),
-                                contentDescription = "Reset timer",
-                                tint = Color.Black
-                            )
-
-                            Text(text = "초기화")
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .clickable(enabled = remainingTime != 0L) {
-                                if (timerStarted) {
-                                    finishTimer()
-                                } else {
-                                    startTimer()
-                                }
-                            },
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                id = if (buttonText == "중지") {
-                                    R.drawable.baseline_pause_16
-                                } else {
-                                    R.drawable.baseline_play_arrow_16
-                                }
-                            ),
-                            contentDescription = "Start & pause timer",
-                            tint = if (remainingTime == 0L) {
-                                Color.LightGray
-                            } else if (buttonText == "중지") {
-                                colorResource(id = R.color.orange_red)
-                            } else if (buttonText == "계속") {
-                                colorResource(id = R.color.lime_green)
-                            } else {
-                                colorResource(id = R.color.deep_sky_blue)
-                            }
-                        )
-
-                        Text(text = buttonText,
-                            style = TextStyle(
-                                color = if (remainingTime == 0L) {
+                                painter = painterResource(
+                                    id = if (buttonText == "중지") {
+                                        R.drawable.baseline_pause_16
+                                    } else {
+                                        R.drawable.baseline_play_arrow_16
+                                    }
+                                ),
+                                contentDescription = "Start & pause timer",
+                                tint = if (remainingTime == 0L) {
                                     Color.LightGray
                                 } else if (buttonText == "중지") {
                                     colorResource(id = R.color.orange_red)
@@ -654,7 +652,22 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     colorResource(id = R.color.deep_sky_blue)
                                 }
                             )
-                        )
+
+                            Text(
+                                text = buttonText,
+                                style = TextStyle(
+                                    color = if (remainingTime == 0L) {
+                                        Color.LightGray
+                                    } else if (buttonText == "중지") {
+                                        colorResource(id = R.color.orange_red)
+                                    } else if (buttonText == "계속") {
+                                        colorResource(id = R.color.lime_green)
+                                    } else {
+                                        colorResource(id = R.color.deep_sky_blue)
+                                    }
+                                )
+                            )
+                        }
                     }
                 }
             }

@@ -71,7 +71,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         // 상단 바
         Row(
             modifier = Modifier
-                .padding(start = 16.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .height(50.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -87,24 +87,42 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                 }
             )
 
-            TextButton(
-                onClick = {
-                    keyboardController?.hide()
+            Row(
+                modifier = Modifier
+                    .clickable(diaryTitle.isNotBlank() && diaryContent.isNotBlank()) {
+                        keyboardController?.hide()
 
-                    if (clickedDiary == null) {
-                        val newDiary = Diary(id = 0, date = date, title = diaryTitle, content = diaryContent)
-                        diaryService.createDiary(newDiary)
-                    } else {
-                        diaryService.updateDiary(id = clickedDiary.id, date = date, title = diaryTitle, content = diaryContent)
-                    }
+                        if (clickedDiary == null) {
+                            val newDiary = Diary(id = 0, date = date, title = diaryTitle, content = diaryContent)
+                            diaryService.createDiary(newDiary)
+                        } else {
+                            diaryService.updateDiary(id = clickedDiary.id, date = date, title = diaryTitle, content = diaryContent)
+                        }
 
-                    navController.popBackStack()
-                    mainTopBottomBarVisible.value = true
-                },
-                shape = RectangleShape,
-                enabled = diaryTitle.isNotBlank() && diaryContent.isNotBlank()
+                        navController.popBackStack()
+                        mainTopBottomBarVisible.value = true
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "완료")
+                Icon(
+                    painter = painterResource(R.drawable.baseline_done_16),
+                    contentDescription = "Modify & complete WiD",
+                    tint = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
+                        colorResource(id = R.color.lime_green)
+                    else
+                        Color.LightGray
+                )
+
+                Text(
+                    text = "완료",
+                    style = TextStyle(
+                        color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
+                            colorResource(id = R.color.lime_green)
+                        else
+                            Color.LightGray
+                    )
+                )
             }
         }
 

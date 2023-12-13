@@ -6,12 +6,16 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -67,6 +72,10 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
 
         return
     }
+
+    // 화면
+    val lazyColumnState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     // 날짜
     val today: LocalDate = LocalDate.now()
@@ -180,48 +189,67 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+            state = lazyColumnState
         ) {
+            // item 1
             item {
-                Surface(
+                Spacer(
+                    modifier = Modifier
+                        .height(32.dp)
+                )
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    shadowElevation = 1.dp
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    Text(
+                        text = "선택 가능한 시간 범위",
+                        style = TextStyle(fontSize = 20.sp)
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "선택 가능한 시간 범위",
-                            style = TextStyle(fontSize = 20.sp)
+                            text = formatTime(
+                                time = startLimit,
+                                patten = "a hh:mm:ss"
+                            ),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
                         )
 
-                        Row {
-                            Text(
-                                text = formatTime(
-                                    time = startLimit,
-                                    patten = "a hh:mm:ss"
-                                )
-                            )
+                        Text(" ~ ")
 
-                            Text("~")
-
-                            Text(
-                                text = formatTime(
-                                    time = finishLimit,
-                                    patten = "a hh:mm:ss"
-                                )
-                            )
-                        }
+                        Text(
+                            text = formatTime(
+                                time = finishLimit,
+                                patten = "a hh:mm:ss"
+                            ),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
+            }
 
+            // item 2
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(32.dp)
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+            }
+
+            // item 3
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -237,18 +265,36 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     Column {
                         Text("날짜")
 
-                        Text(text = getDayString(date))
+                        Text(
+                            text = getDayString(date),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
+            }
 
+            // item 4
+            item {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(start = 48.dp)
+                        .padding(horizontal = 16.dp)
                 )
+            }
 
+            // item 5
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            titleMenuExpanded = !titleMenuExpanded
+                            if (titleMenuExpanded) {
+                                coroutineScope.launch {
+                                    delay(100)
+                                    lazyColumnState.animateScrollToItem(3)
+                                }
+                            }
+                        }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -261,19 +307,28 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     Column {
                         Text("제목")
 
-                        Text(text = titleMap[title] ?: title)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = titleMap[title] ?: title,
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .size(10.dp)
+                                    .background(
+                                        color = colorResource(
+                                            id = colorMap[title] ?: R.color.light_gray
+                                        )
+                                    )
+                            )
+                        }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(10.dp)
-                            .background(
-                                color = colorResource(
-                                    id = colorMap[title] ?: R.color.light_gray
-                                )
-                            )
-                    )
 
                     Spacer(
                         modifier = Modifier
@@ -281,21 +336,71 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     )
 
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
+                        imageVector = if (titleMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show title menu",
                     )
                 }
 
+                AnimatedVisibility(
+                    visible = titleMenuExpanded,
+//                    enter = expandVertically{ 0 },
+                    enter = expandVertically(animationSpec = tween(500)) { 0 },
+//                    exit = shrinkVertically{ 0 },
+                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
+                ) {
+                    LazyVerticalGrid(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                        columns = GridCells.Fixed(5),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        titles.forEach { chipTitle ->
+                            item {
+                                FilterChip(
+                                    selected = title == chipTitle,
+                                    onClick = {
+                                        title = chipTitle
+                                        titleMenuExpanded = false
+                                    },
+                                    label = {
+                                        Text(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            text = titleMap[chipTitle] ?: chipTitle,
+                                            style = TextStyle(textAlign = TextAlign.Center)
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color.LightGray)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // item 6
+            item {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(start = 48.dp)
+                        .padding(horizontal = 16.dp)
                 )
+            }
 
+            // item 7
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             showStartPicker = !showStartPicker
+                            if (showStartPicker) {
+                                coroutineScope.launch {
+                                    delay(100)
+                                    lazyColumnState.animateScrollToItem(5)
+                                }
+                            }
                         }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -309,7 +414,10 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     Column {
                         Text("시작")
 
-                        Text(text = formatTime(start, "a hh:mm:ss"))
+                        Text(
+                            text = formatTime(start, "a hh:mm:ss"),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
 
                     Spacer(
@@ -318,12 +426,18 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     )
 
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
+                        imageVector = if (showStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show start picker",
                     )
                 }
 
-                if (showStartPicker) {
+                AnimatedVisibility(
+                    visible = showStartPicker,
+//                    enter = expandVertically{ 0 },
+                    enter = expandVertically(animationSpec = tween(500)) { 0 },
+//                    exit = shrinkVertically{ 0 },
+                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
+                ) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp),
@@ -356,17 +470,30 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         }
                     }
                 }
+            }
 
+            // item 8
+            item {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(start = 48.dp)
+                        .padding(horizontal = 16.dp)
                 )
+            }
 
+            // item 9
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             showFinishPicker = !showFinishPicker
+                            if (showFinishPicker) {
+                                coroutineScope.launch {
+                                    delay(100)
+//                                    lazyColumnState.scrollToItem(8)
+                                    lazyColumnState.animateScrollToItem(7) // Finish Picker가 화면에 나타나는 도중에 스크롤이 동작하면 에러가 나는 듯.
+                                }
+                            }
                         }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -380,7 +507,10 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     Column {
                         Text("종료")
 
-                        Text(text = formatTime(finish, "a hh:mm:ss"))
+                        Text(
+                            text = formatTime(finish, "a hh:mm:ss"),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
 
                     Spacer(
@@ -389,12 +519,18 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     )
 
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
+                        imageVector = if (showFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show finish picker",
                     )
                 }
 
-                if (showFinishPicker) {
+                AnimatedVisibility(
+                    visible = showFinishPicker,
+//                    enter = expandVertically{ 0 },
+                    enter = expandVertically(animationSpec = tween(500)) { 0 },
+//                    exit = shrinkVertically{ 0 },
+                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
+                ) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp),
@@ -417,7 +553,10 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             TextButton(
                                 onClick = {
                                     showFinishPicker = false
-                                    val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
+                                    val newFinish = LocalTime.of(
+                                        finishTimePickerState.hour,
+                                        finishTimePickerState.minute
+                                    )
 
                                     finish = newFinish
                                 }
@@ -427,12 +566,18 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         }
                     }
                 }
+            }
 
+            // item 10
+            item {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(start = 48.dp)
+                        .padding(horizontal = 16.dp)
                 )
+            }
 
+            // item 11
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -448,9 +593,20 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     Column {
                         Text("소요")
 
-                        Text(text = formatDuration(duration, mode = 3))
+                        Text(
+                            text = formatDuration(duration, mode = 3),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
+            }
+
+            // item 12
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(32.dp)
+                )
 
                 TextButton(
                     modifier = Modifier
@@ -479,193 +635,13 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         style = TextStyle(color = Color.White)
                     )
                 }
+
+                Spacer(
+                    modifier = Modifier
+                        .height(16.dp)
+                )
             }
         }
-
-        // 컨텐츠
-//            Column(
-//                modifier = Modifier
-//                    .padding(16.dp)
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
-//            ) {
-//                // Clicked WiD
-//                Column(
-//                    verticalArrangement = Arrangement.spacedBy(8.dp)
-//                ) {
-//                    Text(
-//                        text = "WiD",
-//                        style = TextStyle(fontWeight = FontWeight.Bold)
-//                    )
-//
-//                    Surface(
-//                        modifier = Modifier
-//                            .fillMaxWidth(),
-//                        color = Color.White,
-//                        shape = RoundedCornerShape(8.dp),
-//                        shadowElevation = 1.dp
-//                    ) {
-//                        Column {
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .padding(16.dp),
-//                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(id = R.drawable.baseline_calendar_today_16),
-//                                    contentDescription = "Date"
-//                                )
-//
-//                                Text(text = getDayString(date))
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable(enabled = isEditing) { titleMenuExpanded = true }
-//                                    .padding(16.dp),
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.SpaceBetween
-//                            ) {
-//                                Row(
-//                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                                    verticalAlignment = Alignment.CenterVertically
-//                                ) {
-//                                    Icon(
-//                                        painter = painterResource(id = R.drawable.baseline_title_16),
-//                                        contentDescription = "Title"
-//                                    )
-//
-//                                    Text(text = titleMap[title] ?: title)
-//
-//                                    Box(
-//                                        modifier = Modifier
-//                                            .clip(CircleShape)
-//                                            .size(10.dp)
-//                                            .background(
-//                                                color = colorResource(
-//                                                    id = colorMap[title] ?: R.color.light_gray
-//                                                )
-//                                            )
-//                                    )
-//
-//                                    DropdownMenu(
-//                                        modifier = Modifier
-//                                            .background(color = colorResource(id = R.color.white), shape = RoundedCornerShape(8.dp)),
-//                                        expanded = titleMenuExpanded,
-//                                        onDismissRequest = {
-//                                            titleMenuExpanded = false
-//                                        },
-//                                    ) {
-//                                        titles.forEach { menuTitle ->
-//                                            DropdownMenuItem(
-//                                                onClick = {
-//                                                    title = menuTitle
-//                                                    titleMenuExpanded = false
-//                                                },
-//                                                trailingIcon = {
-//                                                    Box(
-//                                                        modifier = Modifier
-//                                                            .clip(CircleShape)
-//                                                            .size(10.dp)
-//                                                            .background(
-//                                                                color = colorResource(
-//                                                                    id = colorMap[menuTitle]
-//                                                                        ?: R.color.light_gray
-//                                                                )
-//                                                            )
-//                                                    )
-//                                                },
-//                                                text = { Text(text = titleMap[menuTitle] ?: menuTitle) }
-//                                            )
-//                                        }
-//                                    }
-//                                }
-//
-//                                if (isEditing) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.KeyboardArrowDown,
-//                                        contentDescription = "Show title menu",
-//                                    )
-//                                }
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable(enabled = isEditing) { showStartPicker = true }
-//                                    .padding(16.dp),
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.SpaceBetween
-//                            ) {
-//                                Row(
-//                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                                    verticalAlignment = Alignment.CenterVertically
-//                                ) {
-//                                    Icon(
-//                                        painter = painterResource(id = R.drawable.baseline_alarm_16),
-//                                        contentDescription = "Start"
-//                                    )
-//
-//                                    Text(text = formatTime(start, "a hh:mm:ss"))
-//                                }
-//
-//                                if (isEditing) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.KeyboardArrowDown,
-//                                        contentDescription = "Show start picker",
-//                                    )
-//                                }
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable(enabled = isEditing) { showFinishPicker = true }
-//                                    .padding(16.dp),
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.SpaceBetween
-//                            ) {
-//                                Row(
-//                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                                    verticalAlignment = Alignment.CenterVertically
-//                                ) {
-//                                    Icon(
-//                                        painter = painterResource(id = R.drawable.baseline_alarm_on_16),
-//                                        contentDescription = "Finish"
-//                                    )
-//
-//                                    Text(text = formatTime(finish, "a hh:mm:ss"))
-//                                }
-//
-//                                if (isEditing) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.KeyboardArrowDown,
-//                                        contentDescription = "Show finish picker",
-//                                    )
-//                                }
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .padding(16.dp),
-//                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Icon(
-//                                    painter = painterResource(id = R.drawable.baseline_timelapse_16),
-//                                    contentDescription = "Duration"
-//                                )
-//
-//                                Text(text = formatDuration(duration, mode = 3))
-//                            }
-//                        }
-//                    }
-//                }
-//            }
 
         // 하단 바
         Box(

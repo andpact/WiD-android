@@ -14,61 +14,66 @@ import java.time.temporal.TemporalAdjusters
 import java.util.*
 
 fun getDayString(date: LocalDate): AnnotatedString {
-    val today = LocalDate.now()
-    val yesterday = today.minusDays(1)
-
     return buildAnnotatedString {
-        if (date == today) {
-            append("오늘")
-        } else if (date == yesterday) {
-            append("어제")
-        } else {
-            append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
+        append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
 
-            withStyle(
-                style = SpanStyle(
-                    color = when (date.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> Color.Blue
-                        DayOfWeek.SUNDAY -> Color.Red
-                        else -> Color.Black
-                    }
-                )
-            ) {
-                append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-            }
-            append(")")
+        withStyle(
+            style = SpanStyle(
+                color = when (date.dayOfWeek) {
+                    DayOfWeek.SATURDAY -> Color.Blue
+                    DayOfWeek.SUNDAY -> Color.Red
+                    else -> Color.Black
+                }
+            )
+        ) {
+            append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
         }
+        append(")")
     }
 }
 
-fun getDayStringWith2Lines(date: LocalDate): AnnotatedString {
-    val today = LocalDate.now()
-    val yesterday = today.minusDays(1)
+//fun getDayStringWith2Lines(date: LocalDate): AnnotatedString {
+//    return buildAnnotatedString {
+//        append(date.format(DateTimeFormatter.ofPattern("yyyy년\n")))
+//        append(date.format(DateTimeFormatter.ofPattern("M월 d일 (")))
+//
+//        withStyle(
+//            style = SpanStyle(
+//                color = when (date.dayOfWeek) {
+//                    DayOfWeek.SATURDAY -> Color.Blue
+//                    DayOfWeek.SUNDAY -> Color.Red
+//                    else -> Color.Black
+//                }
+//            )
+//        ) {
+//            append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+//        }
+//        append(")")
+//    }
+//}
 
+fun getDayStringWith4Lines(date: LocalDate): AnnotatedString {
     return buildAnnotatedString {
-        if (date == today) {
-            append("오늘\n")
-        } else if (date == yesterday) {
-            append("어제\n")
-        } else {
-            append(date.format(DateTimeFormatter.ofPattern("yyyy년\n")))
-            append(date.format(DateTimeFormatter.ofPattern("M월 d일 (")))
+        append(date.format(DateTimeFormatter.ofPattern("yyyy년\n")))
+        append(date.format(DateTimeFormatter.ofPattern("M월\n")))
+        append(date.format(DateTimeFormatter.ofPattern("d일\n")))
 
-            withStyle(
-                style = SpanStyle(
-                    color = when (date.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> Color.Blue
-                        DayOfWeek.SUNDAY -> Color.Red
-                        else -> Color.Black
-                    }
-                )
-            ) {
-                append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-            }
-            append(")")
+        append("(")
+        withStyle(
+            style = SpanStyle(
+                color = when (date.dayOfWeek) {
+                    DayOfWeek.SATURDAY -> Color.Blue
+                    DayOfWeek.SUNDAY -> Color.Red
+                    else -> Color.Black
+                }
+            )
+        ) {
+            append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
         }
+        append(")")
     }
 }
+
 
 fun getFirstDayOfWeek(date: LocalDate): LocalDate {
     return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))

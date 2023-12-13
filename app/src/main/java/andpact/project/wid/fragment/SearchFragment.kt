@@ -4,36 +4,37 @@ import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
-import andpact.project.wid.util.getDayStringWith2Lines
+import andpact.project.wid.util.createEmptyView
+import andpact.project.wid.util.getDayString
+import andpact.project.wid.util.getDayStringWith4Lines
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
@@ -82,8 +83,6 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -97,6 +96,8 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                             innerTextField()
                         }
+
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
                     }
 
                     HorizontalDivider()
@@ -105,61 +106,50 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         )
 
         // 겸색 결과
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (diaryList.isEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(48.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_sms_16),
-                        contentDescription = "No diary",
-                        tint = Color.Gray
-                    )
-
-                    Text(
-                        text = "검색으로 다이어리를 찾아보세요.",
-                        style = TextStyle(color = Color.Gray)
-                    )
+                item {
+                    createEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
                 }
             } else {
-                LazyVerticalGrid(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    state = lazyGridState,
-                    columns = GridCells.Fixed(3),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    itemsIndexed(diaryList) { index: Int, diary: Diary ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f / 2f) // 가로 1, 세로 2 비율
-                                .clickable {
-                                    navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+                itemsIndexed(diaryList) { index: Int, diary: Diary ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = getDayString(diary.date),
+                            style = TextStyle(fontWeight = FontWeight.Bold)
+                        )
 
-                                    mainTopBottomBarVisible.value = false
-                                },
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = Color.White,
+                            shape = RoundedCornerShape(8.dp),
+                            shadowElevation = 1.dp
                         ) {
-                            ElevatedCard(
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f),
-                                shape = RoundedCornerShape(8.dp),
-                                elevation = CardDefaults.cardElevation(1.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                                    .clickable {
+                                        navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+
+                                        mainTopBottomBarVisible.value = false
+                                    },
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
-                                        .padding(8.dp)
+                                        .fillMaxWidth()
+                                        .background(colorResource(id = R.color.light_gray))
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = diary.title,
@@ -168,42 +158,33 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         overflow = TextOverflow.Ellipsis
                                     )
 
-                                    Text(
-                                        text = diary.content,
-                                        overflow = TextOverflow.Ellipsis
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowRight,
+                                        contentDescription = "Navigate to this diary",
                                     )
                                 }
-                            }
 
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.Top,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
+                                HorizontalDivider()
+
                                 Text(
-                                    text = getDayStringWith2Lines(diary.date),
-                                    style = TextStyle(fontSize = 12.sp),
+                                    modifier = Modifier
+                                        .padding(8.dp),
+                                    text = diary.content,
+                                    minLines = 5,
+                                    maxLines = 10,
                                     overflow = TextOverflow.Ellipsis
-                                )
-
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_edit_16),
-                                    contentDescription = "Edit diary",
-                                    tint = colorResource(id = R.color.deep_sky_blue)
                                 )
                             }
                         }
                     }
-
-                    item {
-                        Spacer(
-                            modifier = Modifier
-                                .height(16.dp)
-                        )
-                    }
                 }
+            }
+
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(16.dp)
+                )
             }
         }
     }
