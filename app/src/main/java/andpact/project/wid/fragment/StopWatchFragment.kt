@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -277,6 +278,12 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_title_16),
+                            contentDescription = "Reset stopwatch",
+                            tint = Color.Black
+                        )
+
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)

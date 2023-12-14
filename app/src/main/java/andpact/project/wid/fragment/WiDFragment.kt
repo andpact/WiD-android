@@ -192,48 +192,89 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                 .weight(1f),
             state = lazyColumnState
         ) {
-            // item 1
             item {
-                Spacer(
-                    modifier = Modifier
-                        .height(32.dp)
-                )
-
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "선택 가능한 시간 범위",
-                        style = TextStyle(fontSize = 20.sp)
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_verified_24),
+                        contentDescription = "선택 가능한 시간 범위"
                     )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = formatTime(
-                                time = startLimit,
-                                patten = "a hh:mm:ss"
-                            ),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                    Column {
+                        Text(text = "선택 가능한 시간 범위")
 
-                        Text(" ~ ")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = formatTime(
+                                    time = startLimit,
+                                    patten = "a hh:mm:ss"
+                                ),
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
 
-                        Text(
-                            text = formatTime(
-                                time = finishLimit,
-                                patten = "a hh:mm:ss"
-                            ),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
+                            Text(" ~ ")
+
+                            Text(
+                                text = formatTime(
+                                    time = finishLimit,
+                                    patten = "a hh:mm:ss"
+                                ),
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }
+
+            // item 1
+//            item {
+//                Spacer(
+//                    modifier = Modifier
+//                        .height(32.dp)
+//                )
+//
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(16.dp),
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.spacedBy(16.dp)
+//                ) {
+//                    Text(
+//                        text = "선택 가능한 시간 범위",
+//                        style = TextStyle(fontSize = 20.sp)
+//                    )
+//
+//                    Row(
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        Text(
+//                            text = formatTime(
+//                                time = startLimit,
+//                                patten = "a hh:mm:ss"
+//                            ),
+//                            style = TextStyle(fontWeight = FontWeight.Bold)
+//                        )
+//
+//                        Text(" ~ ")
+//
+//                        Text(
+//                            text = formatTime(
+//                                time = finishLimit,
+//                                patten = "a hh:mm:ss"
+//                            ),
+//                            style = TextStyle(fontWeight = FontWeight.Bold)
+//                        )
+//                    }
+//                }
+//            }
 
             // item 2
             item {

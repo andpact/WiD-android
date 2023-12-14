@@ -41,30 +41,30 @@ fun formatTimerTime(time: Long): AnnotatedString {
 
     return buildAnnotatedString {
         if (0 < hours) {
-            withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily.Monospace)) {
                 append(hoursText)
             }
 
-            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
                 append("h ")
             }
         }
 
         if (0 < minutes || 0 < hours) {
-            withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily.Monospace)) {
                 append(minutesText)
             }
 
-            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
                 append("m ")
             }
         }
 
-        withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+        withStyle(style = SpanStyle(fontSize = 70.sp, fontFamily = FontFamily.Monospace)) {
             append(secondsText)
         }
 
-        withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+        withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
             append("s")
         }
     }
@@ -90,30 +90,30 @@ fun formatStopWatchTime(time: Long): AnnotatedString {
     return buildAnnotatedString {
         withStyle(style = ParagraphStyle(lineHeight = 80.sp)) {
             if (0 < hours) {
-                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily.Monospace)) {
                     append(hoursText)
                 }
 
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+                withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
                     append("h\n")
                 }
             }
 
             if (0 < minutes || 0 < hours) {
-                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily.Monospace)) {
                     append(minutesText)
                 }
 
-                withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+                withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
                     append("m\n")
                 }
             }
 
-            withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily(Font(R.font.wellfleet_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = FontFamily.Monospace)) {
                 append(secondsText)
             }
 
-            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily(Font(R.font.ubuntu_mono_regular)))) {
+            withStyle(style = SpanStyle(fontSize = 20.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)) {
                 append("s\n")
             }
         }

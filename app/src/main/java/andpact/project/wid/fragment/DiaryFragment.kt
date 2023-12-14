@@ -3,7 +3,11 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
+import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.getDayString
+import andpact.project.wid.util.getTotalDurationFromWiDList
+import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -25,14 +29,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.LocalDate
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 다이어리
@@ -41,6 +47,10 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
     var diaryTitle by remember { mutableStateOf(clickedDiary?.title ?: "") }
 //    var diaryTitleTextFieldValueState by remember { mutableStateOf(TextFieldValue(text = clickedDiary?.title ?: "", selection = TextRange(clickedDiary?.title?.length ?: 0))) }
     var diaryContent by remember { mutableStateOf(clickedDiary?.content ?: "") }
+
+    // WiD
+    val wiDService = WiDService(context = LocalContext.current)
+    val wiDList = wiDService.readDailyWiDListByDate(date)
 
     // 키보드
     val focusRequester = remember { FocusRequester() }
@@ -78,13 +88,8 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("다이어리")
-                    }
-                    append(" - ")
-                    append(getDayString(date))
-                }
+                text = "다이어리",
+                style = TextStyle(fontWeight = FontWeight.Bold)
             )
 
             Row(
@@ -126,6 +131,65 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             }
         }
 
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 16.dp),
+            text = getDayString(date)
+        )
+
+        HorizontalDivider(
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+        )
+
+        // 파이 차트
+        Row(
+            modifier = Modifier
+                .padding(32.dp)
+                .height(IntrinsicSize.Min)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+            ) {
+                DateBasedPieChartFragment(wiDList = wiDList)
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "기록률",
+                    style = TextStyle(fontWeight = FontWeight.Bold)
+                )
+
+                Text(
+                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                    style = TextStyle(
+                        fontSize = 30.sp,
+                        fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                    )
+                )
+
+                Text(
+                    text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                )
+            }
+        }
+
+        HorizontalDivider(
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+        )
+
         // 제목 입력
         OutlinedTextField(
             modifier = Modifier
@@ -150,7 +214,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
 
         HorizontalDivider(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 32.dp)
         )
 
         // 내용 입력

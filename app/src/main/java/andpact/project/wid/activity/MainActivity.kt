@@ -136,7 +136,8 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
             NavigationBar(
                 modifier = modifier
                     .height(50.dp),
-                containerColor = Color.White,
+//                containerColor = Color.White,
+                containerColor = colorResource(id = R.color.lime_green),
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route

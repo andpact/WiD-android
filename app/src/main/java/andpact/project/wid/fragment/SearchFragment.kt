@@ -110,7 +110,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp) // item 간에 8.Dp의 공간이 설정됨.
         ) {
             if (diaryList.isEmpty()) {
                 item {

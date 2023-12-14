@@ -6,14 +6,19 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
+import android.content.Context
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -28,10 +33,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +67,11 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 합계
     val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
 
+    // 화면
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
+
     // 전체 화면
     Column(
         modifier = Modifier
@@ -69,144 +82,97 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(32.dp) // item 간에 32.Dp의 공간이 설정됨.
         ) {
-            item {
-                Spacer(
+            item("다이어리") {
+                Column(
                     modifier = Modifier
-                        .height(16.dp)
-                )
-
-                // 파이 차트
-                Column(
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 16.dp)
+                        .heightIn(min = dateBasedFragmentHeight),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "시간 그래프",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-
-                    if (wiDList.isEmpty()) {
-                        createEmptyView(text = "표시할 그래프가 없습니다.")()
-                    } else {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 1.dp
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .height(IntrinsicSize.Min)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(2f)
-                                ) {
-                                    DateBasedPieChartFragment(wiDList = wiDList)
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "기록률",
-                                        style = TextStyle(fontWeight = FontWeight.Bold)
-                                    )
-
-                                    Text(
-                                        text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                                        style = TextStyle(
-                                            fontSize = 30.sp,
-                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
-                                        )
-                                    )
-
-                                    Text(
-                                        text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
-                                        style = TextStyle(
-                                            fontSize = 12.sp,
-                                            color = Color.Gray
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                // 다이어리
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "다이어리",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
-                    )
-
-                    if (diary == null) {
-                        createEmptyView(text = "이 날의 다이어리를 작성해 보세요.")()
-                    } else {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 1.dp
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = diary.title,
-                                    style = TextStyle(fontWeight = FontWeight.Bold),
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                Text(
-                                    text = diary.content,
-                                    maxLines = 5,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
-
-                    TextButton(
+                    Spacer(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = colorResource(id = R.color.deep_sky_blue),
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        onClick = {
-                            navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
+                            .height(16.dp)
+                    )
 
-                            mainTopBottomBarVisible.value = false
-                        },
+                    Text(
+                        modifier = Modifier
+                            .border(1.dp, Color.Black),
+                        text = getDayString(date = currentDate)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .border(1.dp, Color.Black)
+                            .height(IntrinsicSize.Min)
                     ) {
-                        Text(
-                            text = "다이어리 수정",
-                            style = TextStyle(color = Color.White)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(2f)
+                        ) {
+                            DateBasedPieChartFragment(wiDList = wiDList)
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "기록률",
+                                style = TextStyle(fontWeight = FontWeight.Bold)
+                            )
+
+                            Text(
+                                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                                style = TextStyle(
+                                    fontSize = 30.sp,
+//                                    fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                )
+                            )
+
+                            Text(
+                                text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+                            )
+                        }
                     }
+
+                    Text(
+                        modifier = Modifier
+                            .border(1.dp, Color.Black),
+                        text = diary?.title ?: "다이어리 제목",
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = if (diary == null) Color.LightGray else Color.Black
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .border(1.dp, Color.Black),
+                        text = diary?.content ?: "다이어리 내용",
+                        style = TextStyle(color = if (diary == null) Color.LightGray else Color.Black),
+                    )
                 }
             }
 
-            item {
+            item("합계 기록") {
                 // 합계
                 Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -264,9 +230,11 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 }
             }
 
-            item {
+            item("WiD 리스트") {
                 // WiD 리스트
                 Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
@@ -378,7 +346,27 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = getDayString(date = currentDate))
+            Row(
+                modifier = Modifier
+                    .clickable {
+                        navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
+
+                        mainTopBottomBarVisible.value = false
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_edit_16),
+                    contentDescription = "다이어리 수정",
+                    tint = colorResource(id = R.color.deep_sky_blue)
+                )
+
+                Text(
+                    text = "다이어리 수정",
+                    style = TextStyle(color = colorResource(id = R.color.deep_sky_blue))
+                )
+            }
 
             Row {
                 IconButton(

@@ -250,7 +250,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.outline_timer_24),
+                            painter = painterResource(id = R.drawable.baseline_alarm_on_16),
                             contentDescription = "Finish Time",
                             tint = Color.Black
                         )
@@ -457,11 +457,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     modifier = Modifier
                         .fillMaxWidth(),
                     text = formatTimerTime(time = remainingTime),
-                    style = TextStyle(
-                        fontSize = 50.sp,
-                        textAlign = TextAlign.Center,
-                        fontFamily = FontFamily(Font(R.font.wellfleet_regular))
-                    )
+                    style = TextStyle(textAlign = TextAlign.Center)
                 )
 
 //                Row(
