@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -241,23 +242,23 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             ) {
                 Text(
                     text = "타이머",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
+                    style = Typography.titleLarge
                 )
 
-                if (timerStarted || timerPaused) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_alarm_on_16),
-                            contentDescription = "Finish Time",
-                            tint = Color.Black
-                        )
-
-                        Text(formatTime(time = finishTime, "a H시 mm분 ss초"))
-                    }
-                }
+//                if (timerStarted || timerPaused) {
+//                    Row(
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+//                    ) {
+//                        Icon(
+//                            painter = painterResource(id = R.drawable.baseline_alarm_on_16),
+//                            contentDescription = "Finish Time",
+//                            tint = Color.Black
+//                        )
+//
+//                        Text(formatTime(time = finishTime, "a H시 mm분 ss초"))
+//                    }
+//                }
             }
         }
 
@@ -276,21 +277,24 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         modifier = Modifier
                             .weight(1f),
                         text = "시간",
-                        style = TextStyle(fontSize = 12.sp, textAlign = TextAlign.Center, color = Color.Gray)
+                        style = Typography.labelSmall,
+                        textAlign = TextAlign.Center
                     )
 
                     Text(
                         modifier = Modifier
                             .weight(1f),
                         text = "분",
-                        style = TextStyle(fontSize = 12.sp, textAlign = TextAlign.Center, color = Color.Gray)
+                        style = Typography.labelSmall,
+                        textAlign = TextAlign.Center
                     )
 
                     Text(
                         modifier = Modifier
                             .weight(1f),
                         text = "초",
-                        style = TextStyle(fontSize = 12.sp, textAlign = TextAlign.Center, color = Color.Gray)
+                        style = Typography.labelSmall,
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -536,11 +540,15 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             modifier = Modifier
                                                 .fillMaxWidth(),
                                             text = titleMap[chipTitle] ?: chipTitle,
-                                            style = TextStyle(textAlign = TextAlign.Center)
+                                            style = Typography.bodySmall,
+                                            textAlign = TextAlign.Center
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = Color.LightGray
+                                        containerColor = colorResource(id = R.color.light_gray),
+                                        labelColor = Color.Black,
+                                        selectedContainerColor = Color.Black,
+                                        selectedLabelColor = Color.White
                                     )
                                 )
                             }
@@ -565,32 +573,40 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(10.dp)
-                                .background(
-                                    color = colorResource(
-                                        id = colorMap[title] ?: R.color.light_gray
-                                    )
-                                )
-                        )
-
-                        Text(titleMap[title] ?: "공부")
-
                         Icon(
-                            imageVector = if (titleMenuExpanded) {
-                                Icons.Default.KeyboardArrowUp
-                            } else {
-                                Icons.Default.KeyboardArrowDown
-                            },
-                            contentDescription = "Expand title menu",
-                            tint = if (timerReset) {
-                                Color.Black
-                            } else {
-                                Color.LightGray
-                            }
+                            painter = painterResource(id = R.drawable.baseline_title_16),
+                            contentDescription = "제",
+                            tint = colorResource(
+                                id = colorMap[title] ?: R.color.black
+                            )
                         )
+
+//                        Box(
+//                            modifier = Modifier
+//                                .clip(CircleShape)
+//                                .size(10.dp)
+//                                .background(
+//                                    color = colorResource(
+//                                        id = colorMap[title] ?: R.color.light_gray
+//                                    )
+//                                )
+//                        )
+
+                        Text(
+                            text = titleMap[title] ?: "공부",
+                            style = Typography.bodyMedium
+                        )
+
+                        if (timerReset) {
+                            Icon(
+                                imageVector = if (titleMenuExpanded) {
+                                    Icons.Default.KeyboardArrowUp
+                                } else {
+                                    Icons.Default.KeyboardArrowDown
+                                },
+                                contentDescription = "제목 메뉴 펼치기"
+                            )
+                        }
                     }
 
                     Row(
@@ -608,11 +624,14 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_16),
-                                    contentDescription = "Reset timer",
+                                    contentDescription = "타이머 리셋",
                                     tint = Color.Black
                                 )
 
-                                Text(text = "초기화")
+                                Text(
+                                    text = "초기화",
+                                    style = Typography.bodyMedium
+                                )
                             }
                         }
 
@@ -651,17 +670,16 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
 
                             Text(
                                 text = buttonText,
-                                style = TextStyle(
-                                    color = if (remainingTime == 0L) {
-                                        Color.LightGray
-                                    } else if (buttonText == "중지") {
-                                        colorResource(id = R.color.orange_red)
-                                    } else if (buttonText == "계속") {
-                                        colorResource(id = R.color.lime_green)
-                                    } else {
-                                        colorResource(id = R.color.deep_sky_blue)
-                                    }
-                                )
+                                color = if (remainingTime == 0L) {
+                                    Color.LightGray
+                                } else if (buttonText == "중지") {
+                                    colorResource(id = R.color.orange_red)
+                                } else if (buttonText == "계속") {
+                                    colorResource(id = R.color.lime_green)
+                                } else {
+                                    colorResource(id = R.color.deep_sky_blue)
+                                },
+                                style = Typography.bodyMedium
                             )
                         }
                     }

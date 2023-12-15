@@ -5,10 +5,18 @@ import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.pretendardBlack
+import andpact.project.wid.ui.theme.pretendardRegular
+import andpact.project.wid.ui.theme.pyeongChangPeaceBold
 import andpact.project.wid.util.*
 import android.content.Context
 import android.util.DisplayMetrics
 import android.view.WindowManager
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
@@ -43,18 +52,39 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.text.Typography
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 날짜
     val today = LocalDate.now()
     var currentDate by remember { mutableStateOf(today) }
+    var expandDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // utcTimeMillis는 KST를 반환하는 듯하고,
+                // System.currentTimeMillis()가 (KST -9시간)을 반환하는 듯.
+                return utcTimeMillis <= System.currentTimeMillis() + (9 * 60 * 60 * 1000)
+            }
+
+            override fun isSelectableYear(year: Int): Boolean {
+                val currentYear = LocalDate.now().year
+                return year <= currentYear
+            }
+        }
+    )
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
@@ -63,14 +93,16 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
+    var expandDiaryContent by remember { mutableStateOf(false) }
+    var diaryContentOverflow by remember { mutableStateOf(false) }
 
     // 합계
     val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
 
     // 화면
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
+//    val configuration = LocalConfiguration.current
+//    val screenHeight = configuration.screenHeightDp.dp
+//    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
 
     // 전체 화면
     Column(
@@ -89,9 +121,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(horizontal = 16.dp)
-                        .heightIn(min = dateBasedFragmentHeight),
+//                        .background(Color.White)
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Spacer(
@@ -100,70 +131,71 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     )
 
                     Text(
-                        modifier = Modifier
-                            .border(1.dp, Color.Black),
-                        text = getDayString(date = currentDate)
+                        text = getDayString(date = currentDate),
+                        style = Typography.titleLarge
                     )
 
-                    Row(
-                        modifier = Modifier
-                            .border(1.dp, Color.Black)
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        Box(
+                    if (wiDList.isEmpty()) {
+                        createNoBackgroundEmptyView(text = "표시할 타임라인이 없습니다.")()
+                    } else {
+                        Row(
                             modifier = Modifier
-                                .weight(2f)
+                                .border(1.dp, Color.Black)
+                                .height(IntrinsicSize.Min)
                         ) {
-                            DateBasedPieChartFragment(wiDList = wiDList)
-                        }
+                            Box(
+                                modifier = Modifier
+                                    .weight(2f)
+                            ) {
+                                DateBasedPieChartFragment(wiDList = wiDList)
+                            }
 
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "기록률",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
-                            )
-
-                            Text(
-                                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                                style = TextStyle(
-                                    fontSize = 30.sp,
-//                                    fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "기록률",
+                                    style = Typography.bodyMedium
                                 )
-                            )
 
-                            Text(
-                                text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
-                                style = TextStyle(
-                                    fontSize = 12.sp,
-                                    color = Color.Gray
+                                Text(
+                                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                                    fontSize = 40.sp,
+                                    style = Typography.titleLarge
                                 )
-                            )
+
+                                Text(
+                                    text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                                    style = Typography.labelSmall
+                                )
+                            }
                         }
                     }
 
                     Text(
-                        modifier = Modifier
-                            .border(1.dp, Color.Black),
-                        text = diary?.title ?: "다이어리 제목",
-                        style = TextStyle(
-                            fontWeight = FontWeight.Bold,
-                            color = if (diary == null) Color.LightGray else Color.Black
-                        ),
+                        text = diary?.title ?: "제목을 입력해 주세요.",
+                        style = Typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
 
                     Text(
                         modifier = Modifier
-                            .border(1.dp, Color.Black),
-                        text = diary?.content ?: "다이어리 내용",
-                        style = TextStyle(color = if (diary == null) Color.LightGray else Color.Black),
+                            .clickable(diaryContentOverflow) {
+                                expandDiaryContent = true // 한 번 펼치면 다시 접지 못하도록 함.
+                            },
+                        text = diary?.content ?: "내용을 입력해 주세요.",
+                        style = Typography.bodyMedium,
+                        minLines = 10,
+                        maxLines = if (expandDiaryContent) Int.MAX_VALUE else 10,
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { textLayoutResult: TextLayoutResult ->
+                            diaryContentOverflow = textLayoutResult.didOverflowHeight
+                        }
                     )
                 }
             }
@@ -177,7 +209,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Text(
                         text = "합계 기록",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
+                        style = Typography.titleMedium
                     )
 
                     if (totalDurationMap.isEmpty()) {
@@ -208,19 +240,24 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         .padding(16.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
+//                                    Text(
+//                                        text = titleMap[title] ?: title,
+//                                        style = TextStyle(
+//                                            fontSize = 20.sp,
+//                                            fontFamily = pyeongChangPeaceBold
+//                                        )
+//                                    )
+
                                     Text(
                                         text = titleMap[title] ?: title,
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
-                                        )
+                                        style = Typography.titleLarge
                                     )
 
                                     Text(
                                         text = formatDuration(totalDuration, mode = 3),
                                         style = TextStyle(
                                             fontSize = 20.sp,
-                                            fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
+                                            fontFamily = pyeongChangPeaceBold
                                         )
                                     )
                                 }
@@ -239,7 +276,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Text(
                         text = "WiD 리스트",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
+                        style = Typography.titleMedium
                     )
 
                     if (wiDList.isEmpty()) {
@@ -285,7 +322,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                                     )
                                             )
 
-                                            Text(text = titleMap[wiD.title] ?: wiD.title)
+                                            Text(
+                                                text = titleMap[wiD.title] ?: wiD.title,
+                                                style = Typography.bodyMedium
+                                            )
                                         }
 
                                         Icon(
@@ -307,18 +347,18 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         ) {
                                             Text(
                                                 text = formatTime(wiD.start, "a hh:mm:ss"),
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                                style = Typography.bodyMedium
                                             )
 
                                             Text(
                                                 text = formatTime(wiD.finish, "a hh:mm:ss"),
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                                style = Typography.bodyMedium
                                             )
                                         }
 
                                         Text(
                                             text = formatDuration(wiD.duration, mode = 3),
-                                            style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold)))
+                                            style = TextStyle(fontSize = 20.sp, fontFamily = pyeongChangPeaceBold)
                                         )
                                     }
                                 }
@@ -336,41 +376,107 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
         HorizontalDivider()
 
-        // 하단 바
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.White)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            AnimatedVisibility(
+                visible = expandDatePicker,
+                enter = expandVertically{ 0 },
+                exit = shrinkVertically{ 0 },
+            ) {
+                Column(
+//                    modifier = Modifier
+//                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = "날짜 선택",
+                        style = Typography.bodyMedium,
+                        textAlign = TextAlign.Start
+                    )
+
+                    DatePicker(
+                        state = datePickerState,
+                        showModeToggle = false,
+                        title = null,
+                        headline = null,
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = { expandDatePicker = false }
+                        ) {
+                            Text(
+                                text = "취소",
+                                style = Typography.bodyMedium
+                            )
+                        }
+
+                        TextButton(
+                            onClick = {
+                                expandDatePicker = false
+                                currentDate = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                            }
+                        ) {
+                            Text(
+                                text = "확인",
+                                style = Typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 하단 바
             Row(
                 modifier = Modifier
-                    .clickable {
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                IconButton(
+                    onClick = {
+                        expandDatePicker = !expandDatePicker
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_calendar_today_16),
+                        contentDescription = "날짜 선택",
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
                         navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
 
                         mainTopBottomBarVisible.value = false
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.baseline_edit_16),
-                    contentDescription = "다이어리 수정",
-                    tint = colorResource(id = R.color.deep_sky_blue)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "다이어리 수정"
+                    )
+                }
 
-                Text(
-                    text = "다이어리 수정",
-                    style = TextStyle(color = colorResource(id = R.color.deep_sky_blue))
-                )
-            }
-
-            Row {
                 IconButton(
                     onClick = {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
                         currentDate = today
                     },
                     enabled = currentDate != today,
@@ -383,6 +489,9 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                 IconButton(
                     onClick = {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
                         currentDate = currentDate.minusDays(1)
                     },
                 ) {
@@ -394,6 +503,9 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                 IconButton(
                     onClick = {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
                         currentDate = currentDate.plusDays(1)
                     },
                     enabled = currentDate != today

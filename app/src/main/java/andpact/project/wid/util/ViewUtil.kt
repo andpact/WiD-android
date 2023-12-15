@@ -46,3 +46,25 @@ fun createEmptyView(text: String): @Composable () -> Unit = {
         }
     }
 }
+
+@Composable
+fun createNoBackgroundEmptyView(text: String): @Composable () -> Unit = {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.outline_sms_16),
+            tint = Color.Gray,
+            contentDescription = text
+        )
+
+        Text(
+            text = text,
+            style = TextStyle(color = Color.Gray)
+        )
+    }
+}

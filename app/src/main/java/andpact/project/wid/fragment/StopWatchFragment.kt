@@ -3,11 +3,10 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
@@ -15,7 +14,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -23,9 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -36,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -202,7 +197,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             ) {
                 Text(
                     text = "스탑워치",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
+                    style = Typography.titleLarge
                 )
             }
         }
@@ -217,7 +212,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
         AnimatedVisibility(
             modifier = Modifier
-                .align(Alignment.BottomCenter),
+                .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
             visible = stopWatchTopBottomBarVisible,
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
@@ -251,10 +246,16 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             modifier = Modifier
                                                 .fillMaxWidth(),
                                             text = titleMap[chipTitle] ?: chipTitle,
-                                            style = TextStyle(textAlign = TextAlign.Center)
+                                            style = Typography.bodySmall,
+                                            textAlign = TextAlign.Center
                                         )
                                     },
-                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color.LightGray)
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = colorResource(id = R.color.light_gray),
+                                        labelColor = Color.Black,
+                                        selectedContainerColor = Color.Black,
+                                        selectedLabelColor = Color.White
+                                    )
                                 )
                             }
                         }
@@ -280,36 +281,27 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_title_16),
-                            contentDescription = "Reset stopwatch",
-                            tint = Color.Black
+                            contentDescription = "제목 선택",
+                            tint = colorResource(
+                                id = colorMap[title] ?: R.color.black
+                            )
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(10.dp)
-                                .background(
-                                    color = colorResource(
-                                        id = colorMap[title] ?: R.color.light_gray
-                                    )
-                                )
+                        Text(
+                            text = titleMap[title] ?: "공부",
+                            style = Typography.bodyMedium
                         )
 
-                        Text(titleMap[title] ?: "공부")
-
-                        Icon(
-                            imageVector = if (titleMenuExpanded) {
-                                Icons.Default.KeyboardArrowUp
-                            } else {
-                                Icons.Default.KeyboardArrowDown
-                            },
-                            contentDescription = "Expand title menu",
-                            tint = if (stopWatchReset) {
-                                Color.Black
-                            } else {
-                                Color.LightGray
-                            }
-                        )
+                        if (stopWatchReset) {
+                            Icon(
+                                imageVector = if (titleMenuExpanded) {
+                                    Icons.Default.KeyboardArrowUp
+                                } else {
+                                    Icons.Default.KeyboardArrowDown
+                                },
+                                contentDescription = "제목 메뉴 펼치기",
+                            )
+                        }
                     }
 
                     Row(
@@ -327,11 +319,14 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_16),
-                                    contentDescription = "Reset stopwatch",
+                                    contentDescription = "스탑워치 초기화",
                                     tint = Color.Black
                                 )
 
-                                Text(text = "초기화")
+                                Text(
+                                    text = "초기화",
+                                    style = Typography.bodyMedium
+                                )
                             }
                         }
 
@@ -366,13 +361,12 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                             Text(
                                 text = buttonText,
-                                style = TextStyle(
-                                    color = when (buttonText) {
-                                        "중지" -> colorResource(id = R.color.orange_red)
-                                        "계속" -> colorResource(id = R.color.lime_green)
-                                        else -> colorResource(id = R.color.deep_sky_blue)
-                                    },
-                                )
+                                color = when (buttonText) {
+                                    "중지" -> colorResource(id = R.color.orange_red)
+                                    "계속" -> colorResource(id = R.color.lime_green)
+                                    else -> colorResource(id = R.color.deep_sky_blue)
+                                },
+                                style = Typography.bodyMedium
                             )
                         }
                     }

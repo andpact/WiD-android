@@ -50,7 +50,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     // 날짜
     val today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
-    var showDatePicker by remember { mutableStateOf(false) }
+    var expandDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -79,7 +79,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
     // 시작 시간
     var start by remember { mutableStateOf(currentTime) }
-    var showStartPicker by remember { mutableStateOf(false) }
+    var expandStartPicker by remember { mutableStateOf(false) }
     val startTimePickerState = rememberTimePickerState(initialHour = start.hour, initialMinute = start.minute, is24Hour = false)
     var isStartOverlap by remember { mutableStateOf(false) }
     val isStartOverCurrentTime by remember(date, start) { mutableStateOf(date == today && currentTime < start) }
@@ -87,7 +87,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
     // 종료 시간
     var finish by remember { mutableStateOf(currentTime) }
-    var showFinishPicker by remember { mutableStateOf(false) }
+    var expandFinishPicker by remember { mutableStateOf(false) }
     val finishTimePickerState = rememberTimePickerState(initialHour = finish.hour, initialMinute = finish.minute, is24Hour = false)
     var isFinishOverlap by remember { mutableStateOf(false) }
     val isFinishOverCurrentTime by remember(date, finish) { mutableStateOf(date == today && currentTime < finish) }
@@ -258,17 +258,17 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-//                                if (!showDatePicker) {
+//                                if (!expandDatePicker) {
 //                                    coroutineScope.launch {
 //                                        lazyColumnState.animateScrollToItem(1)
 //                                        delay(1500)
 //                                    }
 //                                }
-//                                showDatePicker = !showDatePicker
+//                                expandDatePicker = !expandDatePicker
 
                             // 컨텐츠가 충분해서 스크롤 할 수 있어야 스크롤 메서드가 사용가능하다?
-                            showDatePicker = !showDatePicker
-                            if (showDatePicker) {
+                            expandDatePicker = !expandDatePicker
+                            if (expandDatePicker) {
                                 coroutineScope.launch {
 //                                    delay(200)
                                     lazyColumnState.animateScrollToItem(1)
@@ -299,13 +299,13 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     )
 
                     Icon(
-                        imageVector = if (showDatePicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (expandDatePicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show date picker",
                     )
                 }
 
                 AnimatedVisibility(
-                    visible = showDatePicker,
+                    visible = expandDatePicker,
 //                    enter = expandVertically{ 0 },
                     enter = expandVertically(animationSpec = tween(500)) { 0 },
 //                    exit = shrinkVertically{ 0 },
@@ -330,14 +330,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(
-                                onClick = { showDatePicker = false }
+                                onClick = { expandDatePicker = false }
                             ) {
                                 Text(text = "취소")
                             }
 
                             TextButton(
                                 onClick = {
-                                    showDatePicker = false
+                                    expandDatePicker = false
                                     date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
 
                                     // 날짜를 변경하면 이 Button scope의 내용이 먼저 실행된 후, remember에 의한 갱신이 발생한다.
@@ -459,7 +459,12 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             style = TextStyle(textAlign = TextAlign.Center)
                                         )
                                     },
-                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Color.LightGray)
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = colorResource(id = R.color.light_gray),
+                                        labelColor = Color.Black,
+                                        selectedContainerColor = Color.Black,
+                                        selectedLabelColor = Color.White
+                                    )
                                 )
                             }
                         }
@@ -481,8 +486,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            showStartPicker = !showStartPicker
-                            if (showStartPicker) {
+                            expandStartPicker = !expandStartPicker
+                            if (expandStartPicker) {
                                 coroutineScope.launch {
 //                                    delay(100)
                                     lazyColumnState.animateScrollToItem(5)
@@ -513,13 +518,13 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     )
 
                     Icon(
-                        imageVector = if (showStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (expandStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show start picker",
                     )
                 }
 
                 AnimatedVisibility(
-                    visible = showStartPicker,
+                    visible = expandStartPicker,
 //                    enter = expandVertically{ 0 },
                     enter = expandVertically(animationSpec = tween(500)) { 0 },
 //                    exit = shrinkVertically{ 0 },
@@ -539,14 +544,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(
-                                onClick = { showStartPicker = false }
+                                onClick = { expandStartPicker = false }
                             ) {
                                 Text(text = "취소")
                             }
 
                             TextButton(
                                 onClick = {
-                                    showStartPicker = false
+                                    expandStartPicker = false
                                     val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
 
                                     start = newStart
@@ -573,8 +578,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            showFinishPicker = !showFinishPicker
-                            if (showFinishPicker) {
+                            expandFinishPicker = !expandFinishPicker
+                            if (expandFinishPicker) {
                                 coroutineScope.launch {
 //                                    delay(100)
                                     lazyColumnState.animateScrollToItem(7) // Finish Picker가 화면에 나타나는 도중에 스크롤이 동작하면 에러가 나는 듯.
@@ -605,13 +610,13 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     )
 
                     Icon(
-                        imageVector = if (showFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        imageVector = if (expandFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         contentDescription = "Show finish picker",
                     )
                 }
 
                 AnimatedVisibility(
-                    visible = showFinishPicker,
+                    visible = expandFinishPicker,
 //                    enter = expandVertically{ 0 },
                     enter = expandVertically(animationSpec = tween(500)) { 0 },
 //                    exit = shrinkVertically{ 0 },
@@ -631,14 +636,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(
-                                onClick = { showFinishPicker = false }
+                                onClick = { expandFinishPicker = false }
                             ) {
                                 Text(text = "취소")
                             }
 
                             TextButton(
                                 onClick = {
-                                    showFinishPicker = false
+                                    expandFinishPicker = false
                                     val newFinish = LocalTime.of(
                                         finishTimePickerState.hour,
                                         finishTimePickerState.minute

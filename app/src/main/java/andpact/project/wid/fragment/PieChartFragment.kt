@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.agbalumoRegular
 import andpact.project.wid.util.colorMap
 import android.content.Context
 import android.graphics.Paint
