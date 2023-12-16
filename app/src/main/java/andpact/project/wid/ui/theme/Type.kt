@@ -3,18 +3,12 @@ package andpact.project.wid.ui.theme
 import andpact.project.wid.R
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.*
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.sp
 
 val acmeRegular = FontFamily(
     Font(R.font.acme_regular)
-)
-
-val agbalumoRegular = FontFamily(
-    Font(R.font.agbalumo_regular)
 )
 
 val pretendardThin = FontFamily(

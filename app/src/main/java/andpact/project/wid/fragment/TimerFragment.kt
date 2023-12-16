@@ -215,7 +215,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         }
     }
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -224,6 +226,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
     ) {
+        /**
+         * 상단 바
+         */
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.TopCenter),
@@ -262,7 +267,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             }
         }
 
-        // 타이머 초기 화면
+        /**
+         * 컨텐츠
+         */
         if (timerReset) {
             Column(
                 modifier = Modifier
@@ -504,6 +511,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             }
         }
 
+        /**
+         * 하단 바
+         */
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter),
@@ -556,7 +566,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     }
                 }
 
-                // 하단 바
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -575,7 +584,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_title_16),
-                            contentDescription = "제",
+                            contentDescription = "제목 선택",
                             tint = colorResource(
                                 id = colorMap[title] ?: R.color.black
                             )
@@ -624,7 +633,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_16),
-                                    contentDescription = "타이머 리셋",
+                                    contentDescription = "타이머 초기화",
                                     tint = Color.Black
                                 )
 

@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.ui.theme.pyeongChangPeaceBold
 import andpact.project.wid.util.*
 import androidx.compose.animation.AnimatedVisibility
@@ -77,25 +78,22 @@ fun PeriodBasedFragment() {
 //        periodBottomSheetState.hide()
 //    }
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 컨텐츠
+        /**
+         * 컨텐츠
+         */
         LazyColumn(
             modifier = Modifier
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            /*
-                제목이 "전체" 일 때
-                제목이 "전체" 일 때
-                제목이 "전체" 일 때
-                제목이 "전체" 일 때
-                제목이 "전체" 일 때
-             */
             if (selectedTitle == titlesWithAll[0]) {
                 item("타임라인") {
                     Spacer(
@@ -103,70 +101,101 @@ fun PeriodBasedFragment() {
                             .height(16.dp)
                     )
 
-                    Text(
+                    Column(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        text = when (selectedPeriod) {
-                            periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
-                            periods[1] -> getMonthString(date = startDate)
-                            else -> buildAnnotatedString { append("") }
-                        },
-                        maxLines = 1 // 설정 안해도 될 듯?
-                    )
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = when (selectedPeriod) {
+                                periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
+                                periods[1] -> getMonthString(date = startDate)
+                                else -> buildAnnotatedString { append("") }
+                            },
+                            style = Typography.titleMedium
+                        )
 
-                    if (wiDList.isEmpty()) {
-                        createNoBackgroundEmptyView(text = "표시할 타임라인이 없습니다.")()
-                    } else {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                        ) { // Surface는 Box와 같기 때문에 Column으로 한 번 감싸야 한다.
-                            Row(
+                        if (wiDList.isEmpty()) {
+                            createEmptyView(text = "표시할 타임라인이 없습니다.")()
+                        } else {
+                            Surface(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                shadowElevation = 1.dp
                             ) {
-                                val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
-
-                                daysOfWeek.forEachIndexed { index, day ->
-                                    val textColor = when (index) {
-                                        0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
-                                        5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
-                                        6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
-                                        else -> Color.Unspecified
-                                    }
-
-                                    Text(
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                ) {
+                                    Row(
                                         modifier = Modifier
-                                            .weight(1f),
-                                        text = day,
-                                        style = TextStyle(textAlign = TextAlign.Center, color = textColor)
-                                    )
-                                }
-                            }
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                    ) {
+                                        val daysOfWeek =
+                                            if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
 
-                            LazyVerticalGrid(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                                columns = GridCells.Fixed(7)
-                            ) {
-                                if (selectedPeriod == periods[1]) {
-                                    items(startDate.dayOfWeek.value % 7) {
-                                        // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                        daysOfWeek.forEachIndexed { index, day ->
+                                            val textColor = when (index) {
+                                                0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
+                                                5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
+                                                6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
+                                                else -> Color.Unspecified
+                                            }
+
+                                            Text(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                                text = day,
+                                                style = TextStyle(
+                                                    textAlign = TextAlign.Center,
+                                                    color = textColor
+                                                )
+                                            )
+                                        }
                                     }
-                                }
 
-                                items(ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) { index: Int ->
-                                    val indexDate = startDate.plusDays(index.toLong())
-                                    val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
+                                    LazyVerticalGrid(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                        columns = GridCells.Fixed(7)
+                                    ) {
+                                        if (selectedPeriod == periods[1]) {
+                                            items(startDate.dayOfWeek.value % 7) {
+                                                // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                            }
+                                        }
 
-                                    PeriodBasedPieChartFragment(date = indexDate, wiDList = filteredWiDListByDate)
+                                        items(
+                                            ChronoUnit.DAYS.between(startDate, finishDate)
+                                                .toInt() + 1
+                                        ) { index: Int ->
+                                            val indexDate = startDate.plusDays(index.toLong())
+                                            val filteredWiDListByDate =
+                                                wiDList.filter { it.date == indexDate }
+
+                                            PeriodBasedPieChartFragment(
+                                                date = indexDate,
+                                                wiDList = filteredWiDListByDate
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                }
+
+                item {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .height(8.dp)
+                            .background(Color.White)
+                    )
                 }
 
                 item("합계, 평균, 최고") {
@@ -183,7 +212,7 @@ fun PeriodBasedFragment() {
                         ) {
                             Text(
                                 text = "$selectedMapText 기록",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                style = Typography.titleMedium
                             )
 
                             Row(
@@ -196,7 +225,8 @@ fun PeriodBasedFragment() {
                                             selectedMap = totalDurationMap
                                         },
                                     text = "합계",
-                                    style = TextStyle(color = if (selectedMapText == "합계") Color.Black else Color.LightGray)
+                                    style = Typography.labelMedium,
+                                    color = if (selectedMapText == "합계") Color.Black else Color.LightGray
                                 )
 
                                 Text(
@@ -206,7 +236,8 @@ fun PeriodBasedFragment() {
                                             selectedMap = averageDurationMap
                                         },
                                     text = "평균",
-                                    style = TextStyle(color = if (selectedMapText == "평균") Color.Black else Color.LightGray)
+                                    style = Typography.labelMedium,
+                                    color = if (selectedMapText == "평균") Color.Black else Color.LightGray
                                 )
 
                                 Text(
@@ -216,7 +247,8 @@ fun PeriodBasedFragment() {
                                             selectedMap = maxDurationMap
                                         },
                                     text = "최고",
-                                    style = TextStyle(color = if (selectedMapText == "최고") Color.Black else Color.LightGray)
+                                    style = Typography.labelMedium,
+                                    color = if (selectedMapText == "최고") Color.Black else Color.LightGray
                                 )
                             }
                         }
@@ -247,14 +279,12 @@ fun PeriodBasedFragment() {
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .padding(16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
                                             text = titleMap[title] ?: title,
-                                            style = TextStyle(
-                                                fontSize = 20.sp,
-                                                fontFamily = pyeongChangPeaceBold
-                                            )
+                                            style = Typography.titleLarge
                                         )
 
                                         Text(
@@ -271,6 +301,15 @@ fun PeriodBasedFragment() {
                     }
                 }
 
+                item {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .height(8.dp)
+                            .background(Color.White)
+                    )
+                }
+
                 item("기록률") {
                     Column(
                         modifier = Modifier
@@ -279,7 +318,7 @@ fun PeriodBasedFragment() {
                     ) {
                         Text(
                             text = "기록률",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.titleMedium
                         )
 
                         if (wiDList.isEmpty()) {
@@ -305,13 +344,6 @@ fun PeriodBasedFragment() {
                             .height(16.dp)
                     )
                 }
-                /*
-                    제목이 "전체"가 아닐 때
-                    제목이 "전체"가 아닐 때
-                    제목이 "전체"가 아닐 때
-                    제목이 "전체"가 아닐 때
-                    제목이 "전체"가 아닐 때
-                 */
             } else {
                 item {
                     Spacer(
@@ -325,8 +357,12 @@ fun PeriodBasedFragment() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "시간 그래프",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            text = when (selectedPeriod) {
+                                periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
+                                periods[1] -> getMonthString(date = startDate)
+                                else -> buildAnnotatedString { append("") }
+                            },
+                            style = Typography.titleMedium
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
@@ -351,6 +387,15 @@ fun PeriodBasedFragment() {
                 }
 
                 item {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .height(8.dp)
+                            .background(Color.White)
+                    )
+                }
+
+                item {
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
@@ -358,7 +403,7 @@ fun PeriodBasedFragment() {
                     ) {
                         Text(
                             text = "시간 기록",
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.titleMedium
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
@@ -386,14 +431,12 @@ fun PeriodBasedFragment() {
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = "합계",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                        style = Typography.titleLarge
                                     )
 
                                     Text(
@@ -428,14 +471,12 @@ fun PeriodBasedFragment() {
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = "평균",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                        style = Typography.titleLarge
                                     )
 
                                     Text(
@@ -470,14 +511,12 @@ fun PeriodBasedFragment() {
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = "최고",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                        style = Typography.titleLarge
                                     )
 
                                     Text(
@@ -502,9 +541,13 @@ fun PeriodBasedFragment() {
 
         HorizontalDivider()
 
+        /**
+         * 하단 바
+         */
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(colorResource(id = R.color.ghost_white))
         ) {
             // 기간 선택
             AnimatedVisibility(
@@ -512,46 +555,55 @@ fun PeriodBasedFragment() {
                 enter = expandVertically{ 0 },
                 exit = shrinkVertically{ 0 },
             ) {
-                Text(text = "기간 선택")
-
-                LazyVerticalGrid(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(16.dp)
                 ) {
-                    periods.forEach { chipPeriod ->
-                        item {
-                            FilterChip(
-                                selected = selectedPeriod == chipPeriod,
-                                onClick = {
-                                    selectedPeriod = chipPeriod
-                                    periodMenuExpanded = false
+                    Text(
+                        text = "기간 선택",
+                        style = Typography.titleMedium
+                    )
 
-                                    if (selectedPeriod == periods[0]) { // 일주일
-                                        startDate = getFirstDayOfWeek(today)
-                                        finishDate = getLastDayOfWeek(today)
-                                    } else if (selectedPeriod == periods[1]) { // 한 달
-                                        startDate = getFirstDayOfMonth(today)
-                                        finishDate = getLastDayOfMonth(today)
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        text = periodMap[chipPeriod] ?: chipPeriod,
-                                        style = TextStyle(textAlign = TextAlign.Center)
+                    LazyVerticalGrid(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        columns = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        periods.forEach { chipPeriod ->
+                            item {
+                                FilterChip(
+                                    selected = selectedPeriod == chipPeriod,
+                                    onClick = {
+                                        selectedPeriod = chipPeriod
+                                        periodMenuExpanded = false
+
+                                        if (selectedPeriod == periods[0]) { // 일주일
+                                            startDate = getFirstDayOfWeek(today)
+                                            finishDate = getLastDayOfWeek(today)
+                                        } else if (selectedPeriod == periods[1]) { // 한 달
+                                            startDate = getFirstDayOfMonth(today)
+                                            finishDate = getLastDayOfMonth(today)
+                                        }
+                                    },
+                                    label = {
+                                        Text(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            text = periodMap[chipPeriod] ?: chipPeriod,
+                                            style = Typography.bodySmall,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = colorResource(id = R.color.light_gray),
+                                        labelColor = Color.Black,
+                                        selectedContainerColor = Color.Black,
+                                        selectedLabelColor = Color.White
                                     )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    containerColor = colorResource(id = R.color.light_gray),
-                                    labelColor = Color.Black,
-                                    selectedContainerColor = Color.Black,
-                                    selectedLabelColor = Color.White
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -566,9 +618,12 @@ fun PeriodBasedFragment() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(16.dp)
                 ) {
-                    Text(text = "제목 선택")
+                    Text(
+                        text = "제목 선택",
+                        style = Typography.titleMedium
+                    )
 
                     FilterChip(
                         modifier = Modifier
@@ -583,7 +638,8 @@ fun PeriodBasedFragment() {
                                 modifier = Modifier
                                     .fillMaxWidth(),
                                 text = titleMapWithAll[titlesWithAll[0]] ?: titlesWithAll[0],
-                                style = TextStyle(textAlign = TextAlign.Center)
+                                style = Typography.bodySmall,
+                                textAlign = TextAlign.Center
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
@@ -613,7 +669,8 @@ fun PeriodBasedFragment() {
                                             modifier = Modifier
                                                 .fillMaxWidth(),
                                             text = titleMapWithAll[chipTitle] ?: chipTitle,
-                                            style = TextStyle(textAlign = TextAlign.Center)
+                                            style = Typography.bodySmall,
+                                            textAlign = TextAlign.Center
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
@@ -629,12 +686,10 @@ fun PeriodBasedFragment() {
                 }
             }
 
-            // 하단 바
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .background(Color.White)
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -649,7 +704,7 @@ fun PeriodBasedFragment() {
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_today_16),
+                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "기간 선택",
                     )
                 }

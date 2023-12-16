@@ -67,7 +67,7 @@ val periodMap = mapOf(
 )
 
 val colorMap = mapOf(
-    "ALL" to R.color.light_gray,
+    "ALL" to R.color.black,
     "STUDY" to R.color.study_color,
     "WORK" to R.color.work_color,
     "EXERCISE" to R.color.exercise_color,

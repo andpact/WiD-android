@@ -4,9 +4,10 @@ import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.createEmptyView
+import andpact.project.wid.util.createNoBackgroundEmptyView
 import andpact.project.wid.util.getDayString
-import andpact.project.wid.util.getDayStringWith4Lines
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,9 +31,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -54,14 +55,18 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         focusRequester.requestFocus()
     }
 
-    // 전체화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white)),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 검색창
+        /**
+         * 검색 창
+         */
         BasicTextField(
             modifier = Modifier
                 .focusRequester(focusRequester = focusRequester),
@@ -90,14 +95,14 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             if (searchText.isBlank()) {
                                 Text(
                                     text = "제목 또는 내용으로 검색..",
-                                    style = TextStyle(color = Color.Gray)
+                                    style = Typography.labelMedium
                                 )
                             }
 
                             innerTextField()
                         }
 
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "검색")
                     }
 
                     HorizontalDivider()
@@ -105,76 +110,72 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             }
         )
 
-        // 겸색 결과
+        /**
+         * 검색 결과
+         */
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp) // item 간에 8.Dp의 공간이 설정됨.
         ) {
             if (diaryList.isEmpty()) {
                 item {
-                    createEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
+                    createNoBackgroundEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
                 }
             } else {
                 itemsIndexed(diaryList) { index: Int, diary: Diary ->
-                    Column(
+                    Surface(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 1.dp
                     ) {
-                        Text(
-                            text = getDayString(diary.date),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
-                        )
-
-                        Surface(
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            color = Color.White,
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 1.dp
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .clickable {
-                                        navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
 
-                                        mainTopBottomBarVisible.value = false
-                                    },
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(colorResource(id = R.color.light_gray))
-                                        .padding(8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = diary.title,
-                                        style = TextStyle(fontWeight = FontWeight.Bold),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowRight,
-                                        contentDescription = "Navigate to this diary",
-                                    )
+                                    mainTopBottomBarVisible.value = false
                                 }
-
-                                HorizontalDivider()
-
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(color = colorResource(id = R.color.light_gray))
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
-                                    modifier = Modifier
-                                        .padding(8.dp),
-                                    text = diary.content,
-                                    minLines = 5,
-                                    maxLines = 10,
-                                    overflow = TextOverflow.Ellipsis
+                                    text = getDayString(diary.date),
+                                    style = Typography.titleMedium
+                                )
+
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = "이 다이어리로 전환하기",
                                 )
                             }
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                text = diary.title,
+                                style = Typography.bodyMedium,
+                            )
+
+                            HorizontalDivider()
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                text = diary.content,
+                                style = Typography.labelMedium,
+                                minLines = 10,
+                            )
                         }
                     }
                 }

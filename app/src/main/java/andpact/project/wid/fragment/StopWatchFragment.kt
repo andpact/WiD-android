@@ -179,6 +179,9 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
             }
     ) {
+        /**
+         * 상단 바
+         */
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.TopCenter),
@@ -186,7 +189,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            // 상단 바
             Row(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -202,7 +204,9 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             }
         }
 
-        // 컨텐츠
+        /**
+         * 컨텐츠
+         */
         Text(
             modifier = Modifier
                 .align(Alignment.Center),
@@ -210,6 +214,9 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             style = TextStyle(textAlign = TextAlign.End)
         )
 
+        /**
+         * 하단 바
+         */
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
@@ -262,7 +269,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     }
                 }
 
-                // 하단 바
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

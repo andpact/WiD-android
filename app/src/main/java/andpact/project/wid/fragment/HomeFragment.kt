@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
+import andpact.project.wid.ui.theme.Typography
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,15 +32,17 @@ import androidx.navigation.NavController
 
 @Composable
 fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
-    val stopWatchButtonBrush = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFF4CAF50),
-            Color(0xFF2196F3),
-            Color(0xFFE91E63)
-        )
-    )
+//    val stopWatchButtonBrush = Brush.linearGradient(
+//        colors = listOf(
+//            Color(0xFF4CAF50),
+//            Color(0xFF2196F3),
+//            Color(0xFFE91E63)
+//        )
+//    )
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -90,13 +93,13 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_alarm_24),
-                                contentDescription = "StopWatch",
+                                contentDescription = "스탑워치",
                                 tint = Color.Black
                             )
 
                             Text(
                                 text = "스탑워치",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                style = Typography.bodyLarge
                             )
                         }
                     }
@@ -116,13 +119,13 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_timer_24),
-                                contentDescription = "Timer",
+                                contentDescription = "타이머",
                                 tint = Color.Black
                             )
 
                             Text(
                                 text = "타이머",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                style = Typography.bodyLarge
                             )
                         }
                     }
@@ -142,13 +145,13 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.outline_add_box_24),
-                                contentDescription = "New WiD",
+                                contentDescription = "새로운 WiD",
                                 tint = Color.Black
                             )
 
                             Text(
                                 text = "새로운 WiD",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                style = Typography.bodyLarge
                             )
                         }
                     }

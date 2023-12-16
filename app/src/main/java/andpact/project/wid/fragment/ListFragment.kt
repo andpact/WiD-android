@@ -1,5 +1,7 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
+import andpact.project.wid.ui.theme.Typography
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -12,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -43,14 +46,17 @@ fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         color = Color.Black
                     )
                 },
-                containerColor = Color.White
+                containerColor = colorResource(id = R.color.ghost_white)
             ) {
                 Tab(
                     selected = pagerState.currentPage == 0,
                     onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
-                    text = { Text(text = "날짜 별 기록") }
+                    text = { Text(
+                        text = "날짜",
+                        style = Typography.titleMedium
+                    ) }
                 )
 
                 Tab(
@@ -58,7 +64,10 @@ fun ListFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) }},
                     selectedContentColor = Color.Black,
                     unselectedContentColor = Color.LightGray,
-                    text = { Text(text = "기간 별 기록") }
+                    text = { Text(
+                        text = "기간",
+                        style = Typography.titleMedium
+                    ) }
                 )
             }
         }

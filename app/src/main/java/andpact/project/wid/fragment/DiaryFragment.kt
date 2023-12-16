@@ -4,10 +4,8 @@ import andpact.project.wid.R
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.util.formatDuration
-import andpact.project.wid.util.getDayString
-import andpact.project.wid.util.getTotalDurationFromWiDList
-import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -33,6 +31,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,13 +71,17 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         }
     }
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 상단 바
+        /**
+         * 상단 바
+         */
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -89,7 +92,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         ) {
             Text(
                 text = "다이어리",
-                style = TextStyle(fontWeight = FontWeight.Bold)
+                style = Typography.titleLarge
             )
 
             Row(
@@ -121,73 +124,52 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
 
                 Text(
                     text = "완료",
-                    style = TextStyle(
-                        color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
-                            colorResource(id = R.color.lime_green)
-                        else
-                            Color.LightGray
-                    )
+                    style = Typography.titleMedium,
+                    color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
+                        colorResource(id = R.color.lime_green)
+                    else
+                        Color.LightGray
                 )
             }
         }
 
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 16.dp),
-            text = getDayString(date)
-        )
-
-        HorizontalDivider(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-        )
-
-        // 파이 차트
         Row(
             modifier = Modifier
-                .padding(32.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min)
         ) {
             Box(
                 modifier = Modifier
-                    .weight(2f)
+                    .weight(1f)
+                    .aspectRatio(1f / 1f),
+                contentAlignment = Alignment.Center
             ) {
-                DateBasedPieChartFragment(wiDList = wiDList)
+                Text(
+                    text = getDayStringWith3Lines(date = date),
+                    style = Typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    fontSize = 20.sp
+                )
             }
 
-            Column(
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .aspectRatio(1f / 1f),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "기록률",
-                    style = TextStyle(fontWeight = FontWeight.Bold)
-                )
-
-                Text(
-                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                    style = TextStyle(
-                        fontSize = 30.sp,
-                        fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold))
-                    )
-                )
-
-                Text(
-                    text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
-                    style = TextStyle(
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                )
+                if (wiDList.isEmpty()) {
+                    createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                } else {
+                    DateBasedPieChartFragment(wiDList = wiDList)
+                }
             }
         }
 
         HorizontalDivider(
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
         )
 
         // 제목 입력
@@ -196,9 +178,12 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                 .fillMaxWidth()
                 .focusRequester(focusRequester = focusRequester),
             value = diaryTitle,
-            textStyle = TextStyle(fontWeight = FontWeight.Bold),
-            placeholder = { Text(text = "제목을 입력해 주세요.") },
-            singleLine = true,
+            textStyle = Typography.bodyMedium,
+            placeholder = {
+                Text(
+                    text = "제목을 입력해 주세요.",
+                    style = Typography.bodyMedium
+                ) },
             onValueChange = { diaryTitle = it } ,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Transparent,
@@ -214,7 +199,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
 
         HorizontalDivider(
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
         )
 
         // 내용 입력
@@ -223,7 +208,12 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                 .imePadding()
                 .fillMaxSize(),
             value = diaryContent,
-            placeholder = { Text(text = "내용을 입력해 주세요.") },
+            textStyle = Typography.labelMedium,
+            placeholder = {
+                Text(
+                    text = "내용을 입력해 주세요.",
+                    style = Typography.bodyMedium
+                ) },
             onValueChange = { diaryContent = it },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Transparent,

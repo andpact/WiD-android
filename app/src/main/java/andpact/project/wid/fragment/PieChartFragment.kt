@@ -2,18 +2,21 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.agbalumoRegular
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.pretendardBold
+import andpact.project.wid.ui.theme.pretendardExtraBold
+import andpact.project.wid.ui.theme.pretendardThin
 import andpact.project.wid.util.colorMap
-import android.content.Context
+import andpact.project.wid.util.formatDuration
+import andpact.project.wid.util.getTotalDurationFromWiDList
+import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
 import android.graphics.Paint
-import android.graphics.Typeface
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -70,6 +78,25 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
         .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
+        ) {
+            Text(
+                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                style = Typography.titleLarge,
+                fontSize = 30.sp
+            )
+
+            Text(
+                text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                style = Typography.labelSmall,
+                fontSize = 10.sp
+            )
+        }
+
         Crossfade(targetState = pieEntries) { pieEntries ->
             AndroidView(factory = { context ->
                 PieChart(context).apply {
@@ -81,8 +108,8 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     description.isEnabled = false // Disable description
                     legend.isEnabled = false // Disable legend
 
-                    animateX(500)
-                    animateY(500)
+//                    animateX(500)
+//                    animateY(500)
 
                     setDrawEntryLabels(false)
                     setTouchEnabled(false) // Disable touch gestures for zooming
@@ -91,16 +118,23 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     holeRadius = 95f
                     setHoleColor(Color.Transparent.toArgb())
 
-                    setDrawCenterText(true)
-                    centerText = "오후 | 오전"
-                    setCenterTextSize(14f)
-                    setCenterTextOffset(0f, 40f)
+//                    setDrawCenterText(true)
+//                    centerText = buildAnnotatedString {
+//                        withStyle(style = SpanStyle(
+//                            fontFamily = pretendardBold,
+//                            fontSize = 30.sp
+//                        )) {
+//                            append("${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%\n")
+//                        }
+//                        withStyle(style = SpanStyle(
+//                            fontFamily = pretendardThin,
+//                            fontSize = 14.sp
+//                        )) {
+//                            append("${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간")
+//                        }
+//                    }
 
-                    if (wiDList.isEmpty()) {
-                        setCenterTextColor(Color.LightGray.toArgb())
-                    } else {
-                        setCenterTextColor(Color.Black.toArgb())
-                    }
+//                    setCenterTextColor(Color.Black.toArgb())
 
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
@@ -120,16 +154,16 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                 .fillMaxWidth()
                 .aspectRatio(1f)
             ) {
-//                val radius: Float = size.minDimension / 1.9f // 원의 반지름
                 val radius: Float = size.minDimension / 2.0f // 원의 반지름
                 val centerX = center.x
-                val centerY = center.y + 10
+                val centerY = center.y + radius / 25
 
                 val textPaint = Paint().apply {
-                    color = Color.Black.toArgb()
-                    textSize = 30f
+//                    color = Color.Black.toArgb()
+                    textSize = radius / 10
                     textAlign = Paint.Align.CENTER
-                    typeface = ResourcesCompat.getFont(localContext, R.font.agbalumo_regular)
+//                    typeface = ResourcesCompat.getFont(localContext, R.font.agbalumo_regular)
+                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_medium)
                 }
 
                 for (i in 0 until 24) {
@@ -138,8 +172,8 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     val angleInRadian = Math.toRadians(angleInDegree)
 
                     // 시간 텍스트 좌표 계산
-                    val x = centerX + radius * 0.85f * cos(angleInRadian)
-                    val y = centerY + radius * 0.85f * sin(angleInRadian)
+                    val x = centerX + radius * 0.8f * cos(angleInRadian)
+                    val y = centerY + radius * 0.8f * sin(angleInRadian)
 
                     // 시간 텍스트 그리기
                     drawContext.canvas.nativeCanvas.drawText(hour.toString(), x.toFloat(), y.toFloat(), textPaint)

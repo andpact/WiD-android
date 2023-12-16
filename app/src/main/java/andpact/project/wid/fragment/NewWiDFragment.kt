@@ -3,12 +3,15 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.pyeongChangPeaceBold
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -43,6 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.*
 import java.util.*
+import kotlin.text.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -141,13 +145,17 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         }
     }
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 상단 바
+        /**
+         * 상단 바
+         */
         Row(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -158,7 +166,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         ) {
             Text(
                 text = "새로운 WiD",
-                style = TextStyle(fontWeight = FontWeight.Bold)
+                style = Typography.titleLarge
             )
 
             Row(
@@ -187,7 +195,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_add_16),
-                    contentDescription = "Create new WiD",
+                    contentDescription = "새 WiD 등록",
                     tint = if (!isTimeOverlap && durationExist) {
                         colorResource(id = R.color.deep_sky_blue)
                     } else {
@@ -197,81 +205,34 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                 Text(
                     text = "등록",
-                    style = TextStyle(
-                        color = if (!isTimeOverlap && durationExist) {
-                            colorResource(id = R.color.deep_sky_blue)
-                        } else {
-                            Color.LightGray
-                        }
-                    )
+                    style = Typography.bodyMedium,
+                    color = if (!isTimeOverlap && durationExist) {
+                        colorResource(id = R.color.deep_sky_blue)
+                    } else {
+                        Color.LightGray
+                    }
                 )
             }
         }
 
-        // 컨텐츠
+        /**
+         * 컨텐츠
+         */
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             state = lazyColumnState
         ) {
-            // item 1(타임 라인)
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_history_24),
-                        contentDescription = "타임 라인"
-                    )
-
-                    Column {
-                        Text(text = "${getDayString(date)}의 타임 라인")
-
-                        if (wiDList.isEmpty()) {
-                            Text(
-                                text = "표시할 타임라인이 없습니다.",
-                                style = TextStyle(fontWeight = FontWeight.Bold)
-                            )
-                        } else {
-                            StackedHorizontalBarChartFragment(wiDList = wiDList)
-                        }
-                    }
-                }
-            }
-
-            // item 2
-            item {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-            }
-
-            // item 3
-            item {
+            item(1) { // 날짜
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-//                                if (!expandDatePicker) {
-//                                    coroutineScope.launch {
-//                                        lazyColumnState.animateScrollToItem(1)
-//                                        delay(1500)
-//                                    }
-//                                }
-//                                expandDatePicker = !expandDatePicker
-
-                            // 컨텐츠가 충분해서 스크롤 할 수 있어야 스크롤 메서드가 사용가능하다?
                             expandDatePicker = !expandDatePicker
                             if (expandDatePicker) {
                                 coroutineScope.launch {
-//                                    delay(200)
-                                    lazyColumnState.animateScrollToItem(1)
+                                    lazyColumnState.animateScrollToItem(0)
                                 }
                             }
                         }
@@ -281,15 +242,18 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
-                        contentDescription = "Date"
+                        contentDescription = "날짜"
                     )
 
                     Column {
-                        Text("날짜")
+                        Text(
+                            text = "날짜",
+                            style = Typography.labelSmall
+                        )
 
                         Text(
                             text = getDayString(date),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.bodyMedium
                         )
                     }
 
@@ -300,17 +264,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                     Icon(
                         imageVector = if (expandDatePicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Show date picker",
+                        contentDescription = "날짜 선택 도구 펼치기",
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = expandDatePicker,
-//                    enter = expandVertically{ 0 },
-                    enter = expandVertically(animationSpec = tween(500)) { 0 },
-//                    exit = shrinkVertically{ 0 },
-                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
-                ) {
+                if (expandDatePicker) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp),
@@ -332,7 +290,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             TextButton(
                                 onClick = { expandDatePicker = false }
                             ) {
-                                Text(text = "취소")
+                                Text(
+                                    text = "취소",
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
+                                )
                             }
 
                             TextButton(
@@ -354,23 +316,25 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     }
                                 }
                             ) {
-                                Text(text = "확인")
+                                Text(
+                                    text = "확인",
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // item 4
-            item {
+            item(2) {
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 )
             }
 
-            // item 5
-            item {
+            item(3) { // 제목
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -378,8 +342,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             titleMenuExpanded = !titleMenuExpanded
                             if (titleMenuExpanded) {
                                 coroutineScope.launch {
-//                                        delay(100)
-                                    lazyColumnState.animateScrollToItem(3)
+                                    lazyColumnState.animateScrollToItem(1) // index 1이 화면에서 사라진 지점에 정확히 스크롤됨.
                                 }
                             }
                         }
@@ -389,32 +352,22 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_title_24),
-                        contentDescription = "Title"
+                        contentDescription = "제목",
+                        tint = colorResource(
+                            id = colorMap[title] ?: R.color.black
+                        )
                     )
 
                     Column {
-                        Text("제목")
+                        Text(
+                            text = "제목",
+                            style = Typography.labelSmall
+                        )
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = titleMap[title] ?: title,
-                                style = TextStyle(fontWeight = FontWeight.Bold)
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(10.dp)
-                                    .background(
-                                        color = colorResource(
-                                            id = colorMap[title] ?: R.color.light_gray
-                                        )
-                                    )
-                            )
-                        }
+                        Text(
+                            text = titleMap[title] ?: title,
+                            style = Typography.bodyMedium
+                        )
                     }
 
                     Spacer(
@@ -424,17 +377,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                     Icon(
                         imageVector = if (titleMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Show title menu",
+                        contentDescription = "제목 메뉴 펼치기"
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = titleMenuExpanded,
-//                    enter = expandVertically{ 0 },
-                    enter = expandVertically(animationSpec = tween(500)) { 0 },
-//                    exit = shrinkVertically{ 0 },
-                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
-                ) {
+                if (titleMenuExpanded) {
                     LazyVerticalGrid(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -456,7 +403,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             modifier = Modifier
                                                 .fillMaxWidth(),
                                             text = titleMap[chipTitle] ?: chipTitle,
-                                            style = TextStyle(textAlign = TextAlign.Center)
+                                            style = Typography.bodySmall,
+                                            textAlign = TextAlign.Center
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
@@ -472,16 +420,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 }
             }
 
-            // item 6
-            item {
+            item(4) {
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 )
             }
 
-            // item 7
-            item {
+            item(5) { // 시작 시간
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -489,8 +435,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             expandStartPicker = !expandStartPicker
                             if (expandStartPicker) {
                                 coroutineScope.launch {
-//                                    delay(100)
-                                    lazyColumnState.animateScrollToItem(5)
+                                    lazyColumnState.animateScrollToItem(3)
                                 }
                             }
                         }
@@ -500,15 +445,18 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_alarm_24),
-                        contentDescription = "Start"
+                        contentDescription = "시작 시간"
                     )
 
                     Column {
-                        Text("시작")
+                        Text(
+                            text = "시작",
+                            style = Typography.labelSmall
+                        )
 
                         Text(
                             text = formatTime(start, "a hh:mm:ss"),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.bodyMedium
                         )
                     }
 
@@ -519,17 +467,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                     Icon(
                         imageVector = if (expandStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Show start picker",
+                        contentDescription = "시작 시간 선택 도구 펼치기",
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = expandStartPicker,
-//                    enter = expandVertically{ 0 },
-                    enter = expandVertically(animationSpec = tween(500)) { 0 },
-//                    exit = shrinkVertically{ 0 },
-                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
-                ) {
+                if (expandStartPicker) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp),
@@ -546,7 +488,10 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             TextButton(
                                 onClick = { expandStartPicker = false }
                             ) {
-                                Text(text = "취소")
+                                Text(
+                                    text = "취소",
+                                    style = Typography.bodyMedium
+                                )
                             }
 
                             TextButton(
@@ -557,23 +502,24 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     start = newStart
                                 }
                             ) {
-                                Text(text = "확인")
+                                Text(
+                                    text = "확인",
+                                    style = Typography.bodyMedium
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // item 8
-            item {
+            item(6) {
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 )
             }
 
-            // item 9
-            item {
+            item(7) { // 종료 시간
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -581,8 +527,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             expandFinishPicker = !expandFinishPicker
                             if (expandFinishPicker) {
                                 coroutineScope.launch {
-//                                    delay(100)
-                                    lazyColumnState.animateScrollToItem(7) // Finish Picker가 화면에 나타나는 도중에 스크롤이 동작하면 에러가 나는 듯.
+                                    lazyColumnState.animateScrollToItem(5)
                                 }
                             }
                         }
@@ -592,15 +537,18 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_alarm_on_24),
-                        contentDescription = "Finish"
+                        contentDescription = "종료 시간"
                     )
 
                     Column {
-                        Text("종료")
+                        Text(
+                            text = "종료",
+                            style = Typography.labelSmall
+                        )
 
                         Text(
                             text = formatTime(finish, "a hh:mm:ss"),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.bodyMedium
                         )
                     }
 
@@ -611,17 +559,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                     Icon(
                         imageVector = if (expandFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Show finish picker",
+                        contentDescription = "종료 시간 선택 도구 펼치기",
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = expandFinishPicker,
-//                    enter = expandVertically{ 0 },
-                    enter = expandVertically(animationSpec = tween(500)) { 0 },
-//                    exit = shrinkVertically{ 0 },
-                    exit = shrinkVertically(animationSpec = tween(500)) { 0 },
-                ) {
+                if (expandFinishPicker) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp),
@@ -638,7 +580,10 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             TextButton(
                                 onClick = { expandFinishPicker = false }
                             ) {
-                                Text(text = "취소")
+                                Text(
+                                    text = "취소",
+                                    style = Typography.bodyMedium
+                                )
                             }
 
                             TextButton(
@@ -652,23 +597,24 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     finish = newFinish
                                 }
                             ) {
-                                Text(text = "확인")
+                                Text(
+                                    text = "확인",
+                                    style = Typography.bodyMedium
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // item 10
-            item {
+            item(8) {
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 )
             }
 
-            // item 11
-            item {
+            item(9) { // 소요 시간
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -678,35 +624,74 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_timelapse_24),
-                        contentDescription = "Duration"
+                        contentDescription = "소요 시간"
                     )
 
                     Column {
-                        Text("소요")
+                        Text(
+                            text = "소요",
+                            style = Typography.labelSmall
+                        )
 
                         Text(
                             text = formatDuration(duration, mode = 3),
-                            style = TextStyle(fontWeight = FontWeight.Bold)
+                            style = Typography.bodyMedium
                         )
                     }
                 }
             }
 
-            // item 11
-            item {
+            item(10) {
                 HorizontalDivider(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(vertical = 16.dp)
+                        .height(8.dp)
+                        .background(Color.White)
                 )
             }
 
-            // item 12(선택 가능한 시간 단위)
-            item {
-                Spacer(
+            item(11) { // 타임 라인
+                Column(
                     modifier = Modifier
-                        .height(32.dp)
-                )
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "${getDayString(date)}의 타임 라인",
+                        style = Typography.titleMedium
+                    )
 
+                    if (wiDList.isEmpty()) {
+                        createEmptyView(text = "표시할 타임 라인이 없습니다.")()
+                    } else {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            color = Color.White,
+                            shape = RoundedCornerShape(8.dp),
+                            shadowElevation = 1.dp
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 32.dp)
+                            ) {
+                                StackedHorizontalBarChartFragment(wiDList = wiDList)
+                            }
+                        }
+                    }
+                }
+            }
+
+            item(12) {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .height(8.dp)
+                        .background(Color.White)
+                )
+            }
+
+            item(13) { // 선택 가능한 시간 단위
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 16.dp),
@@ -714,7 +699,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 ) {
                     Text(
                         text = "선택 가능한 시간 단위",
-                        style = TextStyle(fontWeight = FontWeight.Bold)
+                        style = Typography.titleMedium
                     )
 
                     if (emptyWiDList.isEmpty()) {
@@ -755,14 +740,17 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                                     .background(Color.Black)
                                             )
 
-                                            Text("제목 없음")
+                                            Text(
+                                                text = "제목 없음",
+                                                style = Typography.titleSmall
+                                            )
                                         }
 
                                         Icon(
                                             modifier = Modifier
                                                 .rotate(90f),
                                             painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
-                                            contentDescription = "Use this time interval",
+                                            contentDescription = "이 시간대 사용하기",
                                             tint = colorResource(id = R.color.deep_sky_blue)
                                         )
                                     }
@@ -777,18 +765,21 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         Column {
                                             Text(
                                                 text = formatTime(emptyWiD.start, "a hh:mm:ss"),
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                                style = Typography.bodyMedium,
+//                                                fontFamily = FontFamily.Monospace
                                             )
 
                                             Text(
                                                 text = formatTime(emptyWiD.finish, "a hh:mm:ss"),
-                                                style = TextStyle(fontWeight = FontWeight.Bold)
+                                                style = Typography.bodyMedium,
+//                                                fontFamily = FontFamily.Monospace
                                             )
                                         }
 
                                         Text(
                                             text = formatDuration(emptyWiD.duration, mode = 3),
-                                            style = TextStyle(fontSize = 20.sp, fontFamily = FontFamily(Font(R.font.pyeong_chang_peace_bold)))
+                                            fontFamily = pyeongChangPeaceBold,
+                                            fontSize = 20.sp
                                         )
                                     }
                                 }
@@ -804,20 +795,23 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             }
         }
 
-        // 하단 바
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxWidth()
-                .height(50.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "임시 하단 바",
-                style = TextStyle(fontWeight = FontWeight.Bold)
-            )
-        }
+        /**
+         * 하단 바
+         */
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(50.dp)
+//                .background(Color.Blue)
+//                .padding(horizontal = 16.dp),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.Center
+//        ) {
+//            Text(
+//                text = "임시 하단 바",
+//                style = Typography.titleLarge
+//            )
+//        }
     }
 }
 

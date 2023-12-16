@@ -93,8 +93,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
-    var expandDiaryContent by remember { mutableStateOf(false) }
-    var diaryContentOverflow by remember { mutableStateOf(false) }
+    var expandDiary by remember { mutableStateOf(false) }
+    var diaryOverflow by remember { mutableStateOf(false) }
 
     // 합계
     val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
@@ -104,100 +104,153 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 //    val screenHeight = configuration.screenHeightDp.dp
 //    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
 
-    // 전체 화면
+    /**
+     * 전체 화면
+     */
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(id = R.color.ghost_white))
     ) {
-        // 컨텐츠
+        /**
+         * 컨텐츠
+         */
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(32.dp) // item 간에 32.Dp의 공간이 설정됨.
+                .weight(1f)
         ) {
             item("다이어리") {
+                Spacer(
+                    modifier = Modifier
+                        .height(16.dp)
+                )
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-//                        .background(Color.White)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Spacer(
+                    Row(
                         modifier = Modifier
-                            .height(16.dp)
-                    )
-
-                    Text(
-                        text = getDayString(date = currentDate),
-                        style = Typography.titleLarge
-                    )
-
-                    if (wiDList.isEmpty()) {
-                        createNoBackgroundEmptyView(text = "표시할 타임라인이 없습니다.")()
-                    } else {
-                        Row(
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .border(1.dp, Color.Black)
-                                .height(IntrinsicSize.Min)
+                                .weight(1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = getDayStringWith3Lines(date = currentDate),
+                                style = Typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp
+                            )
+                        }
+
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f / 1f),
+                            shape = RoundedCornerShape(8.dp),
+                            shadowElevation = 1.dp
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .weight(2f)
+                                contentAlignment = Alignment.Center
                             ) {
-                                DateBasedPieChartFragment(wiDList = wiDList)
-                            }
-
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
-                                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "기록률",
-                                    style = Typography.bodyMedium
-                                )
-
-                                Text(
-                                    text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                                    fontSize = 40.sp,
-                                    style = Typography.titleLarge
-                                )
-
-                                Text(
-                                    text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
-                                    style = Typography.labelSmall
-                                )
+                                if (wiDList.isEmpty()) {
+                                    createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                                } else {
+                                    DateBasedPieChartFragment(wiDList = wiDList)
+                                }
                             }
                         }
                     }
 
-                    Text(
-                        text = diary?.title ?: "제목을 입력해 주세요.",
-                        style = Typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Text(
+                    Surface(
                         modifier = Modifier
-                            .clickable(diaryContentOverflow) {
-                                expandDiaryContent = true // 한 번 펼치면 다시 접지 못하도록 함.
-                            },
-                        text = diary?.content ?: "내용을 입력해 주세요.",
-                        style = Typography.bodyMedium,
-                        minLines = 10,
-                        maxLines = if (expandDiaryContent) Int.MAX_VALUE else 10,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = { textLayoutResult: TextLayoutResult ->
-                            diaryContentOverflow = textLayoutResult.didOverflowHeight
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        shadowElevation = 1.dp
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(!expandDiary && diaryOverflow) {
+                                        expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                                    }
+                                    .padding(16.dp),
+                                text = diary?.title ?: "제목을 입력해 주세요.",
+                                style = Typography.bodyMedium,
+                                minLines = 1,
+                                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
+                                overflow = TextOverflow.Ellipsis,
+                                onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
+                                    if (diaryTitleTextLayoutResult.didOverflowHeight) {
+                                        diaryOverflow = true
+                                    }
+                                }
+                            )
+
+                            HorizontalDivider()
+
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(!expandDiary && diaryOverflow) {
+                                        expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                                    }
+                                    .padding(16.dp),
+                                text = diary?.content ?: "내용을 입력해 주세요.",
+                                style = Typography.labelMedium,
+                                minLines = 10,
+                                maxLines = if (expandDiary) Int.MAX_VALUE else 10,
+                                overflow = TextOverflow.Ellipsis,
+                                onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
+                                    if (diaryContentTextLayoutResult.didOverflowHeight) {
+                                        diaryOverflow = true
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
+
+                    TextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = colorResource(id = R.color.deep_sky_blue),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        onClick = {
+                            navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
+
+                            mainTopBottomBarVisible.value = false
+                        },
+                    ) {
+                        Text(
+                            text = "다이어리 수정",
+                            style = Typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
                 }
+            }
+
+            item {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .height(8.dp)
+                        .background(Color.White)
+                )
             }
 
             item("합계 기록") {
@@ -240,14 +293,6 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         .padding(16.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-//                                    Text(
-//                                        text = titleMap[title] ?: title,
-//                                        style = TextStyle(
-//                                            fontSize = 20.sp,
-//                                            fontFamily = pyeongChangPeaceBold
-//                                        )
-//                                    )
-
                                     Text(
                                         text = titleMap[title] ?: title,
                                         style = Typography.titleLarge
@@ -265,6 +310,15 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         }
                     }
                 }
+            }
+
+            item {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .height(8.dp)
+                        .background(Color.White)
+                )
             }
 
             item("WiD 리스트") {
@@ -330,7 +384,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                                         Icon(
                                             imageVector = Icons.Default.KeyboardArrowRight,
-                                            contentDescription = "Navigate to WiD fragment",
+                                            contentDescription = "이 WiD로 전환하기",
                                             tint = colorResource(id = R.color.deep_sky_blue)
                                         )
                                     }
@@ -342,9 +396,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
+                                        Column {
                                             Text(
                                                 text = formatTime(wiD.start, "a hh:mm:ss"),
                                                 style = Typography.bodyMedium
@@ -376,9 +428,13 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
         HorizontalDivider()
 
+        /**
+         * 하단 바
+         */
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(colorResource(id = R.color.ghost_white))
         ) {
             AnimatedVisibility(
                 visible = expandDatePicker,
@@ -386,16 +442,17 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 exit = shrinkVertically{ 0 },
             ) {
                 Column(
-//                    modifier = Modifier
-//                        .padding(16.dp),
+                    modifier = Modifier
+                        .padding(vertical = 16.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         text = "날짜 선택",
-                        style = Typography.bodyMedium,
+                        style = Typography.titleMedium,
                         textAlign = TextAlign.Start
                     )
 
@@ -408,7 +465,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(
@@ -416,7 +474,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         ) {
                             Text(
                                 text = "취소",
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = Color.Black
                             )
                         }
 
@@ -424,26 +483,28 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             onClick = {
                                 expandDatePicker = false
                                 currentDate = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
+
+                                expandDiary = false
+                                diaryOverflow = false
                             }
                         ) {
                             Text(
                                 text = "확인",
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = Color.Black
                             )
                         }
                     }
                 }
             }
 
-            // 하단 바
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .background(Color.White)
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(
                     onClick = {
@@ -451,7 +512,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_today_16),
+                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "날짜 선택",
                     )
                 }
@@ -465,10 +526,12 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                         mainTopBottomBarVisible.value = false
                     },
+                    enabled = false
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "다이어리 수정"
+                        contentDescription = "다이어리 수정",
+                        tint = Color.Transparent
                     )
                 }
 
@@ -478,6 +541,9 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             expandDatePicker = false
                         }
                         currentDate = today
+
+                        expandDiary = false
+                        diaryOverflow = false
                     },
                     enabled = currentDate != today,
                 ) {
@@ -493,6 +559,9 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             expandDatePicker = false
                         }
                         currentDate = currentDate.minusDays(1)
+
+                        expandDiary = false
+                        diaryOverflow = false
                     },
                 ) {
                     Icon(
@@ -507,6 +576,9 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             expandDatePicker = false
                         }
                         currentDate = currentDate.plusDays(1)
+
+                        expandDiary = false
+                        diaryOverflow = false
                     },
                     enabled = currentDate != today
                 ) {
