@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
 import android.graphics.drawable.GradientDrawable
@@ -13,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +66,7 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
 
             // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
             val durationMinutes = wiD.duration.toMinutes().toInt()
-            if (1 <= durationMinutes) { // 1분 이상의 기록만 막대차트로 보여줌.(막대 차트의 weight에 0.1 미만의 작은 값이 들어갈 수 없기때문)
+            if (1 <= durationMinutes) { // 1분 이상의 기록만 막대차트로 보여줌.(막대 차트의 weight에 0.1 미만의 작은 값이 사용될 수도 없고 막대 차트에 표시도 안되기 때문)
                 val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorResource(id = colorMap[wiD.title] ?: R.color.light_gray))
                 barChartData.add(widBarChartData)
             }
@@ -91,6 +93,30 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = "오전",
+                style = Typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
+
+            VerticalDivider()
+
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = "오후",
+                style = Typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Row(
+            modifier = Modifier
                 .fillMaxWidth(0.97f)
                 .border(
                     BorderStroke(1.dp, Color.Black),
@@ -109,15 +135,19 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             for (hour in 0 until 13) {
+                val adjustedHour = (hour * 2) % 12
                 Text(
                     modifier = Modifier
                         .width(14.dp),
-                    text = (hour * 2).toString(),
-                    style = TextStyle(fontSize = 10.sp, textAlign = TextAlign.Center)
+                    text = if (adjustedHour == 0 && hour != 0) "12" else adjustedHour.toString(),
+                    style = Typography.bodySmall,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center
                 )
             }
         }
@@ -235,7 +265,7 @@ fun BarChartFragmentPreview() {
         )
     }
 
-//    StackedHorizontalBarChartFragment(tmpWiDList)
+    StackedHorizontalBarChartFragment(tmpWiDList)
 
-    VerticalBarChartFragment(tmpWiDList, tmpStartDate, tmpFinishDate)
+//    VerticalBarChartFragment(tmpWiDList, tmpStartDate, tmpFinishDate)
 }

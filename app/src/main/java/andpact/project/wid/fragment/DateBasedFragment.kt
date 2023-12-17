@@ -6,27 +6,17 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pretendardBlack
-import andpact.project.wid.ui.theme.pretendardRegular
 import andpact.project.wid.ui.theme.pyeongChangPeaceBold
 import andpact.project.wid.util.*
-import android.content.Context
-import android.util.DisplayMetrics
-import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -37,21 +27,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,8 +41,6 @@ import androidx.navigation.NavController
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import kotlin.text.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -295,7 +274,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                 ) {
                                     Text(
                                         text = titleMap[title] ?: title,
-                                        style = Typography.titleLarge
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
+                                        )
                                     )
 
                                     Text(
@@ -410,7 +392,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                                         Text(
                                             text = formatDuration(wiD.duration, mode = 3),
-                                            style = TextStyle(fontSize = 20.sp, fontFamily = pyeongChangPeaceBold)
+                                            style = TextStyle(
+                                                fontSize = 20.sp,
+                                                fontFamily = pyeongChangPeaceBold
+                                            )
                                         )
                                     }
                                 }

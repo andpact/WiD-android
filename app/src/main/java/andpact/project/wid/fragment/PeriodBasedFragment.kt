@@ -30,7 +30,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -284,7 +283,10 @@ fun PeriodBasedFragment() {
                                     ) {
                                         Text(
                                             text = titleMap[title] ?: title,
-                                            style = Typography.titleLarge
+                                            style = TextStyle(
+                                                fontSize = 20.sp,
+                                                fontFamily = pyeongChangPeaceBold
+                                            )
                                         )
 
                                         Text(
@@ -436,7 +438,10 @@ fun PeriodBasedFragment() {
                                 ) {
                                     Text(
                                         text = "합계",
-                                        style = Typography.titleLarge
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
+                                        )
                                     )
 
                                     Text(
@@ -476,7 +481,10 @@ fun PeriodBasedFragment() {
                                 ) {
                                     Text(
                                         text = "평균",
-                                        style = Typography.titleLarge
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
+                                        )
                                     )
 
                                     Text(
@@ -516,7 +524,10 @@ fun PeriodBasedFragment() {
                                 ) {
                                     Text(
                                         text = "최고",
-                                        style = Typography.titleLarge
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
+                                        )
                                     )
 
                                     Text(

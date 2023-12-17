@@ -198,90 +198,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                 .weight(1f),
             state = lazyColumnState
         ) {
-//            item {
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp),
-//                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.outline_verified_24),
-//                        contentDescription = "선택 가능한 시간 범위"
-//                    )
-//
-//                    Column {
-//                        Text(text = "선택 가능한 시간 범위")
-//
-//                        Row(
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            Text(
-//                                text = formatTime(
-//                                    time = startLimit,
-//                                    patten = "a hh:mm:ss"
-//                                ),
-//                                style = TextStyle(fontWeight = FontWeight.Bold)
-//                            )
-//
-//                            Text(" ~ ")
-//
-//                            Text(
-//                                text = formatTime(
-//                                    time = finishLimit,
-//                                    patten = "a hh:mm:ss"
-//                                ),
-//                                style = TextStyle(fontWeight = FontWeight.Bold)
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-
-            // item 1
-//            item {
-//                Spacer(
-//                    modifier = Modifier
-//                        .height(32.dp)
-//                )
-//
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.spacedBy(16.dp)
-//                ) {
-//                    Text(
-//                        text = "선택 가능한 시간 범위",
-//                        style = TextStyle(fontSize = 20.sp)
-//                    )
-//
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = formatTime(
-//                                time = startLimit,
-//                                patten = "a hh:mm:ss"
-//                            ),
-//                            style = TextStyle(fontWeight = FontWeight.Bold)
-//                        )
-//
-//                        Text(" ~ ")
-//
-//                        Text(
-//                            text = formatTime(
-//                                time = finishLimit,
-//                                patten = "a hh:mm:ss"
-//                            ),
-//                            style = TextStyle(fontWeight = FontWeight.Bold)
-//                        )
-//                    }
-//                }
-//            }
-
             item(1) {
                 Row(
                     modifier = Modifier
@@ -629,8 +545,21 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = if (isDeleteButtonPressed) {
+                                colorResource(id = R.color.ghost_white)
+                            } else {
+                                colorResource(id = R.color.orange_red)
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
                         .background(
-                            color = colorResource(id = R.color.orange_red),
+                            color = if (isDeleteButtonPressed) {
+                                colorResource(id = R.color.orange_red)
+                            } else {
+                                colorResource(id = R.color.ghost_white)
+                            },
                             shape = RoundedCornerShape(8.dp)
                         ),
                     onClick = {
@@ -643,15 +572,32 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         }
                     },
                 ) {
-                    Text(
-                        text = if (isDeleteButtonPressed) {
-                            "삭제 확인"
-                        } else {
-                            "삭제"
-                        },
-                        style = Typography.bodyMedium,
-                        color = Color.White
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!isDeleteButtonPressed) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_delete_16),
+                                contentDescription = "WiD 삭제",
+                                tint = colorResource(id = R.color.orange_red)
+                            )
+                        }
+
+                        Text(
+                            text = if (isDeleteButtonPressed) {
+                                "삭제 확인"
+                            } else {
+                                "삭제"
+                            },
+                            style = Typography.bodyMedium,
+                            color = if (isDeleteButtonPressed) {
+                                Color.White
+                            } else {
+                                colorResource(id = R.color.orange_red)
+                            }
+                        )
+                    }
                 }
             }
 
@@ -711,6 +657,11 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         }
                     }
                 }
+
+                Spacer(
+                    modifier = Modifier
+                        .height(16.dp)
+                )
             }
         }
 

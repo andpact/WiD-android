@@ -137,7 +137,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
     fun isNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
         for (existingWiD in wiDList) {
-            if (start < existingWiD.start && existingWiD.finish < finish) {
+            // 등호를 넣어서 부등호를 사용해야 기존의 WiD를 덮고 있는지를 정확히 확인할 수 있다.
+            if (start <= existingWiD.start && existingWiD.finish <= finish) {
                 isStartOverlap = true
                 isFinishOverlap = true
                 break
@@ -305,15 +306,20 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     // 날짜를 변경하면 이 Button scope의 내용이 먼저 실행된 후, remember에 의한 갱신이 발생한다.
                                     wiDList = wiDService.readDailyWiDListByDate(date)
 
+                                    // WiD를 생성했으므로 wiDList가 비어있을 수가 없음.
+                                    isNewStartOverlap()
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
+
                                     // wiDList가 비어 있으면, 시간이 겹칠 가능성이 없음.
-                                    if (wiDList.isEmpty()) {
-                                        isStartOverlap = false
-                                        isFinishOverlap = false
-                                    } else {
-                                        isNewStartOverlap()
-                                        isNewFinishOverlap()
-                                        isNewWiDOverlap()
-                                    }
+//                                    if (wiDList.isEmpty()) {
+//                                        isStartOverlap = false
+//                                        isFinishOverlap = false
+//                                    } else {
+//                                        isNewStartOverlap()
+//                                        isNewFinishOverlap()
+//                                        isNewWiDOverlap()
+//                                    }
                                 }
                             ) {
                                 Text(
@@ -490,7 +496,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             ) {
                                 Text(
                                     text = "취소",
-                                    style = Typography.bodyMedium
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
                                 )
                             }
 
@@ -500,11 +507,15 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
 
                                     start = newStart
+
+                                    isNewStartOverlap()
+                                    isNewWiDOverlap()
                                 }
                             ) {
                                 Text(
                                     text = "확인",
-                                    style = Typography.bodyMedium
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
                                 )
                             }
                         }
@@ -582,24 +593,26 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             ) {
                                 Text(
                                     text = "취소",
-                                    style = Typography.bodyMedium
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
                                 )
                             }
 
                             TextButton(
                                 onClick = {
                                     expandFinishPicker = false
-                                    val newFinish = LocalTime.of(
-                                        finishTimePickerState.hour,
-                                        finishTimePickerState.minute
-                                    )
+                                    val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
 
                                     finish = newFinish
+
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
                                 }
                             ) {
                                 Text(
                                     text = "확인",
-                                    style = Typography.bodyMedium
+                                    style = Typography.bodyMedium,
+                                    color = Color.Black
                                 )
                             }
                         }
