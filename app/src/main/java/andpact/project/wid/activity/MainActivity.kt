@@ -87,11 +87,20 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
                 mainTopBottomBarVisible = mainTopBottomBarVisible
             )
         }
-        composable(Destinations.ListFragmentDestination.route) {
-            ListFragment(
+//        composable(Destinations.ListFragmentDestination.route) {
+//            ListFragment(
+//                navController = navController,
+//                mainTopBottomBarVisible = mainTopBottomBarVisible
+//            )
+//        }
+        composable(Destinations.DateBasedFragmentDestination.route) {
+            DateBasedFragment(
                 navController = navController,
                 mainTopBottomBarVisible = mainTopBottomBarVisible
             )
+        }
+        composable(Destinations.PeriodBasedFragmentDestination.route) {
+            PeriodBasedFragment()
         }
         composable(Destinations.SearchFragmentDestination.route) {
             SearchFragment(
@@ -123,7 +132,8 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
 
 @Composable
 fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
+//    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
+    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.DateBasedFragmentDestination, Destinations.PeriodBasedFragmentDestination, Destinations.SearchFragmentDestination)
 
     AnimatedVisibility(
         visible = mainTopBottomBarVisible.value,
@@ -136,7 +146,8 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
             NavigationBar(
                 modifier = modifier
                     .height(50.dp),
-                containerColor = colorResource(id = R.color.ghost_white),
+//                containerColor = colorResource(id = R.color.ghost_white),
+                containerColor = Color.White,
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -178,7 +189,8 @@ fun WiDMainActivity() {
         Scaffold(
             bottomBar = {
                 BottomBar(
-//                    modifier = Modifier
+                    modifier = Modifier
+                        .imePadding(),
 //                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
                     navController = navController,
                     mainTopBottomBarVisible = mainTopBottomBarVisible,
@@ -215,9 +227,17 @@ sealed class Destinations(
     object NewWiDFragmentDestination : Destinations(
         route = "newWiD_fragment",
     )
-    object ListFragmentDestination : Destinations(
-        route = "list_fragment",
-        icon = R.drawable.baseline_format_list_bulleted_24
+//    object ListFragmentDestination : Destinations(
+//        route = "list_fragment",
+//        icon = R.drawable.baseline_format_list_bulleted_24
+//    )
+    object DateBasedFragmentDestination : Destinations(
+        route = "date_based_fragment",
+        icon = R.drawable.baseline_table_rows_24
+    )
+    object PeriodBasedFragmentDestination : Destinations(
+        route = "period_based_fragment",
+        icon = R.drawable.baseline_window_24
     )
     object SearchFragmentDestination : Destinations(
         route = "search_fragment",

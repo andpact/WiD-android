@@ -115,7 +115,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_done_16),
-                    contentDescription = "Modify & complete WiD",
+                    contentDescription = "WiD 수정 완료",
                     tint = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
                         colorResource(id = R.color.lime_green)
                     else

@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -114,7 +115,6 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(IntrinsicSize.Min)
                     ) {
                         Box(
                             modifier = Modifier
@@ -419,7 +419,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
+                .background(Color.White)
         ) {
             AnimatedVisibility(
                 visible = expandDatePicker,

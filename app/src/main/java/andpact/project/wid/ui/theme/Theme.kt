@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
 import androidx.core.view.ViewCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -57,9 +58,13 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
     if (!view.isInEditMode) {
         SideEffect {
 //            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            (view.context as Activity).window.statusBarColor = Color.White.toArgb() // 상태 바 색상 변경
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바의 내용물이 어둡게 함.
 //            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+
+            (view.context as Activity).window.statusBarColor = Color(0xFFF8F8FF).toArgb() // 상태 바 색상 ghost_white
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바의 내용물을 어둡게 함.
+
+//            (view.context as Activity).window.navigationBarColor = Color.White.toArgb()
+//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = true
         }
     }
 

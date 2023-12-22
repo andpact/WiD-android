@@ -558,7 +558,7 @@ fun PeriodBasedFragment() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
+                .background(Color.White)
         ) {
             // 기간 선택
             AnimatedVisibility(
