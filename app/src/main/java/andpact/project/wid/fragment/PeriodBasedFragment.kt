@@ -77,13 +77,10 @@ fun PeriodBasedFragment() {
 //        periodBottomSheetState.hide()
 //    }
 
-    /**
-     * 전체 화면
-     */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(Color.White)
     ) {
         /**
          * 컨텐츠
@@ -91,22 +88,20 @@ fun PeriodBasedFragment() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .background(colorResource(id = R.color.ghost_white))
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (selectedTitle == titlesWithAll[0]) {
                 item("타임라인") {
-                    Spacer(
-                        modifier = Modifier
-                            .height(16.dp)
-                    )
-
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp)
                     ) {
                         Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             text = when (selectedPeriod) {
                                 periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
                                 periods[1] -> getMonthString(date = startDate)
@@ -118,96 +113,81 @@ fun PeriodBasedFragment() {
                         if (wiDList.isEmpty()) {
                             createEmptyView(text = "표시할 타임라인이 없습니다.")()
                         } else {
-                            Surface(
+                            Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                    ) {
-                                        val daysOfWeek =
-                                            if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
+                                val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
 
-                                        daysOfWeek.forEachIndexed { index, day ->
-                                            val textColor = when (index) {
-                                                0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
-                                                5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
-                                                6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
-                                                else -> Color.Unspecified
-                                            }
-
-                                            Text(
-                                                modifier = Modifier
-                                                    .weight(1f),
-                                                text = day,
-                                                style = TextStyle(
-                                                    textAlign = TextAlign.Center,
-                                                    color = textColor
-                                                )
-                                            )
-                                        }
+                                daysOfWeek.forEachIndexed { index, day ->
+                                    val textColor = when (index) {
+                                        0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
+                                        5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
+                                        6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
+                                        else -> Color.Unspecified
                                     }
 
-                                    LazyVerticalGrid(
+                                    Text(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                                        columns = GridCells.Fixed(7)
-                                    ) {
-                                        if (selectedPeriod == periods[1]) {
-                                            items(startDate.dayOfWeek.value % 7) {
-                                                // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
-                                            }
-                                        }
+                                            .weight(1f),
+                                        text = day,
+                                        style = TextStyle(
+                                            textAlign = TextAlign.Center,
+                                            color = textColor
+                                        )
+                                    )
+                                }
+                            }
 
-                                        items(
-                                            ChronoUnit.DAYS.between(startDate, finishDate)
-                                                .toInt() + 1
-                                        ) { index: Int ->
-                                            val indexDate = startDate.plusDays(index.toLong())
-                                            val filteredWiDListByDate =
-                                                wiDList.filter { it.date == indexDate }
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                            )
 
-                                            PeriodBasedPieChartFragment(
-                                                date = indexDate,
-                                                wiDList = filteredWiDListByDate
-                                            )
-                                        }
+                            LazyVerticalGrid(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp, 8.dp, 16.dp, 0.dp)
+                                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                columns = GridCells.Fixed(7)
+                            ) {
+                                if (selectedPeriod == periods[1]) {
+                                    items(startDate.dayOfWeek.value % 7) {
+                                        // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
                                     }
+                                }
+
+                                items(
+                                    ChronoUnit.DAYS.between(startDate, finishDate)
+                                        .toInt() + 1
+                                ) { index: Int ->
+                                    val indexDate = startDate.plusDays(index.toLong())
+                                    val filteredWiDListByDate =
+                                        wiDList.filter { it.date == indexDate }
+
+                                    PeriodBasedPieChartFragment(
+                                        date = indexDate,
+                                        wiDList = filteredWiDListByDate
+                                    )
                                 }
                             }
                         }
                     }
                 }
 
-                item {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .height(8.dp)
-                            .background(Color.White)
-                    )
-                }
-
                 item("합계, 평균, 최고") {
                     Column(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp)
                     ) {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "$selectedMapText 기록",
@@ -224,7 +204,7 @@ fun PeriodBasedFragment() {
                                             selectedMap = totalDurationMap
                                         },
                                     text = "합계",
-                                    style = Typography.labelMedium,
+                                    style = Typography.bodyMedium,
                                     color = if (selectedMapText == "합계") Color.Black else Color.LightGray
                                 )
 
@@ -235,7 +215,7 @@ fun PeriodBasedFragment() {
                                             selectedMap = averageDurationMap
                                         },
                                     text = "평균",
-                                    style = Typography.labelMedium,
+                                    style = Typography.bodyMedium,
                                     color = if (selectedMapText == "평균") Color.Black else Color.LightGray
                                 )
 
@@ -246,7 +226,7 @@ fun PeriodBasedFragment() {
                                             selectedMap = maxDurationMap
                                         },
                                     text = "최고",
-                                    style = Typography.labelMedium,
+                                    style = Typography.bodyMedium,
                                     color = if (selectedMapText == "최고") Color.Black else Color.LightGray
                                 )
                             }
@@ -255,70 +235,51 @@ fun PeriodBasedFragment() {
                         if (selectedMap.isEmpty()) {
                             createEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
                         } else {
-                            for ((title, duration) in selectedMap) {
-                                Surface(
+                            selectedMap.entries.forEachIndexed { index, (title, duration) ->
+                                Row(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
-                                    shape = RoundedCornerShape(8.dp),
-                                    shadowElevation = 1.dp
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                brush = Brush.linearGradient(
-                                                    colors = listOf(
-                                                        colorResource(
-                                                            id = colorMap[title]
-                                                                ?: R.color.light_gray
-                                                        ),
-                                                        Color.White,
-                                                    )
-                                                ),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .padding(16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = titleMap[title] ?: title,
-                                            style = TextStyle(
-                                                fontSize = 20.sp,
-                                                fontFamily = pyeongChangPeaceBold
-                                            )
+                                    Text(
+                                        text = titleMap[title] ?: title,
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
                                         )
+                                    )
 
-                                        Text(
-                                            text = formatDuration(duration, mode = 3),
-                                            style = TextStyle(
-                                                fontSize = 20.sp,
-                                                fontFamily = pyeongChangPeaceBold
-                                            )
+                                    Text(
+                                        text = formatDuration(duration, mode = 3),
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
                                         )
-                                    }
+                                    )
+                                }
+
+                                if (index < selectedMap.size - 1) {
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                    )
                                 }
                             }
                         }
                     }
                 }
 
-                item {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .height(8.dp)
-                            .background(Color.White)
-                    )
-                }
-
                 item("기록률") {
                     Column(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp)
                     ) {
                         Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             text = "기록률",
                             style = Typography.titleMedium
                         )
@@ -326,39 +287,24 @@ fun PeriodBasedFragment() {
                         if (wiDList.isEmpty()) {
                             createEmptyView(text = "표시할 기록률이 없습니다.")()
                         } else {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
-                            ) {
-                                VerticalBarChartFragment(
-                                    wiDList = wiDList,
-                                    startDate = startDate,
-                                    finishDate = finishDate
-                                )
-                            }
+                            VerticalBarChartFragment(
+                                wiDList = wiDList,
+                                startDate = startDate,
+                                finishDate = finishDate
+                            )
                         }
                     }
-
-                    Spacer(
-                        modifier = Modifier
-                            .height(16.dp)
-                    )
                 }
             } else {
                 item {
-                    Spacer(
-                        modifier = Modifier
-                            .height(16.dp)
-                    )
-
                     Column(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp)
                     ) {
                         Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             text = when (selectedPeriod) {
                                 periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
                                 periods[1] -> getMonthString(date = startDate)
@@ -370,40 +316,25 @@ fun PeriodBasedFragment() {
                         if (filteredWiDListByTitle.isEmpty()) {
                             createEmptyView(text = "표시할 그래프가 없습니다.")()
                         } else {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.White,
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
-                            ) {
-                                LineChartFragment(
-                                    title = selectedTitle,
-                                    wiDList = filteredWiDListByTitle,
-                                    startDate = startDate,
-                                    finishDate = finishDate
-                                )
-                            }
+                            LineChartFragment(
+                                title = selectedTitle,
+                                wiDList = filteredWiDListByTitle,
+                                startDate = startDate,
+                                finishDate = finishDate
+                            )
                         }
                     }
                 }
 
                 item {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .height(8.dp)
-                            .background(Color.White)
-                    )
-                }
-
-                item {
                     Column(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp),
                     ) {
                         Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             text = "시간 기록",
                             style = Typography.titleMedium
                         )
@@ -411,141 +342,89 @@ fun PeriodBasedFragment() {
                         if (filteredWiDListByTitle.isEmpty()) {
                             createEmptyView(text = "표시할 기록이 없습니다.")()
                         } else {
-                            Surface(
+                            Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.White,
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    colorResource(
-                                                        id = R.color.light_gray
-                                                    ),
-                                                    Color.White,
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "합계",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                Text(
+                                    text = "합계",
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
+                                )
 
-                                    Text(
-                                        text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                Text(
+                                    text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
-                                }
+                                )
                             }
 
-                            Surface(
+                            HorizontalDivider(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.White,
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    colorResource(
-                                                        id = R.color.light_gray
-                                                    ),
-                                                    Color.White,
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "평균",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
-                                    )
+                                    .padding(horizontal = 16.dp)
+                            )
 
-                                    Text(
-                                        text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "평균",
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
-                                }
+                                )
+
+                                Text(
+                                    text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
+                                    )
+                                )
                             }
 
-                            Surface(
+                            HorizontalDivider(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.White,
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    colorResource(
-                                                        id = R.color.light_gray
-                                                    ),
-                                                    Color.White,
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "최고",
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
-                                    )
+                                    .padding(horizontal = 16.dp)
+                            )
 
-                                    Text(
-                                        text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "최고",
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
-                                }
+                                )
+
+                                Text(
+                                    text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
+                                    )
+                                )
                             }
                         }
                     }
-
-                    Spacer(
-                        modifier = Modifier
-                            .height(16.dp)
-                    )
                 }
             }
         }

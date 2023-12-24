@@ -28,6 +28,19 @@ val titleMap = mapOf(
     "ETC" to "기타"
 )
 
+val titleExampleMap = mapOf(
+    "STUDY" to "중간 및 기말고사, 자격증, 공시, 승진시험",
+    "WORK" to "직장, 부업, 알바",
+    "EXERCISE" to "헬스, 홈트, 요가, 필라테스, 런닝, 조깅",
+    "HOBBY" to "유튜브, 영화, 드라마 시청, 독서",
+    "PLAY" to "친구 만남, 데이트",
+    "MEAL" to "아침, 점심, 저녁",
+    "SHOWER" to "세안, 샤워, 목욕",
+    "TRAVEL" to "등하교, 출퇴근, 버스, 지하철, 도보",
+    "SLEEP" to "낮잠",
+    "ETC" to "그 외 기타 활동"
+)
+
 val titlesWithAll = arrayOf(
     "ALL", // 전체
     "STUDY", // 공부

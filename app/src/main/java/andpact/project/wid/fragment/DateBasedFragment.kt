@@ -84,13 +84,10 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 //    val screenHeight = configuration.screenHeightDp.dp
 //    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
 
-    /**
-     * 전체 화면
-     */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(Color.White)
     ) {
         /**
          * 컨텐츠
@@ -98,23 +95,21 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .background(colorResource(id = R.color.ghost_white))
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item("다이어리") {
-                Spacer(
-                    modifier = Modifier
-                        .height(16.dp)
-                )
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .background(Color.White)
+                        .padding(vertical = 16.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -130,80 +125,67 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             )
                         }
 
-                        Surface(
+                        Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(1f / 1f),
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 1.dp
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (wiDList.isEmpty()) {
-                                    createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
-                                } else {
-                                    DateBasedPieChartFragment(wiDList = wiDList)
-                                }
+                            if (wiDList.isEmpty()) {
+                                createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                            } else {
+                                DateBasedPieChartFragment(wiDList = wiDList)
                             }
                         }
                     }
 
-                    Surface(
+                    Text(
                         modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        shadowElevation = 1.dp
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(!expandDiary && diaryOverflow) {
-                                        expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
-                                    }
-                                    .padding(16.dp),
-                                text = diary?.title ?: "제목을 입력해 주세요.",
-                                style = Typography.bodyMedium,
-                                minLines = 1,
-                                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
-                                overflow = TextOverflow.Ellipsis,
-                                onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
-                                    if (diaryTitleTextLayoutResult.didOverflowHeight) {
-                                        diaryOverflow = true
-                                    }
-                                }
-                            )
-
-                            HorizontalDivider()
-
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(!expandDiary && diaryOverflow) {
-                                        expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
-                                    }
-                                    .padding(16.dp),
-                                text = diary?.content ?: "내용을 입력해 주세요.",
-                                style = Typography.labelMedium,
-                                minLines = 10,
-                                maxLines = if (expandDiary) Int.MAX_VALUE else 10,
-                                overflow = TextOverflow.Ellipsis,
-                                onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
-                                    if (diaryContentTextLayoutResult.didOverflowHeight) {
-                                        diaryOverflow = true
-                                    }
-                                }
-                            )
+                            .fillMaxWidth()
+                            .clickable(!expandDiary && diaryOverflow) {
+                                expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                            }
+                            .padding(16.dp),
+                        text = diary?.title ?: "제목을 입력해 주세요.",
+                        style = Typography.bodyMedium,
+                        minLines = 1,
+                        maxLines = if (expandDiary) Int.MAX_VALUE else 1,
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
+                            if (diaryTitleTextLayoutResult.didOverflowHeight) {
+                                diaryOverflow = true
+                            }
                         }
-                    }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(!expandDiary && diaryOverflow) {
+                                expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                            }
+                            .padding(16.dp),
+                        text = diary?.content ?: "내용을 입력해 주세요.",
+                        style = Typography.labelMedium,
+                        minLines = 10,
+                        maxLines = if (expandDiary) Int.MAX_VALUE else 10,
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
+                            if (diaryContentTextLayoutResult.didOverflowHeight) {
+                                diaryOverflow = true
+                            }
+                        }
+                    )
 
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                             .background(
                                 color = colorResource(id = R.color.deep_sky_blue),
                                 shape = RoundedCornerShape(8.dp)
@@ -223,23 +205,16 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 }
             }
 
-            item {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .height(8.dp)
-                        .background(Color.White)
-                )
-            }
-
             item("합계 기록") {
-                // 합계
+                // 합계 기록
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .background(Color.White)
+                        .padding(vertical = 16.dp)
                 ) {
                     Text(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
                         text = "합계 기록",
                         style = Typography.titleMedium
                     )
@@ -247,70 +222,51 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     if (totalDurationMap.isEmpty()) {
                         createEmptyView(text = "표시할 합계 기록이 없습니다.")()
                     } else {
-                        for ((title, totalDuration) in totalDurationMap) {
-                            Surface(
+                        totalDurationMap.entries.forEachIndexed { index, (title, totalDuration) ->
+                            Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    colorResource(
-                                                        id = colorMap[title]
-                                                            ?: R.color.light_gray
-                                                    ),
-                                                    Color.White,
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = titleMap[title] ?: title,
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                Text(
+                                    text = titleMap[title] ?: title,
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
+                                )
 
-                                    Text(
-                                        text = formatDuration(totalDuration, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                Text(
+                                    text = formatDuration(totalDuration, mode = 3),
+                                    style = TextStyle(
+                                        fontSize = 20.sp,
+                                        fontFamily = pyeongChangPeaceBold
                                     )
-                                }
+                                )
+                            }
+
+                            if (index < totalDurationMap.size - 1) {
+                                HorizontalDivider(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                )
                             }
                         }
                     }
                 }
             }
 
-            item {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .height(8.dp)
-                        .background(Color.White)
-                )
-            }
-
             item("WiD 리스트") {
                 // WiD 리스트
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .background(Color.White)
+                        .padding(vertical = 16.dp)
                 ) {
                     Text(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
                         text = "WiD 리스트",
                         style = Typography.titleMedium
                     )
@@ -318,96 +274,90 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     if (wiDList.isEmpty()) {
                         createEmptyView(text = "표시할 WiD가 없습니다.")()
                     } else {
-                        wiDList.forEach { wiD: WiD ->
-                            Surface(
+                        wiDList.forEachIndexed { index, wiD ->
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.White,
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
+                                        mainTopBottomBarVisible.value = false
+                                    }
+                                    .padding(16.dp)
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable {
-                                            navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
-                                            mainTopBottomBarVisible.value = false
-                                        }
+                                        .background(color = colorResource(id = R.color.light_gray))
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(color = colorResource(id = R.color.light_gray))
-                                            .padding(8.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .size(10.dp)
-                                                    .background(
-                                                        color = colorResource(
-                                                            id = colorMap[wiD.title]
-                                                                ?: R.color.light_gray
-                                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(5.dp, 10.dp)
+                                                .background(
+                                                    color = colorResource(
+                                                        id = colorMap[wiD.title]
+                                                            ?: R.color.light_gray
                                                     )
-                                            )
-
-                                            Text(
-                                                text = titleMap[wiD.title] ?: wiD.title,
-                                                style = Typography.bodyMedium
-                                            )
-                                        }
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowRight,
-                                            contentDescription = "이 WiD로 전환하기",
-                                            tint = colorResource(id = R.color.deep_sky_blue)
+                                                )
                                         )
-                                    }
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column {
-                                            Text(
-                                                text = formatTime(wiD.start, "a hh:mm:ss"),
-                                                style = Typography.bodyMedium
-                                            )
-
-                                            Text(
-                                                text = formatTime(wiD.finish, "a hh:mm:ss"),
-                                                style = Typography.bodyMedium
-                                            )
-                                        }
 
                                         Text(
-                                            text = formatDuration(wiD.duration, mode = 3),
-                                            style = TextStyle(
-                                                fontSize = 20.sp,
-                                                fontFamily = pyeongChangPeaceBold
-                                            )
+                                            text = titleMap[wiD.title] ?: wiD.title,
+                                            style = Typography.bodyMedium
                                         )
                                     }
+
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowRight,
+                                        contentDescription = "이 WiD로 전환하기",
+                                        tint = colorResource(id = R.color.deep_sky_blue)
+                                    )
                                 }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = formatTime(wiD.start, "a hh:mm:ss"),
+                                            style = Typography.bodyMedium
+                                        )
+
+                                        Text(
+                                            text = formatTime(wiD.finish, "a hh:mm:ss"),
+                                            style = Typography.bodyMedium
+                                        )
+                                    }
+
+                                    Text(
+                                        text = formatDuration(wiD.duration, mode = 3),
+                                        style = TextStyle(
+                                            fontSize = 20.sp,
+                                            fontFamily = pyeongChangPeaceBold
+                                        )
+                                    )
+                                }
+                            }
+
+                            if (index < wiDList.size - 1) {
+                                HorizontalDivider(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                )
                             }
                         }
                     }
                 }
-
-                Spacer(
-                    modifier = Modifier
-                        .height(16.dp)
-                )
             }
         }
 

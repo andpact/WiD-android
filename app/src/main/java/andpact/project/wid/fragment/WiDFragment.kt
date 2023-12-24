@@ -128,9 +128,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         mainTopBottomBarVisible.value = true
     }
 
-    /**
-     * 전체 화면
-     */
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -141,8 +138,9 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
          */
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
                 .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp)
                 .height(50.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -163,6 +161,9 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             finish = finish,
                             duration = duration
                         )
+
+                        navController.popBackStack()
+                        mainTopBottomBarVisible.value = true
                     },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -238,11 +239,11 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         .fillMaxWidth()
                         .clickable {
                             titleMenuExpanded = !titleMenuExpanded
-                            if (titleMenuExpanded) {
-                                coroutineScope.launch {
-                                    lazyColumnState.animateScrollToItem(1)
-                                }
-                            }
+//                            if (titleMenuExpanded) {
+//                                coroutineScope.launch {
+//                                    lazyColumnState.animateScrollToItem(1)
+//                                }
+//                            }
                         }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -332,11 +333,11 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         .fillMaxWidth()
                         .clickable {
                             expandStartPicker = !expandStartPicker
-                            if (expandStartPicker) {
-                                coroutineScope.launch {
-                                    lazyColumnState.animateScrollToItem(3)
-                                }
-                            }
+//                            if (expandStartPicker) {
+//                                coroutineScope.launch {
+//                                    lazyColumnState.animateScrollToItem(3)
+//                                }
+//                            }
                         }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -424,11 +425,11 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         .fillMaxWidth()
                         .clickable {
                             expandFinishPicker = !expandFinishPicker
-                            if (expandFinishPicker) {
-                                coroutineScope.launch {
-                                    lazyColumnState.animateScrollToItem(5) // Finish Picker가 화면에 나타나는 도중에 스크롤이 동작하면 에러가 나는 듯.
-                                }
-                            }
+//                            if (expandFinishPicker) {
+//                                coroutineScope.launch {
+//                                    lazyColumnState.animateScrollToItem(5) // Finish Picker가 화면에 나타나는 도중에 스크롤이 동작하면 에러가 나는 듯.
+//                                }
+//                            }
                         }
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),

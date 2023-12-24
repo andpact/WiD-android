@@ -43,14 +43,14 @@ import androidx.navigation.NavController
 fun SearchFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
     // 검색
     var searchText by remember { mutableStateOf("") }
-    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
+//    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
 
     // 다이어리
     val diaryService = DiaryService(LocalContext.current)
-    val diaryList = remember(searchText) { diaryService.getDiaryListByTitleOrContent(searchText = searchText) }
+    var diaryList by remember { mutableStateOf(emptyList<Diary>()) }
 
     // 키보드
     val focusRequester = remember { FocusRequester() }
@@ -59,9 +59,6 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         focusRequester.requestFocus()
     }
 
-    /**
-     * 전체 화면
-     */
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -106,7 +103,14 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             innerTextField()
                         }
 
-                        Icon(imageVector = Icons.Default.Search, contentDescription = "검색")
+                        Icon(
+                            modifier = Modifier
+                                .clickable(searchText.isNotBlank()) {
+                                    diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
+                                },
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "검색"
+                        )
                     }
 
                     HorizontalDivider()
@@ -120,7 +124,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         LazyColumn(
             modifier = Modifier
                 .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp) // item 간에 8.Dp의 공간이 설정됨.
+            verticalArrangement = Arrangement.spacedBy(16.dp) // item 간에 8.Dp의 공간이 설정됨.
         ) {
             if (diaryList.isEmpty()) {
                 item {
@@ -131,12 +135,13 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .background(Color.White)
+                            .padding(vertical = 16.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
                         ) {
                             Box(
                                 modifier = Modifier
@@ -152,83 +157,58 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 )
                             }
 
-                            Surface(
+                            Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .aspectRatio(1f / 1f),
-                                shape = RoundedCornerShape(8.dp),
-                                shadowElevation = 1.dp
+                                contentAlignment = Alignment.Center
                             ) {
-                                Box(
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    val wiDList = wiDService.readDailyWiDListByDate(diary.date)
+                                val wiDList = wiDService.readDailyWiDListByDate(diary.date)
 
-                                    if (wiDList.isEmpty()) {
-                                        createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
-                                    } else {
-                                        DateBasedPieChartFragment(wiDList = wiDList)
-                                    }
+                                if (wiDList.isEmpty()) {
+                                    createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                                } else {
+                                    DateBasedPieChartFragment(wiDList = wiDList)
                                 }
                             }
                         }
 
-                        Surface(
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            shadowElevation = 1.dp
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+
+                                    mainTopBottomBarVisible.value = false
+                                }
                         ) {
-                            Column(
+                            Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+                                    .padding(16.dp),
+                                text = diary.title,
+                                style = Typography.bodyMedium,
+                                minLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
 
-                                        mainTopBottomBarVisible.value = false
-                                    }
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    text = diary.title,
-                                    style = Typography.bodyMedium,
-                                    minLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                            )
 
-                                HorizontalDivider()
-
-                                Text(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    text = diary.content,
-                                    style = Typography.labelMedium,
-                                    minLines = 10,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                text = diary.content,
+                                style = Typography.labelMedium,
+                                minLines = 10,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
-
-                    if (index != diaryList.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                                .height(8.dp)
-                                .background(Color.White)
-                        )
-                    }
                 }
-            }
-
-            item {
-                Spacer(
-                    modifier = Modifier
-                        .height(16.dp)
-                )
             }
         }
     }

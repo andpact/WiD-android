@@ -170,11 +170,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         }
     }
 
-    // 전체 화면
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(Color.White)
             .clickable(enabled = stopWatchStarted) {
                 stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
             }

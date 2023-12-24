@@ -3,9 +3,18 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.util.titleExampleMap
+import andpact.project.wid.util.titleMap
+import andpact.project.wid.util.titles
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -25,6 +34,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,128 +42,218 @@ import androidx.navigation.NavController
 
 @Composable
 fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
-//    val stopWatchButtonBrush = Brush.linearGradient(
-//        colors = listOf(
-//            Color(0xFF4CAF50),
-//            Color(0xFF2196F3),
-//            Color(0xFFE91E63)
-//        )
-//    )
-
-    /**
-     * 전체 화면
-     */
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
-            .padding(16.dp)
+            .background(colorResource(id = R.color.ghost_white)),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
+        /**
+         * 도구
+         */
+        item {
             Text(
                 modifier = Modifier
-                    .align(Alignment.Center),
+                    .background(Color.White)
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
                 text = "WiD",
                 style = TextStyle(
-                    fontSize = 100.sp,
+                    fontSize = 70.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily(Font(R.font.acme_regular))
-                )
+                    fontFamily = FontFamily(Font(R.font.acme_regular)),
+                    textAlign = TextAlign.Center
+                ),
             )
-        }
 
-        Box(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            Surface(
-                color = Color.White,
-                shape = RoundedCornerShape(8.dp),
-                shadowElevation = 1.dp
+            Column(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(vertical = 16.dp)
             ) {
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                    text = "도구",
+                    style = Typography.titleMedium
+                )
+
+                // 스탑 워치
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TextButton(
-                        modifier = Modifier
-                            .weight(1f),
-                        shape = RectangleShape,
-                        onClick = {
+                    modifier = Modifier
+                        .clickable {
                             navController.navigate(Destinations.StopWatchFragmentDestination.route)
                             mainTopBottomBarVisible.value = false
                         }
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_alarm_24),
-                                contentDescription = "스탑워치",
-                                tint = Color.Black
-                            )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_alarm_24),
+                        contentDescription = "스탑 워치",
+                        tint = Color.Black
+                    )
 
-                            Text(
-                                text = "스탑워치",
-                                style = Typography.bodyLarge
-                            )
-                        }
+                    Column {
+                        Text(
+                            text = "스탑 워치",
+                            style = Typography.bodyMedium
+                        )
+
+                        Text(
+                            text = "현재 시간부터 기록하기",
+                            style = Typography.labelSmall
+                        )
                     }
 
-                    TextButton(
+                    Spacer(
                         modifier = Modifier
-                            .weight(1f),
-                        shape = RectangleShape,
-                        onClick = {
+                            .weight(1f)
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "스탑 워치로 전환",
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+
+                // 타이머
+                Row(
+                    modifier = Modifier
+                        .clickable {
                             navController.navigate(Destinations.TimerFragmentDestination.route)
                             mainTopBottomBarVisible.value = false
                         }
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_timer_24),
-                                contentDescription = "타이머",
-                                tint = Color.Black
-                            )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_timer_24),
+                        contentDescription = "타이머",
+                        tint = Color.Black
+                    )
 
-                            Text(
-                                text = "타이머",
-                                style = Typography.bodyLarge
-                            )
-                        }
+                    Column {
+                        Text(
+                            text = "타이머",
+                            style = Typography.bodyMedium
+                        )
+
+                        Text(
+                            text = "정해진 시간만큼 기록하기",
+                            style = Typography.labelSmall
+                        )
                     }
 
-                    TextButton(
+                    Spacer(
                         modifier = Modifier
-                            .weight(1f),
-                        shape = RectangleShape,
-                        onClick = {
+                            .weight(1f)
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "타이머로 전환",
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+
+                // 새로운 WiD
+                Row(
+                    modifier = Modifier
+                        .clickable {
                             navController.navigate(Destinations.NewWiDFragmentDestination.route)
                             mainTopBottomBarVisible.value = false
                         }
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_add_box_24),
-                                contentDescription = "새로운 WiD",
-                                tint = Color.Black
-                            )
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_add_box_24),
+                        contentDescription = "새로운 WiD",
+                        tint = Color.Black
+                    )
 
-                            Text(
-                                text = "새로운 WiD",
-                                style = Typography.bodyLarge
-                            )
-                        }
+                    Column(
+
+                    ) {
+                        Text(
+                            text = "새로운 WiD",
+                            style = Typography.bodyMedium
+                        )
+
+                        Text(
+                            text = "날짜, 제목, 시작 및 종료 시간을 직접 기록하기",
+                            style = Typography.labelSmall
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "새로운 WiD로 전환",
+                    )
+                }
+            }
+        }
+
+        /**
+         * 선택 가능한 제목
+         */
+        item {
+            Column(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(vertical = 16.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                    text = "선택 가능한 제목",
+                    style = Typography.titleMedium
+                )
+
+                for ((index, title) in titles.withIndex()) {
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            titleMap[title] ?: title,
+                            style = Typography.bodyMedium
+                        )
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+
+                        Text(
+                            text = titleExampleMap[title] ?: "",
+                            style = Typography.labelSmall
+                        )
+                    }
+
+                    if (index < titles.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                 }
             }

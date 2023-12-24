@@ -77,7 +77,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(Color.White)
     ) {
         /**
          * 상단 바
@@ -124,7 +124,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
 
                 Text(
                     text = "완료",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                     color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
                         colorResource(id = R.color.lime_green)
                     else

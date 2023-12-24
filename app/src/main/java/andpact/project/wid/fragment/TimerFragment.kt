@@ -215,13 +215,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         }
     }
 
-    /**
-     * 전체 화면
-     */
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(Color.White)
             .clickable(enabled = timerStarted) {
                 timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
@@ -236,7 +233,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            // 상단 바
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
