@@ -476,6 +476,8 @@ fun PeriodBasedFragment() {
                                             startDate = getFirstDayOfMonth(today)
                                             finishDate = getLastDayOfMonth(today)
                                         }
+
+                                        selectedMapText = "합계"
                                     },
                                     label = {
                                         Text(

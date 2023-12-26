@@ -244,17 +244,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .fillMaxWidth()
                             .clickable {
                                 expandDatePicker = !expandDatePicker
-                                //                            if (expandDatePicker) {
-                                //                                coroutineScope.launch {
-                                //                                    lazyColumnState.animateScrollToItem(0)
-                                //                                }
-                                //                            }
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                             contentDescription = "날짜"
                         )
@@ -323,16 +320,6 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         isNewStartOverlap()
                                         isNewFinishOverlap()
                                         isNewWiDOverlap()
-
-                                        // wiDList가 비어 있으면, 시간이 겹칠 가능성이 없음.
-    //                                    if (wiDList.isEmpty()) {
-    //                                        isStartOverlap = false
-    //                                        isFinishOverlap = false
-    //                                    } else {
-    //                                        isNewStartOverlap()
-    //                                        isNewFinishOverlap()
-    //                                        isNewWiDOverlap()
-    //                                    }
                                     }
                                 ) {
                                     Text(
@@ -356,17 +343,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .fillMaxWidth()
                             .clickable {
                                 titleMenuExpanded = !titleMenuExpanded
-                                //                            if (titleMenuExpanded) {
-                                //                                coroutineScope.launch {
-                                //                                    lazyColumnState.animateScrollToItem(1) // index 1이 화면에서 사라진 지점에 정확히 스크롤됨.
-                                //                                }
-                                //                            }
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_title_24),
                             contentDescription = "제목",
                             tint = colorResource(
@@ -446,17 +430,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .fillMaxWidth()
                             .clickable {
                                 expandStartPicker = !expandStartPicker
-                                //                            if (expandStartPicker) {
-                                //                                coroutineScope.launch {
-                                //                                    lazyColumnState.animateScrollToItem(3)
-                                //                                }
-                                //                            }
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_24),
                             contentDescription = "시작 시간"
                         )
@@ -540,17 +521,14 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                             .fillMaxWidth()
                             .clickable {
                                 expandFinishPicker = !expandFinishPicker
-                                //                            if (expandFinishPicker) {
-                                //                                coroutineScope.launch {
-                                //                                    lazyColumnState.animateScrollToItem(5)
-                                //                                }
-                                //                            }
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_on_24),
                             contentDescription = "종료 시간"
                         )
@@ -637,6 +615,8 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                             contentDescription = "소요 시간"
                         )
@@ -712,13 +692,12 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         isNewFinishOverlap()
                                         isNewWiDOverlap()
                                     }
-                                    .padding(16.dp)
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = colorResource(id = R.color.light_gray))
-                                        .padding(8.dp),
+                                        .fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -728,14 +707,13 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     ) {
                                         Box(
                                             modifier = Modifier
-//                                                .clip(CircleShape)
                                                 .size(5.dp, 10.dp)
                                                 .background(Color.Black)
                                         )
 
                                         Text(
                                             text = "제목 없음",
-                                            style = Typography.titleSmall
+                                            style = Typography.bodyMedium
                                         )
                                     }
 
@@ -750,8 +728,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
 
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
+                                        .fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -759,13 +736,11 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         Text(
                                             text = formatTime(emptyWiD.start, "a hh:mm:ss"),
                                             style = Typography.bodyMedium,
-//                                                fontFamily = FontFamily.Monospace
                                         )
 
                                         Text(
                                             text = formatTime(emptyWiD.finish, "a hh:mm:ss"),
                                             style = Typography.bodyMedium,
-//                                                fontFamily = FontFamily.Monospace
                                         )
                                     }
 

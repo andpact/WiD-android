@@ -128,7 +128,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         ) {
             if (diaryList.isEmpty()) {
                 item {
-                    createNoBackgroundEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
+                    createEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
                 }
             } else {
                 itemsIndexed(diaryList) { index: Int, diary: Diary ->

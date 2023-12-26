@@ -2,6 +2,7 @@ package andpact.project.wid.activity
 
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.WiDTheme
+import andpact.project.wid.ui.theme.acmeRegular
 import andpact.project.wid.util.AppOpenAdUtil
 import android.annotation.SuppressLint
 import android.content.Context
@@ -20,6 +21,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.Window
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -64,7 +67,6 @@ class SplashActivity : ComponentActivity() {
     @Composable
 //fun SplashScreen(isInternetConnected: Boolean) {
     fun SplashScreen() {
-
         LaunchedEffect(true) {
             delay(2000)
 
@@ -76,15 +78,21 @@ class SplashActivity : ComponentActivity() {
                 .fillMaxSize()
                 .background(color = Color.Black),
         ) {
-            Column(modifier = Modifier
-                .fillMaxSize(),
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "WiD",
-                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 70.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily(
-                        Font(R.font.acme_regular)))
+                    style = TextStyle(
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        fontSize = 70.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = acmeRegular
+                    )
                 )
             }
 

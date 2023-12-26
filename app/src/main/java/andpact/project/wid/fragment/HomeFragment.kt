@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.acmeRegular
 import andpact.project.wid.util.titleExampleMap
 import andpact.project.wid.util.titleMap
 import andpact.project.wid.util.titles
@@ -61,7 +62,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                 style = TextStyle(
                     fontSize = 70.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily(Font(R.font.acme_regular)),
+                    fontFamily = acmeRegular,
                     textAlign = TextAlign.Center
                 ),
             )
@@ -90,6 +91,8 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
+                        modifier = Modifier
+                            .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_alarm_24),
                         contentDescription = "스탑 워치",
                         tint = Color.Black
@@ -135,6 +138,8 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
+                        modifier = Modifier
+                            .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_timer_24),
                         contentDescription = "타이머",
                         tint = Color.Black
@@ -180,6 +185,8 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
+                        modifier = Modifier
+                            .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_add_box_24),
                         contentDescription = "새로운 WiD",
                         tint = Color.Black

@@ -3,9 +3,6 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pretendardBold
-import andpact.project.wid.ui.theme.pretendardExtraBold
-import andpact.project.wid.ui.theme.pretendardThin
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.getTotalDurationFromWiDList
@@ -24,9 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -162,8 +156,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
 //                    color = Color.Black.toArgb()
                     textSize = radius / 10
                     textAlign = Paint.Align.CENTER
-//                    typeface = ResourcesCompat.getFont(localContext, R.font.agbalumo_regular)
-                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_medium)
+                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
                 }
 
                 for (i in 0 until 24) {

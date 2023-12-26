@@ -282,13 +282,12 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
                                         mainTopBottomBarVisible.value = false
                                     }
-                                    .padding(16.dp)
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = colorResource(id = R.color.light_gray))
-                                        .padding(8.dp),
+                                        .fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -322,8 +321,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp),
+                                        .fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {

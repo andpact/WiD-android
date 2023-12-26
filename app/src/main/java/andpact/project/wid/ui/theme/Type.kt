@@ -3,48 +3,24 @@ package andpact.project.wid.ui.theme
 import andpact.project.wid.R
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.*
-import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
 
 val acmeRegular = FontFamily(
     Font(R.font.acme_regular)
 )
 
-val pretendardThin = FontFamily(
-    Font(R.font.pretendard_thin)
-)
-
-val pretendardExtraLight = FontFamily(
-    Font(R.font.pretendard_extra_light)
-)
-
-val pretendardLight = FontFamily(
-    Font(R.font.pretendard_light)
-)
-
 val pretendardRegular = FontFamily(
     Font(R.font.pretendard_regular)
-)
-
-val pretendardMedium = FontFamily(
-    Font(R.font.pretendard_medium)
 )
 
 val pretendardSemiBold = FontFamily(
     Font(R.font.pretendard_semi_bold)
 )
 
-val pretendardBold = FontFamily(
-    Font(R.font.pretendard_bold)
-)
-
 val pretendardExtraBold = FontFamily(
     Font(R.font.pretendard_extra_bold)
-)
-
-val pretendardBlack = FontFamily(
-    Font(R.font.pretendard_black)
 )
 
 val pyeongChangPeaceBold = FontFamily(
@@ -54,9 +30,9 @@ val pyeongChangPeaceBold = FontFamily(
 // Set of Material typography styles to start with
 //
 /*
-    Title - Bold
-    Body - Medium
-    Label - Light
+    Title - ExtraBold
+    Body - SemiBold
+    Label - Regular
 
     Large - 18.dp
     Medium - 16.dp
@@ -66,39 +42,39 @@ val pyeongChangPeaceBold = FontFamily(
  */
 val Typography = Typography(
     titleLarge = TextStyle(
-        fontFamily = pretendardBold,
+        fontFamily = pretendardExtraBold,
         fontSize = 18.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = pretendardBold,
+        fontFamily = pretendardExtraBold,
         fontSize = 16.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = pretendardBold,
+        fontFamily = pretendardExtraBold,
         fontSize = 14.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = pretendardMedium,
+        fontFamily = pretendardSemiBold,
         fontSize = 18.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = pretendardMedium,
+        fontFamily = pretendardSemiBold,
         fontSize = 16.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = pretendardMedium,
+        fontFamily = pretendardSemiBold,
         fontSize = 14.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = pretendardLight,
+        fontFamily = pretendardRegular,
         fontSize = 18.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = pretendardLight,
+        fontFamily = pretendardRegular,
         fontSize = 16.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = pretendardLight,
+        fontFamily = pretendardRegular,
         fontSize = 14.sp
     ),
 
