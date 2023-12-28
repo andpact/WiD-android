@@ -14,6 +14,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -21,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -68,7 +71,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     var currentTime by remember { mutableStateOf(0L) }
     
     // 화면
-    var buttonText by remember { mutableStateOf("시작") }
     var stopWatchTopBottomBarVisible by remember { mutableStateOf(true) }
 
     fun startStopWatch() {
@@ -80,8 +82,53 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         start = LocalTime.now()
 
         startTime = System.currentTimeMillis() - elapsedTime
+    }
 
-        buttonText = "중지"
+    fun restartStopWatch() {
+        val now = LocalTime.now()
+        finish = now
+
+        if (finish.isBefore(start)) {
+            val midnight = LocalTime.MIDNIGHT
+
+            val previousDate = date.minusDays(1)
+
+            val firstWiD = WiD(
+                id = 0,
+                date = previousDate,
+                title = title,
+                start = start,
+                finish = midnight.plusSeconds(-1),
+                duration = Duration.between(start, midnight.plusSeconds(-1)),
+            )
+            wiDService.createWiD(firstWiD)
+
+            val secondWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = midnight,
+                finish = finish,
+                duration = Duration.between(midnight, finish),
+            )
+            wiDService.createWiD(secondWiD)
+        } else {
+            val newWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = start,
+                finish = finish,
+                duration = Duration.between(start, finish),
+            )
+            wiDService.createWiD(newWiD)
+        }
+
+        date = LocalDate.now()
+        start = now
+
+        elapsedTime = 0
+        startTime = System.currentTimeMillis() - elapsedTime
     }
 
     fun pauseStopWatch() {
@@ -89,9 +136,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         stopWatchPaused = true
 
         finish = LocalTime.now()
-//        finish = LocalTime.now().plusHours(10).plusMinutes(33).plusSeconds(33)
-
-        buttonText = "계속"
 
         if (finish.isBefore(start)) {
             val midnight = LocalTime.MIDNIGHT
@@ -135,8 +179,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
         stopWatchReset = true
 
         elapsedTime = 0
-
-        buttonText = "시작"
     }
 
     LaunchedEffect(stopWatchStarted) {
@@ -232,64 +274,85 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     enter = expandVertically{ 0 },
                     exit = shrinkVertically{ 0 },
                 ) {
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        columns = GridCells.Fixed(5),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        titles.forEach { chipTitle ->
-                            item {
-                                FilterChip(
-                                    selected = title == chipTitle,
-                                    onClick = {
-                                        title = chipTitle
-                                        titleMenuExpanded = false
-                                    },
-                                    label = {
-                                        Text(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            text = titleMap[chipTitle] ?: chipTitle,
-                                            style = Typography.bodySmall,
-                                            textAlign = TextAlign.Center
+                    Column { // 더미 컬럼
+                        Text(text = if (stopWatchReset) "사용할 제목을 선택하세요." else "선택한 제목이 이어서 사용됩니다.")
+
+                        LazyVerticalGrid(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            columns = GridCells.Fixed(5),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            titles.forEach { chipTitle ->
+                                item {
+                                    FilterChip(
+                                        selected = title == chipTitle,
+                                        onClick = {
+                                            if (stopWatchStarted && title != chipTitle) {
+                                                restartStopWatch()
+                                            }
+
+                                            title = chipTitle
+                                            titleMenuExpanded = false
+                                        },
+                                        label = {
+                                            Text(
+                                                modifier = Modifier
+                                                    .fillMaxWidth(),
+                                                text = titleMap[chipTitle] ?: chipTitle,
+                                                style = Typography.bodySmall,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = colorResource(id = R.color.light_gray),
+                                            labelColor = Color.Black,
+                                            selectedContainerColor = Color.Black,
+                                            selectedLabelColor = Color.White
                                         )
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = colorResource(id = R.color.light_gray),
-                                        labelColor = Color.Black,
-                                        selectedContainerColor = Color.Black,
-                                        selectedLabelColor = Color.White
                                     )
-                                )
+                                }
                             }
                         }
+
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                        )
                     }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .padding(horizontal = 16.dp),
+                        .padding(16.dp)
+                        .background(
+                            color = colorResource(id = R.color.light_gray),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
                         modifier = Modifier
-                            .clickable(stopWatchReset) {
+                            .clickable(stopWatchReset || stopWatchStarted) {
                                 titleMenuExpanded = !titleMenuExpanded
-                            },
+                            }
+                            .padding(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_title_16),
-                            contentDescription = "제목 선택",
-                            tint = colorResource(
-                                id = colorMap[title] ?: R.color.black
-                            )
+                        Box(
+                            modifier = Modifier
+                                .size(5.dp, 10.dp)
+                                .background(
+                                    color = colorResource(
+                                        id = colorMap[title]
+                                            ?: R.color.light_gray
+                                    )
+                                )
                         )
 
                         Text(
@@ -297,45 +360,39 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             style = Typography.bodyMedium
                         )
 
-                        if (stopWatchReset) {
+                        if (!stopWatchPaused) {
                             Icon(
-                                imageVector = if (titleMenuExpanded) {
-                                    Icons.Default.KeyboardArrowUp
-                                } else {
-                                    Icons.Default.KeyboardArrowDown
-                                },
+                                painter = painterResource(id = R.drawable.baseline_unfold_more_16),
                                 contentDescription = "제목 메뉴 펼치기",
                             )
                         }
                     }
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (stopWatchPaused) {
-                            Row(
+                            Box(
                                 modifier = Modifier
                                     .clickable {
                                         resetStopWatch()
-                                    },
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    }
+                                    .background(
+                                        color = colorResource(id = R.color.deep_sky_blue),
+                                        shape = CircleShape
+                                    )
+                                    .padding(16.dp)
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.baseline_refresh_16),
+                                    painter = painterResource(id = R.drawable.baseline_refresh_24),
                                     contentDescription = "스탑워치 초기화",
-                                    tint = Color.Black
-                                )
-
-                                Text(
-                                    text = "초기화",
-                                    style = Typography.bodyMedium
+                                    tint = Color.White
                                 )
                             }
                         }
 
-                        Row(
+                        Box(
                             modifier = Modifier
                                 .clickable {
                                     if (stopWatchStarted) {
@@ -344,34 +401,23 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         startStopWatch()
                                         titleMenuExpanded = false
                                     }
-                                },
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                }
+                                .background(
+                                    color = colorResource(id = if (stopWatchReset) R.color.deep_sky_blue else if (stopWatchPaused) R.color.lime_green else R.color.orange_red),
+                                    shape = CircleShape
+                                )
+                                .padding(16.dp)
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (buttonText == "중지") {
-                                        R.drawable.baseline_pause_16
+                                    id = if (stopWatchStarted) {
+                                        R.drawable.baseline_pause_24
                                     } else {
-                                        R.drawable.baseline_play_arrow_16
+                                        R.drawable.baseline_play_arrow_24
                                     }
                                 ),
                                 contentDescription = "Start & pause stopwatch",
-                                tint = when (buttonText) {
-                                    "중지" -> colorResource(id = R.color.orange_red)
-                                    "계속" -> colorResource(id = R.color.lime_green)
-                                    else -> colorResource(id = R.color.deep_sky_blue)
-                                }
-                            )
-
-                            Text(
-                                text = buttonText,
-                                color = when (buttonText) {
-                                    "중지" -> colorResource(id = R.color.orange_red)
-                                    "계속" -> colorResource(id = R.color.lime_green)
-                                    else -> colorResource(id = R.color.deep_sky_blue)
-                                },
-                                style = Typography.bodyMedium
+                                tint = Color.White
                             )
                         }
                     }
