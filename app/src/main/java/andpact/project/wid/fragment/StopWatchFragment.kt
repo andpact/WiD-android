@@ -23,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -268,19 +269,33 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(16.dp) // 바깥 패딩
+                    .background(
+                        color = colorResource(id = R.color.light_gray),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(vertical = 16.dp), // 안쪽 패딩
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 AnimatedVisibility(
                     visible = titleMenuExpanded,
                     enter = expandVertically{ 0 },
                     exit = shrinkVertically{ 0 },
                 ) {
-                    Column { // 더미 컬럼
-                        Text(text = if (stopWatchReset) "사용할 제목을 선택하세요." else "선택한 제목이 이어서 사용됩니다.")
+                    Column( // 더미
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = if (stopWatchReset) "사용할 제목을 선택하세요." else "선택한 제목이 이어서 사용됩니다.",
+                            style = Typography.bodyMedium
+                        )
 
                         LazyVerticalGrid(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .fillMaxWidth(),
                             columns = GridCells.Fixed(5),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
@@ -306,7 +321,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = colorResource(id = R.color.light_gray),
+                                            containerColor = Color.White,
                                             labelColor = Color.Black,
                                             selectedContainerColor = Color.Black,
                                             selectedLabelColor = Color.White
@@ -316,22 +331,14 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             }
                         }
 
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                        )
+                        HorizontalDivider()
                     }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .background(
-                            color = colorResource(id = R.color.light_gray),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(8.dp),
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -339,14 +346,13 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         modifier = Modifier
                             .clickable(stopWatchReset || stopWatchStarted) {
                                 titleMenuExpanded = !titleMenuExpanded
-                            }
-                            .padding(8.dp),
+                            },
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(5.dp, 10.dp)
+                                .size(5.dp, 15.dp)
                                 .background(
                                     color = colorResource(
                                         id = colorMap[title]
@@ -357,7 +363,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                         Text(
                             text = titleMap[title] ?: "공부",
-                            style = Typography.bodyMedium
+                            style = Typography.bodyLarge
                         )
 
                         if (!stopWatchPaused) {
@@ -375,13 +381,11 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         if (stopWatchPaused) {
                             Box(
                                 modifier = Modifier
+                                    .clip(CircleShape)
                                     .clickable {
                                         resetStopWatch()
                                     }
-                                    .background(
-                                        color = colorResource(id = R.color.deep_sky_blue),
-                                        shape = CircleShape
-                                    )
+                                    .background(color = colorResource(id = R.color.deep_sky_blue))
                                     .padding(16.dp)
                             ) {
                                 Icon(
@@ -394,6 +398,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                         Box(
                             modifier = Modifier
+                                .clip(CircleShape) // 박스를 원형 모양으로 잘라서 모양 및 클릭 범위를 원형으로 만듬.
                                 .clickable {
                                     if (stopWatchStarted) {
                                         pauseStopWatch()
@@ -403,8 +408,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     }
                                 }
                                 .background(
-                                    color = colorResource(id = if (stopWatchReset) R.color.deep_sky_blue else if (stopWatchPaused) R.color.lime_green else R.color.orange_red),
-                                    shape = CircleShape
+                                    color = colorResource(
+                                        id = if (stopWatchReset) R.color.deep_sky_blue
+                                        else if (stopWatchPaused) R.color.lime_green
+                                        else R.color.orange_red)
                                 )
                                 .padding(16.dp)
                         ) {
@@ -416,7 +423,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         R.drawable.baseline_play_arrow_24
                                     }
                                 ),
-                                contentDescription = "Start & pause stopwatch",
+                                contentDescription = "스톱 워치 시작 및 중지",
                                 tint = Color.White
                             )
                         }

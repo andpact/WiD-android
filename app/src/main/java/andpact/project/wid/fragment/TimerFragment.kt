@@ -78,7 +78,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     var finishTime by remember { mutableStateOf(0L) }
     var currentTime by remember { mutableStateOf(0L) }
     var remainingTime by remember { mutableStateOf(0L) }
-    var buttonText by remember { mutableStateOf("시작") }
     val itemHeight = 30.dp
     val pickerHeight = itemHeight * 3 + (16.dp * 2) // 아이템 사이의 여백 16을 두 번 추가해줌.
     var timerTopBottomBarVisible by remember { mutableStateOf(true) }
@@ -113,18 +112,14 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         date = LocalDate.now()
         start = LocalTime.now()
 
-        buttonText = "중지"
-
         finishTime = System.currentTimeMillis() + remainingTime
     }
 
-    fun finishTimer() {
+    fun pauseTimer() {
         timerStarted = false
         timerPaused = true
 
         finish = LocalTime.now()
-
-        buttonText = "계속"
 
         if (finish.isBefore(start)) {
             val midnight = LocalTime.MIDNIGHT
@@ -181,8 +176,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
         }
         remainingTime = 0
-
-        buttonText = "시작"
     }
 
     LaunchedEffect(timerStarted) {
@@ -199,7 +192,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                 delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
                 remainingTime = finishTime - currentTime
             } else { // 시간이 0초가 되면 종료
-                finishTimer()
+                pauseTimer()
                 resetTimer()
             }
         }
@@ -211,7 +204,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
         mainTopBottomBarVisible.value = true
 
         if (timerStarted) {
-            finishTimer()
+            pauseTimer()
         }
     }
 
@@ -520,52 +513,71 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(
+                        color = colorResource(id = R.color.light_gray),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 AnimatedVisibility(
                     visible = titleMenuExpanded,
                     enter = expandVertically { 0 },
                     exit = shrinkVertically { 0 },
                 ) {
-                    LazyVerticalGrid(
+                    Column( // 더미
                         modifier = Modifier
-                            .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        columns = GridCells.Fixed(5),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        titles.forEach { chipTitle ->
-                            item {
-                                FilterChip(
-                                    selected = title == chipTitle,
-                                    onClick = {
-                                        title = chipTitle
-                                        titleMenuExpanded = false
-                                    },
-                                    label = {
-                                        Text(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            text = titleMap[chipTitle] ?: chipTitle,
-                                            style = Typography.bodySmall,
-                                            textAlign = TextAlign.Center
+                        Text(
+                            text = "사용할 제목을 선택하세요.",
+                            style = Typography.bodyMedium
+                        )
+
+                        LazyVerticalGrid(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            columns = GridCells.Fixed(5),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            titles.forEach { chipTitle ->
+                                item {
+                                    FilterChip(
+                                        selected = title == chipTitle,
+                                        onClick = {
+                                            title = chipTitle
+                                            titleMenuExpanded = false
+                                        },
+                                        label = {
+                                            Text(
+                                                modifier = Modifier
+                                                    .fillMaxWidth(),
+                                                text = titleMap[chipTitle] ?: chipTitle,
+                                                style = Typography.bodySmall,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            containerColor = Color.White,
+                                            labelColor = Color.Black,
+                                            selectedContainerColor = Color.Black,
+                                            selectedLabelColor = Color.White
                                         )
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = colorResource(id = R.color.light_gray),
-                                        labelColor = Color.Black,
-                                        selectedContainerColor = Color.Black,
-                                        selectedLabelColor = Color.White
                                     )
-                                )
+                                }
                             }
                         }
+
+                        HorizontalDivider()
                     }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -578,113 +590,81 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_title_16),
-                            contentDescription = "제목 선택",
-                            tint = colorResource(
-                                id = colorMap[title] ?: R.color.black
-                            )
+                        Box(
+                            modifier = Modifier
+                                .size(5.dp, 15.dp)
+                                .background(
+                                    color = colorResource(
+                                        id = colorMap[title]
+                                            ?: R.color.light_gray
+                                    )
+                                )
                         )
-
-//                        Box(
-//                            modifier = Modifier
-//                                .clip(CircleShape)
-//                                .size(10.dp)
-//                                .background(
-//                                    color = colorResource(
-//                                        id = colorMap[title] ?: R.color.light_gray
-//                                    )
-//                                )
-//                        )
 
                         Text(
                             text = titleMap[title] ?: "공부",
-                            style = Typography.bodyMedium
+                            style = Typography.bodyLarge
                         )
 
                         if (timerReset) {
                             Icon(
-                                imageVector = if (titleMenuExpanded) {
-                                    Icons.Default.KeyboardArrowUp
-                                } else {
-                                    Icons.Default.KeyboardArrowDown
-                                },
-                                contentDescription = "제목 메뉴 펼치기"
+                                painter = painterResource(id = R.drawable.baseline_unfold_more_16),
+                                contentDescription = "제목 메뉴 펼치기",
                             )
                         }
                     }
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (timerPaused) {
-                            Row(
+                            Box(
                                 modifier = Modifier
+                                    .clip(CircleShape)
                                     .clickable {
                                         resetTimer()
-                                    },
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    }
+                                    .background(color = colorResource(id = R.color.deep_sky_blue))
+                                    .padding(16.dp)
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.baseline_refresh_16),
+                                    painter = painterResource(id = R.drawable.baseline_refresh_24),
                                     contentDescription = "타이머 초기화",
-                                    tint = Color.Black
-                                )
-
-                                Text(
-                                    text = "초기화",
-                                    style = Typography.bodyMedium
+                                    tint = Color.White
                                 )
                             }
                         }
 
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .clickable(enabled = remainingTime != 0L) {
+                                .clip(CircleShape)
+                                .clickable {
                                     if (timerStarted) {
-                                        finishTimer()
+                                        pauseTimer()
                                     } else {
                                         startTimer()
                                         titleMenuExpanded = false
                                     }
-                                },
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                }
+                                .background(
+                                    color = colorResource(
+                                        id = if (timerReset) R.color.deep_sky_blue
+                                        else if (timerPaused) R.color.lime_green
+                                        else R.color.orange_red)
+                                )
+                                .padding(16.dp)
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (buttonText == "중지") {
-                                        R.drawable.baseline_pause_16
+                                    id = if (timerStarted) {
+                                        R.drawable.baseline_pause_24
                                     } else {
-                                        R.drawable.baseline_play_arrow_16
+                                        R.drawable.baseline_play_arrow_24
                                     }
                                 ),
-                                contentDescription = "Start & pause timer",
-                                tint = if (remainingTime == 0L) {
-                                    Color.LightGray
-                                } else if (buttonText == "중지") {
-                                    colorResource(id = R.color.orange_red)
-                                } else if (buttonText == "계속") {
-                                    colorResource(id = R.color.lime_green)
-                                } else {
-                                    colorResource(id = R.color.deep_sky_blue)
-                                }
-                            )
-
-                            Text(
-                                text = buttonText,
-                                color = if (remainingTime == 0L) {
-                                    Color.LightGray
-                                } else if (buttonText == "중지") {
-                                    colorResource(id = R.color.orange_red)
-                                } else if (buttonText == "계속") {
-                                    colorResource(id = R.color.lime_green)
-                                } else {
-                                    colorResource(id = R.color.deep_sky_blue)
-                                },
-                                style = Typography.bodyMedium
+                                contentDescription = "타이머 시작 및 중지",
+                                tint = Color.White
                             )
                         }
                     }

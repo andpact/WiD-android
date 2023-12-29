@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -84,7 +85,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 //    val screenHeight = configuration.screenHeightDp.dp
 //    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
@@ -95,8 +96,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
-                .weight(1f),
+                .background(colorResource(id = R.color.ghost_white)),
+//                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item("다이어리") {
@@ -357,17 +358,27 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     }
                 }
             }
-        }
 
-        HorizontalDivider()
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(80.dp)
+                )
+            }
+        }
 
         /**
          * 하단 바
          */
         Column(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
                 .fillMaxWidth()
-                .background(Color.White)
+                .clip(RoundedCornerShape(8.dp))
+                .background(colorResource(id = R.color.ghost_white))
+                .padding(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             AnimatedVisibility(
                 visible = expandDatePicker,
@@ -375,18 +386,13 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 exit = shrinkVertically{ 0 },
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.Center,
+//                    modifier = Modifier
+//                        .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        text = "날짜 선택",
-                        style = Typography.titleMedium,
-                        textAlign = TextAlign.Start
+                        text = "조회할 날짜를 선택해 주세요.",
+                        style = Typography.bodyMedium
                     )
 
                     DatePicker(
@@ -428,18 +434,23 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             )
                         }
                     }
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                    )
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
                     .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IconButton(
+                IconButton( // 아이콘 버튼은 기본 설정된 패딩이 없다!!!
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colorResource(id = R.color.deep_sky_blue)),
                     onClick = {
                         expandDatePicker = !expandDatePicker
                     }
@@ -447,28 +458,19 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "날짜 선택",
+                        tint = Color.White,
                     )
                 }
 
-                IconButton(
-                    onClick = {
-                        if (expandDatePicker) {
-                            expandDatePicker = false
-                        }
-                        navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
-
-                        mainTopBottomBarVisible.value = false
-                    },
-                    enabled = false
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = "다이어리 수정",
-                        tint = Color.Transparent
-                    )
-                }
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(if (currentDate != today) Color.Black else Color.Gray),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -482,11 +484,15 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Today"
+                        contentDescription = "오늘 날짜",
+                        tint = Color.White,
                     )
                 }
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color.Black),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -499,11 +505,15 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "Previous day"
+                        contentDescription = "이전 날짜",
+                        tint = Color.White,
                     )
                 }
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(if (currentDate != today) Color.Black else Color.Gray),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -517,7 +527,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "Next day"
+                        contentDescription = "다음 날짜",
+                        tint = Color.White,
                     )
                 }
             }

@@ -1,38 +1,27 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.R
-import andpact.project.wid.ui.theme.WiDTheme
+import andpact.project.wid.ui.theme.SplashTheme
 import andpact.project.wid.ui.theme.acmeRegular
-import andpact.project.wid.util.AppOpenAdUtil
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key.Companion.Window
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-
-private const val LOG_TAG = "SplashActivity"
 
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,7 +47,6 @@ class SplashActivity : ComponentActivity() {
 //    }
 
     private fun startMainActivity() {
-        Log.d("SplashActivity", "Start MainActivity")
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
@@ -73,42 +61,44 @@ class SplashActivity : ComponentActivity() {
             startMainActivity()
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = Color.Black),
-        ) {
-            Column(
+        SplashTheme() {
+            Box(
                 modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
+                    .background(color = Color.Black),
             ) {
-                Text(
-                    text = "WiD",
-                    style = TextStyle(
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        fontSize = 70.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = acmeRegular
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "WiD",
+                        style = TextStyle(
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            fontSize = 70.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = acmeRegular
+                        )
                     )
-                )
-            }
+                }
 
-//        if (!isInternetConnected) {
-//            Column(modifier = Modifier
-//                .fillMaxSize()
-//                .padding(0.dp, 100.dp, 0.dp, 0.dp),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                Text(
-//                    text = "인터넷 연결을 확인하세요.",
-//                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
-//                )
-//            }
-//        }
+    //        if (!isInternetConnected) {
+    //            Column(modifier = Modifier
+    //                .fillMaxSize()
+    //                .padding(0.dp, 100.dp, 0.dp, 0.dp),
+    //                verticalArrangement = Arrangement.Center,
+    //                horizontalAlignment = Alignment.CenterHorizontally
+    //            ) {
+    //                Text(
+    //                    text = "인터넷 연결을 확인하세요.",
+    //                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
+    //                )
+    //            }
+    //        }
+            }
         }
     }
 

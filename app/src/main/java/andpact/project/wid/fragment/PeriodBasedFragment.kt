@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -23,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -77,7 +79,7 @@ fun PeriodBasedFragment() {
 //        periodBottomSheetState.hide()
 //    }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
@@ -88,8 +90,7 @@ fun PeriodBasedFragment() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
-                .weight(1f),
+                .background(colorResource(id = R.color.ghost_white)),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (selectedTitle == titlesWithAll[0]) {
@@ -427,17 +428,27 @@ fun PeriodBasedFragment() {
                     }
                 }
             }
-        }
 
-        HorizontalDivider()
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(80.dp)
+                )
+            }
+        }
 
         /**
          * 하단 바
          */
         Column(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
                 .fillMaxWidth()
-                .background(Color.White)
+                .clip(RoundedCornerShape(8.dp))
+                .background(colorResource(id = R.color.ghost_white))
+                .padding(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 기간 선택
             AnimatedVisibility(
@@ -448,11 +459,12 @@ fun PeriodBasedFragment() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "기간 선택",
-                        style = Typography.titleMedium
+                        text = "조회할 기간을 선택해 주세요.",
+                        style = Typography.bodyMedium
                     )
 
                     LazyVerticalGrid(
@@ -498,6 +510,8 @@ fun PeriodBasedFragment() {
                             }
                         }
                     }
+
+                    HorizontalDivider()
                 }
             }
 
@@ -510,11 +524,12 @@ fun PeriodBasedFragment() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "제목 선택",
-                        style = Typography.titleMedium
+                        text = "조회할 제목를 선택해 주세요.",
+                        style = Typography.bodyMedium
                     )
 
                     FilterChip(
@@ -575,18 +590,20 @@ fun PeriodBasedFragment() {
                             }
                         }
                     }
+
+                    HorizontalDivider()
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 IconButton(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colorResource(id = R.color.deep_sky_blue)),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -598,10 +615,16 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "기간 선택",
+                        tint = Color.White,
                     )
                 }
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(colorResource(
+                            id = colorMap[selectedTitle] ?: R.color.black
+                        )),
                     onClick = {
                         if (periodMenuExpanded) {
                             periodMenuExpanded = false
@@ -613,13 +636,27 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_title_24),
                         contentDescription = "제목 선택",
-                        tint = colorResource(
-                            id = colorMap[selectedTitle] ?: R.color.black
-                        )
+                        tint = Color.White
                     )
                 }
 
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(
+                            color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                                selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                            ) {
+                                colorResource(id = R.color.black)
+                            } else {
+                                colorResource(id = R.color.gray)
+                            }
+                        ),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -650,11 +687,15 @@ fun PeriodBasedFragment() {
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
-                        contentDescription = "기간 초기화"
+                        contentDescription = "기간 초기화",
+                        tint = Color.White
                     )
                 }
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color.Black),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -680,11 +721,23 @@ fun PeriodBasedFragment() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "이전 기간"
+                        contentDescription = "이전 기간",
+                        tint = Color.White
                     )
                 }
 
                 IconButton(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(
+                            color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                                selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                            ) {
+                                colorResource(id = R.color.black)
+                            } else {
+                                colorResource(id = R.color.gray)
+                            }
+                        ),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -715,7 +768,8 @@ fun PeriodBasedFragment() {
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "다음 기간"
+                        contentDescription = "다음 기간",
+                        tint = Color.White
                     )
                 }
             }

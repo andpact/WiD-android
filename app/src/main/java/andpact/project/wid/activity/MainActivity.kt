@@ -135,12 +135,12 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
 //    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
     val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.DateBasedFragmentDestination, Destinations.PeriodBasedFragmentDestination, Destinations.SearchFragmentDestination)
 
-//    AnimatedVisibility(
-//        visible = mainTopBottomBarVisible.value,
-//        enter = expandVertically{ 0 },
-//        exit = shrinkVertically{ 0 },
-//    ) {
-    if (mainTopBottomBarVisible.value) { // 애니메이션 없이 바텀 네비게이션 바를 없애서 하면 전환시 불필요한 애니메이션 없앰.
+    AnimatedVisibility(
+        visible = mainTopBottomBarVisible.value,
+        enter = expandVertically{ 0 },
+        exit = shrinkVertically{ 0 },
+    ) {
+//    if (mainTopBottomBarVisible.value) { // 애니메이션 없이 바텀 네비게이션 바를 없애서 하면 전환시 불필요한 애니메이션 없앰.
         Column {
             HorizontalDivider()
 
@@ -172,7 +172,7 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
                             selectedTextColor = Color.Black,
                             unselectedIconColor = Color.LightGray,
                             selectedIconColor = Color.Black,
-                            indicatorColor = colorResource(id = R.color.ghost_white)
+                            indicatorColor = Color.White
                         ),
                     )
                 }
@@ -197,16 +197,16 @@ fun WiDMainActivity() {
                     mainTopBottomBarVisible = mainTopBottomBarVisible,
                 )
             }) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingValues)
-            ) {
-                NavigationGraph(
-                    navController = navController,
-                    mainTopBottomBarVisible = mainTopBottomBarVisible
-                )
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                ) {
+                    NavigationGraph(
+                        navController = navController,
+                        mainTopBottomBarVisible = mainTopBottomBarVisible
+                    )
+                }
             }
-        }
     }
 }
 
