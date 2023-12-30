@@ -3,8 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pyeongChangPeaceBold
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -132,7 +131,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white))
+            .background(GhostWhite)
     ) {
         /**
          * 상단 바
@@ -140,7 +139,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(White)
                 .padding(horizontal = 16.dp)
                 .height(50.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -173,9 +172,9 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     painter = painterResource(R.drawable.baseline_done_16),
                     contentDescription = "Modify & complete WiD",
                     tint = if (!(!isTimeOverlap && durationExist)) {
-                        Color.LightGray
+                        LightGray
                     } else {
-                        colorResource(id = R.color.lime_green)
+                        LimeGreen
                     }
                 )
 
@@ -183,9 +182,9 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                     text = "완료",
                     style = Typography.bodyMedium,
                     color = if (!(!isTimeOverlap && durationExist)) {
-                        Color.LightGray
+                        LightGray
                     } else {
-                        colorResource(id = R.color.lime_green)
+                        LimeGreen
                     }
                 )
             }
@@ -197,7 +196,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
+                .background(GhostWhite)
                 .weight(1f),
             state = lazyColumnState,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -206,7 +205,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             item {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -265,9 +264,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_title_24),
                             contentDescription = "제목",
-                            tint = colorResource(
-                                id = colorMap[title] ?: R.color.black
-                            )
+                            tint = colorMap[title] ?: Black
                         )
 
                         Column {
@@ -321,10 +318,10 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = colorResource(id = R.color.light_gray),
-                                            labelColor = Color.Black,
-                                            selectedContainerColor = Color.Black,
-                                            selectedLabelColor = Color.White
+                                            containerColor = LightGray,
+                                            labelColor = Black,
+                                            selectedContainerColor = Black,
+                                            selectedLabelColor = White
                                         )
                                     )
                                 }
@@ -551,17 +548,17 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .border(
                                 width = 1.dp,
                                 color = if (isDeleteButtonPressed) {
-                                    Color.White
+                                    White
                                 } else {
-                                    colorResource(id = R.color.orange_red)
+                                    OrangeRed
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .background(
                                 color = if (isDeleteButtonPressed) {
-                                    colorResource(id = R.color.orange_red)
+                                    OrangeRed
                                 } else {
-                                    Color.White
+                                    White
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             ),
@@ -583,7 +580,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 Icon(
                                     painter = painterResource(R.drawable.outline_delete_16),
                                     contentDescription = "WiD 삭제",
-                                    tint = colorResource(id = R.color.orange_red)
+                                    tint = OrangeRed
                                 )
                             }
 
@@ -595,9 +592,9 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 },
                                 style = Typography.bodyMedium,
                                 color = if (isDeleteButtonPressed) {
-                                    Color.White
+                                    White
                                 } else {
-                                    colorResource(id = R.color.orange_red)
+                                    OrangeRed
                                 }
                             )
                         }
@@ -609,7 +606,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             item {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -642,12 +639,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 Box(
                                     modifier = Modifier
                                         .size(5.dp, 10.dp)
-                                        .background(
-                                            color = colorResource(
-                                                id = colorMap[title]
-                                                    ?: R.color.light_gray
-                                            )
-                                        )
+                                        .background(color = colorMap[title] ?: LightGray)
                                 )
 
                                 Text(
@@ -661,7 +653,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                     .rotate(90f),
                                 painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
                                 contentDescription = "이 시간 범위 사용하기",
-                                tint = colorResource(id = R.color.deep_sky_blue)
+                                tint = DeepSkyBlue
                             )
                         }
 

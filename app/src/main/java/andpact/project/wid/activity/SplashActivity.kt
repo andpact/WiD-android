@@ -1,6 +1,8 @@
 package andpact.project.wid.activity
 
+import andpact.project.wid.ui.theme.Black
 import andpact.project.wid.ui.theme.SplashTheme
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.ui.theme.acmeRegular
 import android.content.Intent
 import android.os.Bundle
@@ -16,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -65,7 +66,7 @@ class SplashActivity : ComponentActivity() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = Color.Black),
+                    .background(color = Black),
             ) {
                 Column(
                     modifier = Modifier
@@ -76,7 +77,7 @@ class SplashActivity : ComponentActivity() {
                     Text(
                         text = "WiD",
                         style = TextStyle(
-                            color = Color.White,
+                            color = White,
                             textAlign = TextAlign.Center,
                             fontSize = 70.sp,
                             fontWeight = FontWeight.Bold,
@@ -94,7 +95,7 @@ class SplashActivity : ComponentActivity() {
     //            ) {
     //                Text(
     //                    text = "인터넷 연결을 확인하세요.",
-    //                    style = TextStyle(color = Color.White, textAlign = TextAlign.Center, fontSize = 24.sp)
+    //                    style = TextStyle(color = White, textAlign = TextAlign.Center, fontSize = 24.sp)
     //                )
     //            }
     //        }

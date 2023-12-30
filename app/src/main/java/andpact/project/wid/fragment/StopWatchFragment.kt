@@ -216,7 +216,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
             .clickable(enabled = stopWatchStarted) {
                 stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
             }
@@ -271,7 +271,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     .fillMaxWidth()
                     .padding(16.dp) // 바깥 패딩
                     .background(
-                        color = colorResource(id = R.color.light_gray),
+                        color = LightGray,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(vertical = 16.dp), // 안쪽 패딩
@@ -321,10 +321,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = Color.White,
-                                            labelColor = Color.Black,
-                                            selectedContainerColor = Color.Black,
-                                            selectedLabelColor = Color.White
+                                            containerColor = White,
+                                            labelColor = Black,
+                                            selectedContainerColor = Black,
+                                            selectedLabelColor = White
                                         )
                                     )
                                 }
@@ -353,12 +353,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(
-                                    color = colorResource(
-                                        id = colorMap[title]
-                                            ?: R.color.light_gray
-                                    )
-                                )
+                                .background(color = colorMap[title] ?: LightGray)
                         )
 
                         Text(
@@ -385,13 +380,13 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     .clickable {
                                         resetStopWatch()
                                     }
-                                    .background(color = colorResource(id = R.color.deep_sky_blue))
+                                    .background(DeepSkyBlue)
                                     .padding(16.dp)
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_24),
                                     contentDescription = "스탑워치 초기화",
-                                    tint = Color.White
+                                    tint = White
                                 )
                             }
                         }
@@ -408,10 +403,9 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     }
                                 }
                                 .background(
-                                    color = colorResource(
-                                        id = if (stopWatchReset) R.color.deep_sky_blue
-                                        else if (stopWatchPaused) R.color.lime_green
-                                        else R.color.orange_red)
+                                    color = if (stopWatchReset) DeepSkyBlue
+                                    else if (stopWatchPaused) LimeGreen
+                                    else OrangeRed
                                 )
                                 .padding(16.dp)
                         ) {
@@ -424,7 +418,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     }
                                 ),
                                 contentDescription = "스톱 워치 시작 및 중지",
-                                tint = Color.White
+                                tint = White
                             )
                         }
                     }

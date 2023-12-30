@@ -4,7 +4,7 @@ import andpact.project.wid.R
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
@@ -77,7 +77,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
     ) {
         /**
          * 상단 바
@@ -117,18 +117,18 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                     painter = painterResource(R.drawable.baseline_done_16),
                     contentDescription = "WiD 수정 완료",
                     tint = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
-                        colorResource(id = R.color.lime_green)
+                        LimeGreen
                     else
-                        Color.LightGray
+                        LightGray
                 )
 
                 Text(
                     text = "완료",
                     style = Typography.bodyMedium,
                     color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
-                        colorResource(id = R.color.lime_green)
+                        LimeGreen
                     else
-                        Color.LightGray
+                        LightGray
                 )
             }
         }
@@ -186,8 +186,8 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                 ) },
             onValueChange = { diaryTitle = it } ,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Transparent,
+                unfocusedBorderColor = Transparent,
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(
@@ -216,8 +216,8 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                 ) },
             onValueChange = { diaryContent = it },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Transparent,
+                unfocusedBorderColor = Transparent,
             ),
         )
     }

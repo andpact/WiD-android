@@ -1,6 +1,6 @@
 package andpact.project.wid.util
 
-import andpact.project.wid.R
+import andpact.project.wid.ui.theme.*
 
 val titles = arrayOf(
     "STUDY", // 공부
@@ -79,19 +79,34 @@ val periodMap = mapOf(
     "MONTH" to "한 달",
 )
 
+//val colorMap = mapOf(
+//    "ALL" to Black,
+//    "STUDY" to R.color.study_color,
+//    "WORK" to R.color.work_color,
+//    "EXERCISE" to R.color.exercise_color,
+//    "HOBBY" to R.color.hobby_color,
+//    "PLAY" to R.color.play_color,
+//    "MEAL" to R.color.meal_color,
+//    "SHOWER" to R.color.shower_color,
+//    "TRAVEL" to R.color.travel_color,
+//    "SLEEP" to R.color.sleep_color,
+//    "ETC" to R.color.etc_color
+//)
+
 val colorMap = mapOf(
-    "ALL" to R.color.black,
-    "STUDY" to R.color.study_color,
-    "WORK" to R.color.work_color,
-    "EXERCISE" to R.color.exercise_color,
-    "HOBBY" to R.color.hobby_color,
-    "PLAY" to R.color.play_color,
-    "MEAL" to R.color.meal_color,
-    "SHOWER" to R.color.shower_color,
-    "TRAVEL" to R.color.travel_color,
-    "SLEEP" to R.color.sleep_color,
-    "ETC" to R.color.etc_color
+    "ALL" to Black,
+    "STUDY" to Study,
+    "WORK" to Work,
+    "EXERCISE" to Exercise,
+    "HOBBY" to Hobby,
+    "PLAY" to Play,
+    "MEAL" to Meal,
+    "SHOWER" to Shower,
+    "TRAVEL" to Travel,
+    "SLEEP" to Sleep,
+    "ETC" to Etc
 )
+
 
 val daysOfWeekFromSunday = listOf(
     "일",

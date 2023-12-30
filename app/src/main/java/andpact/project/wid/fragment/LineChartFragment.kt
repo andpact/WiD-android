@@ -2,10 +2,14 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.ui.theme.LightGray
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.getTotalDurationMapByDate
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.hardware.lights.Light
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
@@ -67,7 +71,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                 LineChart(context).apply {
                     // 데이터
                     val dataSet = LineDataSet(entryList, "단위 : 시간").apply {
-                        color = Color.Black.toArgb() // 선 색상
+                        color = Black.toArgb() // 선 색상
                         setDrawCircles(false) // 선 꼭지점 원 표시
                         setDrawValues(false) // 꼭지점 값 표시하기
                         lineWidth = 2f // 선 굵기
@@ -76,21 +80,22 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                         fillDrawable = GradientDrawable().apply { // 선 아래 공간 그라디언트, 색상
                             shape = GradientDrawable.RECTANGLE
                             gradientType = GradientDrawable.LINEAR_GRADIENT
-                            val startColorID = when (title) {
-                                "STUDY" -> R.color.study_color
-                                "WORK" -> R.color.work_color
-                                "EXERCISE" -> R.color.exercise_color
-                                "HOBBY" -> R.color.hobby_color
-                                "PLAY" -> R.color.play_color
-                                "MEAL" -> R.color.meal_color
-                                "SHOWER" -> R.color.shower_color
-                                "TRAVEL" -> R.color.travel_color
-                                "SLEEP" -> R.color.sleep_color
-                                "ETC" -> R.color.etc_color
-                                else -> R.color.light_gray
-                            }
-                            val startColor = ContextCompat.getColor(context, startColorID) // colorMap을 사용하니 색상 적용이 안되서 직접 리소스 아이디를 가져옴.
-                            val endColor = Color.White.toArgb()
+//                            val startColorID = when (title) {
+//                                "STUDY" -> R.color.study_color
+//                                "WORK" -> R.color.work_color
+//                                "EXERCISE" -> R.color.exercise_color
+//                                "HOBBY" -> R.color.hobby_color
+//                                "PLAY" -> R.color.play_color
+//                                "MEAL" -> R.color.meal_color
+//                                "SHOWER" -> R.color.shower_color
+//                                "TRAVEL" -> R.color.travel_color
+//                                "SLEEP" -> R.color.sleep_color
+//                                "ETC" -> R.color.etc_color
+//                                else -> R.color.light_gray
+//                            }
+//                            val startColor = ContextCompat.getColor(context, startColorID) // colorMap을 사용하니 색상 적용이 안되서 직접 리소스 아이디를 가져옴.
+                            val startColor = (colorMap[title] ?: LightGray).toArgb()
+                            val endColor = White.toArgb()
                             colors = intArrayOf(startColor, endColor)
                             orientation = GradientDrawable.Orientation.TOP_BOTTOM
                         }

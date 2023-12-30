@@ -3,8 +3,8 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pyeongChangPeaceBold
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -149,7 +149,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
     ) {
         /**
          * 상단 바
@@ -195,9 +195,9 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     painter = painterResource(id = R.drawable.baseline_add_16),
                     contentDescription = "새 WiD 등록",
                     tint = if (!isTimeOverlap && durationExist) {
-                        colorResource(id = R.color.deep_sky_blue)
+                        DeepSkyBlue
                     } else {
-                        Color.LightGray
+                        LightGray
                     }
                 )
 
@@ -205,9 +205,9 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     text = "등록",
                     style = Typography.bodyMedium,
                     color = if (!isTimeOverlap && durationExist) {
-                        colorResource(id = R.color.deep_sky_blue)
+                        DeepSkyBlue
                     } else {
-                        Color.LightGray
+                        LightGray
                     }
                 )
             }
@@ -219,7 +219,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white))
+                .background(GhostWhite)
                 .weight(1f),
             state = lazyColumnState,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -228,7 +228,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             item {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -304,7 +304,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "취소",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
 
@@ -325,7 +325,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "확인",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
                             }
@@ -353,9 +353,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                 .padding(start = 8.dp),
                             painter = painterResource(id = R.drawable.baseline_title_24),
                             contentDescription = "제목",
-                            tint = colorResource(
-                                id = colorMap[title] ?: R.color.black
-                            )
+                            tint = colorMap[title] ?: Black
                         )
 
                         Column {
@@ -408,10 +406,10 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = colorResource(id = R.color.light_gray),
-                                            labelColor = Color.Black,
-                                            selectedContainerColor = Color.Black,
-                                            selectedLabelColor = Color.White
+                                            containerColor = LightGray,
+                                            labelColor = Black,
+                                            selectedContainerColor = Black,
+                                            selectedLabelColor = White
                                         )
                                     )
                                 }
@@ -485,7 +483,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "취소",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
 
@@ -503,7 +501,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "확인",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
                             }
@@ -576,7 +574,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "취소",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
 
@@ -594,7 +592,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                     Text(
                                         text = "확인",
                                         style = Typography.bodyMedium,
-                                        color = Color.Black
+                                        color = Black
                                     )
                                 }
                             }
@@ -640,7 +638,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             item {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -667,7 +665,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
             item {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -708,7 +706,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                         Box(
                                             modifier = Modifier
                                                 .size(5.dp, 10.dp)
-                                                .background(Color.Black)
+                                                .background(Black)
                                         )
 
                                         Text(
@@ -722,7 +720,7 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                                             .rotate(90f),
                                         painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
                                         contentDescription = "이 시간대 사용하기",
-                                        tint = colorResource(id = R.color.deep_sky_blue)
+                                        tint = DeepSkyBlue
                                     )
                                 }
 

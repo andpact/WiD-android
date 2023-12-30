@@ -2,6 +2,9 @@ package andpact.project.wid.activity
 
 import andpact.project.wid.R
 import andpact.project.wid.fragment.*
+import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.ui.theme.LightGray
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.ui.theme.WiDTheme
 import android.app.PendingIntent.getActivity
 import android.content.Context
@@ -147,8 +150,7 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
             NavigationBar(
                 modifier = modifier
                     .height(50.dp),
-//                containerColor = colorResource(id = R.color.ghost_white),
-                containerColor = Color.White,
+                containerColor = White,
             ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -168,11 +170,11 @@ fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: Mutable
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            unselectedTextColor = Color.LightGray,
-                            selectedTextColor = Color.Black,
-                            unselectedIconColor = Color.LightGray,
-                            selectedIconColor = Color.Black,
-                            indicatorColor = Color.White
+                            unselectedTextColor = LightGray,
+                            selectedTextColor = Black,
+                            unselectedIconColor = LightGray,
+                            selectedIconColor = Black,
+                            indicatorColor = White
                         ),
                     )
                 }

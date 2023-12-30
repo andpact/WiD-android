@@ -2,8 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pyeongChangPeaceBold
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -82,7 +81,7 @@ fun PeriodBasedFragment() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
     ) {
         /**
          * 컨텐츠
@@ -90,14 +89,14 @@ fun PeriodBasedFragment() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white)),
+                .background(GhostWhite),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (selectedTitle == titlesWithAll[0]) {
                 item("타임라인") {
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp)
                     ) {
                         Text(
@@ -123,9 +122,9 @@ fun PeriodBasedFragment() {
 
                                 daysOfWeek.forEachIndexed { index, day ->
                                     val textColor = when (index) {
-                                        0 -> if (selectedPeriod == periods[1]) Color.Red else Color.Unspecified
-                                        5 -> if (selectedPeriod == periods[0]) Color.Blue else Color.Unspecified
-                                        6 -> if (selectedPeriod == periods[0]) Color.Red else if (selectedPeriod == periods[1]) Color.Blue else Color.Unspecified
+                                        0 -> if (selectedPeriod == periods[1]) OrangeRed else Color.Unspecified
+                                        5 -> if (selectedPeriod == periods[0]) DeepSkyBlue else Color.Unspecified
+                                        6 -> if (selectedPeriod == periods[0]) OrangeRed else if (selectedPeriod == periods[1]) DeepSkyBlue else Color.Unspecified
                                         else -> Color.Unspecified
                                     }
 
@@ -180,7 +179,7 @@ fun PeriodBasedFragment() {
                 item("합계, 평균, 최고") {
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp)
                     ) {
                         Row(
@@ -206,7 +205,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "합계",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "합계") Color.Black else Color.LightGray
+                                    color = if (selectedMapText == "합계") Black else LightGray
                                 )
 
                                 Text(
@@ -217,7 +216,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "평균",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "평균") Color.Black else Color.LightGray
+                                    color = if (selectedMapText == "평균") Black else LightGray
                                 )
 
                                 Text(
@@ -228,7 +227,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "최고",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "최고") Color.Black else Color.LightGray
+                                    color = if (selectedMapText == "최고") Black else LightGray
                                 )
                             }
                         }
@@ -275,7 +274,7 @@ fun PeriodBasedFragment() {
                 item("기록률") {
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp)
                     ) {
                         Text(
@@ -300,7 +299,7 @@ fun PeriodBasedFragment() {
                 item {
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp)
                     ) {
                         Text(
@@ -330,7 +329,7 @@ fun PeriodBasedFragment() {
                 item {
                     Column(
                         modifier = Modifier
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp),
                     ) {
                         Text(
@@ -446,7 +445,7 @@ fun PeriodBasedFragment() {
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(colorResource(id = R.color.ghost_white))
+                .background(GhostWhite)
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -501,10 +500,10 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = colorResource(id = R.color.light_gray),
-                                        labelColor = Color.Black,
-                                        selectedContainerColor = Color.Black,
-                                        selectedLabelColor = Color.White
+                                        containerColor = LightGray,
+                                        labelColor = Black,
+                                        selectedContainerColor = Black,
+                                        selectedLabelColor = White
                                     )
                                 )
                             }
@@ -550,10 +549,10 @@ fun PeriodBasedFragment() {
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = colorResource(id = R.color.light_gray),
-                            labelColor = Color.Black,
-                            selectedContainerColor = Color.Black,
-                            selectedLabelColor = Color.White
+                            containerColor = LightGray,
+                            labelColor = Black,
+                            selectedContainerColor = Black,
+                            selectedLabelColor = White
                         )
                     )
 
@@ -581,10 +580,10 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = colorResource(id = R.color.light_gray),
-                                        labelColor = Color.Black,
-                                        selectedContainerColor = Color.Black,
-                                        selectedLabelColor = Color.White
+                                        containerColor = LightGray,
+                                        labelColor = Black,
+                                        selectedContainerColor = Black,
+                                        selectedLabelColor = White
                                     )
                                 )
                             }
@@ -603,7 +602,7 @@ fun PeriodBasedFragment() {
                 IconButton(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorResource(id = R.color.deep_sky_blue)),
+                        .background(DeepSkyBlue),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -615,16 +614,14 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "기간 선택",
-                        tint = Color.White,
+                        tint = White,
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorResource(
-                            id = colorMap[selectedTitle] ?: R.color.black
-                        )),
+                        .background(colorMap[selectedTitle] ?: Black),
                     onClick = {
                         if (periodMenuExpanded) {
                             periodMenuExpanded = false
@@ -636,7 +633,7 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_title_24),
                         contentDescription = "제목 선택",
-                        tint = Color.White
+                        tint = White
                     )
                 }
 
@@ -652,9 +649,9 @@ fun PeriodBasedFragment() {
                             color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
                                 selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
                             ) {
-                                colorResource(id = R.color.black)
+                                Black
                             } else {
-                                colorResource(id = R.color.gray)
+                                Gray
                             }
                         ),
                     onClick = {
@@ -688,14 +685,14 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
                         contentDescription = "기간 초기화",
-                        tint = Color.White
+                        tint = White
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(Color.Black),
+                        .background(Black),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -722,7 +719,7 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "이전 기간",
-                        tint = Color.White
+                        tint = White
                     )
                 }
 
@@ -733,9 +730,9 @@ fun PeriodBasedFragment() {
                             color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
                                 selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
                             ) {
-                                colorResource(id = R.color.black)
+                                Black
                             } else {
-                                colorResource(id = R.color.gray)
+                                Gray
                             }
                         ),
                     onClick = {
@@ -769,7 +766,7 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "다음 기간",
-                        tint = Color.White
+                        tint = White
                     )
                 }
             }

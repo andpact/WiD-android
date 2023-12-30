@@ -5,7 +5,9 @@ import andpact.project.wid.activity.Destinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.GhostWhite
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,7 +64,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white)),
+            .background(GhostWhite),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         /**
@@ -80,7 +82,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White)
+                        .background(White)
                 ) {
                     Row(
                         modifier = Modifier
@@ -135,7 +137,7 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.White)
+                            .background(White)
                             .padding(vertical = 16.dp)
                     ) {
                         Row(

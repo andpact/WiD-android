@@ -2,24 +2,20 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
-import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.pyeongChangPeaceBold
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
@@ -28,11 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.TextAlign
@@ -88,7 +80,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
     ) {
         /**
          * 컨텐츠
@@ -96,7 +88,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.ghost_white)),
+                .background(GhostWhite),
 //                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -104,7 +96,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Row(
@@ -188,7 +180,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .background(
-                                color = colorResource(id = R.color.deep_sky_blue),
+                                color = DeepSkyBlue,
                                 shape = RoundedCornerShape(8.dp)
                             ),
                         onClick = {
@@ -200,7 +192,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         Text(
                             text = "다이어리 수정",
                             style = Typography.bodyMedium,
-                            color = Color.White
+                            color = White
                         )
                     }
                 }
@@ -210,7 +202,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 // 합계 기록
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -262,7 +254,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 // WiD 리스트
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(White)
                         .padding(vertical = 16.dp)
                 ) {
                     Text(
@@ -299,12 +291,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                         Box(
                                             modifier = Modifier
                                                 .size(5.dp, 10.dp)
-                                                .background(
-                                                    color = colorResource(
-                                                        id = colorMap[wiD.title]
-                                                            ?: R.color.light_gray
-                                                    )
-                                                )
+                                                .background(color = colorMap[wiD.title] ?: LightGray)
                                         )
 
                                         Text(
@@ -316,7 +303,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowRight,
                                         contentDescription = "이 WiD로 전환하기",
-                                        tint = colorResource(id = R.color.deep_sky_blue)
+                                        tint = DeepSkyBlue
                                     )
                                 }
 
@@ -376,7 +363,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(colorResource(id = R.color.ghost_white))
+                .background(GhostWhite)
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -414,7 +401,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             Text(
                                 text = "취소",
                                 style = Typography.bodyMedium,
-                                color = Color.Black
+                                color = Black
                             )
                         }
 
@@ -430,7 +417,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             Text(
                                 text = "확인",
                                 style = Typography.bodyMedium,
-                                color = Color.Black
+                                color = Black
                             )
                         }
                     }
@@ -450,7 +437,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 IconButton( // 아이콘 버튼은 기본 설정된 패딩이 없다!!!
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colorResource(id = R.color.deep_sky_blue)),
+                        .background(DeepSkyBlue),
                     onClick = {
                         expandDatePicker = !expandDatePicker
                     }
@@ -458,7 +445,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "날짜 선택",
-                        tint = Color.White,
+                        tint = White,
                     )
                 }
 
@@ -470,7 +457,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(if (currentDate != today) Color.Black else Color.Gray),
+                        .background(if (currentDate != today) Black else Gray),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -485,14 +472,14 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Filled.Refresh,
                         contentDescription = "오늘 날짜",
-                        tint = Color.White,
+                        tint = White,
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(Color.Black),
+                        .background(Black),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -506,14 +493,14 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "이전 날짜",
-                        tint = Color.White,
+                        tint = White,
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(if (currentDate != today) Color.Black else Color.Gray),
+                        .background(if (currentDate != today) Black else Gray),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -528,7 +515,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "다음 날짜",
-                        tint = Color.White,
+                        tint = White,
                     )
                 }
             }

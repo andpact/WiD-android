@@ -2,8 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.acmeRegular
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.titleExampleMap
 import andpact.project.wid.util.titleMap
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -24,9 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +37,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.ghost_white)),
+            .background(GhostWhite),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         /**
@@ -50,7 +46,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
         item {
             Text(
                 modifier = Modifier
-                    .background(Color.White)
+                    .background(White)
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
                 text = "WiD",
@@ -64,7 +60,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
 
             Column(
                 modifier = Modifier
-                    .background(Color.White)
+                    .background(White)
                     .padding(vertical = 16.dp)
             ) {
                 Text(
@@ -90,7 +86,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                             .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_alarm_24),
                         contentDescription = "스탑 워치",
-                        tint = Color.Black
+                        tint = Black
                     )
 
                     Column {
@@ -137,7 +133,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                             .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_timer_24),
                         contentDescription = "타이머",
-                        tint = Color.Black
+                        tint = Black
                     )
 
                     Column {
@@ -184,7 +180,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                             .padding(start = 8.dp),
                         painter = painterResource(id = R.drawable.outline_add_box_24),
                         contentDescription = "새로운 WiD",
-                        tint = Color.Black
+                        tint = Black
                     )
 
                     Column {
@@ -218,7 +214,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
         item {
             Column(
                 modifier = Modifier
-                    .background(Color.White)
+                    .background(White)
                     .padding(vertical = 16.dp)
             ) {
                 Text(
@@ -238,12 +234,7 @@ fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableS
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(
-                                    color = colorResource(
-                                        id = colorMap[title]
-                                            ?: R.color.light_gray
-                                    )
-                                )
+                                .background(color = colorMap[title] ?: LightGray)
                         )
 
                         Text(

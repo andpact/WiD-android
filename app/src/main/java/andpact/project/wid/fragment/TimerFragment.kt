@@ -3,7 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -211,7 +211,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(White)
             .clickable(enabled = timerStarted) {
                 timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
@@ -247,7 +247,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
 //                        Icon(
 //                            painter = painterResource(id = R.drawable.baseline_alarm_on_16),
 //                            contentDescription = "Finish Time",
-//                            tint = Color.Black
+//                            tint = _root_ide_package_.andpact.project.wid.ui.theme.Black
 //                        )
 //
 //                        Text(formatTime(time = finishTime, "a H시 mm분 ss초"))
@@ -329,7 +329,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                 style = TextStyle(fontSize = 30.sp,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentHourIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentHourIndex.value + 1) Color.Black else Color.LightGray
+                                    color = if (index == currentHourIndex.value + 1) Black else LightGray
                                 )
                             )
                         }
@@ -363,7 +363,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                 style = TextStyle(fontSize = 30.sp,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentMinuteIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentMinuteIndex.value + 1) Color.Black else Color.LightGray
+                                    color = if (index == currentMinuteIndex.value + 1) Black else LightGray
                                 )
                             )
                         }
@@ -397,7 +397,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                 style = TextStyle(fontSize = 30.sp,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentSecondIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentSecondIndex.value + 1) Color.Black else Color.LightGray
+                                    color = if (index == currentSecondIndex.value + 1) Black else LightGray
                                 )
                             )
                         }
@@ -515,7 +515,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     .fillMaxWidth()
                     .padding(16.dp)
                     .background(
-                        color = colorResource(id = R.color.light_gray),
+                        color = LightGray,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(vertical = 16.dp),
@@ -561,10 +561,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = Color.White,
-                                            labelColor = Color.Black,
-                                            selectedContainerColor = Color.Black,
-                                            selectedLabelColor = Color.White
+                                            containerColor = White,
+                                            labelColor = Black,
+                                            selectedContainerColor = Black,
+                                            selectedLabelColor = White
                                         )
                                     )
                                 }
@@ -593,12 +593,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(
-                                    color = colorResource(
-                                        id = colorMap[title]
-                                            ?: R.color.light_gray
-                                    )
-                                )
+                                .background(color = colorMap[title] ?: LightGray)
                         )
 
                         Text(
@@ -625,13 +620,13 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     .clickable {
                                         resetTimer()
                                     }
-                                    .background(color = colorResource(id = R.color.deep_sky_blue))
+                                    .background(color = DeepSkyBlue)
                                     .padding(16.dp)
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_24),
                                     contentDescription = "타이머 초기화",
-                                    tint = Color.White
+                                    tint = White
                                 )
                             }
                         }
@@ -648,10 +643,9 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     }
                                 }
                                 .background(
-                                    color = colorResource(
-                                        id = if (timerReset) R.color.deep_sky_blue
-                                        else if (timerPaused) R.color.lime_green
-                                        else R.color.orange_red)
+                                    color = if (timerReset) DeepSkyBlue
+                                    else if (timerPaused) LimeGreen
+                                    else OrangeRed
                                 )
                                 .padding(16.dp)
                         ) {
@@ -664,7 +658,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     }
                                 ),
                                 contentDescription = "타이머 시작 및 중지",
-                                tint = Color.White
+                                tint = White
                             )
                         }
                     }

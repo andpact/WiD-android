@@ -2,6 +2,8 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.ui.theme.LightGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
@@ -133,8 +135,10 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        val colorId = colorMap[label] ?: R.color.black
-                        ContextCompat.getColor(context, colorId)
+                        (colorMap[label] ?: Black).toArgb()
+
+//                        val colorId = colorMap[label] ?: R.color.black
+//                        ContextCompat.getColor(context, colorId)
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)
@@ -246,8 +250,11 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        val colorId = colorMap[label] ?: R.color.light_gray
-                        ContextCompat.getColor(context, colorId)
+
+                        (colorMap[label] ?: LightGray).toArgb()
+
+//                        val colorId = colorMap[label] ?: R.color.light_gray
+//                        ContextCompat.getColor(context, colorId)
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)

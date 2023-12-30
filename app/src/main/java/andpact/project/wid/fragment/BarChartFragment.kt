@@ -2,10 +2,11 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.ui.theme.LightGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
-import android.graphics.drawable.GradientDrawable
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
@@ -19,17 +20,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
@@ -47,9 +44,7 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
     var currentMinute = 0 // 채워진 공간의 종료 시간(지점), 채워질 공간의 시작 시간(지점)을 의미함
 
     if (wiDList.isEmpty()) {
-        val noBarChartData = BarChartData(1f, colorResource(
-            id = R.color.light_gray
-        ))
+        val noBarChartData = BarChartData(1f, LightGray)
         barChartData.add(noBarChartData)
     } else {
         for (wiD in wiDList) {
@@ -58,16 +53,14 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
             // 비어 있는 시간대의 엔트리 추가
             if (startMinutes > currentMinute) {
                 val emptyMinutes = startMinutes - currentMinute
-                val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, colorResource(
-                    id = R.color.light_gray
-                ))
+                val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, LightGray)
                 barChartData.add(emptyBarChartData)
             }
 
             // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
             val durationMinutes = wiD.duration.toMinutes().toInt()
             if (1 <= durationMinutes) { // 1분 이상의 기록만 막대차트로 보여줌.(막대 차트의 weight에 0.1 미만의 작은 값이 사용될 수도 없고 막대 차트에 표시도 안되기 때문)
-                val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorResource(id = colorMap[wiD.title] ?: R.color.light_gray))
+                val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorMap[wiD.title] ?: LightGray)
                 barChartData.add(widBarChartData)
             }
 
@@ -79,9 +72,7 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
         // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
         if (currentMinute < totalMinutes) {
             val emptyMinutes = totalMinutes - currentMinute
-            val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, colorResource(
-                id = R.color.light_gray
-            ))
+            val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, LightGray)
             barChartData.add(emptyBarChartData)
         }
     }
@@ -119,7 +110,7 @@ fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
             modifier = Modifier
                 .fillMaxWidth(0.97f)
                 .border(
-                    BorderStroke(1.dp, Color.Black),
+                    BorderStroke(1.dp, Black),
                 ),
             horizontalArrangement = Arrangement.spacedBy(0.dp),
         ) {

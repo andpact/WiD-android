@@ -33,7 +33,8 @@ val chivoMonoBlackItalic = FontFamily(
 
 // Set of Material typography styles to start with
 //
-/*
+
+/**
     Title - ExtraBold
     Body - SemiBold
     Label - Regular
