@@ -28,17 +28,9 @@ fun formatTimerTime(time: Long): AnnotatedString {
     val minutes = ((time % 3_600_000) / 60_000).toInt()
     val seconds = ((time % 60_000) / 1_000).toInt()
 
-    val hoursText = hours.toString().padStart(1, '0')
-    val minutesText = if (0 < hours) {
-        minutes.toString().padStart(2, '0')
-    } else {
-        minutes.toString().padStart(1, '0')
-    }
-    val secondsText = if (0 < minutes || 0 < hours) {
-        seconds.toString().padStart(2, '0')
-    } else {
-        seconds.toString().padStart(1, '0')
-    }
+    val hoursText = hours.toString()
+    val minutesText = minutes.toString().padStart(2, '0')
+    val secondsText = seconds.toString().padStart(2, '0')
 
     return buildAnnotatedString {
         withStyle(style = SpanStyle(fontSize = 60.sp, fontFamily = chivoMonoBlackItalic)) {
@@ -56,7 +48,7 @@ fun formatStopWatchTime(time: Long): AnnotatedString {
     val minutes = ((time % 3_600_000) / 60_000).toInt()
     val seconds = ((time % 60_000) / 1_000).toInt()
 
-    val hoursText = hours.toString().padStart(1, '0')
+    val hoursText = hours.toString()
     val minutesText = if (0 < hours) {
         minutes.toString().padStart(2, '0')
     } else {

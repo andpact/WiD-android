@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
@@ -35,6 +37,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -78,6 +81,15 @@ fun SearchFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
                 searchText = newText
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    // 검색 버튼이 눌렸을 때 수행할 동작
+                    diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
+                }
+            ),
             decorationBox = { innerTextField ->
                 Column(
                     modifier = Modifier

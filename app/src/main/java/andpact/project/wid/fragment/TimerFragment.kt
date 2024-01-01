@@ -176,6 +176,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
         }
         remainingTime = 0
+
+        if (!timerTopBottomBarVisible) {
+            timerTopBottomBarVisible = true
+        }
     }
 
     LaunchedEffect(timerStarted) {

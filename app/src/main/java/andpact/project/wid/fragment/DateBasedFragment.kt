@@ -363,7 +363,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(GhostWhite)
+                .background(LightGray)
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -434,7 +434,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IconButton( // 아이콘 버튼은 기본 설정된 패딩이 없다!!!
+                IconButton( // 아이콘 버튼은 기본 설정된 패딩이 없다?!!!
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(DeepSkyBlue),

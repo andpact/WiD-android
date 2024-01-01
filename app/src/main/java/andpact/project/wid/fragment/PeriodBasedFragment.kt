@@ -445,7 +445,7 @@ fun PeriodBasedFragment() {
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(GhostWhite)
+                .background(LightGray)
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -500,7 +500,7 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = LightGray,
+                                        containerColor = White,
                                         labelColor = Black,
                                         selectedContainerColor = Black,
                                         selectedLabelColor = White
@@ -549,7 +549,7 @@ fun PeriodBasedFragment() {
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = LightGray,
+                            containerColor = White,
                             labelColor = Black,
                             selectedContainerColor = Black,
                             selectedLabelColor = White
@@ -580,7 +580,7 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = LightGray,
+                                        containerColor = White,
                                         labelColor = Black,
                                         selectedContainerColor = Black,
                                         selectedLabelColor = White
