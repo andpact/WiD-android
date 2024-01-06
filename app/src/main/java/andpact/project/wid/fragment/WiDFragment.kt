@@ -131,7 +131,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GhostWhite)
     ) {
         /**
          * 상단 바
@@ -196,7 +195,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(GhostWhite)
                 .weight(1f),
             state = lazyColumnState,
             verticalArrangement = Arrangement.spacedBy(16.dp)

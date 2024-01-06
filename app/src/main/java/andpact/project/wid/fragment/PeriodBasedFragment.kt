@@ -88,8 +88,7 @@ fun PeriodBasedFragment() {
          */
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(GhostWhite),
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (selectedTitle == titlesWithAll[0]) {

@@ -7,10 +7,10 @@ import androidx.compose.ui.graphics.Color
  * 코틀린 파일에서는 코틀린 컬러 파일과 xml 컬러 파일 모두에 접근이 가능하다.
  */
 val Black = Color(0xFF000000)
-val Gray = Color(0xFF808080)
-val LightGray = Color(0xFFC0C0C0)
+val Gray = Color(0xFF1F1F1F)
+val DarkGray = Color(0xFF7E7E7E)
+val LightGray = Color(0xFFDFDFDF)
 val White = Color(0xFFFFFFFF)
-val GhostWhite = Color(0xFFF8F8FF)
 val Transparent = Color(0x00FFFFFF)
 
 // For 7 titles

@@ -219,7 +219,6 @@ fun NewWiDFragment(navController: NavController, mainTopBottomBarVisible: Mutabl
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(GhostWhite)
                 .weight(1f),
             state = lazyColumnState,
             verticalArrangement = Arrangement.spacedBy(16.dp)

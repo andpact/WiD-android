@@ -12,24 +12,25 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = White,
-    secondary = Black
-)
-
+/**
+ * 라이트 모드, 다크 모드에서 변경되어야 하는 색상을 아래에 작성함. 변경 없는 색은 직접 가져가서 사용함.
+ * primary   -> Black-White
+ * secondary -> White-Black
+ * tertiary  -> LightGray-Gray
+ *
+ * 안드로이드 및 iOS 모두 다크 모드일 때 배경, 텍스트, 아이콘의 색을 자동으로 변경해줌.
+ * 하지만 안드로이드는 라이트 모드, 다크 모드에 적용되는 기본 색이 흰 색, 검은 색이 아니기 때문에 명시적으로 흰 색과 검은 색을 지정해줌.
+ */
 private val LightColorScheme = lightColorScheme(
     primary = Black,
-    secondary = White
+    secondary = White,
+    tertiary = LightGray
+)
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColorScheme = darkColorScheme(
+    primary = White,
+    secondary = Black,
+    tertiary = Gray
 )
 
 @Composable
@@ -53,11 +54,11 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
 //            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
 //            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
 
-            (view.context as Activity).window.statusBarColor = Color.White.toArgb() // 상태 바 색생
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바 의 컨텐츠를 어둡게 함.
+            (view.context as Activity).window.statusBarColor = colorScheme.secondary.toArgb() // 상태 바 색상
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태바 의 컨텐츠를 어둡게 함.
 
-//            (view.context as Activity).window.navigationBarColor = Color.White.toArgb()
-//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = true
+            (view.context as Activity).window.navigationBarColor = colorScheme.secondary.toArgb() // 네비게이션 바 색상
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 네비게이션 바 의 컨텐츠를 어둡게 함.
         }
     }
 
@@ -88,7 +89,7 @@ fun SplashTheme( // 스플래쉬 액티비티에 적용되는 테마
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.statusBarColor = Color.Black.toArgb() // 상태 바 색생
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바 의 컨텐츠를 어둡게 함.
+//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = true // 상태바 의 컨텐츠를 어둡게 함.
         }
     }
 

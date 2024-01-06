@@ -87,8 +87,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
          */
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(GhostWhite),
+                .fillMaxWidth(),
 //                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

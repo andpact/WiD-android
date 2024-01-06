@@ -11,17 +11,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -33,241 +34,219 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun HomeFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
-    LazyColumn(
+fun HomeFragment(navController: NavController) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(GhostWhite),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
         /**
-         * 도구
+         * 컨텐츠
          */
-        item {
-            Text(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
                 modifier = Modifier
-                    .background(White)
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                text = "WiD",
-                style = TextStyle(
-                    fontSize = 70.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = acmeRegular,
-                    textAlign = TextAlign.Center
-                ),
-            )
-
-            Column(
-                modifier = Modifier
-                    .background(White)
-                    .padding(vertical = 16.dp)
+                .fillMaxWidth()
             ) {
-                Text(
+                // 스톱 워치
+                Column(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    text = "도구",
-                    style = Typography.titleMedium
-                )
-
-                // 스탑 워치
-                Row(
-                    modifier = Modifier
+                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.StopWatchFragmentDestination.route)
-                            mainTopBottomBarVisible.value = false
-                        }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         modifier = Modifier
-                            .padding(start = 8.dp),
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
                         painter = painterResource(id = R.drawable.outline_alarm_24),
-                        contentDescription = "스탑 워치",
-                        tint = Black
+                        contentDescription = "스톱 워치",
+                        tint = MaterialTheme.colorScheme.primary
                     )
 
-                    Column {
-                        Text(
-                            text = "스탑 워치",
-                            style = Typography.bodyMedium
-                        )
-
-                        Text(
-                            text = "현재 시간부터 기록하기",
-                            style = Typography.labelSmall
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "스탑 워치로 전환",
+                    Text(
+                        text = "스톱 워치",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
 
                 // 타이머
-                Row(
+                Column(
                     modifier = Modifier
+                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.TimerFragmentDestination.route)
-                            mainTopBottomBarVisible.value = false
-                        }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         modifier = Modifier
-                            .padding(start = 8.dp),
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
                         painter = painterResource(id = R.drawable.outline_timer_24),
                         contentDescription = "타이머",
-                        tint = Black
+                        tint = MaterialTheme.colorScheme.primary
                     )
 
-                    Column {
-                        Text(
-                            text = "타이머",
-                            style = Typography.bodyMedium
-                        )
-
-                        Text(
-                            text = "정해진 시간만큼 기록하기",
-                            style = Typography.labelSmall
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "타이머로 전환",
+                    Text(
+                        text = "타이머",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-
                 // 새로운 WiD
-                Row(
+                Column(
                     modifier = Modifier
+                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.NewWiDFragmentDestination.route)
-                            mainTopBottomBarVisible.value = false
-                        }
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         modifier = Modifier
-                            .padding(start = 8.dp),
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
                         painter = painterResource(id = R.drawable.outline_add_box_24),
                         contentDescription = "새로운 WiD",
-                        tint = Black
+                        tint = MaterialTheme.colorScheme.primary
                     )
 
-                    Column {
-                        Text(
-                            text = "새로운 WiD",
-                            style = Typography.bodyMedium
-                        )
-
-                        Text(
-                            text = "날짜, 제목, 시작 및 종료 시간을 직접 기록하기",
-                            style = Typography.labelSmall
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
+                    Text(
+                        text = "새로운 WiD",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                // 날짜 별 조회
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            navController.navigate(Destinations.DateBasedFragmentDestination.route)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "새로운 WiD로 전환",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
+                        painter = painterResource(id = R.drawable.baseline_location_searching_24),
+                        contentDescription = "날짜 별 조회",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = "날짜 별 조회",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // 기간 별 조회
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            navController.navigate(Destinations.PeriodBasedFragmentDestination.route)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
+                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                        contentDescription = "기간 별 조회",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = "기간 별 조회",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // 다이어리 검색
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            navController.navigate(Destinations.SearchFragmentDestination.route)
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(24.dp),
+                        painter = painterResource(id = R.drawable.baseline_search_24),
+                        contentDescription = "다이어리 검색",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = "다이어리 검색",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
 
         /**
-         * 선택 가능한 제목
+         * 하단 바
          */
-        item {
-            Column(
-                modifier = Modifier
-                    .background(White)
-                    .padding(vertical = 16.dp)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    text = "선택 가능한 제목",
-                    style = Typography.titleMedium
-                )
-
-                for ((index, title) in titles.withIndex()) {
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(5.dp, 15.dp)
-                                .background(color = colorMap[title] ?: LightGray)
-                        )
-
-                        Text(
-                            titleMap[title] ?: title,
-                            style = Typography.bodyMedium
-                        )
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                        Text(
-                            text = titleExampleMap[title] ?: "",
-                            style = Typography.labelSmall
-                        )
-                    }
-
-                    if (index < titles.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                        )
-                    }
-                }
-            }
-        }
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp)
+//                .align(Alignment.BottomCenter),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Text(
+//                text = "WiD",
+//                style = TextStyle(
+//                    fontSize = 25.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    fontFamily = acmeRegular,
+//                    color = MaterialTheme.colorScheme.primary
+//                ),
+//            )
+//        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HomeFragmentPreview() {
-    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
-    HomeFragment(NavController(LocalContext.current), mainTopBottomBarVisible = mainTopBottomBarVisible)
+    HomeFragment(NavController(LocalContext.current))
 }

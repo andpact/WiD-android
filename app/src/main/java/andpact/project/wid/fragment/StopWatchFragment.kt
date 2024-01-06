@@ -216,7 +216,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = stopWatchStarted) {
                 stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
             }
@@ -235,12 +235,12 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(56.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
                 Text(
-                    text = "스탑워치",
+                    text = "스톱 워치",
                     style = Typography.titleLarge
                 )
             }
@@ -385,7 +385,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_refresh_24),
-                                    contentDescription = "스탑워치 초기화",
+                                    contentDescription = "스톱 워치 초기화",
                                     tint = White
                                 )
                             }
