@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,7 +67,7 @@ class SplashActivity : ComponentActivity() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = Black),
+                    .background(color = MaterialTheme.colorScheme.secondary),
             ) {
                 Column(
                     modifier = Modifier
@@ -77,7 +78,7 @@ class SplashActivity : ComponentActivity() {
                     Text(
                         text = "WiD",
                         style = TextStyle(
-                            color = White,
+                            color = MaterialTheme.colorScheme.primary,
                             textAlign = TextAlign.Center,
                             fontSize = 70.sp,
                             fontWeight = FontWeight.Bold,

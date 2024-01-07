@@ -3,19 +3,28 @@ package andpact.project.wid.activity
 import andpact.project.wid.R
 import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
+import andpact.project.wid.ui.theme.acmeRegular
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,16 +39,15 @@ class MainActivity : ComponentActivity() {
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            WiDMainActivity()
+            MainFragment()
         }
     }
 }
 
 @Composable
-fun WiDMainActivity() {
+fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
-        val mainTopBottomBarVisible = remember { mutableStateOf(true) }
 
         Scaffold(
 //            bottomBar = {
@@ -56,24 +64,24 @@ fun WiDMainActivity() {
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                NavigationGraph(
-                    navController = navController,
-                    mainTopBottomBarVisible = mainTopBottomBarVisible
-                )
+                NavigationGraph(navController = navController)
             }
         }
     }
 }
 
 @Composable
-fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun NavigationGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = Destinations.HomeFragmentDestination.route
     ) {
+        // 홈
         composable(Destinations.HomeFragmentDestination.route) {
             HomeFragment(navController = navController)
         }
+
+        // 스톱 워치
         composable(
             route = Destinations.StopWatchFragmentDestination.route,
             enterTransition = {
@@ -89,47 +97,147 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
                 )
             }
         ) {
-            StopWatchFragment(
-                navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
-            )
+            StopWatchFragment(navController = navController)
         }
-        composable(Destinations.TimerFragmentDestination.route) {
-            TimerFragment(
-                navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
-            )
+
+        // 타이머
+        composable(
+            route = Destinations.TimerFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            TimerFragment(navController = navController)
         }
-        composable(Destinations.NewWiDFragmentDestination.route) {
-            NewWiDFragment(
-                navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
-            )
+
+        // 새로운 WiD
+        composable(
+            route = Destinations.NewWiDFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            NewWiDFragment(navController = navController)
         }
-        composable(Destinations.DateBasedFragmentDestination.route) {
-            DateBasedFragment(
-                navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
-            )
+
+        // 날짜 별 조회
+        composable(
+            route = Destinations.DateBasedFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            popEnterTransition = { null },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            },
+            popExitTransition = { null },
+        ) {
+            DateBasedFragment(navController = navController)
         }
-        composable(Destinations.PeriodBasedFragmentDestination.route) {
-            PeriodBasedFragment()
+
+        // 기간 별 조회
+        composable(
+            route = Destinations.PeriodBasedFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            PeriodBasedFragment(navController = navController)
         }
-        composable(Destinations.SearchFragmentDestination.route) {
-            SearchFragment(
-                navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
-            )
+
+        // 다이어리 검색
+        composable(
+            route = Destinations.SearchFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            popEnterTransition = { null },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            },
+            popExitTransition = { null },
+        ) {
+            SearchFragment(navController = navController)
         }
-        composable(Destinations.WiDFragmentDestination.route + "/{wiDID}") { backStackEntry ->
+
+        // WiD
+        composable(
+            route = Destinations.WiDFragmentDestination.route + "/{wiDID}",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) { backStackEntry ->
             val wiDID = backStackEntry.arguments?.getString("wiDID")?.toLongOrNull() ?: -1L
             WiDFragment(
                 wiDId = wiDID,
                 navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
             )
         }
-        composable(Destinations.DiaryFragmentDestination.route + "/{date}") { backStackEntry ->
+
+        // 다이어리
+        composable(
+            route = Destinations.DiaryFragmentDestination.route + "/{date}",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) { backStackEntry ->
             val date = run {
                 val dateString = backStackEntry.arguments?.getString("date") ?: ""
                 LocalDate.parse(dateString)
@@ -137,7 +245,6 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
             DiaryFragment(
                 date = date,
                 navController = navController,
-                mainTopBottomBarVisible = mainTopBottomBarVisible
             )
         }
     }
@@ -193,8 +300,6 @@ fun NavigationGraph(navController: NavHostController, mainTopBottomBarVisible: M
 //    }
 //}
 
-
-
 sealed class Destinations(
     val route: String,
     val title: String? = null,
@@ -202,7 +307,6 @@ sealed class Destinations(
 ) {
     object HomeFragmentDestination : Destinations(
         route = "home_fragment",
-        icon = R.drawable.baseline_home_24
     )
     object StopWatchFragmentDestination : Destinations(
         route = "stopwatch_fragment",
@@ -215,15 +319,12 @@ sealed class Destinations(
     )
     object DateBasedFragmentDestination : Destinations(
         route = "date_based_fragment",
-        icon = R.drawable.baseline_table_rows_24
     )
     object PeriodBasedFragmentDestination : Destinations(
         route = "period_based_fragment",
-        icon = R.drawable.baseline_window_24
     )
     object SearchFragmentDestination : Destinations(
         route = "search_fragment",
-        icon = R.drawable.baseline_search_24
     )
     object WiDFragmentDestination : Destinations(
         route = "wid_fragment",
@@ -232,6 +333,26 @@ sealed class Destinations(
         route = "diary_fragment",
     )
 }
+
+//@Composable
+//fun SplashFragment() {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(MaterialTheme.colorScheme.secondary),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Text(
+//            text = "WiD",
+//            style = TextStyle(
+//                color = MaterialTheme.colorScheme.primary,
+//                fontSize = 70.sp,
+//                fontWeight = FontWeight.Bold,
+//                fontFamily = acmeRegular
+//            )
+//        )
+//    }
+//}
 
 //@Preview(showBackground = true)
 //@Composable

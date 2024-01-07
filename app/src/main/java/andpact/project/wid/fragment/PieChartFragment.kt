@@ -2,9 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.Black
-import andpact.project.wid.ui.theme.LightGray
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.formatDuration
 import andpact.project.wid.util.getTotalDurationFromWiDList
@@ -15,6 +13,7 @@ import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -94,6 +93,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
         }
 
         Crossfade(targetState = pieEntries) { pieEntries ->
+            val colorScheme = MaterialTheme.colorScheme
             AndroidView(factory = { context ->
                 PieChart(context).apply {
                     layoutParams = LinearLayout.LayoutParams(
@@ -112,7 +112,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
 
                     isDrawHoleEnabled = true
                     holeRadius = 95f
-                    setHoleColor(Color.Transparent.toArgb())
+                    setHoleColor(Transparent.toArgb())
 
 //                    setDrawCenterText(true)
 //                    centerText = buildAnnotatedString {
@@ -135,7 +135,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        (colorMap[label] ?: Black).toArgb()
+                        (colorMap[label] ?: DarkGray).toArgb()
 
 //                        val colorId = colorMap[label] ?: R.color.black
 //                        ContextCompat.getColor(context, colorId)
@@ -157,7 +157,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                 val centerY = center.y + radius / 25
 
                 val textPaint = Paint().apply {
-//                    color = Color.Black.toArgb()
+                    color = colorScheme.primary.toArgb()
                     textSize = radius / 10
                     textAlign = Paint.Align.CENTER
                     typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
@@ -218,6 +218,7 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
     ) {
         // Crossfade 적용 안하면 차트 갱신이 안된다.
         Crossfade(targetState = pieEntries) { pieEntries ->
+            val colorScheme = MaterialTheme.colorScheme
             AndroidView(factory = { context ->
                 PieChart(context).apply {
                     // 설정
@@ -235,26 +236,22 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
 
                     isDrawHoleEnabled = true
                     holeRadius = 80f
-                    setHoleColor(Color.Transparent.toArgb())
+                    setHoleColor(Transparent.toArgb())
 
                     setDrawCenterText(true)
                     centerText = date.dayOfMonth.toString()
                     setCenterTextSize(12f)
 
                     if (wiDList.isEmpty()) {
-                        setCenterTextColor(Color.LightGray.toArgb())
+                        setCenterTextColor(DarkGray.toArgb())
                     } else {
-                        setCenterTextColor(Color.Black.toArgb())
+                        setCenterTextColor(colorScheme.primary.toArgb())
                     }
 
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-
-                        (colorMap[label] ?: LightGray).toArgb()
-
-//                        val colorId = colorMap[label] ?: R.color.light_gray
-//                        ContextCompat.getColor(context, colorId)
+                        (colorMap[label] ?: DarkGray).toArgb()
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)

@@ -16,21 +16,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,7 +35,7 @@ import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun StopWatchFragment(navController: NavController) {
     // 날짜
     var date: LocalDate = LocalDate.now()
 
@@ -206,7 +199,6 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        mainTopBottomBarVisible.value = true
 
         if (stopWatchStarted) {
             pauseStopWatch()
@@ -231,17 +223,33 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            Row(
+            Box(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .height(56.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                    .height(56.dp)
             ) {
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clickable {
+                            navController.popBackStack()
+
+                            if (stopWatchStarted) {
+                                pauseStopWatch()
+                            }
+                        },
+                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                    contentDescription = "뒤로 가기",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
                 Text(
+                    modifier = Modifier
+                        .align(Alignment.Center),
                     text = "스톱 워치",
-                    style = Typography.titleLarge
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -253,7 +261,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
             modifier = Modifier
                 .align(Alignment.Center),
             text = formatStopWatchTime(elapsedTime),
-            style = TextStyle(textAlign = TextAlign.End)
+            style = TextStyle(
+                textAlign = TextAlign.End,
+                color = MaterialTheme.colorScheme.primary
+            )
         )
 
         /**
@@ -271,7 +282,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     .fillMaxWidth()
                     .padding(16.dp) // 바깥 패딩
                     .background(
-                        color = LightGray,
+                        color = MaterialTheme.colorScheme.tertiary,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(vertical = 16.dp), // 안쪽 패딩
@@ -290,7 +301,8 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     ) {
                         Text(
                             text = if (stopWatchReset) "사용할 제목을 선택하세요." else "선택한 제목이 이어서 사용됩니다.",
-                            style = Typography.bodyMedium
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         LazyVerticalGrid(
@@ -321,10 +333,10 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = White,
-                                            labelColor = Black,
-                                            selectedContainerColor = Black,
-                                            selectedLabelColor = White
+                                            containerColor = MaterialTheme.colorScheme.secondary,
+                                            labelColor = MaterialTheme.colorScheme.primary,
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
                                         )
                                     )
                                 }
@@ -353,18 +365,20 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(color = colorMap[title] ?: LightGray)
+                                .background(color = colorMap[title] ?: DarkGray)
                         )
 
                         Text(
                             text = titleMap[title] ?: "공부",
-                            style = Typography.bodyLarge
+                            style = Typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (!stopWatchPaused) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_unfold_more_16),
                                 contentDescription = "제목 메뉴 펼치기",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -403,7 +417,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     }
                                 }
                                 .background(
-                                    color = if (stopWatchReset) DeepSkyBlue
+                                    color = if (stopWatchReset) MaterialTheme.colorScheme.primary
                                     else if (stopWatchPaused) LimeGreen
                                     else OrangeRed
                                 )
@@ -418,7 +432,7 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                     }
                                 ),
                                 contentDescription = "스톱 워치 시작 및 중지",
-                                tint = White
+                                tint = if (stopWatchReset) MaterialTheme.colorScheme.secondary else White
                             )
                         }
                     }
@@ -431,6 +445,5 @@ fun StopWatchFragment(navController: NavController, mainTopBottomBarVisible: Mut
 @Preview(showBackground = true)
 @Composable
 fun StopWatchFragmentPreview() {
-    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
-    StopWatchFragment(NavController(LocalContext.current), mainTopBottomBarVisible = mainTopBottomBarVisible)
+    StopWatchFragment(NavController(LocalContext.current))
 }

@@ -51,12 +51,13 @@ fun HomeFragment(navController: NavController) {
         ) {
             Row(
                 modifier = Modifier
-                .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 // 스톱 워치
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.StopWatchFragmentDestination.route)
                         },
@@ -83,7 +84,6 @@ fun HomeFragment(navController: NavController) {
                 // 타이머
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.TimerFragmentDestination.route)
                         },
@@ -110,7 +110,6 @@ fun HomeFragment(navController: NavController) {
                 // 새로운 WiD
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.NewWiDFragmentDestination.route)
                         },
@@ -137,12 +136,13 @@ fun HomeFragment(navController: NavController) {
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 // 날짜 별 조회
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.DateBasedFragmentDestination.route)
                         },
@@ -169,7 +169,6 @@ fun HomeFragment(navController: NavController) {
                 // 기간 별 조회
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.PeriodBasedFragmentDestination.route)
                         },
@@ -196,7 +195,6 @@ fun HomeFragment(navController: NavController) {
                 // 다이어리 검색
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .clickable {
                             navController.navigate(Destinations.SearchFragmentDestination.route)
                         },

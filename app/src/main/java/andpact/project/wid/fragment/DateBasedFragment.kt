@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
@@ -13,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
@@ -38,7 +42,7 @@ import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun DateBasedFragment(navController: NavController) {
     // 날짜
     val today = LocalDate.now()
     var currentDate by remember { mutableStateOf(today) }
@@ -72,31 +76,59 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
     // 합계
     val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
 
-    // 화면
-//    val configuration = LocalConfiguration.current
-//    val screenHeight = configuration.screenHeightDp.dp
-//    val dateBasedFragmentHeight = screenHeight - 50.dp - 50.dp - 50.dp // 차례대로 탑 앱 바(50.dp), 날짜 변경 바(50.dp), 하단 네비게이션 바(50.dp)
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
+        /**
+         * 상단 바
+         */
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable {
+                        navController.popBackStack()
+                    },
+                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                contentDescription = "뒤로 가기",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = "날짜 별 조회",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        HorizontalDivider()
+
         /**
          * 컨텐츠
          */
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth(),
-//                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.tertiary)
+                .weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item("다이어리") {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(White)
-                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -113,7 +145,8 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                                 text = getDayStringWith3Lines(date = currentDate),
                                 style = Typography.titleLarge,
                                 textAlign = TextAlign.Center,
-                                fontSize = 20.sp
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
 
@@ -140,6 +173,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             .padding(16.dp),
                         text = diary?.title ?: "제목을 입력해 주세요.",
                         style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
                         minLines = 1,
                         maxLines = if (expandDiary) Int.MAX_VALUE else 1,
                         overflow = TextOverflow.Ellipsis,
@@ -164,6 +198,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             .padding(16.dp),
                         text = diary?.content ?: "내용을 입력해 주세요.",
                         style = Typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
                         minLines = 10,
                         maxLines = if (expandDiary) Int.MAX_VALUE else 10,
                         overflow = TextOverflow.Ellipsis,
@@ -184,8 +219,6 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             ),
                         onClick = {
                             navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
-
-                            mainTopBottomBarVisible.value = false
                         },
                     ) {
                         Text(
@@ -201,48 +234,51 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 // 합계 기록
                 Column(
                     modifier = Modifier
-                        .background(White)
-                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         text = "합계 기록",
-                        style = Typography.titleMedium
+                        style = Typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     if (totalDurationMap.isEmpty()) {
                         createEmptyView(text = "표시할 합계 기록이 없습니다.")()
                     } else {
-                        totalDurationMap.entries.forEachIndexed { index, (title, totalDuration) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = titleMap[title] ?: title,
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
-                                )
+                        LazyVerticalGrid(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                            columns = GridCells.Fixed(2),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            totalDurationMap.forEach { (title, totalDuration) ->
+                                item {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.tertiary)
+                                            .padding(vertical = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = titleMap[title] ?: title,
+                                            style = Typography.bodyMedium
+                                        )
 
-                                Text(
-                                    text = formatDuration(totalDuration, mode = 3),
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
-                                )
-                            }
-
-                            if (index < totalDurationMap.size - 1) {
-                                HorizontalDivider(
-                                    modifier = Modifier
-                                        .padding(horizontal = 16.dp)
-                                )
+                                        Text(
+                                            text = formatDuration(totalDuration, mode = 3),
+                                            style = Typography.bodyMedium
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -253,103 +289,76 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                 // WiD 리스트
                 Column(
                     modifier = Modifier
-                        .background(White)
-                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         text = "WiD 리스트",
-                        style = Typography.titleMedium
+                        style = Typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     if (wiDList.isEmpty()) {
                         createEmptyView(text = "표시할 WiD가 없습니다.")()
                     } else {
-                        wiDList.forEachIndexed { index, wiD ->
-                            Column(
+                        wiDList.forEach { wiD ->
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .height(IntrinsicSize.Min)
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.tertiary)
                                     .clickable {
                                         navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
-                                        mainTopBottomBarVisible.value = false
-                                    }
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    },
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .width(7.dp)
+                                        .fillParentMaxHeight()
+                                        .background(colorMap[wiD.title] ?: DarkGray)
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .padding(vertical = 16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(5.dp, 10.dp)
-                                                .background(color = colorMap[wiD.title] ?: LightGray)
-                                        )
-
-                                        Text(
-                                            text = titleMap[wiD.title] ?: wiD.title,
-                                            style = Typography.bodyMedium
-                                        )
-                                    }
-
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowRight,
-                                        contentDescription = "이 WiD로 전환하기",
-                                        tint = DeepSkyBlue
+                                    Text(
+                                        text = "${formatTime(wiD.start, "a hh:mm:ss")} ~ ${formatTime(wiD.finish, "a hh:mm:ss")}",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
-                                }
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = formatTime(wiD.start, "a hh:mm:ss"),
-                                            style = Typography.bodyMedium
-                                        )
-
-                                        Text(
-                                            text = formatTime(wiD.finish, "a hh:mm:ss"),
-                                            style = Typography.bodyMedium
-                                        )
-                                    }
 
                                     Text(
-                                        text = formatDuration(wiD.duration, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
+                                        text = "${titleMap[wiD.title]} • ${formatDuration(wiD.duration, mode = 3)}",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                            }
 
-                            if (index < wiDList.size - 1) {
-                                HorizontalDivider(
+                                Spacer(
                                     modifier = Modifier
-                                        .padding(horizontal = 16.dp)
+                                        .weight(1f)
+                                )
+
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp),
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = "이 WiD로 전환하기",
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
                 }
-            }
-
-            item {
-                Spacer(
-                    modifier = Modifier
-                        .height(80.dp)
-                )
             }
         }
 
@@ -358,27 +367,24 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
          */
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(LightGray)
-                .padding(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth(),
         ) {
+            HorizontalDivider()
+
             AnimatedVisibility(
                 visible = expandDatePicker,
                 enter = expandVertically{ 0 },
                 exit = shrinkVertically{ 0 },
             ) {
                 Column(
-//                    modifier = Modifier
-//                        .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
+                        modifier = Modifier
+                            .padding(top = 8.dp),
                         text = "조회할 날짜를 선택해 주세요.",
-                        style = Typography.bodyMedium
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     DatePicker(
@@ -400,7 +406,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             Text(
                                 text = "취소",
                                 style = Typography.bodyMedium,
-                                color = Black
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
 
@@ -416,27 +422,20 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                             Text(
                                 text = "확인",
                                 style = Typography.bodyMedium,
-                                color = Black
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .height(56.dp),
             ) {
-                IconButton( // 아이콘 버튼은 기본 설정된 패딩이 없다?!!!
+                IconButton(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DeepSkyBlue),
+                        .weight(1f),
                     onClick = {
                         expandDatePicker = !expandDatePicker
                     }
@@ -444,7 +443,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "날짜 선택",
-                        tint = White,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -455,8 +454,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(if (currentDate != today) Black else Gray),
+                        .weight(1f),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -471,14 +469,13 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Filled.Refresh,
                         contentDescription = "오늘 날짜",
-                        tint = White,
+                        tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Black),
+                        .weight(1f),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -492,14 +489,13 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "이전 날짜",
-                        tint = White,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(if (currentDate != today) Black else Gray),
+                        .weight(1f),
                     onClick = {
                         if (expandDatePicker) {
                             expandDatePicker = false
@@ -514,7 +510,7 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "다음 날짜",
-                        tint = White,
+                        tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
                     )
                 }
             }
@@ -526,6 +522,5 @@ fun DateBasedFragment(navController: NavController, mainTopBottomBarVisible: Mut
 //@Composable
 //fun DateBasedFragmentPreview() {
 //    val navController: NavHostController = rememberNavController()
-//    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
-//    DateBasedFragment(navController = navController, mainTopBottomBarVisible)
+//    DateBasedFragment(navController = navController)
 //}

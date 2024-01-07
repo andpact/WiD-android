@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.Diary
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
@@ -10,12 +11,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -39,7 +42,7 @@ import androidx.navigation.NavController
 import java.time.LocalDate
 
 @Composable
-fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun DiaryFragment(date: LocalDate, navController: NavController) {
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val clickedDiary = diaryService.getDiaryByDate(date)
@@ -62,7 +65,6 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        mainTopBottomBarVisible.value = true
     }
 
     LaunchedEffect(Unit) {
@@ -71,32 +73,41 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
         }
     }
 
-    /**
-     * 전체 화면
-     */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
         /**
          * 상단 바
          */
-        Row(
+        Box(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .height(50.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .height(56.dp)
         ) {
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable {
+                        navController.popBackStack()
+                    },
+                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                contentDescription = "뒤로 가기",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
             Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
                 text = "다이어리",
                 style = Typography.titleLarge
             )
 
-            Row(
+            Text(
                 modifier = Modifier
+                    .align(Alignment.CenterEnd)
                     .clickable(diaryTitle.isNotBlank() && diaryContent.isNotBlank()) {
                         keyboardController?.hide()
 
@@ -108,30 +119,26 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                         }
 
                         navController.popBackStack()
-                        mainTopBottomBarVisible.value = true
-                    },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_done_16),
-                    contentDescription = "WiD 수정 완료",
-                    tint = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
-                        LimeGreen
-                    else
-                        LightGray
-                )
-
-                Text(
-                    text = "완료",
-                    style = Typography.bodyMedium,
-                    color = if (diaryTitle.isNotBlank() && diaryContent.isNotBlank())
-                        LimeGreen
-                    else
-                        LightGray
-                )
-            }
+                    }
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (diaryTitle.isNotBlank() && diaryContent.isNotBlank()) {
+                            LimeGreen
+                        } else {
+                            MaterialTheme.colorScheme.tertiary
+                        }
+                    )
+                    .padding(
+                        horizontal = 8.dp,
+                        vertical = 4.dp
+                    ),
+                text = "완료",
+                style = Typography.bodyMedium,
+                color = White
+            )
         }
+
+        HorizontalDivider()
 
         Row(
             modifier = Modifier
@@ -149,7 +156,8 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
                     text = getDayStringWith3Lines(date = date),
                     style = Typography.titleLarge,
                     textAlign = TextAlign.Center,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -182,10 +190,13 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             placeholder = {
                 Text(
                     text = "제목을 입력해 주세요.",
-                    style = Typography.bodyMedium
+                    style = Typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 ) },
             onValueChange = { diaryTitle = it } ,
             colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.primary,
+                unfocusedTextColor = MaterialTheme.colorScheme.primary,
                 focusedBorderColor = Transparent,
                 unfocusedBorderColor = Transparent,
             ),
@@ -212,10 +223,13 @@ fun DiaryFragment(date: LocalDate, navController: NavController, mainTopBottomBa
             placeholder = {
                 Text(
                     text = "내용을 입력해 주세요.",
-                    style = Typography.bodyMedium
+                    style = Typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 ) },
             onValueChange = { diaryContent = it },
             colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.primary,
+                unfocusedTextColor = MaterialTheme.colorScheme.primary,
                 focusedBorderColor = Transparent,
                 unfocusedBorderColor = Transparent,
             ),

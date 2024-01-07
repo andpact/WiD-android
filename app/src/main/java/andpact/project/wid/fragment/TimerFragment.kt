@@ -50,7 +50,7 @@ import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimerFragment(navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun TimerFragment(navController: NavController) {
     // 날짜
     var date: LocalDate = LocalDate.now()
 
@@ -205,7 +205,6 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        mainTopBottomBarVisible.value = true
 
         if (timerStarted) {
             pauseTimer()
@@ -215,7 +214,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = timerStarted) {
                 timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
@@ -230,33 +229,34 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            Row(
+            Box(
                 modifier = Modifier
+                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .height(50.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(56.dp)
             ) {
-                Text(
-                    text = "타이머",
-                    style = Typography.titleLarge
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clickable {
+                            navController.popBackStack()
+
+                            if (timerStarted) {
+                                pauseTimer()
+                            }
+                        },
+                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                    contentDescription = "뒤로 가기",
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
-//                if (timerStarted || timerPaused) {
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                    ) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.baseline_alarm_on_16),
-//                            contentDescription = "Finish Time",
-//                            tint = _root_ide_package_.andpact.project.wid.ui.theme.Black
-//                        )
-//
-//                        Text(formatTime(time = finishTime, "a H시 mm분 ss초"))
-//                    }
-//                }
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    text = "타이머",
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
 
@@ -267,43 +267,16 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
             Column(
                 modifier = Modifier
                     .align(Alignment.Center),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .weight(1f),
-                        text = "시간",
-                        style = Typography.labelSmall,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .weight(1f),
-                        text = "분",
-                        style = Typography.labelSmall,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .weight(1f),
-                        text = "초",
-                        style = Typography.labelSmall,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 )
 
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     // 시간 선택
                     LazyColumn(
                         modifier = Modifier
@@ -330,14 +303,22 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                         }
                                     },
                                 text = "$adjustedIndex",
-                                style = TextStyle(fontSize = 30.sp,
+                                style = TextStyle(
+                                    fontSize = if (index == currentHourIndex.value + 1) 30.sp else 20.sp,
+                                    fontFamily = if (index == currentHourIndex.value + 1) chivoMonoBlackItalic else null,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentHourIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentHourIndex.value + 1) Black else LightGray
+                                    color = if (index == currentHourIndex.value + 1) MaterialTheme.colorScheme.primary else DarkGray
                                 )
                             )
                         }
                     }
+
+                    Text(
+                        text = ":",
+                        style = Typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
                     // 분 선택
                     LazyColumn(
@@ -364,14 +345,22 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                         }
                                     },
                                 text = "$adjustedIndex",
-                                style = TextStyle(fontSize = 30.sp,
+                                style = TextStyle(
+                                    fontSize = if (index == currentMinuteIndex.value + 1) 30.sp else 20.sp,
+                                    fontFamily = if (index == currentMinuteIndex.value + 1) chivoMonoBlackItalic else null,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentMinuteIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentMinuteIndex.value + 1) Black else LightGray
+                                    color = if (index == currentMinuteIndex.value + 1) MaterialTheme.colorScheme.primary else DarkGray
                                 )
                             )
                         }
                     }
+
+                    Text(
+                        text = ":",
+                        style = Typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
 
                     // 초 선택
                     LazyColumn(
@@ -398,10 +387,12 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                         }
                                     },
                                 text = "$adjustedIndex",
-                                style = TextStyle(fontSize = 30.sp,
+                                style = TextStyle(
+                                    fontSize = if (index == currentSecondIndex.value + 1) 30.sp else 20.sp,
+                                    fontFamily = if (index == currentSecondIndex.value + 1) chivoMonoBlackItalic else null,
                                     textAlign = TextAlign.Center,
                                     fontWeight = if (index == currentSecondIndex.value + 1) FontWeight.Bold else null,
-                                    color = if (index == currentSecondIndex.value + 1) Black else LightGray
+                                    color = if (index == currentSecondIndex.value + 1) MaterialTheme.colorScheme.primary else DarkGray
                                 )
                             )
                         }
@@ -461,7 +452,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     modifier = Modifier
                         .fillMaxWidth(),
                     text = formatTimerTime(time = remainingTime),
-                    style = TextStyle(textAlign = TextAlign.Center)
+                    style = TextStyle(
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 )
 
 //                Row(
@@ -519,7 +513,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     .fillMaxWidth()
                     .padding(16.dp)
                     .background(
-                        color = LightGray,
+                        color = MaterialTheme.colorScheme.tertiary,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(vertical = 16.dp),
@@ -538,7 +532,8 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                     ) {
                         Text(
                             text = "사용할 제목을 선택하세요.",
-                            style = Typography.bodyMedium
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         LazyVerticalGrid(
@@ -565,10 +560,10 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = White,
-                                            labelColor = Black,
-                                            selectedContainerColor = Black,
-                                            selectedLabelColor = White
+                                            containerColor = MaterialTheme.colorScheme.secondary,
+                                            labelColor = MaterialTheme.colorScheme.primary,
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
                                         )
                                     )
                                 }
@@ -597,18 +592,20 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(color = colorMap[title] ?: LightGray)
+                                .background(color = colorMap[title] ?: DarkGray)
                         )
 
                         Text(
                             text = titleMap[title] ?: "공부",
-                            style = Typography.bodyLarge
+                            style = Typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (timerReset) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_unfold_more_16),
                                 contentDescription = "제목 메뉴 펼치기",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -647,7 +644,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     }
                                 }
                                 .background(
-                                    color = if (timerReset) DeepSkyBlue
+                                    color = if (timerReset) MaterialTheme.colorScheme.primary
                                     else if (timerPaused) LimeGreen
                                     else OrangeRed
                                 )
@@ -662,7 +659,7 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
                                     }
                                 ),
                                 contentDescription = "타이머 시작 및 중지",
-                                tint = White
+                                tint = if (timerReset) MaterialTheme.colorScheme.secondary else White
                             )
                         }
                     }
@@ -675,6 +672,5 @@ fun TimerFragment(navController: NavController, mainTopBottomBarVisible: Mutable
 @Preview(showBackground = true)
 @Composable
 fun TimerFragmentPreview() {
-    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
-    TimerFragment(NavController(LocalContext.current), mainTopBottomBarVisible = mainTopBottomBarVisible)
+    TimerFragment(NavController(LocalContext.current))
 }

@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
@@ -58,7 +59,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisible: MutableState<Boolean>) {
+fun WiDFragment(wiDId: Long, navController: NavController) {
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)
@@ -125,32 +126,44 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-        mainTopBottomBarVisible.value = true
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
         /**
          * 상단 바
          */
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(White)
                 .padding(horizontal = 16.dp)
-                .height(50.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .height(56.dp)
         ) {
-            Text(
-                text = "WiD",
-                style = Typography.titleLarge
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable {
+                        navController.popBackStack()
+                    },
+                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                contentDescription = "뒤로 가기",
+                tint = MaterialTheme.colorScheme.primary
             )
 
-            Row(
+            Text(
                 modifier = Modifier
+                    .align(Alignment.Center),
+                text = "WiD",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
                     .clickable(!isTimeOverlap && durationExist) {
                         wiDService.updateWiD(
                             id = wiDId,
@@ -162,32 +175,26 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                         )
 
                         navController.popBackStack()
-                        mainTopBottomBarVisible.value = true
-                    },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_done_16),
-                    contentDescription = "Modify & complete WiD",
-                    tint = if (!(!isTimeOverlap && durationExist)) {
-                        LightGray
-                    } else {
-                        LimeGreen
                     }
-                )
-
-                Text(
-                    text = "완료",
-                    style = Typography.bodyMedium,
-                    color = if (!(!isTimeOverlap && durationExist)) {
-                        LightGray
-                    } else {
-                        LimeGreen
-                    }
-                )
-            }
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (!isTimeOverlap && durationExist) {
+                            LimeGreen
+                        } else {
+                            MaterialTheme.colorScheme.tertiary
+                        }
+                    )
+                    .padding(
+                        horizontal = 8.dp,
+                        vertical = 4.dp
+                    ),
+                text = "완료",
+                style = Typography.bodyMedium,
+                color = White
+            )
         }
+
+        HorizontalDivider()
 
         /**
          * 컨텐츠
@@ -195,56 +202,64 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .background(MaterialTheme.colorScheme.tertiary),
             state = lazyColumnState,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // 정보 입력
             item {
                 Column(
                     modifier = Modifier
-                        .background(White)
-                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         text = "정보 입력",
-                        style = Typography.titleMedium
+                        style = Typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+
                     )
 
                     // 날짜
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(start = 8.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary)
+                                .padding(16.dp),
                             painter = painterResource(id = R.drawable.baseline_calendar_today_24),
-                            contentDescription = "날짜"
+                            contentDescription = "날짜",
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
                             Text(
                                 text = "날짜",
-                                style = Typography.labelSmall
+                                style = Typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Text(
                                 text = getDayString(date),
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
 
                     // 제목
                     Row(
@@ -253,35 +268,36 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .clickable {
                                 titleMenuExpanded = !titleMenuExpanded
                             }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(start = 8.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary)
+                                .padding(16.dp),
                             painter = painterResource(id = R.drawable.baseline_title_24),
                             contentDescription = "제목",
-                            tint = colorMap[title] ?: Black
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
                             Text(
                                 text = "제목",
-                                style = Typography.labelSmall
+                                style = Typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Text(
                                 text = titleMap[title] ?: title,
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
 
                         Icon(
                             imageVector = if (titleMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -316,21 +332,16 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = LightGray,
-                                            labelColor = Black,
-                                            selectedContainerColor = Black,
-                                            selectedLabelColor = White
+                                            containerColor = MaterialTheme.colorScheme.tertiary,
+                                            labelColor = MaterialTheme.colorScheme.primary,
+                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
                                         )
                                     )
                                 }
                             }
                         }
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
 
                     // 시작 시간
                     Row(
@@ -339,44 +350,46 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .clickable {
                                 expandStartPicker = !expandStartPicker
                             }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(start = 8.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary)
+                                .padding(16.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_24),
-                            contentDescription = "시작 시간"
+                            contentDescription = "시작 시간",
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
                             Text(
                                 text = "시작",
-                                style = Typography.labelSmall
+                                style = Typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Text(
                                 text = formatTime(start, "a hh:mm:ss"),
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
 
                         Icon(
                             imageVector = if (expandStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "시작 시간 선택 도구 펼치기",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
                     if (expandStartPicker) {
                         Column(
-                            modifier = Modifier
-                                .padding(16.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -384,7 +397,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
 
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.End
                             ) {
                                 TextButton(
@@ -392,7 +406,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 ) {
                                     Text(
                                         text = "취소",
-                                        style = Typography.bodyMedium
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
 
@@ -409,17 +424,13 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 ) {
                                     Text(
                                         text = "확인",
-                                        style = Typography.bodyMedium
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
                         }
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
 
                     // 종료 시간
                     Row(
@@ -428,44 +439,47 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .clickable {
                                 expandFinishPicker = !expandFinishPicker
                             }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(start = 8.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary)
+                                .padding(16.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_on_24),
-                            contentDescription = "종료 시간"
+                            contentDescription = "종료 시간",
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
                             Text(
                                 text = "종료",
-                                style = Typography.labelSmall
+                                style = Typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Text(
                                 text = formatTime(finish, "a hh:mm:ss"),
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
 
                         Icon(
                             imageVector = if (expandFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "종료 시간 선택 도구 펼치기",
+                            tint = MaterialTheme.colorScheme.primary
+
                         )
                     }
 
                     if (expandFinishPicker) {
                         Column(
-                            modifier = Modifier
-                                .padding(16.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -473,7 +487,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
 
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.End
                             ) {
                                 TextButton(
@@ -481,7 +496,8 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 ) {
                                     Text(
                                         text = "취소",
-                                        style = Typography.bodyMedium
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
 
@@ -498,42 +514,46 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 ) {
                                     Text(
                                         text = "확인",
-                                        style = Typography.bodyMedium
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
                         }
                     }
 
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
-
-                    // 소요 간
+                    // 소요 시간
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             modifier = Modifier
-                                .padding(start = 8.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary)
+                                .padding(16.dp),
                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
-                            contentDescription = "소요 시간"
+                            contentDescription = "소요 시간",
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
-                        Column {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
                             Text(
                                 text = "소요",
-                                style = Typography.labelSmall
+                                style = Typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Text(
                                 text = formatDuration(duration, mode = 3),
-                                style = Typography.bodyMedium
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -546,7 +566,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             .border(
                                 width = 1.dp,
                                 color = if (isDeleteButtonPressed) {
-                                    White
+                                    MaterialTheme.colorScheme.secondary
                                 } else {
                                     OrangeRed
                                 },
@@ -556,7 +576,7 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                                 color = if (isDeleteButtonPressed) {
                                     OrangeRed
                                 } else {
-                                    White
+                                    MaterialTheme.colorScheme.secondary
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             ),
@@ -564,7 +584,6 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
                             if (isDeleteButtonPressed) {
                                 wiDService.deleteWiDById(id = wiDId)
                                 navController.popBackStack()
-                                mainTopBottomBarVisible.value = true
                             } else {
                                 isDeleteButtonPressed = true
                             }
@@ -604,81 +623,70 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
             item {
                 Column(
                     modifier = Modifier
-                        .background(White)
-                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.secondary)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         text = "선택 가능한 시간 범위",
-                        style = Typography.titleMedium
+                        style = Typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
-                    Column(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(horizontal = 16.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
                             .clickable {
                                 start = startLimit
                                 finish = finishLimit
-                            }
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .width(7.dp)
+                                .fillParentMaxHeight()
+                                .background(DarkGray)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .padding(vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(5.dp, 10.dp)
-                                        .background(color = colorMap[title] ?: LightGray)
-                                )
-
-                                Text(
-                                    text = titleMap[title] ?: title,
-                                    style = Typography.bodyMedium
-                                )
-                            }
-
-                            Icon(
-                                modifier = Modifier
-                                    .rotate(90f),
-                                painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
-                                contentDescription = "이 시간 범위 사용하기",
-                                tint = DeepSkyBlue
+                            Text(
+                                text = "${formatTime(startLimit, "a hh:mm:ss")} ~ ${formatTime(finishLimit, "a hh:mm:ss")}",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = formatTime(startLimit, "a hh:mm:ss"),
-                                    style = Typography.bodyMedium,
-                                )
-
-                                Text(
-                                    text = formatTime(finishLimit, "a hh:mm:ss"),
-                                    style = Typography.bodyMedium,
-                                )
-                            }
 
                             Text(
                                 text = formatDuration(Duration.between(startLimit, finishLimit), mode = 3),
-                                fontFamily = pyeongChangPeaceBold,
-                                fontSize = 20.sp
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+
+                        Icon(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .rotate(90f),
+                            painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
+                            contentDescription = "이 시간대 사용하기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
@@ -707,6 +715,5 @@ fun WiDFragment(wiDId: Long, navController: NavController, mainTopBottomBarVisib
 @Preview(showBackground = true)
 @Composable
 fun WiDFragmentPreview() {
-    val mainTopBottomBarVisible = remember { mutableStateOf(true) }
-    WiDFragment(0, NavController(LocalContext.current), mainTopBottomBarVisible)
+    WiDFragment(0, NavController(LocalContext.current))
 }

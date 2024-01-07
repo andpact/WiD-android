@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.LightGray
 import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.colorMap
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -67,11 +69,12 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
     ) {
         // Crossfade 적용 안하면 차트 갱신이 안된다.
         Crossfade(targetState = entryList) { entryList ->
+            val colorScheme = MaterialTheme.colorScheme
             AndroidView(factory = { context ->
                 LineChart(context).apply {
                     // 데이터
                     val dataSet = LineDataSet(entryList, "단위 : 시간").apply {
-                        color = Black.toArgb() // 선 색상
+                        color = colorScheme.primary.toArgb() // 선 색상
                         setDrawCircles(false) // 선 꼭지점 원 표시
                         setDrawValues(false) // 꼭지점 값 표시하기
                         lineWidth = 2f // 선 굵기
@@ -80,22 +83,8 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                         fillDrawable = GradientDrawable().apply { // 선 아래 공간 그라디언트, 색상
                             shape = GradientDrawable.RECTANGLE
                             gradientType = GradientDrawable.LINEAR_GRADIENT
-//                            val startColorID = when (title) {
-//                                "STUDY" -> R.color.study_color
-//                                "WORK" -> R.color.work_color
-//                                "EXERCISE" -> R.color.exercise_color
-//                                "HOBBY" -> R.color.hobby_color
-//                                "PLAY" -> R.color.play_color
-//                                "MEAL" -> R.color.meal_color
-//                                "SHOWER" -> R.color.shower_color
-//                                "TRAVEL" -> R.color.travel_color
-//                                "SLEEP" -> R.color.sleep_color
-//                                "ETC" -> R.color.etc_color
-//                                else -> R.color.light_gray
-//                            }
-//                            val startColor = ContextCompat.getColor(context, startColorID) // colorMap을 사용하니 색상 적용이 안되서 직접 리소스 아이디를 가져옴.
-                            val startColor = (colorMap[title] ?: LightGray).toArgb()
-                            val endColor = White.toArgb()
+                            val startColor = (colorMap[title] ?: DarkGray).toArgb()
+                            val endColor = colorScheme.tertiary.toArgb()
                             colors = intArrayOf(startColor, endColor)
                             orientation = GradientDrawable.Orientation.TOP_BOTTOM
                         }
@@ -117,6 +106,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                     // 차트 설정
                     layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                     legend.isEnabled = true
+                    legend.textColor = colorScheme.primary.toArgb()
                     legend.textSize = 12f
                     legend.form = Legend.LegendForm.LINE // 범례 아이콘 형태
                     legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT // 범례 수평 정렬
@@ -134,6 +124,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                         setDrawGridLines(false) // 그리드 라인
                         setDrawAxisLine(false) // 축선 표시
                         granularity = 1f // 축 라벨 표시 단위
+                        textColor = colorScheme.primary.toArgb()
                         textSize = 12f // 축 라벨 글자 크기
                         val labelCount = if (dateList.size <= 7) { dateList.size / 1 } else { dateList.size / 3 }
                         setLabelCount(labelCount, false) // 라벨 표시 간격
@@ -149,6 +140,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                         isEnabled = true // 축 표시 여부
                         setDrawAxisLine(false) // 축선 표시
                         setDrawGridLines(true) // 그리드 라인
+                        textColor = colorScheme.primary.toArgb()
                         textSize = 12f
                     }
 

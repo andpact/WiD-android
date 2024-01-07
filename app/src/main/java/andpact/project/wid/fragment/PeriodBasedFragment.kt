@@ -35,13 +35,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import java.time.Duration
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PeriodBasedFragment() {
+fun PeriodBasedFragment(navController: NavController) {
     // 날짜
     val today = LocalDate.now()
     var startDate by remember { mutableStateOf(getFirstDayOfWeek(today)) }
@@ -73,30 +74,66 @@ fun PeriodBasedFragment() {
     var selectedMapText by remember { mutableStateOf("합계") }
     var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
 
-//    LaunchedEffect(Unit) {
-//        titleBottomSheetState.hide()
-//        periodBottomSheetState.hide()
-//    }
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(White)
+            .background(MaterialTheme.colorScheme.secondary)
     ) {
+        /**
+         * 상단 바
+         */
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clickable {
+                        navController.popBackStack()
+                    },
+                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                contentDescription = "뒤로 가기",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = "기간 별 조회",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd),
+                text = "${periodMap[selectedPeriod]} • ${titleMapWithAll[selectedTitle]}",
+                style = Typography.bodyMedium
+            )
+        }
+
+        HorizontalDivider()
+
         /**
          * 컨텐츠
          */
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .weight(1f)
+                .background(MaterialTheme.colorScheme.tertiary),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (selectedTitle == titlesWithAll[0]) {
+            if (selectedTitle == titlesWithAll[0]) { // 제목이 "전체" 일 때
                 item("타임라인") {
                     Column(
                         modifier = Modifier
-                            .background(White)
-                            .padding(vertical = 16.dp)
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             modifier = Modifier
@@ -106,7 +143,8 @@ fun PeriodBasedFragment() {
                                 periods[1] -> getMonthString(date = startDate)
                                 else -> buildAnnotatedString { append("") }
                             },
-                            style = Typography.titleMedium
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (wiDList.isEmpty()) {
@@ -115,39 +153,33 @@ fun PeriodBasedFragment() {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp)
                             ) {
                                 val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
 
                                 daysOfWeek.forEachIndexed { index, day ->
                                     val textColor = when (index) {
-                                        0 -> if (selectedPeriod == periods[1]) OrangeRed else Color.Unspecified
-                                        5 -> if (selectedPeriod == periods[0]) DeepSkyBlue else Color.Unspecified
-                                        6 -> if (selectedPeriod == periods[0]) OrangeRed else if (selectedPeriod == periods[1]) DeepSkyBlue else Color.Unspecified
-                                        else -> Color.Unspecified
+                                        0 -> if (selectedPeriod == periods[1]) OrangeRed else MaterialTheme.colorScheme.primary
+                                        5 -> if (selectedPeriod == periods[0]) DeepSkyBlue else MaterialTheme.colorScheme.primary
+                                        6 -> if (selectedPeriod == periods[0]) OrangeRed else if (selectedPeriod == periods[1]) DeepSkyBlue else MaterialTheme.colorScheme.primary
+                                        else -> MaterialTheme.colorScheme.primary
                                     }
 
                                     Text(
                                         modifier = Modifier
                                             .weight(1f),
                                         text = day,
-                                        style = TextStyle(
-                                            textAlign = TextAlign.Center,
-                                            color = textColor
-                                        )
+                                        style = Typography.bodyMedium,
+                                        textAlign = TextAlign.Center,
+                                        color = textColor
                                     )
                                 }
                             }
 
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                            )
-
                             LazyVerticalGrid(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp, 8.dp, 16.dp, 0.dp)
+                                    .padding(horizontal = 16.dp)
                                     .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                                 columns = GridCells.Fixed(7)
                             ) {
@@ -158,8 +190,7 @@ fun PeriodBasedFragment() {
                                 }
 
                                 items(
-                                    ChronoUnit.DAYS.between(startDate, finishDate)
-                                        .toInt() + 1
+                                    ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
                                 ) { index: Int ->
                                     val indexDate = startDate.plusDays(index.toLong())
                                     val filteredWiDListByDate =
@@ -178,8 +209,9 @@ fun PeriodBasedFragment() {
                 item("합계, 평균, 최고") {
                     Column(
                         modifier = Modifier
-                            .background(White)
-                            .padding(vertical = 16.dp)
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -190,7 +222,8 @@ fun PeriodBasedFragment() {
                         ) {
                             Text(
                                 text = "$selectedMapText 기록",
-                                style = Typography.titleMedium
+                                style = Typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
 
                             Row(
@@ -204,7 +237,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "합계",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "합계") Black else LightGray
+                                    color = if (selectedMapText == "합계") MaterialTheme.colorScheme.primary else DarkGray
                                 )
 
                                 Text(
@@ -215,7 +248,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "평균",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "평균") Black else LightGray
+                                    color = if (selectedMapText == "평균") MaterialTheme.colorScheme.primary else DarkGray
                                 )
 
                                 Text(
@@ -226,7 +259,7 @@ fun PeriodBasedFragment() {
                                         },
                                     text = "최고",
                                     style = Typography.bodyMedium,
-                                    color = if (selectedMapText == "최고") Black else LightGray
+                                    color = if (selectedMapText == "최고") MaterialTheme.colorScheme.primary else DarkGray
                                 )
                             }
                         }
@@ -234,36 +267,36 @@ fun PeriodBasedFragment() {
                         if (selectedMap.isEmpty()) {
                             createEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
                         } else {
-                            selectedMap.entries.forEachIndexed { index, (title, duration) ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = titleMap[title] ?: title,
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
-                                    )
+                            LazyVerticalGrid(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                columns = GridCells.Fixed(2),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                selectedMap.forEach { (title, duration) ->
+                                    item {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(MaterialTheme.colorScheme.tertiary)
+                                                .padding(vertical = 16.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Text(
+                                                text = titleMap[title] ?: title,
+                                                style = Typography.bodyMedium
+                                            )
 
-                                    Text(
-                                        text = formatDuration(duration, mode = 3),
-                                        style = TextStyle(
-                                            fontSize = 20.sp,
-                                            fontFamily = pyeongChangPeaceBold
-                                        )
-                                    )
-                                }
-
-                                if (index < selectedMap.size - 1) {
-                                    HorizontalDivider(
-                                        modifier = Modifier
-                                            .padding(horizontal = 16.dp)
-                                    )
+                                            Text(
+                                                text = formatDuration(duration, mode = 3),
+                                                style = Typography.bodyMedium
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -273,14 +306,16 @@ fun PeriodBasedFragment() {
                 item("기록률") {
                     Column(
                         modifier = Modifier
-                            .background(White)
-                            .padding(vertical = 16.dp)
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp),
                             text = "기록률",
-                            style = Typography.titleMedium
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (wiDList.isEmpty()) {
@@ -294,12 +329,13 @@ fun PeriodBasedFragment() {
                         }
                     }
                 }
-            } else {
-                item {
+            } else { // 제목이 "전체"가 아닐 때
+                item("선 그래프") {
                     Column(
                         modifier = Modifier
-                            .background(White)
-                            .padding(vertical = 16.dp)
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             modifier = Modifier
@@ -309,7 +345,8 @@ fun PeriodBasedFragment() {
                                 periods[1] -> getMonthString(date = startDate)
                                 else -> buildAnnotatedString { append("") }
                             },
-                            style = Typography.titleMedium
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
@@ -325,17 +362,19 @@ fun PeriodBasedFragment() {
                     }
                 }
 
-                item {
+                item("시간 기록") {
                     Column(
                         modifier = Modifier
-                            .background(White)
+                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp),
                             text = "시간 기록",
-                            style = Typography.titleMedium
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
@@ -344,94 +383,74 @@ fun PeriodBasedFragment() {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.tertiary)
                                     .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = "합계",
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
 
                                 Text(
                                     text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                            )
 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.tertiary)
                                     .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = "평균",
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
 
                                 Text(
                                     text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                            )
 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.tertiary)
                                     .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = "최고",
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
 
                                 Text(
                                     text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
-                                    style = TextStyle(
-                                        fontSize = 20.sp,
-                                        fontFamily = pyeongChangPeaceBold
-                                    )
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
                 }
-            }
-
-            item {
-                Spacer(
-                    modifier = Modifier
-                        .height(80.dp)
-                )
             }
         }
 
@@ -440,14 +459,10 @@ fun PeriodBasedFragment() {
          */
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(LightGray)
-                .padding(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth(),
         ) {
+            HorizontalDivider()
+
             // 기간 선택
             AnimatedVisibility(
                 visible = periodMenuExpanded,
@@ -461,8 +476,11 @@ fun PeriodBasedFragment() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
+                        modifier = Modifier
+                            .padding(top = 8.dp),
                         text = "조회할 기간을 선택해 주세요.",
-                        style = Typography.bodyMedium
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     LazyVerticalGrid(
@@ -499,17 +517,15 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = White,
-                                        labelColor = Black,
-                                        selectedContainerColor = Black,
-                                        selectedLabelColor = White
+                                        containerColor = MaterialTheme.colorScheme.tertiary,
+                                        labelColor = MaterialTheme.colorScheme.primary,
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.secondary
                                     )
                                 )
                             }
                         }
                     }
-
-                    HorizontalDivider()
                 }
             }
 
@@ -526,8 +542,11 @@ fun PeriodBasedFragment() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
+                        modifier = Modifier
+                            .padding(top = 8.dp),
                         text = "조회할 제목를 선택해 주세요.",
-                        style = Typography.bodyMedium
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
 
                     FilterChip(
@@ -548,10 +567,10 @@ fun PeriodBasedFragment() {
                             )
                         },
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = White,
-                            labelColor = Black,
-                            selectedContainerColor = Black,
-                            selectedLabelColor = White
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            labelColor = MaterialTheme.colorScheme.primary,
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.secondary
                         )
                     )
 
@@ -579,29 +598,25 @@ fun PeriodBasedFragment() {
                                         )
                                     },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = White,
-                                        labelColor = Black,
-                                        selectedContainerColor = Black,
-                                        selectedLabelColor = White
+                                        containerColor = MaterialTheme.colorScheme.tertiary,
+                                        labelColor = MaterialTheme.colorScheme.primary,
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.secondary
                                     )
                                 )
                             }
                         }
                     }
-
-                    HorizontalDivider()
                 }
             }
 
             Row(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .height(56.dp),
             ) {
                 IconButton(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DeepSkyBlue),
+                        .weight(1f),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -613,14 +628,13 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_calendar_today_24),
                         contentDescription = "기간 선택",
-                        tint = White,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(colorMap[selectedTitle] ?: Black),
+                        .weight(1f),
                     onClick = {
                         if (periodMenuExpanded) {
                             periodMenuExpanded = false
@@ -632,27 +646,13 @@ fun PeriodBasedFragment() {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_title_24),
                         contentDescription = "제목 선택",
-                        tint = White
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(
-                            color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                                selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                            ) {
-                                Black
-                            } else {
-                                Gray
-                            }
-                        ),
+                        .weight(1f),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -684,14 +684,19 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Filled.Refresh,
                         contentDescription = "기간 초기화",
-                        tint = White
+                        tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                            selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                        ) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            DarkGray
+                        }
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Black),
+                        .weight(1f),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -718,22 +723,13 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
                         contentDescription = "이전 기간",
-                        tint = White
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
                 IconButton(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(
-                            color = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                                selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                            ) {
-                                Black
-                            } else {
-                                Gray
-                            }
-                        ),
+                        .weight(1f),
                     onClick = {
                         if (titleMenuExpanded) {
                             titleMenuExpanded = false
@@ -765,7 +761,13 @@ fun PeriodBasedFragment() {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
                         contentDescription = "다음 기간",
-                        tint = White
+                        tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                            selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                        ) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            DarkGray
+                        }
                     )
                 }
             }
@@ -773,8 +775,8 @@ fun PeriodBasedFragment() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PeriodBasedFragmentPreview() {
-    PeriodBasedFragment()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PeriodBasedFragmentPreview() {
+//    PeriodBasedFragment()
+//}
