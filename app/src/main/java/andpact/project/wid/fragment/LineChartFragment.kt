@@ -84,7 +84,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
                             shape = GradientDrawable.RECTANGLE
                             gradientType = GradientDrawable.LINEAR_GRADIENT
                             val startColor = (colorMap[title] ?: DarkGray).toArgb()
-                            val endColor = colorScheme.tertiary.toArgb()
+                            val endColor = colorScheme.secondary.toArgb()
                             colors = intArrayOf(startColor, endColor)
                             orientation = GradientDrawable.Orientation.TOP_BOTTOM
                         }

@@ -237,7 +237,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
                                 .padding(16.dp),
-                            painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                            painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "날짜",
                             tint = MaterialTheme.colorScheme.primary
                         )

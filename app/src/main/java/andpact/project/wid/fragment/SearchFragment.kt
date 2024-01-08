@@ -197,7 +197,7 @@ fun SearchFragment(navController: NavController) {
                         ) {
                             Text(
                                 text = getDayString(diary.date),
-                                style = Typography.titleMedium,
+                                style = Typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -205,7 +205,7 @@ fun SearchFragment(navController: NavController) {
 
                             Text(
                                 text = diary.title,
-                                style = Typography.bodyMedium,
+                                style = Typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -213,7 +213,7 @@ fun SearchFragment(navController: NavController) {
 
                             Text(
                                 text = diary.content,
-                                style = Typography.bodyMedium,
+                                style = Typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,

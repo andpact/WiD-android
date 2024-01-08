@@ -255,7 +255,8 @@ fun DateBasedFragment(navController: NavController) {
                                 .padding(horizontal = 16.dp)
                                 .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                             columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             totalDurationMap.forEach { (title, totalDuration) ->
                                 item {
@@ -266,16 +267,31 @@ fun DateBasedFragment(navController: NavController) {
                                             .background(MaterialTheme.colorScheme.tertiary)
                                             .padding(vertical = 16.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Text(
-                                            text = titleMap[title] ?: title,
-                                            style = Typography.bodyMedium
-                                        )
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .clip(CircleShape)
+                                                    .background((colorMap[title] ?: DarkGray).copy(alpha = 0.1f))
+                                                    .padding(8.dp),
+                                                painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
+                                                contentDescription = "제목",
+                                                tint = colorMap[title] ?: DarkGray
+                                            )
+
+                                            Text(
+                                                text = titleMap[title] ?: title,
+                                                style = Typography.titleLarge
+                                            )
+                                        }
 
                                         Text(
                                             text = formatDuration(totalDuration, mode = 3),
-                                            style = Typography.bodyMedium
+                                            style = Typography.titleLarge
                                         )
                                     }
                                 }
@@ -327,6 +343,7 @@ fun DateBasedFragment(navController: NavController) {
 
                                 Column(
                                     modifier = Modifier
+                                        .weight(1f)
                                         .padding(vertical = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
@@ -342,11 +359,6 @@ fun DateBasedFragment(navController: NavController) {
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
 
                                 Icon(
                                     modifier = Modifier
@@ -441,7 +453,7 @@ fun DateBasedFragment(navController: NavController) {
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                         contentDescription = "날짜 선택",
                         tint = MaterialTheme.colorScheme.primary
                     )

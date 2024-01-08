@@ -148,13 +148,13 @@ fun NavigationGraph(navController: NavHostController) {
                 )
             },
             popEnterTransition = { null },
-            exitTransition = {
+            exitTransition = { null },
+            popExitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
                     animationSpec = tween(500)
                 )
             },
-            popExitTransition = { null },
         ) {
             DateBasedFragment(navController = navController)
         }
@@ -188,13 +188,13 @@ fun NavigationGraph(navController: NavHostController) {
                 )
             },
             popEnterTransition = { null },
-            exitTransition = {
+            exitTransition = { null },
+            popExitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
                     animationSpec = tween(500)
                 )
             },
-            popExitTransition = { null },
         ) {
             SearchFragment(navController = navController)
         }

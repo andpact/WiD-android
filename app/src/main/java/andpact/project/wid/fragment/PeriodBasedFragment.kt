@@ -68,6 +68,9 @@ fun PeriodBasedFragment(navController: NavController) {
     val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
 
     // 최고
+    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+
+    // 최고
     val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
 
     // 맵
@@ -254,6 +257,17 @@ fun PeriodBasedFragment(navController: NavController) {
                                 Text(
                                     modifier = Modifier
                                         .clickable {
+                                            selectedMapText = "최저"
+                                            selectedMap = minDurationMap
+                                        },
+                                    text = "최저",
+                                    style = Typography.bodyMedium,
+                                    color = if (selectedMapText == "최저") MaterialTheme.colorScheme.primary else DarkGray
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .clickable {
                                             selectedMapText = "최고"
                                             selectedMap = maxDurationMap
                                         },
@@ -273,7 +287,8 @@ fun PeriodBasedFragment(navController: NavController) {
                                     .padding(horizontal = 16.dp)
                                     .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                                 columns = GridCells.Fixed(2),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 selectedMap.forEach { (title, duration) ->
                                     item {
@@ -284,12 +299,27 @@ fun PeriodBasedFragment(navController: NavController) {
                                                 .background(MaterialTheme.colorScheme.tertiary)
                                                 .padding(vertical = 16.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            verticalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
-                                            Text(
-                                                text = titleMap[title] ?: title,
-                                                style = Typography.bodyMedium
-                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .clip(CircleShape)
+                                                        .background((colorMap[title] ?: DarkGray).copy(alpha = 0.1f))
+                                                        .padding(8.dp),
+                                                    painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
+                                                    contentDescription = "제목",
+                                                    tint = colorMap[title] ?: DarkGray
+                                                )
+
+                                                Text(
+                                                    text = titleMap[title] ?: title,
+                                                    style = Typography.titleLarge
+                                                )
+                                            }
 
                                             Text(
                                                 text = formatDuration(duration, mode = 3),
@@ -421,6 +451,29 @@ fun PeriodBasedFragment(navController: NavController) {
 
                                 Text(
                                     text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.tertiary)
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "최저",
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = formatDuration(duration = minDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
                                     style = Typography.titleLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -626,7 +679,7 @@ fun PeriodBasedFragment(navController: NavController) {
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                         contentDescription = "기간 선택",
                         tint = MaterialTheme.colorScheme.primary
                     )

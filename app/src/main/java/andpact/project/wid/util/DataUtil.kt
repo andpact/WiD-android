@@ -1,6 +1,8 @@
 package andpact.project.wid.util
 
+import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
+import androidx.compose.ui.res.painterResource
 
 val titles = arrayOf(
     "STUDY", // 공부
@@ -26,6 +28,19 @@ val titleMap = mapOf(
     "TRAVEL" to "이동",
     "SLEEP" to "수면",
     "ETC" to "기타"
+)
+
+val titleIconMap = mapOf(
+    "STUDY" to R.drawable.baseline_menu_book_16,
+    "WORK" to R.drawable.baseline_construction_16,
+    "EXERCISE" to R.drawable.baseline_fitness_center_16,
+    "HOBBY" to R.drawable.outline_brush_24,
+    "PLAY" to R.drawable.outline_videogame_asset_16,
+    "MEAL" to R.drawable.baseline_local_dining_16,
+    "SHOWER" to R.drawable.outline_shower_16,
+    "TRAVEL" to R.drawable.baseline_commute_16,
+    "SLEEP" to R.drawable.outline_bed_16,
+    "ETC" to R.drawable.baseline_more_horiz_16
 )
 
 val titleExampleMap = mapOf(
@@ -79,19 +94,6 @@ val periodMap = mapOf(
     "MONTH" to "한 달",
 )
 
-//val colorMap = mapOf(
-//    "ALL" to Black,
-//    "STUDY" to R.color.study_color,
-//    "WORK" to R.color.work_color,
-//    "EXERCISE" to R.color.exercise_color,
-//    "HOBBY" to R.color.hobby_color,
-//    "PLAY" to R.color.play_color,
-//    "MEAL" to R.color.meal_color,
-//    "SHOWER" to R.color.shower_color,
-//    "TRAVEL" to R.color.travel_color,
-//    "SLEEP" to R.color.sleep_color,
-//    "ETC" to R.color.etc_color
-//)
 
 val colorMap = mapOf(
     "ALL" to Black,
@@ -106,7 +108,6 @@ val colorMap = mapOf(
     "SLEEP" to Sleep,
     "ETC" to Etc
 )
-
 
 val daysOfWeekFromSunday = listOf(
     "일",

@@ -211,6 +211,9 @@ fun StopWatchFragment(navController: NavController) {
             .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = stopWatchStarted) {
                 stopWatchTopBottomBarVisible = !stopWatchTopBottomBarVisible
+                if (titleMenuExpanded) {
+                    titleMenuExpanded = false
+                }
             }
     ) {
         /**

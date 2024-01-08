@@ -180,7 +180,7 @@ fun HomeFragment(navController: NavController) {
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.tertiary)
                             .padding(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_calendar_today_24),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                         contentDescription = "기간 별 조회",
                         tint = MaterialTheme.colorScheme.primary
                     )
