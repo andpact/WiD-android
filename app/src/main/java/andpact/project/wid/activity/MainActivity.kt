@@ -1,34 +1,35 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.R
 import andpact.project.wid.fragment.*
+import andpact.project.wid.ui.theme.LimeGreen
+import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.ui.theme.acmeRegular
+import andpact.project.wid.util.PlayerState
+import andpact.project.wid.util.StopwatchPlayer
+import andpact.project.wid.util.TimerPlayer
+import andpact.project.wid.util.formatTime
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -48,30 +49,140 @@ class MainActivity : ComponentActivity() {
 fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
+        val stopwatchPlayer = StopwatchPlayer()
+//        val timerPlayer = TimerPlayer()
 
         Scaffold(
-//            bottomBar = {
-//                BottomBar(
-//                    modifier = Modifier
-//                        .imePadding(),
-////                        .navigationBarsPadding(), // 화면 하단의 시스템 네비게이션 바 만큼 패딩을 적용함.
-//                    navController = navController,
-//                    mainTopBottomBarVisible = mainTopBottomBarVisible,
-//                )
-//            }
+            topBar = {
+                TopBar(stopwatchPlayer = stopwatchPlayer)
+            }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                NavigationGraph(navController = navController)
+                NavigationGraph(navController = navController, stopwatchPlayer = stopwatchPlayer)
             }
         }
     }
 }
 
 @Composable
-fun NavigationGraph(navController: NavHostController) {
+fun TopBar(stopwatchPlayer: StopwatchPlayer) {
+//    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(28.dp)
+            .background(
+                if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                    LimeGreen
+                } else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
+                    OrangeRed
+                } else {
+                    MaterialTheme.colorScheme.secondary
+                }
+            )
+    ) {
+        // 경과 시간 텍스트
+        Text(
+            modifier = Modifier
+                .align(Alignment.CenterStart),
+            text = stopwatchPlayer.elapsedTime.value.toString(),
+//            text = formatTime(stopwatchPlayer.elapsedTime.value, "hh:mm:ss"),
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+        ) {
+            IconButton(
+                onClick = {
+//                    coroutineScope.launch {
+                        stopwatchPlayer.startIt()
+//                    }
+                }
+            ) {
+                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "시작")
+            }
+
+            IconButton(
+                onClick = {
+//                    coroutineScope.launch {
+                        stopwatchPlayer.pauseIt()
+//                    }
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Warning, contentDescription = "중지")
+            }
+
+            IconButton(
+                onClick = {
+//                    coroutineScope.launch {
+                        stopwatchPlayer.stopIt()
+//                    }
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "초기화")
+            }
+        }
+    }
+}
+
+//@Composable
+//fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
+////    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
+//    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.DateBasedFragmentDestination, Destinations.PeriodBasedFragmentDestination, Destinations.SearchFragmentDestination)
+//
+//    AnimatedVisibility(
+//        visible = mainTopBottomBarVisible.value,
+//        enter = expandVertically{ 0 },
+//        exit = shrinkVertically{ 0 },
+//    ) {
+////    if (mainTopBottomBarVisible.value) { // 애니메이션 없이 바텀 네비게이션 바를 없애서 하면 전환시 불필요한 애니메이션 없앰.
+//        Column {
+//            HorizontalDivider()
+//
+//            NavigationBar(
+//                modifier = modifier
+//                    .height(50.dp),
+//                containerColor = White,
+//            ) {
+//                val navBackStackEntry by navController.currentBackStackEntryAsState()
+//                val currentRoute = navBackStackEntry?.destination?.route
+//
+//                destinationList.forEach { destination ->
+//                    NavigationBarItem(
+//                        alwaysShowLabel = false,
+//                        icon = { Icon(painter = painterResource(id = destination.icon!!), contentDescription = "") },
+//                        selected = currentRoute == destination.route,
+//                        onClick = {
+//                            navController.navigate(destination.route) {
+//                                popUpTo(navController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
+//                                    saveState = true
+//                                }
+//                                launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
+//                                restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
+//                            }
+//                        },
+//                        colors = NavigationBarItemDefaults.colors(
+//                            unselectedTextColor = LightGray,
+//                            selectedTextColor = Black,
+//                            unselectedIconColor = LightGray,
+//                            selectedIconColor = Black,
+//                            indicatorColor = White
+//                        ),
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
+
+@Composable
+fun NavigationGraph(navController: NavHostController, stopwatchPlayer: StopwatchPlayer) {
     NavHost(
         navController = navController,
         startDestination = Destinations.HomeFragmentDestination.route
@@ -97,7 +208,7 @@ fun NavigationGraph(navController: NavHostController) {
                 )
             }
         ) {
-            StopWatchFragment(navController = navController)
+            StopWatchFragment(navController = navController, stopwatchPlayer = stopwatchPlayer)
         }
 
         // 타이머
@@ -249,56 +360,6 @@ fun NavigationGraph(navController: NavHostController) {
         }
     }
 }
-
-//@Composable
-//fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
-////    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.ListFragmentDestination, Destinations.SearchFragmentDestination)
-//    val destinationList = listOf(Destinations.HomeFragmentDestination, Destinations.DateBasedFragmentDestination, Destinations.PeriodBasedFragmentDestination, Destinations.SearchFragmentDestination)
-//
-//    AnimatedVisibility(
-//        visible = mainTopBottomBarVisible.value,
-//        enter = expandVertically{ 0 },
-//        exit = shrinkVertically{ 0 },
-//    ) {
-////    if (mainTopBottomBarVisible.value) { // 애니메이션 없이 바텀 네비게이션 바를 없애서 하면 전환시 불필요한 애니메이션 없앰.
-//        Column {
-//            HorizontalDivider()
-//
-//            NavigationBar(
-//                modifier = modifier
-//                    .height(50.dp),
-//                containerColor = White,
-//            ) {
-//                val navBackStackEntry by navController.currentBackStackEntryAsState()
-//                val currentRoute = navBackStackEntry?.destination?.route
-//
-//                destinationList.forEach { destination ->
-//                    NavigationBarItem(
-//                        alwaysShowLabel = false,
-//                        icon = { Icon(painter = painterResource(id = destination.icon!!), contentDescription = "") },
-//                        selected = currentRoute == destination.route,
-//                        onClick = {
-//                            navController.navigate(destination.route) {
-//                                popUpTo(navController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
-//                                    saveState = true
-//                                }
-//                                launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
-//                                restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
-//                            }
-//                        },
-//                        colors = NavigationBarItemDefaults.colors(
-//                            unselectedTextColor = LightGray,
-//                            selectedTextColor = Black,
-//                            unselectedIconColor = LightGray,
-//                            selectedIconColor = Black,
-//                            indicatorColor = White
-//                        ),
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
 
 sealed class Destinations(
     val route: String,

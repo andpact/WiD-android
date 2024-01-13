@@ -35,18 +35,18 @@ import androidx.navigation.NavController
 
 @Composable
 fun HomeFragment(navController: NavController) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
+            .background(MaterialTheme.colorScheme.secondary),
+        verticalArrangement = Arrangement.Center
     ) {
         /**
          * 컨텐츠
          */
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
