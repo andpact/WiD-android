@@ -1,45 +1,75 @@
 package andpact.project.wid.util
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 import kotlin.concurrent.timer
 
+/**
+ * State 변수는 직접 Setter를 선언하고,
+ * 일반 변수는 get(), set()를 사용함.
+ */
 class StopwatchPlayer : ViewModel() {
+    // 날짜
+    var date: LocalDate
+        get() = _date
+        set(value) { _date = value }
+    private var _date: LocalDate = LocalDate.now()
+
+    // 시작 시간
+    var start: LocalTime
+        get() = _start
+        set(value) { _start = value }
+    private var _start: LocalTime = LocalTime.now()
+
+    // 제목
+    private val _title = mutableStateOf(titles[0])
+    val title: State<String> = _title
+
+    // 화면
+    private val _inStopwatchView = mutableStateOf(false)
+    val inStopwatchView: State<Boolean> = _inStopwatchView
+
+    // 스톱 워치
     private var timer: Timer? = null
-
-    // 현재 스톱워치 상태를 나타내는 StateFlow
-    private val _stopwatchState = MutableStateFlow(PlayerState.Stopped)
-    val stopwatchState: StateFlow<PlayerState> = _stopwatchState
-
-    // 스톱워치의 경과 시간을 나타내는 StateFlow
-    private val _elapsedTime = mutableStateOf(0L)
+    private val _stopwatchState = mutableStateOf(PlayerState.Stopped)
+    val stopwatchState: State<PlayerState> = _stopwatchState
+    private val _elapsedTime = mutableLongStateOf(0L)
     val elapsedTime: State<Long> = _elapsedTime
 
-//    private val _elapsedTime = MutableStateFlow(0L)
-//    val elapsedTime: StateFlow<Long> = _elapsedTime
+    fun setTitle(newTitle: String) {
+        _title.value = newTitle
+    }
+
+    fun setInStopwatchView(isInStopwatchView: Boolean) {
+        _inStopwatchView.value = isInStopwatchView
+    }
 
     fun startIt() {
         timer?.cancel()
         _stopwatchState.value = PlayerState.Started
 
-        viewModelScope.launch {
-            delay(1000) // 1초 뒤에 타이머를 시작
+        date = LocalDate.now()
+        start = LocalTime.now()
 
-            timer = timer(period = 1000) {
-                _elapsedTime.value += 1
+        viewModelScope.launch {
+            delay(1_000) // 1초 뒤에 스톱워치를 시작
+
+            timer = timer(period = 1_000) {
+                _elapsedTime.value += 1_000 // MilliSeconds 기준
             }
         }
     }
 
     fun restartIt() {
-
+        _elapsedTime.value = 0
     }
 
     fun pauseIt() {
@@ -52,11 +82,4 @@ class StopwatchPlayer : ViewModel() {
         _stopwatchState.value = PlayerState.Stopped
         _elapsedTime.value = 0
     }
-
-}
-
-enum class PlayerState {
-    Started,
-    Paused,
-    Stopped
 }

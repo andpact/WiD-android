@@ -42,42 +42,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * 프래그먼트에서는 WiD의 종료 시간, 소요 시간 할당, 타이머 시간 표시 및 WiD를 DB에 저장하는 것만 담당함.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimerFragment(navController: NavController) {
-    // 날짜
-    var date: LocalDate = LocalDate.now()
-
+fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
-//    val wiDList = remember(date) { wiDService.readDailyWiDListByDate(date) }
-
-    // 합계
-//    val totalDurationMap = remember(wiDList) { getTotalDurationMapByTitle(wiDList = wiDList) }
 
     // 제목
-    var title by remember { mutableStateOf(titles[0]) }
     var titleMenuExpanded by remember { mutableStateOf(false) }
 
-    // 시작 시간
-    var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
-
-    // 종료 시간
-    var finish: LocalTime by remember { mutableStateOf(LocalTime.now()) }
-
     // 타이머
-    var timerStarted by remember { mutableStateOf(false) }
-    var timerPaused by remember { mutableStateOf(false) }
-    var timerReset by remember { mutableStateOf(true) }
-    var finishTime by remember { mutableStateOf(0L) }
-    var currentTime by remember { mutableStateOf(0L) }
-    var remainingTime by remember { mutableStateOf(0L) }
     val itemHeight = 30.dp
     val pickerHeight = itemHeight * 3 + (16.dp * 2) // 아이템 사이의 여백 16을 두 번 추가해줌.
     var timerTopBottomBarVisible by remember { mutableStateOf(true) }
@@ -105,21 +89,16 @@ fun TimerFragment(navController: NavController) {
     val currentSecondScrollOffset = remember { derivedStateOf { lazySecondListState.firstVisibleItemScrollOffset } }
 
     fun startTimer() {
-        timerStarted = true
-        timerPaused = false
-        timerReset = false
-
-        date = LocalDate.now()
-        start = LocalTime.now()
-
-        finishTime = System.currentTimeMillis() + remainingTime
+        timerPlayer.startIt()
     }
 
     fun pauseTimer() {
-        timerStarted = false
-        timerPaused = true
+        timerPlayer.pauseIt()
 
-        finish = LocalTime.now()
+        val date = timerPlayer.date
+        val title = timerPlayer.title.value
+        val start = timerPlayer.start
+        val finish = LocalTime.now()
 
         if (finish.isBefore(start)) {
             val midnight = LocalTime.MIDNIGHT
@@ -158,16 +137,8 @@ fun TimerFragment(navController: NavController) {
         }
     }
 
-    fun resetTimer() {
-        timerPaused = false
-        timerReset = true
-
-//        finishTime = 0
-//        currentTime = 0
-
-//        selectedHour = 0
-//        selectedMinute = 0
-//        selectedSecond = 0
+    fun stopTimer() {
+        timerPlayer.stopIt()
 
         // 초기화 버튼을 누르면 0시로 초기화 해버림.
         coroutineScope.launch {
@@ -175,47 +146,38 @@ fun TimerFragment(navController: NavController) {
             lazyMinuteListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
             lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
         }
-        remainingTime = 0
 
         if (!timerTopBottomBarVisible) {
             timerTopBottomBarVisible = true
         }
     }
 
-    LaunchedEffect(timerStarted) {
-        val today = LocalDate.now()
+    DisposableEffect(Unit) {
+        // Fragment가 나타날 때
+        timerPlayer.setInTimerView(true)
 
-        // 날짜가 변경되면 갱신해줌.
-        if (date != today) {
-            date = today
-        }
-
-        while (timerStarted) {
-            currentTime = System.currentTimeMillis() // currentTime은 1초마다 갱신 되어야 함.
-            if (currentTime < finishTime) {
-                delay(1000) // 1.000초에 한 번씩 while문이 실행되어 초기화됨.
-                remainingTime = finishTime - currentTime
-            } else { // 시간이 0초가 되면 종료
-                pauseTimer()
-                resetTimer()
-            }
+        onDispose {
+            // Fragment가 사라질 때
+            timerPlayer.setInTimerView(false)
         }
     }
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-
-        if (timerStarted) {
-            pauseTimer()
-        }
     }
+
+//    LaunchedEffect(timerPlayer.timerState.value == PlayerState.Started) {
+//        if (timerPlayer.remainingTime.value == 0L) {
+//            pauseTimer()
+//        }
+//    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = timerStarted) {
+            .clickable(enabled = timerPlayer.timerState.value == PlayerState.Started) {
                 timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
     ) {
@@ -240,10 +202,6 @@ fun TimerFragment(navController: NavController) {
                         .align(Alignment.CenterStart)
                         .clickable {
                             navController.popBackStack()
-
-                            if (timerStarted) {
-                                pauseTimer()
-                            }
                         },
                     painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                     contentDescription = "뒤로 가기",
@@ -263,7 +221,7 @@ fun TimerFragment(navController: NavController) {
         /**
          * 컨텐츠
          */
-        if (timerReset) {
+        if (timerPlayer.timerState.value == PlayerState.Stopped) {
             Column(
                 modifier = Modifier
                     .align(Alignment.Center),
@@ -290,7 +248,8 @@ fun TimerFragment(navController: NavController) {
                             val adjustedIndex = index % 24 // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentHourIndex.value) {
                                 selectedHour = (adjustedIndex + 1) % 24 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                remainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                timerPlayer.setRemainingTime(newRemainingTime)
                             }
 
                             Text(
@@ -332,7 +291,8 @@ fun TimerFragment(navController: NavController) {
                             val adjustedIndex = index % 60 // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentMinuteIndex.value) {
                                 selectedMinute = (adjustedIndex + 1) % 60 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                remainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                timerPlayer.setRemainingTime(newRemainingTime)
                             }
 
                             Text(
@@ -374,7 +334,8 @@ fun TimerFragment(navController: NavController) {
                             val adjustedIndex = index % 60 // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentSecondIndex.value) {
                                 selectedSecond = (adjustedIndex + 1) % 60 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                remainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
+                                timerPlayer.setRemainingTime(newRemainingTime)
                             }
 
                             Text(
@@ -451,10 +412,12 @@ fun TimerFragment(navController: NavController) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = formatTimerTime(time = remainingTime),
+                    text = formatTimeHorizontally(time = timerPlayer.remainingTime.value),
                     style = TextStyle(
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 60.sp,
+                        fontFamily = chivoMonoBlackItalic,
                     )
                 )
 
@@ -545,9 +508,9 @@ fun TimerFragment(navController: NavController) {
                             titles.forEach { chipTitle ->
                                 item {
                                     FilterChip(
-                                        selected = title == chipTitle,
+                                        selected = timerPlayer.title.value == chipTitle,
                                         onClick = {
-                                            title = chipTitle
+                                            timerPlayer.setTitle(chipTitle)
                                             titleMenuExpanded = false
                                         },
                                         label = {
@@ -583,7 +546,7 @@ fun TimerFragment(navController: NavController) {
                 ) {
                     Row(
                         modifier = Modifier
-                            .clickable(timerReset) {
+                            .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
                                 titleMenuExpanded = !titleMenuExpanded
                             },
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -592,16 +555,16 @@ fun TimerFragment(navController: NavController) {
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(color = colorMap[title] ?: DarkGray)
+                                .background(color = colorMap[timerPlayer.title.value] ?: DarkGray)
                         )
 
                         Text(
-                            text = titleMap[title] ?: "공부",
+                            text = titleMap[timerPlayer.title.value] ?: "공부",
                             style = Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
 
-                        if (timerReset) {
+                        if (timerPlayer.timerState.value == PlayerState.Stopped) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_unfold_more_16),
                                 contentDescription = "제목 메뉴 펼치기",
@@ -614,12 +577,12 @@ fun TimerFragment(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (timerPaused) {
+                        if (timerPlayer.timerState.value == PlayerState.Paused) {
                             Box(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .clickable {
-                                        resetTimer()
+                                        stopTimer()
                                     }
                                     .background(color = DeepSkyBlue)
                                     .padding(16.dp)
@@ -636,7 +599,7 @@ fun TimerFragment(navController: NavController) {
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .clickable {
-                                    if (timerStarted) {
+                                    if (timerPlayer.timerState.value == PlayerState.Started) {
                                         pauseTimer()
                                     } else {
                                         startTimer()
@@ -644,22 +607,22 @@ fun TimerFragment(navController: NavController) {
                                     }
                                 }
                                 .background(
-                                    color = if (timerReset) MaterialTheme.colorScheme.primary
-                                    else if (timerPaused) LimeGreen
+                                    color = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
+                                    else if (timerPlayer.timerState.value == PlayerState.Paused) LimeGreen
                                     else OrangeRed
                                 )
                                 .padding(16.dp)
                         ) {
                             Icon(
                                 painter = painterResource(
-                                    id = if (timerStarted) {
+                                    id = if (timerPlayer.timerState.value == PlayerState.Started) {
                                         R.drawable.baseline_pause_24
                                     } else {
                                         R.drawable.baseline_play_arrow_24
                                     }
                                 ),
                                 contentDescription = "타이머 시작 및 중지",
-                                tint = if (timerReset) MaterialTheme.colorScheme.secondary else White
+                                tint = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
                             )
                         }
                     }
@@ -672,5 +635,8 @@ fun TimerFragment(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun TimerFragmentPreview() {
-    TimerFragment(NavController(LocalContext.current))
+    val dummyNavController = rememberNavController()
+    val timerViewModel = TimerPlayer()
+
+    TimerFragment(dummyNavController, timerViewModel)
 }

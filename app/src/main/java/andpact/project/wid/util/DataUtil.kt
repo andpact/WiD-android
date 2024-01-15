@@ -128,3 +128,9 @@ val daysOfWeekFromMonday = listOf(
     "토",
     "일"
 )
+
+enum class PlayerState {
+    Started,
+    Paused,
+    Stopped
+}

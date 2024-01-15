@@ -36,21 +36,24 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer) {
-    // 날짜
-    var date: LocalDate = LocalDate.now()
-
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
 
     // 제목
-    var title by remember { mutableStateOf(titles[0]) }
     var titleMenuExpanded by remember { mutableStateOf(false) }
-
-    // 시작 시간
-    var start: LocalTime by remember { mutableStateOf(LocalTime.now()) }
 
     // 화면
     var stopwatchTopBottomBarVisible by remember { mutableStateOf(true) }
+
+    DisposableEffect(Unit) {
+        // Fragment가 나타날 때
+        stopwatchPlayer.setInStopwatchView(true)
+
+        onDispose {
+            // Fragment가 사라질 때
+            stopwatchPlayer.setInStopwatchView(false)
+        }
+    }
 
     fun startStopwatch() {
         stopwatchPlayer.startIt()
@@ -59,88 +62,94 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
     fun restartStopwatch() {
         stopwatchPlayer.restartIt()
 
-//        val now = LocalTime.now()
-//
-//        if (now.isBefore(start)) {
-//            val midnight = LocalTime.MIDNIGHT
-//
-//            val previousDate = date.minusDays(1)
-//
-//            val firstWiD = WiD(
-//                id = 0,
-//                date = previousDate,
-//                title = title,
-//                start = start,
-//                finish = midnight.plusSeconds(-1),
-//                duration = Duration.between(start, midnight.plusSeconds(-1)),
-//            )
-//            wiDService.createWiD(firstWiD)
-//
-//            val secondWiD = WiD(
-//                id = 0,
-//                date = date,
-//                title = title,
-//                start = midnight,
-//                finish = now,
-//                duration = Duration.between(midnight, now),
-//            )
-//            wiDService.createWiD(secondWiD)
-//        } else {
-//            val newWiD = WiD(
-//                id = 0,
-//                date = date,
-//                title = title,
-//                start = start,
-//                finish = now,
-//                duration = Duration.between(start, now),
-//            )
-//            wiDService.createWiD(newWiD)
-//        }
-//
-//        date = LocalDate.now()
-//        start = now
+        val date = stopwatchPlayer.date
+        val title = stopwatchPlayer.title.value
+        val start = stopwatchPlayer.start
+        val finish = LocalTime.now()
+
+        if (finish.isBefore(start)) {
+            val midnight = LocalTime.MIDNIGHT
+
+            val previousDate = date.minusDays(1)
+
+            val firstWiD = WiD(
+                id = 0,
+                date = previousDate,
+                title = title,
+                start = start,
+                finish = midnight.plusSeconds(-1),
+                duration = Duration.between(start, midnight.plusSeconds(-1)),
+            )
+            wiDService.createWiD(firstWiD)
+
+            val secondWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = midnight,
+                finish = finish,
+                duration = Duration.between(midnight, finish),
+            )
+            wiDService.createWiD(secondWiD)
+        } else {
+            val newWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = start,
+                finish = finish,
+                duration = Duration.between(start, finish),
+            )
+            wiDService.createWiD(newWiD)
+        }
+
+        stopwatchPlayer.date = LocalDate.now()
+        stopwatchPlayer.start = LocalTime.now()
     }
 
     fun pauseStopwatch() {
         stopwatchPlayer.pauseIt()
 
-//        val now = LocalTime.now()
-//
-//        if (now.isBefore(start)) {
-//            val midnight = LocalTime.MIDNIGHT
-//
-//            val previousDate = date.minusDays(1)
-//
-//            val firstWiD = WiD(
-//                id = 0,
-//                date = previousDate,
-//                title = title,
-//                start = start,
-//                finish = midnight.plusSeconds(-1),
-//                duration = Duration.between(start, midnight.plusSeconds(-1)),
-//            )
-//            wiDService.createWiD(firstWiD)
-//
-//            val secondWiD = WiD(
-//                id = 0,
-//                date = date,
-//                title = title,
-//                start = midnight,
-//                finish = now,
-//                duration = Duration.between(midnight, now),
-//            )
-//            wiDService.createWiD(secondWiD)
-//        } else {
-//            val newWiD = WiD(
-//                id = 0,
-//                date = date,
-//                title = title,
-//                start = start,
-//                finish = now,
-//                duration = Duration.between(start, now),
-//            )
-//            wiDService.createWiD(newWiD)
-//        }
+        val date = stopwatchPlayer.date
+        val title = stopwatchPlayer.title.value
+        val start = stopwatchPlayer.start
+        val finish = LocalTime.now()
+
+        if (finish.isBefore(start)) {
+            val midnight = LocalTime.MIDNIGHT
+
+            val previousDate = date.minusDays(1)
+
+            val firstWiD = WiD(
+                id = 0,
+                date = previousDate,
+                title = title,
+                start = start,
+                finish = midnight.plusSeconds(-1),
+                duration = Duration.between(start, midnight.plusSeconds(-1)),
+            )
+            wiDService.createWiD(firstWiD)
+
+            val secondWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = midnight,
+                finish = finish,
+                duration = Duration.between(midnight, finish),
+            )
+            wiDService.createWiD(secondWiD)
+        } else {
+            val newWiD = WiD(
+                id = 0,
+                date = date,
+                title = title,
+                start = start,
+                finish = finish,
+                duration = Duration.between(start, finish),
+            )
+            wiDService.createWiD(newWiD)
+        }
     }
 
     fun stopStopwatch() {
@@ -150,10 +159,6 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
         navController.popBackStack()
-
-//        if (stopWatchStarted) {
-//            pauseStopwatch()
-//        }
     }
 
     Box(
@@ -188,10 +193,6 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         .align(Alignment.CenterStart)
                         .clickable {
                             navController.popBackStack()
-
-//                            if (stopWatchStarted) {
-//                                pauseStopwatch()
-//                            }
                         },
                     painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                     contentDescription = "뒤로 가기",
@@ -268,13 +269,13 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                             titles.forEach { chipTitle ->
                                 item {
                                     FilterChip(
-                                        selected = title == chipTitle,
+                                        selected = stopwatchPlayer.title.value == chipTitle,
                                         onClick = {
-                                            if (stopwatchPlayer.stopwatchState.value == PlayerState.Started && title != chipTitle) {
+                                            if (stopwatchPlayer.stopwatchState.value == PlayerState.Started && stopwatchPlayer.title.value != chipTitle) {
                                                 restartStopwatch()
                                             }
 
-                                            title = chipTitle
+                                            stopwatchPlayer.setTitle(chipTitle)
                                             titleMenuExpanded = false
                                         },
                                         label = {
@@ -319,11 +320,11 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         Box(
                             modifier = Modifier
                                 .size(5.dp, 15.dp)
-                                .background(color = colorMap[title] ?: DarkGray)
+                                .background(color = colorMap[stopwatchPlayer.title.value] ?: DarkGray)
                         )
 
                         Text(
-                            text = titleMap[title] ?: "공부",
+                            text = titleMap[stopwatchPlayer.title.value] ?: "공부",
                             style = Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary
                         )

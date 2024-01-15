@@ -3,16 +3,17 @@ package andpact.project.wid.activity
 import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.LimeGreen
 import andpact.project.wid.ui.theme.OrangeRed
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.util.PlayerState
-import andpact.project.wid.util.StopwatchPlayer
-import andpact.project.wid.util.TimerPlayer
-import andpact.project.wid.util.formatTime
+import andpact.project.wid.util.*
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -20,8 +21,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -50,83 +50,114 @@ fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
         val stopwatchPlayer = StopwatchPlayer()
-//        val timerPlayer = TimerPlayer()
+        val timerPlayer = TimerPlayer()
 
         Scaffold(
             topBar = {
-                TopBar(stopwatchPlayer = stopwatchPlayer)
+                TopBar(stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
             }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                NavigationGraph(navController = navController, stopwatchPlayer = stopwatchPlayer)
+                NavigationGraph(navController = navController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
             }
         }
     }
 }
 
 @Composable
-fun TopBar(stopwatchPlayer: StopwatchPlayer) {
-//    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(28.dp)
-            .background(
-                if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                    LimeGreen
-                } else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
-                    OrangeRed
-                } else {
-                    MaterialTheme.colorScheme.secondary
-                }
-            )
+fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+    AnimatedVisibility(
+        visible = !stopwatchPlayer.inStopwatchView.value && stopwatchPlayer.stopwatchState.value != PlayerState.Stopped,
+        enter = expandVertically{ 0 },
+        exit = shrinkVertically{ 0 },
     ) {
-        // 경과 시간 텍스트
-        Text(
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterStart),
-            text = stopwatchPlayer.elapsedTime.value.toString(),
-//            text = formatTime(stopwatchPlayer.elapsedTime.value, "hh:mm:ss"),
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
+                .fillMaxWidth()
+                .height(28.dp)
+                .background(
+                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                        LimeGreen
+                    } else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
+                        OrangeRed
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    }
+                )
+                .padding(horizontal = 16.dp)
         ) {
-            IconButton(
-                onClick = {
-//                    coroutineScope.launch {
-                        stopwatchPlayer.startIt()
-//                    }
-                }
-            ) {
-                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "시작")
-            }
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterStart),
+                text = "스톱 워치",
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-            IconButton(
-                onClick = {
-//                    coroutineScope.launch {
-                        stopwatchPlayer.pauseIt()
-//                    }
-                }
-            ) {
-                Icon(imageVector = Icons.Default.Warning, contentDescription = "중지")
-            }
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-            IconButton(
-                onClick = {
-//                    coroutineScope.launch {
-                        stopwatchPlayer.stopIt()
-//                    }
-                }
-            ) {
-                Icon(imageVector = Icons.Default.Refresh, contentDescription = "초기화")
-            }
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd),
+                text = formatTimeHorizontally(stopwatchPlayer.elapsedTime.value),
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+
+    AnimatedVisibility(
+        visible = !timerPlayer.inTimerView.value && timerPlayer.timerState.value != PlayerState.Stopped,
+        enter = expandVertically{ 0 },
+        exit = shrinkVertically{ 0 },
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp)
+                .background(
+                    if (timerPlayer.timerState.value == PlayerState.Started) {
+                        LimeGreen
+                    } else if (timerPlayer.timerState.value == PlayerState.Paused) {
+                        OrangeRed
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    }
+                )
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterStart),
+                text = "타이머",
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = titleMap[timerPlayer.title.value] ?: "공부",
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd),
+                text = formatTimeHorizontally(timerPlayer.remainingTime.value),
+                style = Typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -182,7 +213,7 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer) {
 //}
 
 @Composable
-fun NavigationGraph(navController: NavHostController, stopwatchPlayer: StopwatchPlayer) {
+fun NavigationGraph(navController: NavHostController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
     NavHost(
         navController = navController,
         startDestination = Destinations.HomeFragmentDestination.route
@@ -208,7 +239,10 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
                 )
             }
         ) {
-            StopWatchFragment(navController = navController, stopwatchPlayer = stopwatchPlayer)
+            StopWatchFragment(
+                navController = navController,
+                stopwatchPlayer = stopwatchPlayer
+            )
         }
 
         // 타이머
@@ -227,7 +261,10 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
                 )
             }
         ) {
-            TimerFragment(navController = navController)
+            TimerFragment(
+                navController = navController,
+                timerPlayer = timerPlayer
+            )
         }
 
         // 새로운 WiD
