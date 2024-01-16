@@ -6,6 +6,7 @@ import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.util.*
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +25,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -50,7 +52,10 @@ fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
         val stopwatchPlayer = StopwatchPlayer()
-        val timerPlayer = TimerPlayer()
+
+        val context = LocalContext.current
+        val application = context.applicationContext as Application
+        val timerPlayer = TimerPlayer(application)
 
         Scaffold(
             topBar = {

@@ -3,10 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.titleExampleMap
-import andpact.project.wid.util.titleMap
-import andpact.project.wid.util.titles
+import andpact.project.wid.util.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,13 +12,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -35,96 +30,155 @@ import androidx.navigation.NavController
 
 @Composable
 fun HomeFragment(navController: NavController) {
+    var remainingTime by remember { mutableStateOf(0L) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
+        /**
+         * 광고
+         */
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp)
+//                .clip(RoundedCornerShape(8.dp))
+//                .background(MaterialTheme.colorScheme.tertiary),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .background(DarkGray)
+//                    .padding(16.dp),
+//                text = "광고\n이미지"
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text("광고 제목")
+//
+//                Text("광고 내용")
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .padding(horizontal = 16.dp),
+//                imageVector = Icons.Default.KeyboardArrowRight,
+//                contentDescription = "광고 클릭",
+//                tint = MaterialTheme.colorScheme.primary
+//            )
+//        }
+
         /**
          * 컨텐츠
          */
-        Column(
+        Row(
             modifier = Modifier
+                .padding(horizontal = 16.dp)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
+            // 왼쪽 버튼 열
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // 스톱 워치
-                Column(
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate(Destinations.StopWatchFragmentDestination.route)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
+                    // 스톱 워치
+                    Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.outline_alarm_24),
-                        contentDescription = "스톱 워치",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f / 1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            onClick = {
+                                navController.navigate(Destinations.StopWatchFragmentDestination.route)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_alarm_24),
+                                contentDescription = "스톱 워치",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                    Text(
-                        text = "스톱 워치",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        Text(
+                            text = "스톱 워치",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // 타이머
+                    Column(
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f / 1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            onClick = {
+                                navController.navigate(Destinations.TimerFragmentDestination.route)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_timer_24),
+                                contentDescription = "타이머",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Text(
+                            text = "타이머",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
-                // 타이머
                 Column(
                     modifier = Modifier
-                        .clickable {
-                            navController.navigate(Destinations.TimerFragmentDestination.route)
-                        },
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
+                    IconButton(
                         modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(2.5f / 1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.outline_timer_24),
-                        contentDescription = "타이머",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        text = "타이머",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                // 새로운 WiD
-                Column(
-                    modifier = Modifier
-                        .clickable {
+                            .background(MaterialTheme.colorScheme.tertiary),
+                        onClick = {
                             navController.navigate(Destinations.NewWiDFragmentDestination.route)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.outline_add_box_24),
-                        contentDescription = "새로운 WiD",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_add_box_24),
+                            contentDescription = "새로운 WiD",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
 
                     Text(
                         text = "새로운 WiD",
@@ -132,84 +186,178 @@ fun HomeFragment(navController: NavController) {
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f / 1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary)
+                            .padding(vertical = 16.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter),
+                            text = "오늘",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "20%",
+                            style = Typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter),
+                            text = formatTimeHorizontally(remainingTime),
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Text(
+                        text = "남은 시간",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
-            Row(
+            // 오른쪽 버튼 열
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // 날짜 별 조회
                 Column(
                     modifier = Modifier
-                        .clickable {
-                            navController.navigate(Destinations.DateBasedFragmentDestination.route)
-                        },
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
+                    Box(
                         modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f / 1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_location_searching_24),
-                        contentDescription = "날짜 별 조회",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                            .padding(vertical = 16.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter),
+                            text = "파이 차트",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
 
                     Text(
-                        text = "날짜 별 조회",
+                        text = "88일 전",
                         style = Typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                // 기간 별 조회
-                Column(
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate(Destinations.PeriodBasedFragmentDestination.route)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
+                    // 기간 조회
+                    Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                        contentDescription = "기간 별 조회",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f / 1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            onClick = {
+                                navController.navigate(Destinations.DateBasedFragmentDestination.route)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_location_searching_24),
+                                contentDescription = "날짜 조회",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                    Text(
-                        text = "기간 별 조회",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        Text(
+                            text = "날짜 조회",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // 날짜 조회
+                    Column(
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f / 1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            onClick = {
+                                navController.navigate(Destinations.PeriodBasedFragmentDestination.route)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                                contentDescription = "기간 조회",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Text(
+                            text = "기간 조회",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
-                // 다이어리 검색
                 Column(
                     modifier = Modifier
-                        .clickable {
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    IconButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(2.5f / 1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.tertiary),
+                        onClick = {
                             navController.navigate(Destinations.SearchFragmentDestination.route)
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_search_24),
-                        contentDescription = "다이어리 검색",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_search_24),
+                            contentDescription = "다이어리 검색",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
 
                     Text(
                         text = "다이어리 검색",

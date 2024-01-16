@@ -5,6 +5,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -49,15 +50,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-/**
- * 프래그먼트에서는 WiD의 종료 시간, 소요 시간 할당, 타이머 시간 표시 및 WiD를 DB에 저장하는 것만 담당함.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
-    // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
 
@@ -90,51 +85,12 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
 
     fun startTimer() {
         timerPlayer.startIt()
+
+        titleMenuExpanded = false
     }
 
     fun pauseTimer() {
         timerPlayer.pauseIt()
-
-        val date = timerPlayer.date
-        val title = timerPlayer.title.value
-        val start = timerPlayer.start
-        val finish = LocalTime.now()
-
-        if (finish.isBefore(start)) {
-            val midnight = LocalTime.MIDNIGHT
-
-            val previousDate = date.minusDays(1)
-
-            val firstWiD = WiD(
-                id = 0,
-                date = previousDate,
-                title = title,
-                start = start,
-                finish = midnight.plusSeconds(-1),
-                duration = Duration.between(start, midnight.plusSeconds(-1)),
-            )
-            wiDService.createWiD(firstWiD)
-
-            val secondWiD = WiD(
-                id = 0,
-                date = date,
-                title = title,
-                start = midnight,
-                finish = finish,
-                duration = Duration.between(midnight, finish),
-            )
-            wiDService.createWiD(secondWiD)
-        } else {
-            val newWiD = WiD(
-                id = 0,
-                date = date,
-                title = title,
-                start = start,
-                finish = finish,
-                duration = Duration.between(start, finish),
-            )
-            wiDService.createWiD(newWiD)
-        }
     }
 
     fun stopTimer() {
@@ -166,12 +122,6 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     BackHandler(enabled = true) {
         navController.popBackStack()
     }
-
-//    LaunchedEffect(timerPlayer.timerState.value == PlayerState.Started) {
-//        if (timerPlayer.remainingTime.value == 0L) {
-//            pauseTimer()
-//        }
-//    }
 
     Box(
         modifier = Modifier
@@ -603,7 +553,6 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                                         pauseTimer()
                                     } else {
                                         startTimer()
-                                        titleMenuExpanded = false
                                     }
                                 }
                                 .background(
@@ -632,11 +581,15 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun TimerFragmentPreview() {
-    val dummyNavController = rememberNavController()
-    val timerViewModel = TimerPlayer()
-
-    TimerFragment(dummyNavController, timerViewModel)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun TimerFragmentPreview() {
+//    val dummyNavController = rememberNavController()
+//
+//    val context = LocalContext.current
+//    val dummyApplication = context.applicationContext as Application
+//
+//    val timerViewModel = TimerPlayer(dummyApplication)
+//
+//    TimerFragment(dummyNavController, timerViewModel)
+//}

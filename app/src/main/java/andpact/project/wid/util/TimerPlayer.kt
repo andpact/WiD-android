@@ -1,24 +1,25 @@
 package andpact.project.wid.util
 
+import andpact.project.wid.model.WiD
+import andpact.project.wid.service.WiDService
+import android.app.Application
 import android.os.CountDownTimer
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-/**
- * 플레이어에서는 WiD의 날짜, 제목, 시작 시간 할당 및 타이머 시간 측정을 담당함.
- */
-class TimerPlayer : ViewModel() {
+//class TimerPlayer(application: Application) : AndroidViewModel(application) {
+class TimerPlayer(application: Application) : ViewModel() {
+    // WiD
+    val wiDService = WiDService(application)
+
     // 날짜
     var date: LocalDate
         get() = _date
@@ -66,7 +67,7 @@ class TimerPlayer : ViewModel() {
         start = LocalTime.now()
 
         viewModelScope.launch {
-//            delay(1_000) // 1초 뒤에 타이머를 시작
+            delay(1_000) // 1초 뒤에 타이머를 시작
 
             timer = object : CountDownTimer(_remainingTime.value, 1_000) { // MilliSeconds 기준
                 override fun onTick(millisUntilFinished: Long) {
@@ -74,17 +75,56 @@ class TimerPlayer : ViewModel() {
                 }
 
                 override fun onFinish() {
-
+                    pauseIt()
+                    stopIt()
                 }
             }
 
-            timer?.start() // CountDownTimer는 타이머 객체 설정하고 시작을 해줘야 동자함.
+            timer?.start() // CountDownTimer는 타이머 객체 설정하고 시작을 해줘야 동작함.
         }
     }
 
     fun pauseIt() {
         timer?.cancel()
         _timerState.value = PlayerState.Paused
+
+        val finish = LocalTime.now()
+
+        if (finish.isBefore(start)) {
+            val midnight = LocalTime.MIDNIGHT
+
+            val previousDate = date.minusDays(1)
+
+            val firstWiD = WiD(
+                id = 0,
+                date = previousDate,
+                title = title.value,
+                start = start,
+                finish = midnight.plusSeconds(-1),
+                duration = Duration.between(start, midnight.plusSeconds(-1)),
+            )
+            wiDService.createWiD(firstWiD)
+
+            val secondWiD = WiD(
+                id = 0,
+                date = date,
+                title = title.value,
+                start = midnight,
+                finish = finish,
+                duration = Duration.between(midnight, finish),
+            )
+            wiDService.createWiD(secondWiD)
+        } else {
+            val newWiD = WiD(
+                id = 0,
+                date = date,
+                title = title.value,
+                start = start,
+                finish = finish,
+                duration = Duration.between(start, finish),
+            )
+            wiDService.createWiD(newWiD)
+        }
     }
 
     fun stopIt() {

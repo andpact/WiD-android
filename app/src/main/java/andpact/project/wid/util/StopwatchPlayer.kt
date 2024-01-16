@@ -13,6 +13,7 @@ import java.util.*
 import kotlin.concurrent.timer
 
 /**
+ * 스톱 워치 플레이어에서는 WiD의 날짜, 제목, 시작 시간 할당 및 스톱 워치 시간 측정을 담당함.
  * State 변수는 직접 Setter를 선언하고,
  * 일반 변수는 get(), set()를 사용함.
  */
