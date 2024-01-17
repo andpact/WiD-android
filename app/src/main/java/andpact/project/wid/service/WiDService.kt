@@ -152,7 +152,6 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         val db = readableDatabase
         val wiDList = mutableListOf<WiD>()
 
-//        val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ?"
         val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE BETWEEN ? AND ? ORDER BY $COLUMN_DATE, $COLUMN_START"
         val selectionArgs = arrayOf(startDate.toString(), finishDate.toString())
 
@@ -171,6 +170,59 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                     val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
                     wiDList.add(wiD)
                 } while (moveToNext())
+            }
+            close()
+        }
+
+        db.close()
+
+        return wiDList
+    }
+
+    fun getRandomWiDList(): List<WiD> {
+        Log.d("WiDService", "getRandomWiDList executed")
+
+        val db = readableDatabase
+        val wiDList = mutableListOf<WiD>()
+
+        // Query to get all distinct dates from the wid_table
+        val distinctDatesQuery = "SELECT DISTINCT $COLUMN_DATE FROM $TABLE_NAME"
+        val distinctDatesCursor = db.rawQuery(distinctDatesQuery, null)
+
+        with(distinctDatesCursor) {
+            if (moveToFirst()) {
+                val dateList = mutableListOf<String>()
+                do {
+                    dateList.add(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                } while (moveToNext())
+
+                // Check if there are any dates in the table
+                if (dateList.isNotEmpty()) {
+                    // Randomly select a date from the list
+                    val randomDate = dateList.random()
+
+                    // Query to get WiD entries for the randomly selected date
+                    val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ? ORDER BY $COLUMN_START ASC"
+                    val selectionArgs = arrayOf(randomDate)
+
+                    val cursor = db.rawQuery(selectQuery, selectionArgs)
+
+                    with(cursor) {
+                        if (moveToFirst()) {
+                            do {
+                                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                                val startTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_START)))
+                                val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
+                                val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
+
+                                val wiD = WiD(id, LocalDate.parse(randomDate), title, startTime, finishTime, durationMillis)
+                                wiDList.add(wiD)
+                            } while (moveToNext())
+                        }
+                        close()
+                    }
+                }
             }
             close()
         }

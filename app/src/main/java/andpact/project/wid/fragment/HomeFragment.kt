@@ -2,6 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
+import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.compose.foundation.background
@@ -21,16 +22,46 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import java.time.LocalTime
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
+/**
+ * 정확하지 않다. 다시 배우자.
+ * 값 변경 시
+ * remember { 값 }-> 재 렌더링 안됨.
+ * remember(파라미터) { 값 } 의 파라미터가 변경되면 블록('{ 값 }')을 재 실행하여 재 랜더링 됨.
+ * mutableStateOf { 값 }-> 재 렌더링 됨.
+ */
 @Composable
 fun HomeFragment(navController: NavController) {
-    var remainingTime by remember { mutableStateOf(0L) }
+    // 타이머
+    val now = LocalTime.now()
+    var totalSecondsFromNow by remember { mutableStateOf(now.toSecondOfDay() * 1_000L) }
+    val totalSecondsInADay = 24 * 60 * 60 * 1_000L // Millis
+    val remainingTime = remember(totalSecondsFromNow) { totalSecondsInADay - totalSecondsFromNow }
+//    val remainingTime by remember(totalSecondsFromNow) { mutableStateOf(totalSecondsInADay - totalSecondsFromNow) }
+
+    // WiD
+    val wiDService = WiDService(context = LocalContext.current)
+    val wiDList = remember { wiDService.getRandomWiDList() }
+
+    DisposableEffect(Unit) {
+        val timer = fixedRateTimer("timer", true, 0L, 1000) {
+            totalSecondsFromNow += 1_000L // Millis
+        }
+
+        onDispose {
+            timer.cancel()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -212,9 +243,10 @@ fun HomeFragment(navController: NavController) {
                         Text(
                             modifier = Modifier
                                 .align(Alignment.Center),
-                            text = "20%",
+                            text = "${remainingTime * 100 / totalSecondsInADay}%",
                             style = Typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 50.sp
                         )
 
                         Text(
@@ -222,7 +254,8 @@ fun HomeFragment(navController: NavController) {
                                 .align(Alignment.BottomCenter),
                             text = formatTimeHorizontally(remainingTime),
                             style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontFamily = FontFamily.Monospace
                         )
                     }
 
@@ -254,13 +287,11 @@ fun HomeFragment(navController: NavController) {
                             .background(MaterialTheme.colorScheme.tertiary)
                             .padding(vertical = 16.dp)
                     ) {
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter),
-                            text = "파이 차트",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        if (wiDList.isEmpty()) {
+                            createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                        } else {
+                            DateBasedPieChartFragment(wiDList = wiDList)
+                        }
                     }
 
                     Text(

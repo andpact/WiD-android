@@ -2,6 +2,9 @@ package andpact.project.wid.util
 
 import java.time.Duration
 
+/**
+ * 소요 시간(Duration)의 형식은 'H시간 m분 s초'
+ */
 fun formatDuration(duration: Duration, mode: Int): String {
     // mode 0. HH:mm:ss (10:30:30)
     // mode 1. H시간 (10.5시간), m분 (30분)

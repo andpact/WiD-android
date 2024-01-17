@@ -26,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -115,7 +116,8 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
                     .align(Alignment.CenterEnd),
                 text = formatTimeHorizontally(stopwatchPlayer.elapsedTime.value),
                 style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontFamily = FontFamily.Monospace
             )
         }
     }
@@ -161,7 +163,8 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
                     .align(Alignment.CenterEnd),
                 text = formatTimeHorizontally(timerPlayer.remainingTime.value),
                 style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                fontFamily = FontFamily.Monospace
             )
         }
     }

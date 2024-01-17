@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
+ * 시간의 형식은 'HH:mm:ss'
  * TimeUtil의 단위는 MilliSecond를 사용 중
  */
 fun formatTime(time: Long, pattern: String): String {
