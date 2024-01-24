@@ -13,6 +13,13 @@ val LightGray = Color(0xFFDFDFDF)
 val White = Color(0xFFFFFFFF)
 val Transparent = Color(0x00FFFFFF)
 
+val DeepSkyBlue = Color(0xFF00BFFF)     // 진한 하늘색(파란색 버튼용)
+val OrangeRed = Color(0xFFFF4500)       // 붉은 색(빨간 버튼용)
+val LimeGreen = Color(0xFF32CD32)       // 라임 녹색(초록 버튼용)
+
+val AppYellow = Color(0xFFFAEF5D)
+val AppIndigo = Color(0xFF1D2B53)
+
 // For 7 titles
 //val studyColor = Color(0xFFFF0000)      // 빨강
 //val workColor = Color(0xFFFF7F00)       // 주황
@@ -33,8 +40,3 @@ val Shower = Color(0xFF0000FF)     // 파랑
 val Travel = Color(0xFF00007F)     // 남색
 val Sleep = Color(0xFF7F00FF)      // 보라
 val Etc = Color(0xFF7F007F)        // 자주색
-
-// Button colors
-val DeepSkyBlue = Color(0xFF00BFFF)     // 진한 하늘색(파란색 버튼용)
-val OrangeRed = Color(0xFFFF4500)       // 붉은 색(빨간 버튼용)
-val LimeGreen = Color(0xFF32CD32)       // 라임 녹색(초록 버튼용)

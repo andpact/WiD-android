@@ -53,7 +53,7 @@ class StopwatchPlayer : ViewModel() {
         _inStopwatchView.value = isInStopwatchView
     }
 
-    fun startIt() {
+    fun startStopwatch() {
         timer?.cancel()
         _stopwatchState.value = PlayerState.Started
 
@@ -69,16 +69,16 @@ class StopwatchPlayer : ViewModel() {
         }
     }
 
-    fun restartIt() {
+    fun restartStopwatch() {
         _elapsedTime.value = 0
     }
 
-    fun pauseIt() {
+    fun pauseStopwatch() {
         timer?.cancel()
         _stopwatchState.value = PlayerState.Paused
     }
 
-    fun stopIt() {
+    fun stopStopwatch() {
         timer?.cancel()
         _stopwatchState.value = PlayerState.Stopped
         _elapsedTime.value = 0

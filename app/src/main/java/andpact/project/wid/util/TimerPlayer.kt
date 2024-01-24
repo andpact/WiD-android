@@ -59,7 +59,7 @@ class TimerPlayer(application: Application) : ViewModel() {
         _inTimerView.value = isInTimerView
     }
 
-    fun startIt() {
+    fun startTimer() {
         timer?.cancel()
         _timerState.value = PlayerState.Started
 
@@ -75,8 +75,8 @@ class TimerPlayer(application: Application) : ViewModel() {
                 }
 
                 override fun onFinish() {
-                    pauseIt()
-                    stopIt()
+                    pauseTimer()
+                    stopTimer()
                 }
             }
 
@@ -84,11 +84,17 @@ class TimerPlayer(application: Application) : ViewModel() {
         }
     }
 
-    fun pauseIt() {
+    fun pauseTimer() {
         timer?.cancel()
         _timerState.value = PlayerState.Paused
 
-        val finish = LocalTime.now()
+        val start = this.start.withNano(0)
+        val finish = LocalTime.now().withNano(0)
+        val duration = Duration.between(start, finish)
+
+        if (duration <= Duration.ZERO) {
+            return
+        }
 
         if (finish.isBefore(start)) {
             val midnight = LocalTime.MIDNIGHT
@@ -121,13 +127,13 @@ class TimerPlayer(application: Application) : ViewModel() {
                 title = title.value,
                 start = start,
                 finish = finish,
-                duration = Duration.between(start, finish),
+                duration = duration,
             )
             wiDService.createWiD(newWiD)
         }
     }
 
-    fun stopIt() {
+    fun stopTimer() {
         timer?.cancel()
         _timerState.value = PlayerState.Stopped
 

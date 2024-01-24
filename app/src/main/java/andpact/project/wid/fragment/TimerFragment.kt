@@ -55,6 +55,7 @@ import java.time.LocalTime
 fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
+    val bottomSheetState = rememberModalBottomSheetState()
 
     // 타이머
     val itemHeight = 30.dp
@@ -82,31 +83,6 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     val isSecondScrollInProgress = remember { derivedStateOf { lazySecondListState.isScrollInProgress } }
     val currentSecondIndex = remember { derivedStateOf { lazySecondListState.firstVisibleItemIndex } }
     val currentSecondScrollOffset = remember { derivedStateOf { lazySecondListState.firstVisibleItemScrollOffset } }
-
-    fun startTimer() {
-        timerPlayer.startIt()
-
-        titleMenuExpanded = false
-    }
-
-    fun pauseTimer() {
-        timerPlayer.pauseIt()
-    }
-
-    fun stopTimer() {
-        timerPlayer.stopIt()
-
-        // 초기화 버튼을 누르면 0시로 초기화 해버림.
-        coroutineScope.launch {
-            lazyHourListState.animateScrollToItem(Int.MAX_VALUE / 2 - 16)
-            lazyMinuteListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
-            lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
-        }
-
-        if (!timerTopBottomBarVisible) {
-            timerTopBottomBarVisible = true
-        }
-    }
 
     DisposableEffect(Unit) {
         // Fragment가 나타날 때
@@ -421,158 +397,182 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.tertiary,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                AnimatedVisibility(
-                    visible = titleMenuExpanded,
-                    enter = expandVertically { 0 },
-                    exit = shrinkVertically { 0 },
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
+                            titleMenuExpanded = true
+                        }
+                        .background(color = AppIndigo)
+                        .padding(16.dp)
                 ) {
-                    Column( // 더미
+                    Icon(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "사용할 제목을 선택하세요.",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                            .size(32.dp),
+                        painter = painterResource(titleIconMap[timerPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
+                        contentDescription = "제목",
+                        tint = White
+                    )
+                }
 
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            columns = GridCells.Fixed(5),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            titles.forEach { chipTitle ->
-                                item {
-                                    FilterChip(
-                                        selected = timerPlayer.title.value == chipTitle,
-                                        onClick = {
-                                            timerPlayer.setTitle(chipTitle)
-                                            titleMenuExpanded = false
-                                        },
-                                        label = {
-                                            Text(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                text = titleMap[chipTitle] ?: chipTitle,
-                                                style = Typography.bodySmall,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = MaterialTheme.colorScheme.secondary,
-                                            labelColor = MaterialTheme.colorScheme.primary,
-                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
-                                        )
-                                    )
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                if (timerPlayer.timerState.value == PlayerState.Paused) {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                timerPlayer.stopTimer()
+
+                                // 초기화 버튼을 누르면 0시로 초기화 해버림.
+                                coroutineScope.launch {
+                                    lazyHourListState.animateScrollToItem(Int.MAX_VALUE / 2 - 16)
+                                    lazyMinuteListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
+                                    lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
+                                }
+
+                                if (!timerTopBottomBarVisible) {
+                                    timerTopBottomBarVisible = true
                                 }
                             }
-                        }
-
-                        HorizontalDivider()
+                            .background(color = DeepSkyBlue)
+                            .padding(16.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(32.dp),
+                            painter = painterResource(id = R.drawable.baseline_refresh_24),
+                            contentDescription = "타이머 초기화",
+                            tint = White
+                        )
                     }
                 }
 
-                Row(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
-                                titleMenuExpanded = !titleMenuExpanded
-                            },
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(5.dp, 15.dp)
-                                .background(color = colorMap[timerPlayer.title.value] ?: DarkGray)
-                        )
+                        .clip(CircleShape)
+                        .clickable(0L < timerPlayer.remainingTime.value) {
+                            if (timerPlayer.timerState.value == PlayerState.Started) {
+                                timerPlayer.pauseTimer()
+                            } else {
+                                timerPlayer.startTimer()
 
-                        Text(
-                            text = titleMap[timerPlayer.title.value] ?: "공부",
-                            style = Typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        if (timerPlayer.timerState.value == PlayerState.Stopped) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_unfold_more_16),
-                                contentDescription = "제목 메뉴 펼치기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (timerPlayer.timerState.value == PlayerState.Paused) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        stopTimer()
-                                    }
-                                    .background(color = DeepSkyBlue)
-                                    .padding(16.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_refresh_24),
-                                    contentDescription = "타이머 초기화",
-                                    tint = White
-                                )
+                                titleMenuExpanded = false
                             }
                         }
+                        .background(
+                            color =if (timerPlayer.remainingTime.value <= 0L) DarkGray
+                            else if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
+                            else if (timerPlayer.timerState.value == PlayerState.Paused) LimeGreen
+                            else OrangeRed
+                        )
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(32.dp),
+                        painter = painterResource(
+                            id = if (timerPlayer.timerState.value == PlayerState.Started) {
+                                R.drawable.baseline_pause_24
+                            } else {
+                                R.drawable.baseline_play_arrow_24
+                            }
+                        ),
+                        contentDescription = "타이머 시작 및 중지",
+                        tint = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
+                    )
+                }
+            }
+        }
 
-                        Box(
+        if (titleMenuExpanded) {
+            ModalBottomSheet(
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                onDismissRequest = { titleMenuExpanded = false },
+                sheetState = bottomSheetState,
+                dragHandle = null
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.CenterStart)
+                            .clickable {
+                                titleMenuExpanded = false
+                            },
+                        painter = painterResource(id = R.drawable.baseline_close_24),
+                        contentDescription = "제목 메뉴 닫기",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        text = "제목 선택",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .height(300.dp)
+                ) {
+                    items(titles.size) { index ->
+                        val title = titles[index]
+                        val iconResourceId = titleIconMap[title] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+
+                        Row(
                             modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable {
-                                    if (timerPlayer.timerState.value == PlayerState.Started) {
-                                        pauseTimer()
-                                    } else {
-                                        startTimer()
-                                    }
-                                }
-                                .background(
-                                    color = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
-                                    else if (timerPlayer.timerState.value == PlayerState.Paused) LimeGreen
-                                    else OrangeRed
-                                )
-                                .padding(16.dp)
+                                .fillMaxWidth()
+                                .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
+                                    timerPlayer.setTitle(title)
+                                    titleMenuExpanded = false
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                painter = painterResource(
-                                    id = if (timerPlayer.timerState.value == PlayerState.Started) {
-                                        R.drawable.baseline_pause_24
-                                    } else {
-                                        R.drawable.baseline_play_arrow_24
-                                    }
-                                ),
-                                contentDescription = "타이머 시작 및 중지",
-                                tint = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .size(24.dp),
+                                painter = painterResource(id = iconResourceId),
+                                contentDescription = "제목",
+                                tint = MaterialTheme.colorScheme.primary
                             )
+
+                            Text(
+                                text = titleMap[title] ?: "공부",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            if (title == timerPlayer.title.value) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    text = "선택됨",
+                                    style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
