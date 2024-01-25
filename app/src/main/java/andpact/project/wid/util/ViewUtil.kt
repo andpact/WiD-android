@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,27 +15,34 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun createEmptyView(text: String): @Composable () -> Unit = {
-    Row(
+    Surface(
         modifier = Modifier
-            .fillMaxWidth()
-//            .padding(horizontal = 16.dp)
-//            .clip(RoundedCornerShape(8.dp))
-//            .background(MaterialTheme.colorScheme.tertiary)
-            .padding(vertical = 48.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.secondary,
+        shadowElevation = 2.dp,
     ) {
-        Text(
-            text = text,
-            style = Typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 48.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        ) {
+            Text(
+                text = text,
+                style = Typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
 
 @Composable
 fun createNoBackgroundEmptyViewWithMultipleLines(text: String): @Composable () -> Unit = {
     Column(
+        modifier = Modifier
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {

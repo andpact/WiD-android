@@ -31,6 +31,7 @@ val titleMap = mapOf(
 )
 
 val titleIconMap = mapOf(
+    "ALL" to R.drawable.baseline_title_24,
     "STUDY" to R.drawable.baseline_menu_book_16,
     "WORK" to R.drawable.baseline_construction_16,
     "EXERCISE" to R.drawable.baseline_fitness_center_16,
@@ -43,18 +44,18 @@ val titleIconMap = mapOf(
     "ETC" to R.drawable.baseline_more_horiz_16
 )
 
-val titleExampleMap = mapOf(
-    "STUDY" to "중간 및 기말고사, 자격증, 공시, 승진시험",
-    "WORK" to "직장, 부업, 알바",
-    "EXERCISE" to "헬스, 홈트, 요가, 필라테스, 런닝, 조깅",
-    "HOBBY" to "유튜브, 영화, 드라마 시청, 독서",
-    "PLAY" to "친구 만남, 데이트",
-    "MEAL" to "아침, 점심, 저녁",
-    "SHOWER" to "세안, 샤워, 목욕",
-    "TRAVEL" to "등하교, 출퇴근, 버스, 지하철, 도보",
-    "SLEEP" to "낮잠",
-    "ETC" to "그 외 기타 활동"
-)
+//val titleExampleMap = mapOf(
+//    "STUDY" to "중간 및 기말고사, 자격증, 공시, 승진시험",
+//    "WORK" to "직장, 부업, 알바",
+//    "EXERCISE" to "헬스, 홈트, 요가, 필라테스, 런닝, 조깅",
+//    "HOBBY" to "유튜브, 영화, 드라마 시청, 독서",
+//    "PLAY" to "친구 만남, 데이트",
+//    "MEAL" to "아침, 점심, 저녁",
+//    "SHOWER" to "세안, 샤워, 목욕",
+//    "TRAVEL" to "등하교, 출퇴근, 버스, 지하철, 도보",
+//    "SLEEP" to "낮잠",
+//    "ETC" to "그 외 기타 활동"
+//)
 
 val titlesWithAll = arrayOf(
     "ALL", // 전체

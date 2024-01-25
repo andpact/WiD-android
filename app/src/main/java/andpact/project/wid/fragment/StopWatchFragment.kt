@@ -6,9 +6,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -31,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -43,6 +43,8 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 
     // 화면
     var stopwatchTopBottomBarVisible by remember { mutableStateOf(true) }
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -115,7 +117,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+            .clickable(enabled = titleMenuExpanded || stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                 stopwatchTopBottomBarVisible = !stopwatchTopBottomBarVisible
                 if (titleMenuExpanded) {
                     titleMenuExpanded = false
@@ -271,24 +273,32 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
             }
         }
 
-        if (titleMenuExpanded) {
-            ModalBottomSheet(
-//                modifier = Modifier
-//                    .navigationBarsPadding()
-//                    .padding(16.dp),
-//                shape = RoundedCornerShape(8.dp),
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                onDismissRequest = { titleMenuExpanded = false },
-                sheetState = bottomSheetState,
-                dragHandle = null
+        /**
+         * 제목 바텀 시트
+         */
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
+            visible = titleMenuExpanded,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .height(screenHeight / 2)
+                    .padding(16.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    )
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
                 ) {
                     Icon(
                         modifier = Modifier
+                            .padding(16.dp)
                             .size(24.dp)
                             .align(Alignment.CenterStart)
                             .clickable {
@@ -308,9 +318,11 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                     )
                 }
 
+                HorizontalDivider()
+
                 LazyColumn(
                     modifier = Modifier
-                        .height(300.dp)
+                        .fillMaxWidth()
                 ) {
                     items(titles.size) { index ->
                         val title = titles[index]
@@ -351,7 +363,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 
                             Text(
                                 text = titleMap[title] ?: "공부",
-                                style = Typography.bodyMedium,
+                                style = Typography.labelMedium,
                                 color = if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                     DarkGray
                                 } else {
@@ -400,8 +412,8 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 @Preview(showBackground = true)
 @Composable
 fun StopWatchFragmentPreview() {
-    val dummyNavController = rememberNavController()
-    val stopwatchViewModel = StopwatchPlayer()
-
-    StopWatchFragment(navController = dummyNavController, stopwatchPlayer = stopwatchViewModel)
+//    val dummyNavController = rememberNavController()
+//    val stopwatchViewModel = StopwatchPlayer()
+//
+//    StopWatchFragment(navController = dummyNavController, stopwatchPlayer = stopwatchViewModel)
 }

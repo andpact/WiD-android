@@ -269,7 +269,7 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        (colorMap[label] ?: DarkGray).toArgb()
+                        (colorMap[label] ?: colorScheme.primary).toArgb()
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)

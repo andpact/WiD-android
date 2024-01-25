@@ -27,11 +27,13 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +51,7 @@ fun SearchFragment(navController: NavController) {
     // 검색
     var searchText by remember { mutableStateOf("") }
 //    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
+    var searchComplete by remember { mutableStateOf(false) }
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
@@ -109,37 +112,36 @@ fun SearchFragment(navController: NavController) {
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        // 검색 버튼이 눌렸을 때 수행할 동작
                         diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
                     }
                 ),
                 decorationBox = { innerTextField ->
-                    Column(
+                    Row(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
+                            .height(40.dp)
+                            .shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(800.dp),
+                                spotColor = MaterialTheme.colorScheme.primary,
+                            )
+                            .background(MaterialTheme.colorScheme.secondary)
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .height(56.dp)
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                .weight(1f)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                            ) {
-                                if (searchText.isBlank()) {
-                                    Text(
-                                        text = "제목 또는 내용으로 검색..",
-                                        style = Typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                innerTextField()
+                            if (searchText.isBlank()) {
+                                Text(
+                                    text = "제목 또는 내용으로 검색..",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
+
+                            innerTextField()
                         }
                     }
                 }
@@ -148,6 +150,8 @@ fun SearchFragment(navController: NavController) {
             Icon(
                 modifier = Modifier
                     .clickable(searchText.isNotBlank()) {
+                        searchComplete = true
+
                         diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
                     },
                 imageVector = Icons.Default.Search,
@@ -160,20 +164,34 @@ fun SearchFragment(navController: NavController) {
          */
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 16.dp),
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (diaryList.isEmpty()) {
                 item {
-                    createEmptyView(text = "검색으로 다이어리를 찾아보세요.")()
+                    if (searchComplete) {
+                        createEmptyView(text = "검색 결과가 없습니다.")()
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 48.dp)
+                        ) {
+                            createNoBackgroundEmptyViewWithMultipleLines(text = "과거의 다이어리를 통해\n당신의 성장과 여정을\n다시 살펴보세요.")()
+                        }
+                    }
                 }
             } else {
                 items(diaryList) { diary ->
                     Row(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
                             .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(8.dp),
+                                spotColor = MaterialTheme.colorScheme.primary,
+                            )
+                            .background(MaterialTheme.colorScheme.secondary)
                             .clickable {
                                 navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
                             },
@@ -205,7 +223,7 @@ fun SearchFragment(navController: NavController) {
 
                             Text(
                                 text = diary.title,
-                                style = Typography.bodySmall,
+                                style = Typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -213,7 +231,7 @@ fun SearchFragment(navController: NavController) {
 
                             Text(
                                 text = diary.content,
-                                style = Typography.bodySmall,
+                                style = Typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -221,6 +239,8 @@ fun SearchFragment(navController: NavController) {
                         }
 
                         Icon(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             imageVector = Icons.Default.KeyboardArrowRight,
                             contentDescription = "이 다이어리로 전환하기",
                             tint = MaterialTheme.colorScheme.primary

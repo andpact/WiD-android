@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
@@ -104,7 +105,7 @@ fun DateBasedFragment(navController: NavController) {
             Text(
                 modifier = Modifier
                     .align(Alignment.Center),
-                text = "날짜 별 조회",
+                text = "날짜 조회",
                 style = Typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -118,15 +119,12 @@ fun DateBasedFragment(navController: NavController) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary)
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .weight(1f)
         ) {
             item("다이어리") {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.secondary)
                         .padding(vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -164,57 +162,65 @@ fun DateBasedFragment(navController: NavController) {
                         }
                     }
 
-                    Text(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(!expandDiary && diaryOverflow) {
-                                expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
-                            }
-                            .padding(16.dp),
-                        text = diary?.title ?: "제목을 입력해 주세요.",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        minLines = 1,
-                        maxLines = if (expandDiary) Int.MAX_VALUE else 1,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
-                            if (diaryTitleTextLayoutResult.didOverflowHeight) {
-                                diaryOverflow = true
-                            }
-                        }
-                    )
-
-                    HorizontalDivider(
-                        modifier = Modifier
                             .padding(horizontal = 16.dp)
-                    )
+                            .shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(8.dp),
+                                spotColor = MaterialTheme.colorScheme.primary,
+                            )
+                            .background(MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(!expandDiary && diaryOverflow) {
+                                    expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                                }
+                                .padding(16.dp),
+                            text = diary?.content ?: "",
+                            style = Typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            minLines = 1,
+                            maxLines = if (expandDiary) Int.MAX_VALUE else 1,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
+                                if (diaryTitleTextLayoutResult.didOverflowHeight) {
+                                    diaryOverflow = true
+                                }
+                            }
+                        )
 
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(!expandDiary && diaryOverflow) {
-                                expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(!expandDiary && diaryOverflow) {
+                                    expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
+                                }
+                                .padding(16.dp),
+                            text = diary?.content ?: "당신이 이 날 무엇을 하고,\n그 속에서 어떤 생각과 감정을 느꼈는지\n주체적으로 기록해보세요.",
+                            textAlign = if (diary == null) TextAlign.Center else null,
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            minLines = 10,
+                            maxLines = if (expandDiary) Int.MAX_VALUE else 10,
+                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
+                                if (diaryContentTextLayoutResult.didOverflowHeight) {
+                                    diaryOverflow = true
+                                }
                             }
-                            .padding(16.dp),
-                        text = diary?.content ?: "내용을 입력해 주세요.",
-                        style = Typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        minLines = 10,
-                        maxLines = if (expandDiary) Int.MAX_VALUE else 10,
-                        overflow = TextOverflow.Ellipsis,
-                        onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
-                            if (diaryContentTextLayoutResult.didOverflowHeight) {
-                                diaryOverflow = true
-                            }
-                        }
-                    )
+                        )
+                    }
 
                     TextButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .background(
-                                color = DeepSkyBlue,
+                                color = AppYellow,
                                 shape = RoundedCornerShape(8.dp)
                             ),
                         onClick = {
@@ -230,13 +236,19 @@ fun DateBasedFragment(navController: NavController) {
                 }
             }
 
+            item {
+                HorizontalDivider(
+                    thickness = 8.dp,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
             item("합계 기록") {
                 // 합계 기록
                 Column(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.secondary)
-                        .padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(top = 16.dp, bottom = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         modifier = Modifier
@@ -256,16 +268,20 @@ fun DateBasedFragment(navController: NavController) {
                                 .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                             columns = GridCells.Fixed(2),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             totalDurationMap.forEach { (title, totalDuration) ->
                                 item {
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.tertiary)
-                                            .padding(vertical = 16.dp),
+                                            .padding(vertical = 4.dp) // 바깥 패딩
+                                            .shadow(
+                                                elevation = 2.dp,
+                                                shape = RoundedCornerShape(8.dp),
+                                                spotColor = MaterialTheme.colorScheme.primary,
+                                            )
+                                            .background(MaterialTheme.colorScheme.secondary)
+                                            .padding(vertical = 16.dp), // 안쪽 패딩
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
@@ -276,7 +292,11 @@ fun DateBasedFragment(navController: NavController) {
                                             Icon(
                                                 modifier = Modifier
                                                     .clip(CircleShape)
-                                                    .background((colorMap[title] ?: DarkGray).copy(alpha = 0.1f))
+                                                    .background(
+                                                        (colorMap[title] ?: DarkGray).copy(
+                                                            alpha = 0.1f
+                                                        )
+                                                    )
                                                     .padding(8.dp),
                                                 painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
                                                 contentDescription = "제목",
@@ -285,13 +305,15 @@ fun DateBasedFragment(navController: NavController) {
 
                                             Text(
                                                 text = titleMap[title] ?: title,
-                                                style = Typography.titleLarge
+                                                style = Typography.titleLarge,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
 
                                         Text(
                                             text = formatDuration(totalDuration, mode = 3),
-                                            style = Typography.titleLarge
+                                            style = Typography.titleLarge,
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -301,11 +323,17 @@ fun DateBasedFragment(navController: NavController) {
                 }
             }
 
+            item {
+                HorizontalDivider(
+                    thickness = 8.dp,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
             item("WiD 리스트") {
                 // WiD 리스트
                 Column(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.secondary)
                         .padding(vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -325,48 +353,61 @@ fun DateBasedFragment(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(IntrinsicSize.Min)
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.tertiary)
-                                    .clickable {
-                                        navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
-                                    },
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .width(7.dp)
-                                        .fillParentMaxHeight()
+                                        .width(8.dp)
+                                        .fillMaxHeight()
                                         .background(colorMap[wiD.title] ?: DarkGray)
                                 )
 
-                                Column(
+                                Row(
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .padding(vertical = 16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        .shadow(
+                                            elevation = 2.dp,
+                                            shape = RoundedCornerShape(8.dp),
+                                            spotColor = MaterialTheme.colorScheme.primary,
+                                        )
+                                        .background(MaterialTheme.colorScheme.secondary)
+                                        .clickable {
+                                            navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
+                                        },
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "${formatTime(wiD.start, "a hh:mm:ss")} ~ ${formatTime(wiD.finish, "a hh:mm:ss")}",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "${formatTime(wiD.start, "a hh:mm:ss")} ~ ${formatTime(wiD.finish, "a hh:mm:ss")}",
+                                            style = Typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+
+                                        Text(
+                                            text = "${titleMap[wiD.title]} • ${formatDuration(wiD.duration, mode = 3)}",
+                                            style = Typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+
+                                    Spacer(
+                                        modifier = Modifier
+                                            .weight(1f)
                                     )
 
-                                    Text(
-                                        text = "${titleMap[wiD.title]} • ${formatDuration(wiD.duration, mode = 3)}",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
+                                    Icon(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp)
+                                            .size(24.dp),
+                                        imageVector = Icons.Default.KeyboardArrowRight,
+                                        contentDescription = "이 WiD로 전환하기",
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
-
-                                Icon(
-                                    modifier = Modifier
-                                        .padding(horizontal = 16.dp),
-                                    imageVector = Icons.Default.KeyboardArrowRight,
-                                    contentDescription = "이 WiD로 전환하기",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
                             }
                         }
                     }
@@ -459,10 +500,19 @@ fun DateBasedFragment(navController: NavController) {
                     )
                 }
 
-                Spacer(
+                IconButton(
                     modifier = Modifier
-                        .weight(1f)
-                )
+                        .weight(1f),
+                    onClick = {
+                    },
+                    enabled = false
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_title_24),
+                        contentDescription = "제목 선택",
+                        tint = DarkGray
+                    )
+                }
 
                 IconButton(
                     modifier = Modifier

@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
@@ -77,7 +78,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
 
     // 화면
     val lazyColumnState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+//    val coroutineScope = rememberCoroutineScope()
 
     // 날짜
     val today: LocalDate = LocalDate.now()
@@ -202,10 +203,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .background(MaterialTheme.colorScheme.tertiary),
-            state = lazyColumnState,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .weight(1f),
+            state = lazyColumnState
         ) {
             // 정보 입력
             item {
@@ -218,7 +217,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        text = "정보 입력",
+                        text = "WiD 정보",
                         style = Typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
 
@@ -619,6 +618,14 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                }
             }
 
+
+            item {
+                HorizontalDivider(
+                    thickness = 8.dp,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
             // 선택 가능한 시간 범위
             item {
                 Column(
@@ -639,54 +646,65 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(IntrinsicSize.Min)
-                            .padding(horizontal = 16.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .clickable {
-                                start = startLimit
-                                finish = finishLimit
-                            },
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+
                     ) {
                         Box(
                             modifier = Modifier
-                                .width(7.dp)
-                                .fillParentMaxHeight()
-                                .background(DarkGray)
+                                .width(8.dp)
+                                .fillMaxHeight()
+                                .background(MaterialTheme.colorScheme.primary)
                         )
 
-                        Column(
+                        Row(
                             modifier = Modifier
-                                .padding(vertical = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                .shadow( // 배경 색이 반드시 있어야하고, 배경보다 shadow를 먼저 적용해야함.
+                                    elevation = 2.dp,
+                                    shape = RoundedCornerShape(8.dp),
+                                    spotColor = MaterialTheme.colorScheme.primary,
+                                )
+                                .background(MaterialTheme.colorScheme.secondary)
+                                .clickable {
+                                    start = startLimit
+                                    finish = finishLimit
+                                },
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "${formatTime(startLimit, "a hh:mm:ss")} ~ ${formatTime(finishLimit, "a hh:mm:ss")}",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "${formatTime(startLimit, "a hh:mm:ss")} ~ ${formatTime(finishLimit, "a hh:mm:ss")}",
+                                    style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = formatDuration(Duration.between(startLimit, finishLimit), mode = 3),
+                                    style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
                             )
 
-                            Text(
-                                text = formatDuration(Duration.between(startLimit, finishLimit), mode = 3),
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+                            Icon(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .size(24.dp)
+                                    .rotate(90f),
+                                painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
+                                contentDescription = "이 시간대 사용하기",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                        Icon(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .rotate(90f),
-                            painter = painterResource(id = R.drawable.baseline_exit_to_app_16),
-                            contentDescription = "이 시간대 사용하기",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
                     }
                 }
             }

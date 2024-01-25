@@ -24,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -105,7 +106,7 @@ fun PeriodBasedFragment(navController: NavController) {
             Text(
                 modifier = Modifier
                     .align(Alignment.Center),
-                text = "기간 별 조회",
+                text = "기간 조회",
                 style = Typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -114,7 +115,8 @@ fun PeriodBasedFragment(navController: NavController) {
                 modifier = Modifier
                     .align(Alignment.CenterEnd),
                 text = "${periodMap[selectedPeriod]} • ${titleMapWithAll[selectedTitle]}",
-                style = Typography.bodyMedium
+                style = Typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -127,14 +129,11 @@ fun PeriodBasedFragment(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(MaterialTheme.colorScheme.tertiary),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (selectedTitle == titlesWithAll[0]) { // 제목이 "전체" 일 때
                 item("타임라인") {
                     Column(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -153,68 +152,86 @@ fun PeriodBasedFragment(navController: NavController) {
                         if (wiDList.isEmpty()) {
                             createEmptyView(text = "표시할 타임라인이 없습니다.")()
                         } else {
-                            Row(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
-                            ) {
-                                val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
-
-                                daysOfWeek.forEachIndexed { index, day ->
-                                    val textColor = when (index) {
-                                        0 -> if (selectedPeriod == periods[1]) OrangeRed else MaterialTheme.colorScheme.primary
-                                        5 -> if (selectedPeriod == periods[0]) DeepSkyBlue else MaterialTheme.colorScheme.primary
-                                        6 -> if (selectedPeriod == periods[0]) OrangeRed else if (selectedPeriod == periods[1]) DeepSkyBlue else MaterialTheme.colorScheme.primary
-                                        else -> MaterialTheme.colorScheme.primary
-                                    }
-
-                                    Text(
-                                        modifier = Modifier
-                                            .weight(1f),
-                                        text = day,
-                                        style = Typography.bodyMedium,
-                                        textAlign = TextAlign.Center,
-                                        color = textColor
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
                                     )
-                                }
-                            }
-
-                            LazyVerticalGrid(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                                columns = GridCells.Fixed(7)
+                                    .background(MaterialTheme.colorScheme.secondary)
                             ) {
-                                if (selectedPeriod == periods[1]) {
-                                    items(startDate.dayOfWeek.value % 7) {
-                                        // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    val daysOfWeek = if (selectedPeriod == periods[0]) daysOfWeekFromMonday else daysOfWeekFromSunday
+
+                                    daysOfWeek.forEachIndexed { index, day ->
+                                        val textColor = when (index) {
+                                            0 -> if (selectedPeriod == periods[1]) OrangeRed else MaterialTheme.colorScheme.primary
+                                            5 -> if (selectedPeriod == periods[0]) DeepSkyBlue else MaterialTheme.colorScheme.primary
+                                            6 -> if (selectedPeriod == periods[0]) OrangeRed else if (selectedPeriod == periods[1]) DeepSkyBlue else MaterialTheme.colorScheme.primary
+                                            else -> MaterialTheme.colorScheme.primary
+                                        }
+
+                                        Text(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            text = day,
+                                            style = Typography.bodyMedium,
+                                            textAlign = TextAlign.Center,
+                                            color = textColor
+                                        )
                                     }
                                 }
 
-                                items(
-                                    ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
-                                ) { index: Int ->
-                                    val indexDate = startDate.plusDays(index.toLong())
-                                    val filteredWiDListByDate =
-                                        wiDList.filter { it.date == indexDate }
+                                LazyVerticalGrid(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+//                                            .padding(horizontal = 16.dp)
+                                        .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+                                    columns = GridCells.Fixed(7)
+                                ) {
+                                    if (selectedPeriod == periods[1]) {
+                                        items(startDate.dayOfWeek.value % 7) {
+                                            // selectedPeriod가 한달이면 달력의 빈 칸을 생성해줌.
+                                        }
+                                    }
 
-                                    PeriodBasedPieChartFragment(
-                                        date = indexDate,
-                                        wiDList = filteredWiDListByDate
-                                    )
+                                    items(
+                                        count = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
+                                    ) { index: Int ->
+                                        val indexDate = startDate.plusDays(index.toLong())
+                                        val filteredWiDListByDate =
+                                            wiDList.filter { it.date == indexDate }
+
+                                        PeriodBasedPieChartFragment(
+                                            date = indexDate,
+                                            wiDList = filteredWiDListByDate
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
+                item {
+                    HorizontalDivider(
+                        thickness = 8.dp,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+
                 item("합계, 평균, 최고") {
                     Column(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.secondary)
-                            .padding(vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(top = 16.dp, bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -288,15 +305,19 @@ fun PeriodBasedFragment(navController: NavController) {
                                     .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                                 columns = GridCells.Fixed(2),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 selectedMap.forEach { (title, duration) ->
                                     item {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(MaterialTheme.colorScheme.tertiary)
+                                                .padding(vertical = 4.dp)
+                                                .shadow(
+                                                    elevation = 2.dp,
+                                                    shape = RoundedCornerShape(8.dp),
+                                                    spotColor = MaterialTheme.colorScheme.primary,
+                                                )
+                                                .background(MaterialTheme.colorScheme.secondary)
                                                 .padding(vertical = 16.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -308,7 +329,11 @@ fun PeriodBasedFragment(navController: NavController) {
                                                 Icon(
                                                     modifier = Modifier
                                                         .clip(CircleShape)
-                                                        .background((colorMap[title] ?: DarkGray).copy(alpha = 0.1f))
+                                                        .background(
+                                                            (colorMap[title] ?: DarkGray).copy(
+                                                                alpha = 0.1f
+                                                            )
+                                                        )
                                                         .padding(8.dp),
                                                     painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
                                                     contentDescription = "제목",
@@ -317,13 +342,15 @@ fun PeriodBasedFragment(navController: NavController) {
 
                                                 Text(
                                                     text = titleMap[title] ?: title,
-                                                    style = Typography.titleLarge
+                                                    style = Typography.titleLarge,
+                                                    color = MaterialTheme.colorScheme.primary
                                                 )
                                             }
 
                                             Text(
                                                 text = formatDuration(duration, mode = 3),
-                                                style = Typography.bodyMedium
+                                                style = Typography.titleLarge,
+                                                color = MaterialTheme.colorScheme.primary
                                             )
                                         }
                                     }
@@ -331,6 +358,13 @@ fun PeriodBasedFragment(navController: NavController) {
                             }
                         }
                     }
+                }
+
+                item {
+                    HorizontalDivider(
+                        thickness = 8.dp,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
                 }
 
                 item("기록률") {
@@ -351,11 +385,23 @@ fun PeriodBasedFragment(navController: NavController) {
                         if (wiDList.isEmpty()) {
                             createEmptyView(text = "표시할 기록률이 없습니다.")()
                         } else {
-                            VerticalBarChartFragment(
-                                wiDList = wiDList,
-                                startDate = startDate,
-                                finishDate = finishDate
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary)
+                            ) {
+                                VerticalBarChartFragment(
+                                    wiDList = wiDList,
+                                    startDate = startDate,
+                                    finishDate = finishDate
+                                )
+                            }
                         }
                     }
                 }
@@ -382,14 +428,33 @@ fun PeriodBasedFragment(navController: NavController) {
                         if (filteredWiDListByTitle.isEmpty()) {
                             createEmptyView(text = "표시할 그래프가 없습니다.")()
                         } else {
-                            LineChartFragment(
-                                title = selectedTitle,
-                                wiDList = filteredWiDListByTitle,
-                                startDate = startDate,
-                                finishDate = finishDate
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary)
+                            ) {
+                                LineChartFragment(
+                                    title = selectedTitle,
+                                    wiDList = filteredWiDListByTitle,
+                                    startDate = startDate,
+                                    finishDate = finishDate
+                                )
+                            }
                         }
                     }
+                }
+
+                item {
+                    HorizontalDivider(
+                        thickness = 8.dp,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
                 }
 
                 item("시간 기록") {
@@ -413,10 +478,13 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.tertiary)
-                                    .padding(16.dp),
+                                    .padding(16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -436,10 +504,13 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.tertiary)
-                                    .padding(16.dp),
+                                    .padding(16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -459,10 +530,13 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.tertiary)
-                                    .padding(16.dp),
+                                    .padding(16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -482,10 +556,13 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.tertiary)
-                                    .padding(16.dp),
+                                    .padding(16.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = RoundedCornerShape(8.dp),
+                                        spotColor = MaterialTheme.colorScheme.primary,
+                                    )
+                                    .background(MaterialTheme.colorScheme.secondary),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -697,7 +774,9 @@ fun PeriodBasedFragment(navController: NavController) {
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_title_24),
+                        modifier = Modifier
+                            .size(24.dp),
+                        painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
                         contentDescription = "제목 선택",
                         tint = MaterialTheme.colorScheme.primary
                     )

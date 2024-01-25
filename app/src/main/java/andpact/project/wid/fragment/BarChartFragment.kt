@@ -2,10 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.Black
-import andpact.project.wid.ui.theme.DarkGray
-import andpact.project.wid.ui.theme.LightGray
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.colorMap
 import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
 import android.view.ViewGroup
@@ -181,7 +178,7 @@ fun VerticalBarChartFragment(wiDList: List<WiD>, startDate: LocalDate, finishDat
                     // 데이터
                     val dataSet = BarDataSet(entryList, "단위 : 퍼센트").apply {
                         setDrawValues(false) // 막대 끝에 값 표시하기
-                        color = DarkGray.toArgb()
+                        color = AppYellow.toArgb()
                     }
                     val data = BarData(dataSet)
                     setData(data)

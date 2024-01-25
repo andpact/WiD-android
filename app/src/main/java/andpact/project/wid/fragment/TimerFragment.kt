@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -53,6 +54,10 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
+    // 화면
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState()
@@ -400,7 +405,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -494,20 +499,32 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
             }
         }
 
-        if (titleMenuExpanded) {
-            ModalBottomSheet(
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                onDismissRequest = { titleMenuExpanded = false },
-                sheetState = bottomSheetState,
-                dragHandle = null
+        /**
+         * 제목 바텀 시트
+         */
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
+            visible = titleMenuExpanded,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .height(screenHeight / 2)
+                    .padding(16.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    )
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
                 ) {
                     Icon(
                         modifier = Modifier
+                            .padding(16.dp)
                             .size(24.dp)
                             .align(Alignment.CenterStart)
                             .clickable {
@@ -529,7 +546,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
 
                 LazyColumn(
                     modifier = Modifier
-                        .height(300.dp)
+                        .fillMaxWidth()
                 ) {
                     items(titles.size) { index ->
                         val title = titles[index]
@@ -555,7 +572,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
 
                             Text(
                                 text = titleMap[title] ?: "공부",
-                                style = Typography.bodyMedium,
+                                style = Typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
 
