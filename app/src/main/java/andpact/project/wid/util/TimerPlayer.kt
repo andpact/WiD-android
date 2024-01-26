@@ -67,7 +67,7 @@ class TimerPlayer(application: Application) : ViewModel() {
         start = LocalTime.now()
 
         viewModelScope.launch {
-            delay(1_000) // 1초 뒤에 타이머를 시작
+//            delay(1_000) // 1초 뒤에 타이머를 시작
 
             timer = object : CountDownTimer(_remainingTime.value, 1_000) { // MilliSeconds 기준
                 override fun onTick(millisUntilFinished: Long) {

@@ -51,10 +51,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -78,7 +75,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
 
     // 화면
     val lazyColumnState = rememberLazyListState()
-//    val coroutineScope = rememberCoroutineScope()
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     // 날짜
     val today: LocalDate = LocalDate.now()
@@ -145,6 +143,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
         ) {
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
                         navController.popBackStack()
@@ -235,7 +234,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "날짜",
                             tint = MaterialTheme.colorScheme.primary
@@ -275,8 +275,9 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
-                            painter = painterResource(id = R.drawable.baseline_title_24),
+                                .padding(16.dp)
+                                .size(24.dp),
+                            painter = painterResource(titleIconMap[title] ?: R.drawable.baseline_menu_book_16),
                             contentDescription = "제목",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -304,44 +305,6 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                         )
                     }
 
-                    if (titleMenuExpanded) {
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                            columns = GridCells.Fixed(5),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            titles.forEach { chipTitle ->
-                                item {
-                                    FilterChip(
-                                        selected = title == chipTitle,
-                                        onClick = {
-                                            title = chipTitle
-                                            titleMenuExpanded = false
-                                        },
-                                        label = {
-                                            Text(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                text = titleMap[chipTitle] ?: chipTitle,
-                                                style = Typography.bodySmall,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiary,
-                                            labelColor = MaterialTheme.colorScheme.primary,
-                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     // 시작 시간
                     Row(
                         modifier = Modifier
@@ -357,7 +320,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_24),
                             contentDescription = "시작 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -387,50 +351,6 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                         )
                     }
 
-                    if (expandStartPicker) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            TimePicker(state = startTimePickerState)
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(
-                                    onClick = { expandStartPicker = false }
-                                ) {
-                                    Text(
-                                        text = "취소",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        expandStartPicker = false
-                                        val newStart = LocalTime.of(
-                                            startTimePickerState.hour,
-                                            startTimePickerState.minute
-                                        )
-
-                                        start = newStart
-                                    }
-                                ) {
-                                    Text(
-                                        text = "확인",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     // 종료 시간
                     Row(
                         modifier = Modifier
@@ -446,7 +366,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_on_24),
                             contentDescription = "종료 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -477,50 +398,6 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                         )
                     }
 
-                    if (expandFinishPicker) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            TimePicker(state = finishTimePickerState)
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(
-                                    onClick = { expandFinishPicker = false }
-                                ) {
-                                    Text(
-                                        text = "취소",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        expandFinishPicker = false
-                                        val newFinish = LocalTime.of(
-                                            finishTimePickerState.hour,
-                                            finishTimePickerState.minute
-                                        )
-
-                                        finish = newFinish
-                                    }
-                                ) {
-                                    Text(
-                                        text = "확인",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     // 소요 시간
                     Row(
                         modifier = Modifier
@@ -533,7 +410,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                             contentDescription = "소요 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -594,6 +472,8 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                         ) {
                             if (!isDeleteButtonPressed) {
                                 Icon(
+                                    modifier = Modifier
+                                        .size(24.dp),
                                     painter = painterResource(R.drawable.outline_delete_16),
                                     contentDescription = "WiD 삭제",
                                     tint = OrangeRed
@@ -671,7 +551,6 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
                             Column(
                                 modifier = Modifier
                                     .padding(16.dp),
@@ -727,6 +606,236 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
 //                style = Typography.titleLarge
 //            )
 //        }
+    }
+
+    /**
+     * 날짜, 제목, 시작 시간, 종료 시간 선택 대화 상자
+     */
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = titleMenuExpanded || expandStartPicker || expandFinishPicker,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(titleMenuExpanded || expandStartPicker || expandFinishPicker) {
+                    titleMenuExpanded = false
+                    expandStartPicker = false
+                    expandFinishPicker = false
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 16.dp)
+                    .then(if (titleMenuExpanded) Modifier.height(screenHeight / 2) else Modifier)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (titleMenuExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    titleMenuExpanded = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "제목 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "제목 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        items(titles.size) { index ->
+                            val itemTitle = titles[index]
+                            val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        title = itemTitle
+                                        titleMenuExpanded = false
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(24.dp),
+                                    painter = painterResource(id = iconResourceId),
+                                    contentDescription = "제목",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = titleMap[itemTitle] ?: "공부",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (title == itemTitle) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (expandStartPicker) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    expandStartPicker = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "시작 시간 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "시작 시간 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    expandStartPicker = false
+                                    val newStart = LocalTime.of(
+                                        startTimePickerState.hour,
+                                        startTimePickerState.minute
+                                    )
+
+                                    start = newStart
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    TimePicker(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp),
+                        state = startTimePickerState
+                    )
+                }
+
+                if (expandFinishPicker) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    expandFinishPicker = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "종료 시간 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "종료 시간 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    expandFinishPicker = false
+                                    val newFinish = LocalTime.of(
+                                        finishTimePickerState.hour,
+                                        finishTimePickerState.minute
+                                    )
+
+                                    finish = newFinish
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    TimePicker(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp),
+                        state = finishTimePickerState
+                    )
+                }
+            }
+        }
     }
 }
 

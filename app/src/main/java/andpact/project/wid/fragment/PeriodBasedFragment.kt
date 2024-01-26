@@ -4,9 +4,7 @@ import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -38,12 +37,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeriodBasedFragment(navController: NavController) {
+    // 화면
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     // 날짜
     val today = LocalDate.now()
     var startDate by remember { mutableStateOf(getFirstDayOfWeek(today)) }
@@ -94,6 +99,7 @@ fun PeriodBasedFragment(navController: NavController) {
         ) {
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
                         navController.popBackStack()
@@ -334,7 +340,8 @@ fun PeriodBasedFragment(navController: NavController) {
                                                                 alpha = 0.1f
                                                             )
                                                         )
-                                                        .padding(8.dp),
+                                                        .padding(8.dp)
+                                                        .size(24.dp),
                                                     painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
                                                     contentDescription = "제목",
                                                     tint = colorMap[title] ?: DarkGray
@@ -478,13 +485,14 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp)
                                     .shadow(
                                         elevation = 2.dp,
                                         shape = RoundedCornerShape(8.dp),
                                         spotColor = MaterialTheme.colorScheme.primary,
                                     )
-                                    .background(MaterialTheme.colorScheme.secondary),
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -504,13 +512,14 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp)
                                     .shadow(
                                         elevation = 2.dp,
                                         shape = RoundedCornerShape(8.dp),
                                         spotColor = MaterialTheme.colorScheme.primary,
                                     )
-                                    .background(MaterialTheme.colorScheme.secondary),
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -530,13 +539,14 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp)
                                     .shadow(
                                         elevation = 2.dp,
                                         shape = RoundedCornerShape(8.dp),
                                         spotColor = MaterialTheme.colorScheme.primary,
                                     )
-                                    .background(MaterialTheme.colorScheme.secondary),
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -556,13 +566,14 @@ fun PeriodBasedFragment(navController: NavController) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp)
                                     .shadow(
                                         elevation = 2.dp,
                                         shape = RoundedCornerShape(8.dp),
                                         spotColor = MaterialTheme.colorScheme.primary,
                                     )
-                                    .background(MaterialTheme.colorScheme.secondary),
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -584,47 +595,240 @@ fun PeriodBasedFragment(navController: NavController) {
             }
         }
 
+        HorizontalDivider()
+
         /**
          * 하단 바
          */
-        Column(
+        Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .height(56.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            HorizontalDivider()
-
-            // 기간 선택
-            AnimatedVisibility(
-                visible = periodMenuExpanded,
-                enter = expandVertically{ 0 },
-                exit = shrinkVertically{ 0 },
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
+                Icon(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 8.dp),
-                        text = "조회할 기간을 선택해 주세요.",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        .weight(1f)
+                        .clickable {
+                            if (titleMenuExpanded) {
+                                titleMenuExpanded = false
+                            }
 
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            periodMenuExpanded = true
+                        },
+                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                    contentDescription = "기간 선택",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            if (periodMenuExpanded) {
+                                periodMenuExpanded = false
+                            }
+
+                            titleMenuExpanded = true
+                        },
+                    painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
+                    contentDescription = "제목 선택",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = when (selectedPeriod) {
+                            periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
+                            periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                            else -> false
+                        }) {
+                            if (titleMenuExpanded) {
+                                titleMenuExpanded = false
+                            }
+
+                            if (periodMenuExpanded) {
+                                periodMenuExpanded = false
+                            }
+
+                            when (selectedPeriod) {
+                                periods[0] -> {
+                                    startDate = getFirstDayOfWeek(today)
+                                    finishDate = getLastDayOfWeek(today)
+                                }
+                                periods[1] -> {
+                                    startDate = getFirstDayOfMonth(today)
+                                    finishDate = getLastDayOfMonth(today)
+                                }
+                            }
+
+                            selectedMapText = "합계"
+                        },
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "기간 초기화",
+                    tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                        selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
                     ) {
-                        periods.forEach { chipPeriod ->
-                            item {
-                                FilterChip(
-                                    selected = selectedPeriod == chipPeriod,
-                                    onClick = {
-                                        selectedPeriod = chipPeriod
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        DarkGray
+                    }
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            if (titleMenuExpanded) {
+                                titleMenuExpanded = false
+                            }
+
+                            if (periodMenuExpanded) {
+                                periodMenuExpanded = false
+                            }
+
+                            when (selectedPeriod) {
+                                periods[0] -> {
+                                    startDate = startDate.minusWeeks(1)
+                                    finishDate = finishDate.minusWeeks(1)
+                                }
+                                periods[1] -> {
+                                    startDate = getFirstDayOfMonth(startDate.minusDays(15))
+                                    finishDate = getLastDayOfMonth(finishDate.minusDays(45))
+                                }
+                            }
+
+                            selectedMapText = "합계"
+                        },
+                    imageVector = Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "이전 기간",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = when (selectedPeriod) {
+                            periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
+                            periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                            else -> false
+                        }) {
+                            if (titleMenuExpanded) {
+                                titleMenuExpanded = false
+                            }
+
+                            if (periodMenuExpanded) {
+                                periodMenuExpanded = false
+                            }
+
+                            when (selectedPeriod) {
+                                periods[0] -> {
+                                    startDate = startDate.plusWeeks(1)
+                                    finishDate = finishDate.plusWeeks(1)
+                                }
+                                periods[1] -> {
+                                    startDate = getFirstDayOfMonth(startDate.plusDays(45))
+                                    finishDate = getLastDayOfMonth(finishDate.plusDays(15))
+                                }
+                            }
+
+                            selectedMapText = "합계"
+                        },
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "다음 기간",
+                    tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
+                        selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
+                    ) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        DarkGray
+                    }
+                )
+            }
+        }
+    }
+
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = periodMenuExpanded || titleMenuExpanded,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(periodMenuExpanded || titleMenuExpanded) {
+                    periodMenuExpanded = false
+                    titleMenuExpanded = false
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+                    .then(if (titleMenuExpanded) Modifier.height(screenHeight / 2) else Modifier)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (periodMenuExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    periodMenuExpanded = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "기간 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "기간 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        items(periods.size) { index ->
+                            val itemPeriod = periods[index]
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedPeriod = itemPeriod
                                         periodMenuExpanded = false
 
                                         if (selectedPeriod == periods[0]) { // 일주일
@@ -637,270 +841,165 @@ fun PeriodBasedFragment(navController: NavController) {
 
                                         selectedMapText = "합계"
                                     },
-                                    label = {
-                                        Text(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            text = periodMap[chipPeriod] ?: chipPeriod,
-                                            style = Typography.bodySmall,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiary,
-                                        labelColor = MaterialTheme.colorScheme.primary,
-                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                        selectedLabelColor = MaterialTheme.colorScheme.secondary
-                                    )
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+//                                Icon(
+//                                    modifier = Modifier
+//                                        .padding(16.dp)
+//                                        .size(24.dp),
+//                                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+//                                    contentDescription = "제목",
+//                                    tint = MaterialTheme.colorScheme.primary
+//                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    text = "${index + 1}. ${periodMap[itemPeriod] ?: "일주일"}",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (selectedPeriod == itemPeriod) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 제목 선택
-            AnimatedVisibility(
-                visible = titleMenuExpanded,
-                enter = expandVertically{ 0 },
-                exit = shrinkVertically{ 0 },
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
+                if (titleMenuExpanded) {
+                    Box(
                         modifier = Modifier
-                            .padding(top = 8.dp),
-                        text = "조회할 제목를 선택해 주세요.",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    FilterChip(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        selected = selectedTitle == titlesWithAll[0],
-                        onClick = {
-                            selectedTitle = titlesWithAll[0]
-                            titleMenuExpanded = false
-                        },
-                        label = {
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                text = titleMapWithAll[titlesWithAll[0]] ?: titlesWithAll[0],
-                                style = Typography.bodySmall,
-                                textAlign = TextAlign.Center
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-                            labelColor = MaterialTheme.colorScheme.primary,
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = MaterialTheme.colorScheme.secondary
-                        )
-                    )
-
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        columns = GridCells.Fixed(5),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .fillMaxWidth()
+                            .clickable(false) {}
                     ) {
-                        titles.forEach { chipTitle ->
-                            item {
-                                FilterChip(
-                                    selected = selectedTitle == chipTitle,
-                                    onClick = {
-                                        selectedTitle = chipTitle
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    titleMenuExpanded = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "제목 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "제목 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedTitle = titlesWithAll[0]
                                         titleMenuExpanded = false
                                     },
-                                    label = {
-                                        Text(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            text = titleMapWithAll[chipTitle] ?: chipTitle,
-                                            style = Typography.bodySmall,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiary,
-                                        labelColor = MaterialTheme.colorScheme.primary,
-                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                        selectedLabelColor = MaterialTheme.colorScheme.secondary
-                                    )
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(24.dp),
+                                    painter = painterResource(id = R.drawable.baseline_title_24),
+                                    contentDescription = "제목",
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
+
+                                Text(
+                                    text = titleMapWithAll[titlesWithAll[0]] ?: "전체",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (selectedTitle == titlesWithAll[0]) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
+                        items(titles.size) { index ->
+                            val itemTitle = titles[index]
+                            val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedTitle = itemTitle
+                                        titleMenuExpanded = false
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(24.dp),
+                                    painter = painterResource(id = iconResourceId),
+                                    contentDescription = "제목",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = titleMap[itemTitle] ?: "공부",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (selectedTitle == itemTitle) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .height(56.dp),
-            ) {
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (titleMenuExpanded) {
-                            titleMenuExpanded = false
-                        }
-
-                        periodMenuExpanded = !periodMenuExpanded
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                        contentDescription = "기간 선택",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (periodMenuExpanded) {
-                            periodMenuExpanded = false
-                        }
-
-                        titleMenuExpanded = !titleMenuExpanded
-                    }
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .size(24.dp),
-                        painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
-                        contentDescription = "제목 선택",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (titleMenuExpanded) {
-                            titleMenuExpanded = false
-                        }
-
-                        if (periodMenuExpanded) {
-                            periodMenuExpanded = false
-                        }
-
-                        when (selectedPeriod) {
-                            periods[0] -> {
-                                startDate = getFirstDayOfWeek(today)
-                                finishDate = getLastDayOfWeek(today)
-                            }
-                            periods[1] -> {
-                                startDate = getFirstDayOfMonth(today)
-                                finishDate = getLastDayOfMonth(today)
-                            }
-                        }
-
-                        selectedMapText = "합계"
-                    },
-                    enabled = when (selectedPeriod) {
-                        periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
-                        periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                        else -> false
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "기간 초기화",
-                        tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                            selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                        ) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            DarkGray
-                        }
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (titleMenuExpanded) {
-                            titleMenuExpanded = false
-                        }
-
-                        if (periodMenuExpanded) {
-                            periodMenuExpanded = false
-                        }
-
-                        when (selectedPeriod) {
-                            periods[0] -> {
-                                startDate = startDate.minusWeeks(1)
-                                finishDate = finishDate.minusWeeks(1)
-                            }
-                            periods[1] -> {
-                                startDate = getFirstDayOfMonth(startDate.minusDays(15))
-                                finishDate = getLastDayOfMonth(finishDate.minusDays(45))
-                            }
-                        }
-
-                        selectedMapText = "합계"
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "이전 기간",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (titleMenuExpanded) {
-                            titleMenuExpanded = false
-                        }
-
-                        if (periodMenuExpanded) {
-                            periodMenuExpanded = false
-                        }
-
-                        when (selectedPeriod) {
-                            periods[0] -> {
-                                startDate = startDate.plusWeeks(1)
-                                finishDate = finishDate.plusWeeks(1)
-                            }
-                            periods[1] -> {
-                                startDate = getFirstDayOfMonth(startDate.plusDays(45))
-                                finishDate = getLastDayOfMonth(finishDate.plusDays(15))
-                            }
-                        }
-
-                        selectedMapText = "합계"
-                    },
-                    enabled = when (selectedPeriod) {
-                        periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
-                        periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                        else -> false
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "다음 기간",
-                        tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                            selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                        ) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            DarkGray
-                        }
-                    )
                 }
             }
         }

@@ -95,6 +95,10 @@ val periodMap = mapOf(
     "MONTH" to "한 달",
 )
 
+//val periodIconMap = mapOf(
+//    "WEEK" to "일주일",
+//    "MONTH" to "한 달",
+//)
 
 val colorMap = mapOf(
     "ALL" to Black,

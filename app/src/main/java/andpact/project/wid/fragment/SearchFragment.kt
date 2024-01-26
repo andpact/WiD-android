@@ -18,6 +18,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -85,6 +86,7 @@ fun SearchFragment(navController: NavController) {
         ) {
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .clickable {
                         navController.popBackStack()
                     },
@@ -149,6 +151,7 @@ fun SearchFragment(navController: NavController) {
 
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .clickable(searchText.isNotBlank()) {
                         searchComplete = true
 
@@ -181,11 +184,17 @@ fun SearchFragment(navController: NavController) {
                     }
                 }
             } else {
-                items(diaryList) { diary ->
+//                items(diaryList) { diary ->
+                itemsIndexed(diaryList) { index, diary ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                            .padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = if (index == 0) 16.dp else 0.dp, // 첫 번째 다이어리 위쪽에 16dp 패딩
+                                bottom = if (index == diaryList.size - 1) 16.dp else 0.dp // 마지막 다이어리 아래쪽에 16dp 패딩
+                            )
                             .shadow(
                                 elevation = 2.dp,
                                 shape = RoundedCornerShape(8.dp),
@@ -240,7 +249,8 @@ fun SearchFragment(navController: NavController) {
 
                         Icon(
                             modifier = Modifier
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 16.dp)
+                                .size(24.dp),
                             imageVector = Icons.Default.KeyboardArrowRight,
                             contentDescription = "이 다이어리로 전환하기",
                             tint = MaterialTheme.colorScheme.primary

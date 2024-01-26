@@ -11,16 +11,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,8 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -48,7 +44,6 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
-    val bottomSheetState = rememberModalBottomSheetState()
 
     DisposableEffect(Unit) {
         // Fragment가 나타날 때
@@ -117,11 +112,11 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = titleMenuExpanded || stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+            .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                 stopwatchTopBottomBarVisible = !stopwatchTopBottomBarVisible
-                if (titleMenuExpanded) {
-                    titleMenuExpanded = false
-                }
+//                if (titleMenuExpanded) {
+//                    titleMenuExpanded = false
+//                }
             }
     ) {
         /**
@@ -142,6 +137,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
             ) {
                 Icon(
                     modifier = Modifier
+                        .size(24.dp)
                         .align(Alignment.CenterStart)
                         .clickable {
                             navController.popBackStack()
@@ -221,20 +217,18 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary else DarkGray
                     )
 
-                    Box(
+                    Icon(
                         modifier = Modifier
                             .clip(CircleShape) // 박스를 원형 모양으로 잘라서 모양 및 클릭 범위를 원형으로 만듬.
                             .clickable {
-                                if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치 중지
                                     stopwatchPlayer.pauseStopwatch()
 
                                     val now = LocalTime.now()
 
                                     createWiD(now)
-                                } else {
+                                } else { // 스톱 워치 시작
                                     stopwatchPlayer.startStopwatch()
-
-                                    titleMenuExpanded = false
                                 }
                             }
                             .background(
@@ -243,21 +237,17 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                                 else OrangeRed
                             )
                             .padding(16.dp)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(32.dp),
-                            painter = painterResource(
-                                id = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                                    R.drawable.baseline_pause_24
-                                } else {
-                                    R.drawable.baseline_play_arrow_24
-                                }
-                            ),
-                            contentDescription = "스톱 워치 시작 및 중지",
-                            tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
-                        )
-                    }
+                            .size(32.dp),
+                        painter = painterResource(
+                            id = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                R.drawable.baseline_pause_24
+                            } else {
+                                R.drawable.baseline_play_arrow_24
+                            }
+                        ),
+                        contentDescription = "스톱 워치 시작 및 중지",
+                        tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
+                    )
 
                     Icon(
                         modifier = Modifier
@@ -272,21 +262,37 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                 }
             }
         }
+    }
 
-        /**
-         * 제목 바텀 시트
-         */
-        AnimatedVisibility(
+    // 컴포저블 안에 기본적으로 박스가 감싸고 있는 구조인 듯.
+    // 위 전체 화면 박스에 배경색을 넣어놔서 아래 박스는 배경 색을 넣을 필요 없음.
+    /**
+     * 제목 바텀 시트
+     */
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = titleMenuExpanded,
+        enter = fadeIn(), // 위치 이동하는 애니메이션은 효과가 안나옴.
+        exit = fadeOut()
+    ) {
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
-            visible = titleMenuExpanded,
-            enter = fadeIn(),
-            exit = fadeOut(),
+                .fillMaxSize()
+                .clickable(titleMenuExpanded) {
+                    titleMenuExpanded = false
+                }
         ) {
             Column(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .height(screenHeight / 2)
                     .padding(16.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
                     .background(
                         color = MaterialTheme.colorScheme.tertiary,
                         shape = RoundedCornerShape(8.dp)
@@ -295,6 +301,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable(false) {}
                 ) {
                     Icon(
                         modifier = Modifier
@@ -313,7 +320,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         modifier = Modifier
                             .align(Alignment.Center),
                         text = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) "제목 선택" else "이어서 사용할 제목 선택",
-                        style = Typography.bodyMedium,
+                        style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -325,14 +332,14 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         .fillMaxWidth()
                 ) {
                     items(titles.size) { index ->
-                        val title = titles[index]
-                        val iconResourceId = titleIconMap[title] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+                        val itemTitle = titles[index]
+                        val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(!(title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started)) {
-                                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Started && stopwatchPlayer.title.value != title) {
+                                .clickable(!(itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started)) {
+                                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Started && stopwatchPlayer.title.value != itemTitle) {
                                         stopwatchPlayer.restartStopwatch()
 
                                         val now = LocalTime.now()
@@ -343,7 +350,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                                         stopwatchPlayer.start = now
                                     }
 
-                                    stopwatchPlayer.setTitle(title)
+                                    stopwatchPlayer.setTitle(itemTitle)
                                     titleMenuExpanded = false
                                 },
                             verticalAlignment = Alignment.CenterVertically,
@@ -354,7 +361,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                                     .size(24.dp),
                                 painter = painterResource(id = iconResourceId),
                                 contentDescription = "제목",
-                                tint = if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                tint = if (itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                     DarkGray
                                 } else {
                                     MaterialTheme.colorScheme.primary
@@ -362,9 +369,9 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                             )
 
                             Text(
-                                text = titleMap[title] ?: "공부",
+                                text = titleMap[itemTitle] ?: "공부",
                                 style = Typography.labelMedium,
-                                color = if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                color = if (itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                     DarkGray
                                 } else {
                                     MaterialTheme.colorScheme.primary
@@ -376,25 +383,25 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                                     .weight(1f)
                             )
 
-                            if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                            if (itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
                                     text = "사용 중",
                                     style = Typography.bodyMedium,
-                                    color = if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                    color = if (itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                         DarkGray
                                     } else {
                                         MaterialTheme.colorScheme.primary
                                     }
                                 )
-                            } else if (title == stopwatchPlayer.title.value) {
+                            } else if (itemTitle == stopwatchPlayer.title.value) {
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
                                     text = "선택됨",
                                     style = Typography.bodyMedium,
-                                    color = if (title == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                    color = if (itemTitle == stopwatchPlayer.title.value && stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
                                         DarkGray
                                     } else {
                                         MaterialTheme.colorScheme.primary

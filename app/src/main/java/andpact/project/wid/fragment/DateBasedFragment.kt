@@ -7,9 +7,7 @@ import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -93,6 +91,7 @@ fun DateBasedFragment(navController: NavController) {
         ) {
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
                         navController.popBackStack()
@@ -202,7 +201,7 @@ fun DateBasedFragment(navController: NavController) {
                                 .padding(16.dp),
                             text = diary?.content ?: "당신이 이 날 무엇을 하고,\n그 속에서 어떤 생각과 감정을 느꼈는지\n주체적으로 기록해보세요.",
                             textAlign = if (diary == null) TextAlign.Center else null,
-                            style = Typography.bodyMedium,
+                            style = if (diary == null) Typography.labelMedium else Typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             minLines = 10,
                             maxLines = if (expandDiary) Int.MAX_VALUE else 10,
@@ -230,7 +229,7 @@ fun DateBasedFragment(navController: NavController) {
                         Text(
                             text = "다이어리 수정",
                             style = Typography.bodyMedium,
-                            color = White
+                            color = Black
                         )
                     }
                 }
@@ -297,7 +296,8 @@ fun DateBasedFragment(navController: NavController) {
                                                             alpha = 0.1f
                                                         )
                                                     )
-                                                    .padding(8.dp),
+                                                    .padding(8.dp)
+                                                    .size(24.dp),
                                                 painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
                                                 contentDescription = "제목",
                                                 tint = colorMap[title] ?: DarkGray
@@ -415,166 +415,180 @@ fun DateBasedFragment(navController: NavController) {
             }
         }
 
+        HorizontalDivider()
+
         /**
          * 하단 바
          */
-        Column(
+        Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .height(56.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            HorizontalDivider()
-
-            AnimatedVisibility(
-                visible = expandDatePicker,
-                enter = expandVertically{ 0 },
-                exit = shrinkVertically{ 0 },
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            expandDatePicker = true
+                        },
+                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                    contentDescription = "날짜 선택",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = false) {
+                            // 클릭 이벤트를 처리할 내용
+                        },
+                    painter = painterResource(R.drawable.baseline_title_24),
+                    contentDescription = "제목 선택",
+                    tint = DarkGray
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = currentDate != today) {
+                            if (expandDatePicker) {
+                                expandDatePicker = false
+                            }
+                            currentDate = today
+
+                            expandDiary = false
+                            diaryOverflow = false
+                        },
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "오늘 날짜",
+                    tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            if (expandDatePicker) {
+                                expandDatePicker = false
+                            }
+                            currentDate = currentDate.minusDays(1)
+
+                            expandDiary = false
+                            diaryOverflow = false
+                        },
+                    imageVector = Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "이전 날짜",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable(enabled = currentDate != today) {
+                            if (expandDatePicker) {
+                                expandDatePicker = false
+                            }
+                            currentDate = currentDate.plusDays(1)
+
+                            expandDiary = false
+                            diaryOverflow = false
+                        },
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "다음 날짜",
+                    tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
+                )
+            }
+        }
+    }
+
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = expandDatePicker,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(expandDatePicker) {
+                    expandDatePicker = false
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(false) {}
                 ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .size(24.dp)
+                            .align(Alignment.CenterStart)
+                            .clickable {
+                                expandDatePicker = false
+                            },
+                        painter = painterResource(id = R.drawable.baseline_close_24),
+                        contentDescription = "날짜 메뉴 닫기",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
                     Text(
                         modifier = Modifier
-                            .padding(top = 8.dp),
-                        text = "조회할 날짜를 선택해 주세요.",
-                        style = Typography.bodyMedium,
+                            .align(Alignment.Center),
+                        text = "날짜 선택",
+                        style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    DatePicker(
-                        state = datePickerState,
-                        showModeToggle = false,
-                        title = null,
-                        headline = null,
-                    )
-
-                    Row(
+                    Text(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { expandDatePicker = false }
-                        ) {
-                            Text(
-                                text = "취소",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        TextButton(
-                            onClick = {
+                            .align(Alignment.CenterEnd)
+                            .padding(horizontal = 16.dp)
+                            .clickable {
                                 expandDatePicker = false
                                 currentDate = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
 
                                 expandDiary = false
                                 diaryOverflow = false
-                            }
-                        ) {
-                            Text(
-                                text = "확인",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .height(56.dp),
-            ) {
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        expandDatePicker = !expandDatePicker
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                        contentDescription = "날짜 선택",
-                        tint = MaterialTheme.colorScheme.primary
+                            },
+                        text = "확인",
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                    },
-                    enabled = false
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_title_24),
-                        contentDescription = "제목 선택",
-                        tint = DarkGray
-                    )
-                }
+                HorizontalDivider()
 
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (expandDatePicker) {
-                            expandDatePicker = false
-                        }
-                        currentDate = today
-
-                        expandDiary = false
-                        diaryOverflow = false
-                    },
-                    enabled = currentDate != today,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "오늘 날짜",
-                        tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (expandDatePicker) {
-                            expandDatePicker = false
-                        }
-                        currentDate = currentDate.minusDays(1)
-
-                        expandDiary = false
-                        diaryOverflow = false
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "이전 날짜",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        if (expandDatePicker) {
-                            expandDatePicker = false
-                        }
-                        currentDate = currentDate.plusDays(1)
-
-                        expandDiary = false
-                        diaryOverflow = false
-                    },
-                    enabled = currentDate != today
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "다음 날짜",
-                        tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
-                    )
-                }
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false,
+                    title = null,
+                    headline = null,
+                )
             }
         }
     }

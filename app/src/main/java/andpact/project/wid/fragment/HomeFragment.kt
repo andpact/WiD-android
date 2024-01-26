@@ -6,9 +6,12 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.createNoBackgroundEmptyViewWithMultipleLines
 import andpact.project.wid.util.formatTimeHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -100,7 +103,7 @@ fun HomeFragment(navController: NavController) {
 //                tint = MaterialTheme.colorScheme.primary
 //            )
 //        }
-
+        
         /**
          * 컨텐츠
          */
@@ -137,6 +140,8 @@ fun HomeFragment(navController: NavController) {
                             }
                         ) {
                             Icon(
+                                modifier = Modifier
+                                    .size(48.dp),
                                 painter = painterResource(id = R.drawable.outline_alarm_24),
                                 contentDescription = "스톱 워치",
                                 tint = MaterialTheme.colorScheme.primary
@@ -168,6 +173,8 @@ fun HomeFragment(navController: NavController) {
                             }
                         ) {
                             Icon(
+                                modifier = Modifier
+                                    .size(48.dp),
                                 painter = painterResource(id = R.drawable.outline_timer_24),
                                 contentDescription = "타이머",
                                 tint = MaterialTheme.colorScheme.primary
@@ -199,6 +206,8 @@ fun HomeFragment(navController: NavController) {
                         }
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .size(48.dp),
                             painter = painterResource(id = R.drawable.outline_add_box_24),
                             contentDescription = "새로운 WiD",
                             tint = MaterialTheme.colorScheme.primary
@@ -298,7 +307,7 @@ fun HomeFragment(navController: NavController) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 기간 조회
+                    // 날짜 조회
                     Column(
                         modifier = Modifier
                             .weight(1f),
@@ -316,6 +325,8 @@ fun HomeFragment(navController: NavController) {
                             }
                         ) {
                             Icon(
+                                modifier = Modifier
+                                    .size(48.dp),
                                 painter = painterResource(id = R.drawable.baseline_location_searching_24),
                                 contentDescription = "날짜 조회",
                                 tint = MaterialTheme.colorScheme.primary
@@ -329,7 +340,7 @@ fun HomeFragment(navController: NavController) {
                         )
                     }
 
-                    // 날짜 조회
+                    // 기간 조회
                     Column(
                         modifier = Modifier
                             .weight(1f),
@@ -347,6 +358,8 @@ fun HomeFragment(navController: NavController) {
                             }
                         ) {
                             Icon(
+                                modifier = Modifier
+                                    .size(48.dp),
                                 painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                                 contentDescription = "기간 조회",
                                 tint = MaterialTheme.colorScheme.primary
@@ -378,6 +391,8 @@ fun HomeFragment(navController: NavController) {
                         }
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .size(48.dp),
                             painter = painterResource(id = R.drawable.baseline_search_24),
                             contentDescription = "다이어리 검색",
                             tint = MaterialTheme.colorScheme.primary

@@ -62,7 +62,8 @@ fun MainFragment() {
         Scaffold(
             topBar = {
                 TopBar(stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
-            }
+            },
+//            containerColor = MaterialTheme.colorScheme.secondary
         ) { paddingValues ->
             Box(
                 modifier = Modifier

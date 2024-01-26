@@ -170,7 +170,8 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     .fillMaxWidth()
                     .aspectRatio(1f)
             ) {
-                val radius: Float = size.minDimension / 1.85f // 원의 반지름
+//                val radius: Float = size.minDimension / 1.85f // 원의 반지름
+                val radius: Float = size.minDimension / 1.9f // 원의 반지름
                 val centerX = center.x
                 val centerY = center.y + radius / 25
 

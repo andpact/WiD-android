@@ -23,10 +23,6 @@ val pretendardExtraBold = FontFamily(
     Font(R.font.pretendard_extra_bold)
 )
 
-val pyeongChangPeaceBold = FontFamily(
-    Font(R.font.pyeong_chang_peace_bold)
-)
-
 val chivoMonoBlackItalic = FontFamily(
     Font(R.font.chivo_mono_black_italic)
 )

@@ -4,24 +4,17 @@ import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,30 +22,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.navigation.NavController
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.*
 import java.util.*
-import kotlin.text.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewWiDFragment(navController: NavController) {
     // 날짜
+    val currentTime: LocalTime = LocalTime.now().withSecond(0)
     val today: LocalDate = LocalDate.now()
     var date by remember { mutableStateOf(today) }
     var expandDatePicker by remember { mutableStateOf(false) }
@@ -71,10 +56,11 @@ fun NewWiDFragment(navController: NavController) {
             }
         }
     )
-    val currentTime: LocalTime = LocalTime.now().withSecond(0)
 
     // 화면
     val lazyColumnState = rememberLazyListState()
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
@@ -158,6 +144,7 @@ fun NewWiDFragment(navController: NavController) {
         ) {
             Icon(
                 modifier = Modifier
+                    .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
                         navController.popBackStack()
@@ -260,7 +247,8 @@ fun NewWiDFragment(navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "날짜",
                             tint = MaterialTheme.colorScheme.primary
@@ -285,64 +273,12 @@ fun NewWiDFragment(navController: NavController) {
                         }
 
                         Icon(
+                            modifier = Modifier
+                                .size(24.dp),
                             imageVector = if (expandDatePicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "날짜 선택 도구 펼치기",
                             tint = MaterialTheme.colorScheme.primary
                         )
-                    }
-
-                    if (expandDatePicker) {
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            DatePicker(
-                                state = datePickerState,
-                                showModeToggle = false,
-                                title = null,
-                                headline = null,
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(
-                                    onClick = { expandDatePicker = false }
-                                ) {
-                                    Text(
-                                        text = "취소",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        expandDatePicker = false
-                                        date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
-
-                                        // 날짜를 변경하면 이 Button scope의 내용이 먼저 실행된 후, remember에 의한 갱신이 발생한다.
-                                        wiDList = wiDService.readDailyWiDListByDate(date)
-
-                                        // WiD를 생성했으므로 wiDList가 비어있을 수가 없음.
-                                        isNewStartOverlap()
-                                        isNewFinishOverlap()
-                                        isNewWiDOverlap()
-                                    }
-                                ) {
-                                    Text(
-                                        text = "확인",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
                     }
 
                     // 제목
@@ -358,10 +294,10 @@ fun NewWiDFragment(navController: NavController) {
                     ) {
                         Icon(
                             modifier = Modifier
-                                .size(24.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(titleIconMap[title] ?: R.drawable.baseline_menu_book_16),
                             contentDescription = "제목",
                             tint = MaterialTheme.colorScheme.primary
@@ -385,48 +321,12 @@ fun NewWiDFragment(navController: NavController) {
                         }
 
                         Icon(
+                            modifier = Modifier
+                                .size(24.dp),
                             imageVector = if (titleMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "제목 메뉴 펼치기",
                             tint = MaterialTheme.colorScheme.primary
                         )
-                    }
-
-                    if (titleMenuExpanded) {
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                            columns = GridCells.Fixed(5),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            titles.forEach { chipTitle ->
-                                item {
-                                    FilterChip(
-                                        selected = title == chipTitle,
-                                        onClick = {
-                                            title = chipTitle
-                                            titleMenuExpanded = false
-                                        },
-                                        label = {
-                                            Text(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(),
-                                                text = titleMap[chipTitle] ?: chipTitle,
-                                                style = Typography.bodySmall,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = MaterialTheme.colorScheme.tertiary,
-                                            labelColor = MaterialTheme.colorScheme.primary,
-                                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                            selectedLabelColor = MaterialTheme.colorScheme.secondary
-                                        )
-                                    )
-                                }
-                            }
-                        }
                     }
 
                     // 시작 시간
@@ -444,7 +344,8 @@ fun NewWiDFragment(navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_24),
                             contentDescription = "시작 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -468,54 +369,12 @@ fun NewWiDFragment(navController: NavController) {
                         }
 
                         Icon(
+                            modifier = Modifier
+                                .size(24.dp),
                             imageVector = if (expandStartPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "시작 시간 선택 도구 펼치기",
                             tint = MaterialTheme.colorScheme.primary
                         )
-                    }
-
-                    if (expandStartPicker) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            TimePicker(state = startTimePickerState)
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(
-                                    onClick = { expandStartPicker = false }
-                                ) {
-                                    Text(
-                                        text = "취소",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        expandStartPicker = false
-                                        val newStart = LocalTime.of(startTimePickerState.hour, startTimePickerState.minute)
-
-                                        start = newStart
-
-                                        isNewStartOverlap()
-                                        isNewWiDOverlap()
-                                    }
-                                ) {
-                                    Text(
-                                        text = "확인",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
                     }
 
                     // 종료 시간
@@ -533,7 +392,8 @@ fun NewWiDFragment(navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_alarm_on_24),
                             contentDescription = "종료 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -557,54 +417,12 @@ fun NewWiDFragment(navController: NavController) {
                         }
 
                         Icon(
+                            modifier = Modifier
+                                .size(24.dp),
                             imageVector = if (expandFinishPicker) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "종료 시간 선택 도구 펼치기",
                             tint = MaterialTheme.colorScheme.primary
                         )
-                    }
-
-                    if (expandFinishPicker) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            TimePicker(state = finishTimePickerState)
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(
-                                    onClick = { expandFinishPicker = false }
-                                ) {
-                                    Text(
-                                        text = "취소",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        expandFinishPicker = false
-                                        val newFinish = LocalTime.of(finishTimePickerState.hour, finishTimePickerState.minute)
-
-                                        finish = newFinish
-
-                                        isNewFinishOverlap()
-                                        isNewWiDOverlap()
-                                    }
-                                ) {
-                                    Text(
-                                        text = "확인",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
                     }
 
                     // 소요 시간
@@ -619,7 +437,8 @@ fun NewWiDFragment(navController: NavController) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.tertiary)
-                                .padding(16.dp),
+                                .padding(16.dp)
+                                .size(24.dp),
                             painter = painterResource(id = R.drawable.baseline_timelapse_24),
                             contentDescription = "소요 시간",
                             tint = MaterialTheme.colorScheme.primary
@@ -687,7 +506,8 @@ fun NewWiDFragment(navController: NavController) {
 
                                 Row(
                                     modifier = Modifier
-                                        .shadow( // 배경 색이 반드시 있어야하고, 배경보다 shadow를 먼저 적용해야함.
+                                        .shadow(
+                                            // 배경 색이 반드시 있어야하고, 배경보다 shadow를 먼저 적용해야함.
                                             elevation = 2.dp,
                                             shape = RoundedCornerShape(8.dp),
                                             spotColor = MaterialTheme.colorScheme.primary,
@@ -761,34 +581,309 @@ fun NewWiDFragment(navController: NavController) {
 //            )
 //        }
     }
+
+    /**
+     * 날짜, 제목, 시작 시간, 종료 시간 선택 대화 상자
+     */
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = expandDatePicker || titleMenuExpanded || expandStartPicker || expandFinishPicker,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(expandDatePicker || titleMenuExpanded || expandStartPicker || expandFinishPicker) {
+                    expandDatePicker = false
+                    titleMenuExpanded = false
+                    expandStartPicker = false
+                    expandFinishPicker = false
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp)
+                    .then(if (titleMenuExpanded) Modifier.height(screenHeight / 2) else Modifier)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
+                    .background(
+                        color = MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (expandDatePicker) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    expandDatePicker = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "날짜 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "날짜 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    expandDatePicker = false
+                                    date = Instant
+                                        .ofEpochMilli(datePickerState.selectedDateMillis!!)
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate()
+
+                                    // 날짜를 변경하면 이 Button scope의 내용이 먼저 실행된 후, remember에 의한 갱신이 발생한다.
+                                    wiDList = wiDService.readDailyWiDListByDate(date)
+
+                                    // WiD를 생성했으므로 wiDList가 비어있을 수가 없으니 확인을 위해 아래와 같이 메서드를 실행함.
+                                    isNewStartOverlap()
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    DatePicker(
+                        state = datePickerState,
+                        showModeToggle = false,
+                        title = null,
+                        headline = null,
+                    )
+                }
+
+                if (titleMenuExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    titleMenuExpanded = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "제목 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "제목 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        items(titles.size) { index ->
+                            val itemTitle = titles[index]
+                            val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        title = itemTitle
+                                        titleMenuExpanded = false
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(24.dp),
+                                    painter = painterResource(id = iconResourceId),
+                                    contentDescription = "제목",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = titleMap[itemTitle] ?: "공부",
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (title == itemTitle) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (expandStartPicker) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    expandStartPicker = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "시작 시간 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "시작 시간 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    expandStartPicker = false
+                                    val newStart = LocalTime.of(
+                                        startTimePickerState.hour,
+                                        startTimePickerState.minute
+                                    )
+
+                                    start = newStart
+
+                                    isNewStartOverlap()
+                                    isNewWiDOverlap()
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    TimePicker(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp),
+                        state = startTimePickerState
+                    )
+                }
+
+                if (expandFinishPicker) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(false) {}
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable {
+                                    expandFinishPicker = false
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "종료 시간 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "종료 시간 선택",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    expandFinishPicker = false
+                                    val newFinish = LocalTime.of(
+                                        finishTimePickerState.hour,
+                                        finishTimePickerState.minute
+                                    )
+
+                                    finish = newFinish
+
+                                    isNewFinishOverlap()
+                                    isNewWiDOverlap()
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider()
+
+                    TimePicker(
+                        modifier = Modifier
+                            .padding(vertical = 16.dp),
+                        state = finishTimePickerState
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun NewWiDFragmentPreview() {
-//    NewWiDFragment(NavController(LocalContext.current))
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(White),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(White)
-                .shadow(
-                    elevation = 1.dp,
-                    shape = RoundedCornerShape(18.dp),
-//                    ambientColor = White,
-                    spotColor = Black
-                )
-                .padding(16.dp)
-        ) {
-            Text("Test Box")
-        }
-    }
+    NewWiDFragment(NavController(LocalContext.current))
 }

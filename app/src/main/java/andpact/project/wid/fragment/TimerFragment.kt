@@ -1,55 +1,33 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
-import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,6 +108,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
             ) {
                 Icon(
                     modifier = Modifier
+                        .size(24.dp)
                         .align(Alignment.CenterStart)
                         .clickable {
                             navController.popBackStack()
@@ -408,7 +387,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
+                Icon(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
@@ -416,15 +395,11 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         }
                         .background(color = AppIndigo)
                         .padding(16.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .size(32.dp),
-                        painter = painterResource(titleIconMap[timerPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
-                        contentDescription = "제목",
-                        tint = White
-                    )
-                }
+                        .size(32.dp),
+                    painter = painterResource(titleIconMap[timerPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
+                    contentDescription = "제목",
+                    tint = White
+                )
 
                 Spacer(
                     modifier = Modifier
@@ -432,7 +407,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                 )
 
                 if (timerPlayer.timerState.value == PlayerState.Paused) {
-                    Box(
+                    Icon(
                         modifier = Modifier
                             .clip(CircleShape)
                             .clickable {
@@ -451,18 +426,14 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                             }
                             .background(color = DeepSkyBlue)
                             .padding(16.dp)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(32.dp),
-                            painter = painterResource(id = R.drawable.baseline_refresh_24),
-                            contentDescription = "타이머 초기화",
-                            tint = White
-                        )
-                    }
+                            .size(32.dp),
+                        painter = painterResource(id = R.drawable.baseline_refresh_24),
+                        contentDescription = "타이머 초기화",
+                        tint = White
+                    )
                 }
 
-                Box(
+                Icon(
                     modifier = Modifier
                         .clip(CircleShape)
                         .clickable(0L < timerPlayer.remainingTime.value) {
@@ -481,38 +452,48 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                             else OrangeRed
                         )
                         .padding(16.dp)
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .size(32.dp),
-                        painter = painterResource(
-                            id = if (timerPlayer.timerState.value == PlayerState.Started) {
-                                R.drawable.baseline_pause_24
-                            } else {
-                                R.drawable.baseline_play_arrow_24
-                            }
-                        ),
-                        contentDescription = "타이머 시작 및 중지",
-                        tint = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
-                    )
-                }
+                        .size(32.dp),
+                    painter = painterResource(
+                        id = if (timerPlayer.timerState.value == PlayerState.Started) {
+                            R.drawable.baseline_pause_24
+                        } else {
+                            R.drawable.baseline_play_arrow_24
+                        }
+                    ),
+                    contentDescription = "타이머 시작 및 중지",
+                    tint = if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
+                )
             }
         }
+    }
 
-        /**
-         * 제목 바텀 시트
-         */
-        AnimatedVisibility(
+    /**
+     * 제목 바텀 시트
+     */
+    AnimatedVisibility(
+        modifier = Modifier
+            .fillMaxSize(),
+        visible = titleMenuExpanded,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter), // 여기에서 정렬을 설정해야 올바르게 동작함. 아래의 열이 아니라.
-            visible = titleMenuExpanded,
-            enter = fadeIn(),
-            exit = fadeOut(),
+                .fillMaxSize()
+                .clickable(titleMenuExpanded) {
+                    titleMenuExpanded = false
+                }
         ) {
             Column(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .height(screenHeight / 2)
                     .padding(16.dp)
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                    )
                     .background(
                         color = MaterialTheme.colorScheme.tertiary,
                         shape = RoundedCornerShape(8.dp)
@@ -521,6 +502,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable(false) {}
                 ) {
                     Icon(
                         modifier = Modifier
@@ -539,24 +521,26 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         modifier = Modifier
                             .align(Alignment.Center),
                         text = "제목 선택",
-                        style = Typography.bodyMedium,
+                        style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                HorizontalDivider()
 
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
                     items(titles.size) { index ->
-                        val title = titles[index]
-                        val iconResourceId = titleIconMap[title] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+                        val itemTitle = titles[index]
+                        val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
-                                    timerPlayer.setTitle(title)
+                                    timerPlayer.setTitle(itemTitle)
                                     titleMenuExpanded = false
                                 },
                             verticalAlignment = Alignment.CenterVertically,
@@ -571,7 +555,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                             )
 
                             Text(
-                                text = titleMap[title] ?: "공부",
+                                text = titleMap[itemTitle] ?: "공부",
                                 style = Typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -581,7 +565,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                                     .weight(1f)
                             )
 
-                            if (title == timerPlayer.title.value) {
+                            if (itemTitle == timerPlayer.title.value) {
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
