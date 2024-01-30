@@ -1,6 +1,7 @@
 package andpact.project.wid.util
 
 import andpact.project.wid.ui.theme.chivoMonoBlackItalic
+import android.util.Log
 import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
@@ -12,12 +13,16 @@ import java.util.*
  * 시간의 형식은 'HH:mm:ss'
  * TimeUtil의 단위는 MilliSecond를 사용 중
  */
-fun formatTime(time: Long, pattern: String): String {
+fun getTimeString(time: Long, pattern: String): String {
+    Log.d("StopwatchPlayer", "getTimeString executed")
+
     val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     return dateFormat.format(Date(time))
 }
 
-fun formatTime(time: LocalTime, patten: String): String {
+fun getTimeString(time: LocalTime, patten: String): String {
+    Log.d("StopwatchPlayer", "getTimeString executed")
+
     return time.format(DateTimeFormatter.ofPattern(patten))
 }
 
@@ -41,7 +46,9 @@ fun formatTime(time: LocalTime, patten: String): String {
 //    }
 //}
 
-fun formatTimeHorizontally(time: Long): String {
+fun getHorizontalTimeString(time: Long): String {
+    Log.d("StopwatchPlayer", "getHorizontalTimeString executed")
+
     val hours = (time / 3_600_000).toInt()
     val minutes = ((time % 3_600_000) / 60_000).toInt()
     val seconds = ((time % 60_000) / 1_000).toInt()
@@ -53,7 +60,9 @@ fun formatTimeHorizontally(time: Long): String {
     return "$hoursText:$minutesText:$secondsText"
 }
 
-fun formatStopWatchTime(time: Long): AnnotatedString {
+fun getStopWatchTimeString(time: Long): AnnotatedString {
+    Log.d("StopwatchPlayer", "getStopWatchTimeString executed")
+
     val hours = (time / 3_600_000).toInt()
     val minutes = ((time % 3_600_000) / 60_000).toInt()
     val seconds = ((time % 60_000) / 1_000).toInt()

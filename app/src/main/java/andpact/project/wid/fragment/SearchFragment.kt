@@ -6,18 +6,14 @@ import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.White
 import andpact.project.wid.ui.theme.pretendardRegular
-import andpact.project.wid.ui.theme.pretendardSemiBold
-import andpact.project.wid.util.createEmptyView
-import andpact.project.wid.util.createNoBackgroundEmptyViewWithMultipleLines
-import andpact.project.wid.util.getDayString
-import andpact.project.wid.util.getDayStringWith3Lines
+import andpact.project.wid.util.getDateString
+import andpact.project.wid.util.getEmptyView
+import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -28,12 +24,10 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -41,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,7 +107,7 @@ fun SearchFragment(navController: NavController) {
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-                        diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
+                        diaryList = diaryService.readDiaryListByTitleOrContent(searchText = searchText)
                     }
                 ),
                 decorationBox = { innerTextField ->
@@ -155,7 +148,7 @@ fun SearchFragment(navController: NavController) {
                     .clickable(searchText.isNotBlank()) {
                         searchComplete = true
 
-                        diaryList = diaryService.getDiaryListByTitleOrContent(searchText = searchText)
+                        diaryList = diaryService.readDiaryListByTitleOrContent(searchText = searchText)
                     },
                 imageVector = Icons.Default.Search,
                 contentDescription = "검색"
@@ -173,13 +166,13 @@ fun SearchFragment(navController: NavController) {
             if (diaryList.isEmpty()) {
                 item {
                     if (searchComplete) {
-                        createEmptyView(text = "검색 결과가 없습니다.")()
+                        getEmptyView(text = "검색 결과가 없습니다.")()
                     } else {
                         Box(
                             modifier = Modifier
                                 .padding(vertical = 48.dp)
                         ) {
-                            createNoBackgroundEmptyViewWithMultipleLines(text = "과거의 다이어리를 통해\n당신의 성장과 여정을\n다시 살펴보세요.")()
+                            getNoBackgroundEmptyViewWithMultipleLines(text = "과거의 다이어리를 통해\n당신의 성장과 여정을\n다시 살펴보세요.")()
                         }
                     }
                 }
@@ -223,7 +216,7 @@ fun SearchFragment(navController: NavController) {
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = getDayString(diary.date),
+                                text = getDateString(diary.date),
                                 style = Typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,

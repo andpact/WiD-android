@@ -45,7 +45,7 @@ import java.time.LocalDate
 fun DiaryFragment(date: LocalDate, navController: NavController) {
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
-    val clickedDiary = diaryService.getDiaryByDate(date)
+    val clickedDiary = diaryService.readDiaryByDate(date)
     var diaryTitle by remember { mutableStateOf(clickedDiary?.title ?: "") }
 //    var diaryTitleTextFieldValueState by remember { mutableStateOf(TextFieldValue(text = clickedDiary?.title ?: "", selection = TextRange(clickedDiary?.title?.length ?: 0))) }
     var diaryContent by remember { mutableStateOf(clickedDiary?.content ?: "") }
@@ -153,7 +153,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = getDayStringWith3Lines(date = date),
+                    text = getDateStringWith3Lines(date = date),
                     style = Typography.titleLarge,
                     textAlign = TextAlign.Center,
                     fontSize = 20.sp,
@@ -168,7 +168,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
                 contentAlignment = Alignment.Center
             ) {
                 if (wiDList.isEmpty()) {
-                    createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                    getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
                 } else {
                     DateBasedPieChartFragment(wiDList = wiDList)
                 }

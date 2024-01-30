@@ -11,6 +11,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
+/**
+ * 데이터베이스관련 메서드만 Create, Read, Update, Delete를 사용해서 명명함.
+ */
 class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
         private const val DATABASE_VERSION = 1
@@ -87,6 +90,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //    }
 
     fun readWiDById(id: Long): WiD? {
+        Log.d("WiDService", "readWiDById executed")
+
         val db = readableDatabase
 
         val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_ID = ?"
@@ -179,7 +184,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return wiDList
     }
 
-    fun getRandomWiDList(): List<WiD> {
+    fun readRandomWiDList(): List<WiD> {
         Log.d("WiDService", "getRandomWiDList executed")
 
         val db = readableDatabase
@@ -374,6 +379,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //    }
 
     fun updateWiD(id: Long, date: LocalDate, title: String, start: LocalTime, finish: LocalTime, duration: Duration) {
+        Log.d("WiDService", "updateWiD executed")
+
         val db = writableDatabase
 
         val updateQuery = "UPDATE $TABLE_NAME SET $COLUMN_DATE = ?, $COLUMN_TITLE = ?, $COLUMN_START = ?, $COLUMN_FINISH = ?, $COLUMN_DURATION = ? WHERE $COLUMN_ID = ?"
@@ -385,6 +392,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
     }
 
     fun deleteWiDById(id: Long) {
+        Log.d("WiDService", "deleteWiDById executed")
+
         val db = writableDatabase
 
         val deleteQuery = "DELETE FROM $TABLE_NAME WHERE $COLUMN_ID = ?"

@@ -1,5 +1,6 @@
 package andpact.project.wid.util
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,14 +47,20 @@ class StopwatchPlayer : ViewModel() {
     val elapsedTime: State<Long> = _elapsedTime
 
     fun setTitle(newTitle: String) {
+        Log.d("StopwatchPlayer", "setTitle executed")
+
         _title.value = newTitle
     }
 
     fun setInStopwatchView(isInStopwatchView: Boolean) {
+        Log.d("StopwatchPlayer", "setInStopwatchView executed")
+
         _inStopwatchView.value = isInStopwatchView
     }
 
     fun startStopwatch() {
+        Log.d("StopwatchPlayer", "startStopwatch executed")
+
         timer?.cancel()
         _stopwatchState.value = PlayerState.Started
 
@@ -70,15 +77,21 @@ class StopwatchPlayer : ViewModel() {
     }
 
     fun restartStopwatch() {
+        Log.d("StopwatchPlayer", "restartStopwatch executed")
+
         _elapsedTime.value = 0
     }
 
     fun pauseStopwatch() {
+        Log.d("StopwatchPlayer", "pauseStopwatch executed")
+
         timer?.cancel()
         _stopwatchState.value = PlayerState.Paused
     }
 
     fun stopStopwatch() {
+        Log.d("StopwatchPlayer", "stopStopwatch executed")
+
         timer?.cancel()
         _stopwatchState.value = PlayerState.Stopped
         _elapsedTime.value = 0

@@ -3,15 +3,12 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.activity.Destinations
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.createNoBackgroundEmptyViewWithMultipleLines
-import andpact.project.wid.util.formatTimeHorizontally
-import androidx.compose.foundation.Image
+import andpact.project.wid.util.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +35,7 @@ import kotlin.concurrent.fixedRateTimer
  * mutableStateOf { 값 }-> 재 렌더링 됨.
  */
 @Composable
-fun HomeFragment(navController: NavController) {
+fun HomeFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
     // 타이머
     val now = LocalTime.now()
     var totalSecondsFromNow by remember { mutableStateOf(now.toSecondOfDay() * 1_000L) }
@@ -48,7 +45,7 @@ fun HomeFragment(navController: NavController) {
 
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = remember { wiDService.getRandomWiDList() }
+    val wiDList = remember { wiDService.readRandomWiDList() }
 
     DisposableEffect(Unit) {
         val timer = fixedRateTimer("timer", true, 0L, 1000) {
@@ -137,14 +134,18 @@ fun HomeFragment(navController: NavController) {
                                 .background(MaterialTheme.colorScheme.tertiary),
                             onClick = {
                                 navController.navigate(Destinations.StopWatchFragmentDestination.route)
-                            }
+                            },
+                            enabled = timerPlayer.timerState.value == PlayerState.Stopped
                         ) {
                             Icon(
                                 modifier = Modifier
                                     .size(48.dp),
                                 painter = painterResource(id = R.drawable.outline_alarm_24),
                                 contentDescription = "스톱 워치",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = if (timerPlayer.timerState.value == PlayerState.Stopped)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    DarkGray
                             )
                         }
 
@@ -170,14 +171,17 @@ fun HomeFragment(navController: NavController) {
                                 .background(MaterialTheme.colorScheme.tertiary),
                             onClick = {
                                 navController.navigate(Destinations.TimerFragmentDestination.route)
-                            }
+                            },
+                            enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Stopped
                         ) {
                             Icon(
                                 modifier = Modifier
                                     .size(48.dp),
                                 painter = painterResource(id = R.drawable.outline_timer_24),
                                 contentDescription = "타이머",
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped)
+                                    MaterialTheme.colorScheme.primary
+                                else DarkGray
                             )
                         }
 
@@ -203,14 +207,17 @@ fun HomeFragment(navController: NavController) {
                             .background(MaterialTheme.colorScheme.tertiary),
                         onClick = {
                             navController.navigate(Destinations.NewWiDFragmentDestination.route)
-                        }
+                        },
+                        enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped
                     ) {
                         Icon(
                             modifier = Modifier
                                 .size(48.dp),
                             painter = painterResource(id = R.drawable.outline_add_box_24),
                             contentDescription = "새로운 WiD",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped)
+                                MaterialTheme.colorScheme.primary
+                            else DarkGray
                         )
                     }
 
@@ -255,7 +262,7 @@ fun HomeFragment(navController: NavController) {
                         Text(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter),
-                            text = formatTimeHorizontally(remainingTime),
+                            text = getHorizontalTimeString(remainingTime),
                             style = Typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             fontFamily = FontFamily.Monospace
@@ -291,7 +298,7 @@ fun HomeFragment(navController: NavController) {
                             .padding(vertical = 16.dp)
                     ) {
                         if (wiDList.isEmpty()) {
-                            createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                            getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
                         } else {
                             DateBasedPieChartFragment(wiDList = wiDList)
                         }
@@ -434,5 +441,5 @@ fun HomeFragment(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun HomeFragmentPreview() {
-    HomeFragment(NavController(LocalContext.current))
+//    HomeFragment(NavController(LocalContext.current))
 }

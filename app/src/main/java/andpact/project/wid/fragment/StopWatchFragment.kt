@@ -31,7 +31,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer) {
     // WiD
@@ -55,7 +54,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
         }
     }
 
-    fun createWiD(now : LocalTime) {
+    fun insertWiD(now : LocalTime) {
         val date = stopwatchPlayer.date
         val title = stopwatchPlayer.title.value
         val start = stopwatchPlayer.start.withNano(0) // 밀리 세컨드를 0으로 만들어 정확한 소요시간을 구함.
@@ -112,11 +111,8 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+            .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
                 stopwatchTopBottomBarVisible = !stopwatchTopBottomBarVisible
-//                if (titleMenuExpanded) {
-//                    titleMenuExpanded = false
-//                }
             }
     ) {
         /**
@@ -162,8 +158,9 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
          */
         Text(
             modifier = Modifier
-                .align(Alignment.Center),
-            text = formatStopWatchTime(stopwatchPlayer.elapsedTime.value),
+                .align(Alignment.BottomCenter)
+                .padding(bottom = screenHeight / 2),
+            text = getStopWatchTimeString(stopwatchPlayer.elapsedTime.value),
             style = TextStyle(
                 textAlign = TextAlign.End,
                 color = MaterialTheme.colorScheme.primary
@@ -226,7 +223,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 
                                     val now = LocalTime.now()
 
-                                    createWiD(now)
+                                    insertWiD(now)
                                 } else { // 스톱 워치 시작
                                     stopwatchPlayer.startStopwatch()
                                 }
@@ -320,7 +317,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                         modifier = Modifier
                             .align(Alignment.Center),
                         text = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) "제목 선택" else "이어서 사용할 제목 선택",
-                        style = Typography.titleLarge,
+                        style = Typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -344,7 +341,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
 
                                         val now = LocalTime.now()
 
-                                        createWiD(now)
+                                        insertWiD(now)
 
                                         stopwatchPlayer.date = LocalDate.now()
                                         stopwatchPlayer.start = now

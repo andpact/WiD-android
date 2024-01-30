@@ -134,7 +134,8 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
         if (timerPlayer.timerState.value == PlayerState.Stopped) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center),
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = screenHeight / 2),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 HorizontalDivider(
@@ -315,14 +316,14 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
             // 타이머 남은 시간 텍스트 뷰
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.Center),
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = screenHeight / 2),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = formatTimeHorizontally(time = timerPlayer.remainingTime.value),
+                    text = getHorizontalTimeString(time = timerPlayer.remainingTime.value),
                     style = TextStyle(
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary,
@@ -385,7 +386,8 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
                     modifier = Modifier
@@ -521,7 +523,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         modifier = Modifier
                             .align(Alignment.Center),
                         text = "제목 선택",
-                        style = Typography.titleLarge,
+                        style = Typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }

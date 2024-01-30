@@ -2,9 +2,14 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.ui.theme.DarkGray
+import andpact.project.wid.ui.theme.DeepSkyBlue
+import andpact.project.wid.ui.theme.OrangeRed
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,32 +22,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeriodBasedFragment(navController: NavController) {
     // 화면
@@ -51,8 +50,8 @@ fun PeriodBasedFragment(navController: NavController) {
 
     // 날짜
     val today = LocalDate.now()
-    var startDate by remember { mutableStateOf(getFirstDayOfWeek(today)) }
-    var finishDate by remember { mutableStateOf(getLastDayOfWeek(today)) }
+    var startDate by remember { mutableStateOf(getFirstDateOfWeek(today)) }
+    var finishDate by remember { mutableStateOf(getLastDateOfWeek(today)) }
 
     // 제목
     var selectedTitle by remember { mutableStateOf(titlesWithAll[0]) }
@@ -147,8 +146,8 @@ fun PeriodBasedFragment(navController: NavController) {
                             modifier = Modifier
                                 .padding(horizontal = 16.dp),
                             text = when (selectedPeriod) {
-                                periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
-                                periods[1] -> getMonthString(date = startDate)
+                                periods[0] -> getPeriodStringOfWeek(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
+                                periods[1] -> getPeriodStringOfMonth(date = startDate)
                                 else -> buildAnnotatedString { append("") }
                             },
                             style = Typography.titleMedium,
@@ -156,7 +155,7 @@ fun PeriodBasedFragment(navController: NavController) {
                         )
 
                         if (wiDList.isEmpty()) {
-                            createEmptyView(text = "표시할 타임라인이 없습니다.")()
+                            getEmptyView(text = "표시할 타임라인이 없습니다.")()
                         } else {
                             Column(
                                 modifier = Modifier
@@ -302,7 +301,7 @@ fun PeriodBasedFragment(navController: NavController) {
                         }
 
                         if (selectedMap.isEmpty()) {
-                            createEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
+                            getEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
                         } else {
                             LazyVerticalGrid(
                                 modifier = Modifier
@@ -355,7 +354,7 @@ fun PeriodBasedFragment(navController: NavController) {
                                             }
 
                                             Text(
-                                                text = formatDuration(duration, mode = 3),
+                                                text = getDurationString(duration, mode = 3),
                                                 style = Typography.titleLarge,
                                                 color = MaterialTheme.colorScheme.primary
                                             )
@@ -390,7 +389,7 @@ fun PeriodBasedFragment(navController: NavController) {
                         )
 
                         if (wiDList.isEmpty()) {
-                            createEmptyView(text = "표시할 기록률이 없습니다.")()
+                            getEmptyView(text = "표시할 기록률이 없습니다.")()
                         } else {
                             Box(
                                 modifier = Modifier
@@ -424,8 +423,8 @@ fun PeriodBasedFragment(navController: NavController) {
                             modifier = Modifier
                                 .padding(horizontal = 16.dp),
                             text = when (selectedPeriod) {
-                                periods[0] -> getWeekString(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
-                                periods[1] -> getMonthString(date = startDate)
+                                periods[0] -> getPeriodStringOfWeek(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
+                                periods[1] -> getPeriodStringOfMonth(date = startDate)
                                 else -> buildAnnotatedString { append("") }
                             },
                             style = Typography.titleMedium,
@@ -433,7 +432,7 @@ fun PeriodBasedFragment(navController: NavController) {
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
-                            createEmptyView(text = "표시할 그래프가 없습니다.")()
+                            getEmptyView(text = "표시할 그래프가 없습니다.")()
                         } else {
                             Box(
                                 modifier = Modifier
@@ -480,7 +479,7 @@ fun PeriodBasedFragment(navController: NavController) {
                         )
 
                         if (filteredWiDListByTitle.isEmpty()) {
-                            createEmptyView(text = "표시할 기록이 없습니다.")()
+                            getEmptyView(text = "표시할 기록이 없습니다.")()
                         } else {
                             Row(
                                 modifier = Modifier
@@ -503,7 +502,7 @@ fun PeriodBasedFragment(navController: NavController) {
                                 )
 
                                 Text(
-                                    text = formatDuration(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    text = getDurationString(duration = totalDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
                                     style = Typography.titleLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -530,7 +529,7 @@ fun PeriodBasedFragment(navController: NavController) {
                                 )
 
                                 Text(
-                                    text = formatDuration(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    text = getDurationString(duration = averageDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
                                     style = Typography.titleLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -557,7 +556,7 @@ fun PeriodBasedFragment(navController: NavController) {
                                 )
 
                                 Text(
-                                    text = formatDuration(duration = minDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    text = getDurationString(duration = minDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
                                     style = Typography.titleLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -584,7 +583,7 @@ fun PeriodBasedFragment(navController: NavController) {
                                 )
 
                                 Text(
-                                    text = formatDuration(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
+                                    text = getDurationString(duration = maxDurationMap[selectedTitle] ?: Duration.ZERO, mode = 3),
                                     style = Typography.titleLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -604,157 +603,154 @@ fun PeriodBasedFragment(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            Icon(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
+                    .clickable {
+                        if (titleMenuExpanded) {
+                            titleMenuExpanded = false
+                        }
 
-                            periodMenuExpanded = true
-                        },
-                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                    contentDescription = "기간 선택",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
-
-                            titleMenuExpanded = true
-                        },
-                    painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
-                    contentDescription = "제목 선택",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = when (selectedPeriod) {
-                            periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
-                            periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                            else -> false
-                        }) {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
-
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
-
-                            when (selectedPeriod) {
-                                periods[0] -> {
-                                    startDate = getFirstDayOfWeek(today)
-                                    finishDate = getLastDayOfWeek(today)
-                                }
-                                periods[1] -> {
-                                    startDate = getFirstDayOfMonth(today)
-                                    finishDate = getLastDayOfMonth(today)
-                                }
-                            }
-
-                            selectedMapText = "합계"
-                        },
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "기간 초기화",
-                    tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                        selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                    ) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        DarkGray
+                        periodMenuExpanded = true
                     }
-                )
+                    .size(24.dp),
+                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                contentDescription = "기간 선택",
+                tint = MaterialTheme.colorScheme.primary
+            )
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        if (periodMenuExpanded) {
+                            periodMenuExpanded = false
+                        }
 
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
-
-                            when (selectedPeriod) {
-                                periods[0] -> {
-                                    startDate = startDate.minusWeeks(1)
-                                    finishDate = finishDate.minusWeeks(1)
-                                }
-                                periods[1] -> {
-                                    startDate = getFirstDayOfMonth(startDate.minusDays(15))
-                                    finishDate = getLastDayOfMonth(finishDate.minusDays(45))
-                                }
-                            }
-
-                            selectedMapText = "합계"
-                        },
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "이전 기간",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = when (selectedPeriod) {
-                            periods[0] -> !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today))
-                            periods[1] -> !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                            else -> false
-                        }) {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
-
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
-
-                            when (selectedPeriod) {
-                                periods[0] -> {
-                                    startDate = startDate.plusWeeks(1)
-                                    finishDate = finishDate.plusWeeks(1)
-                                }
-                                periods[1] -> {
-                                    startDate = getFirstDayOfMonth(startDate.plusDays(45))
-                                    finishDate = getLastDayOfMonth(finishDate.plusDays(15))
-                                }
-                            }
-
-                            selectedMapText = "합계"
-                        },
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "다음 기간",
-                    tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDayOfWeek(today) && finishDate == getLastDayOfWeek(today)) ||
-                        selectedPeriod == periods[1] && !(startDate == getFirstDayOfMonth(today) && finishDate == getLastDayOfMonth(today))
-                    ) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        DarkGray
+                        titleMenuExpanded = true
                     }
-                )
-            }
+                    .size(24.dp),
+                painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
+                contentDescription = "제목 선택",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Icon(
+                modifier = Modifier
+                    .clickable(enabled = when (selectedPeriod) {
+                        periods[0] -> !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
+                        periods[1] -> !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                        else -> false
+                    }) {
+                        if (titleMenuExpanded) {
+                            titleMenuExpanded = false
+                        }
+
+                        if (periodMenuExpanded) {
+                            periodMenuExpanded = false
+                        }
+
+                        when (selectedPeriod) {
+                            periods[0] -> {
+                                startDate = getFirstDateOfWeek(today)
+                                finishDate = getLastDateOfWeek(today)
+                            }
+                            periods[1] -> {
+                                startDate = getFirstDateOfMonth(today)
+                                finishDate = getLastDateOfMonth(today)
+                            }
+                        }
+
+                        selectedMapText = "합계"
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Filled.Refresh,
+                contentDescription = "기간 초기화",
+                tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today)) ||
+                    selectedPeriod == periods[1] && !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                ) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    DarkGray
+                }
+            )
+
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        if (titleMenuExpanded) {
+                            titleMenuExpanded = false
+                        }
+
+                        if (periodMenuExpanded) {
+                            periodMenuExpanded = false
+                        }
+
+                        when (selectedPeriod) {
+                            periods[0] -> {
+                                startDate = startDate.minusWeeks(1)
+                                finishDate = finishDate.minusWeeks(1)
+                            }
+                            periods[1] -> {
+                                startDate = getFirstDateOfMonth(startDate.minusDays(15))
+                                finishDate = getLastDateOfMonth(finishDate.minusDays(45))
+                            }
+                        }
+
+                        selectedMapText = "합계"
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Default.KeyboardArrowLeft,
+                contentDescription = "이전 기간",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Icon(
+                modifier = Modifier
+                    .clickable(enabled = when (selectedPeriod) {
+                        periods[0] -> !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
+                        periods[1] -> !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                        else -> false
+                    }) {
+                        if (titleMenuExpanded) {
+                            titleMenuExpanded = false
+                        }
+
+                        if (periodMenuExpanded) {
+                            periodMenuExpanded = false
+                        }
+
+                        when (selectedPeriod) {
+                            periods[0] -> {
+                                startDate = startDate.plusWeeks(1)
+                                finishDate = finishDate.plusWeeks(1)
+                            }
+                            periods[1] -> {
+                                startDate = getFirstDateOfMonth(startDate.plusDays(45))
+                                finishDate = getLastDateOfMonth(finishDate.plusDays(15))
+                            }
+                        }
+
+                        selectedMapText = "합계"
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "다음 기간",
+                tint = if (selectedPeriod == periods[0] && !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today)) ||
+                    selectedPeriod == periods[1] && !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                ) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    DarkGray
+                }
+            )
         }
     }
 
+    /**
+     * 대화상자
+     */
     AnimatedVisibility(
         modifier = Modifier
             .fillMaxSize(),
@@ -810,7 +806,7 @@ fun PeriodBasedFragment(navController: NavController) {
                             modifier = Modifier
                                 .align(Alignment.Center),
                             text = "기간 선택",
-                            style = Typography.titleLarge,
+                            style = Typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -832,11 +828,11 @@ fun PeriodBasedFragment(navController: NavController) {
                                         periodMenuExpanded = false
 
                                         if (selectedPeriod == periods[0]) { // 일주일
-                                            startDate = getFirstDayOfWeek(today)
-                                            finishDate = getLastDayOfWeek(today)
+                                            startDate = getFirstDateOfWeek(today)
+                                            finishDate = getLastDateOfWeek(today)
                                         } else if (selectedPeriod == periods[1]) { // 한 달
-                                            startDate = getFirstDayOfMonth(today)
-                                            finishDate = getLastDayOfMonth(today)
+                                            startDate = getFirstDateOfMonth(today)
+                                            finishDate = getLastDateOfMonth(today)
                                         }
 
                                         selectedMapText = "합계"
@@ -902,7 +898,7 @@ fun PeriodBasedFragment(navController: NavController) {
                             modifier = Modifier
                                 .align(Alignment.Center),
                             text = "제목 선택",
-                            style = Typography.titleLarge,
+                            style = Typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }

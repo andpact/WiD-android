@@ -1,11 +1,14 @@
 package andpact.project.wid.util
 
+import android.util.Log
 import java.time.Duration
 
 /**
  * 소요 시간(Duration)의 형식은 'H시간 m분 s초'
  */
-fun formatDuration(duration: Duration, mode: Int): String {
+fun getDurationString(duration: Duration, mode: Int): String {
+    Log.d("DurationUtil", "getDurationString executed")
+
     // mode 0. HH:mm:ss (10:30:30)
     // mode 1. H시간 (10.5시간), m분 (30분)
     // mode 2. H시간 m분 (10시간 30분)

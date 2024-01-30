@@ -3,10 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.colorMap
-import andpact.project.wid.util.formatDuration
-import andpact.project.wid.util.getTotalDurationFromWiDList
-import andpact.project.wid.util.getTotalDurationPercentageFromWiDList
+import andpact.project.wid.util.*
 import android.graphics.Paint
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -101,7 +98,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
             )
 
             Text(
-                text = "${formatDuration(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+                text = "${getDurationString(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
                 style = Typography.bodyMedium,
                 fontSize = 10.sp
             )

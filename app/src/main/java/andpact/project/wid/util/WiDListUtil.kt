@@ -1,10 +1,13 @@
 package andpact.project.wid.util
 
 import andpact.project.wid.model.WiD
+import android.util.Log
 import java.time.*
 import java.time.temporal.ChronoUnit
 
-fun createEmptyWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: List<WiD>): List<WiD> {
+fun getEmptyWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: List<WiD>): List<WiD> {
+    Log.d("WiDListUtil", "getEmptyWiDListFromWiDList executed")
+
     if (wiDList.isEmpty()) {
         return emptyList()
     }
@@ -62,10 +65,14 @@ fun createEmptyWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDLi
 }
 
 fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
+    Log.d("WiDListUtil", "getTotalDurationFromWiDList executed")
+
     return wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO
 }
 
 fun getTotalDurationPercentageFromWiDList(wiDList: List<WiD>): Int {
+    Log.d("WiDListUtil", "getTotalDurationPercentageFromWiDList executed")
+
     val totalMinutes = 24 * 60 // 1440분 (24시간)
     val totalDuration = (wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO).toMinutes().toInt()
 
@@ -73,6 +80,8 @@ fun getTotalDurationPercentageFromWiDList(wiDList: List<WiD>): Int {
 }
 
 fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    Log.d("WiDListUtil", "getTotalDurationMapByTitle executed")
+
     val result = mutableMapOf<String, Duration>()
 
     for (wiD in wiDList) {
@@ -96,6 +105,8 @@ fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
 }
 
 fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
+    Log.d("WiDListUtil", "getTotalDurationMapByDate executed")
+
     val result = mutableMapOf<LocalDate, Duration>()
 
     for (wiD in wiDList) {
@@ -115,6 +126,8 @@ fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
 }
 
 fun getAverageDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    Log.d("WiDListUtil", "getAverageDurationMapByTitle executed")
+
     val result = mutableMapOf<String, Duration>()
 
     val totalDurationMapByTitleByDate = mutableMapOf<String, MutableMap<LocalDate, Duration>>()
@@ -144,6 +157,8 @@ fun getAverageDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
 }
 
 fun getMinDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    Log.d("WiDListUtil", "getMinDurationMapByTitle executed")
+
     val result = mutableMapOf<String, Duration>()
 
     val totalDurationMapByTitleByDate = mutableMapOf<String, MutableMap<LocalDate, Duration>>()
@@ -172,6 +187,8 @@ fun getMinDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
 }
 
 fun getMaxDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
+    Log.d("WiDListUtil", "getMaxDurationMapByTitle executed")
+
     val result = mutableMapOf<String, Duration>()
 
     val totalDurationMapByTitleByDate = mutableMapOf<String, MutableMap<LocalDate, Duration>>()

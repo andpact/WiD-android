@@ -68,7 +68,7 @@ fun DateBasedFragment(navController: NavController) {
 
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
-    val diary = remember(currentDate) { diaryService.getDiaryByDate(currentDate) }
+    val diary = remember(currentDate) { diaryService.readDiaryByDate(currentDate) }
     var expandDiary by remember { mutableStateOf(false) }
     var diaryOverflow by remember { mutableStateOf(false) }
 
@@ -139,7 +139,7 @@ fun DateBasedFragment(navController: NavController) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = getDayStringWith3Lines(date = currentDate),
+                                text = getDateStringWith3Lines(date = currentDate),
                                 style = Typography.titleLarge,
                                 textAlign = TextAlign.Center,
                                 fontSize = 20.sp,
@@ -154,7 +154,7 @@ fun DateBasedFragment(navController: NavController) {
                             contentAlignment = Alignment.Center
                         ) {
                             if (wiDList.isEmpty()) {
-                                createNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                                getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
                             } else {
                                 DateBasedPieChartFragment(wiDList = wiDList)
                             }
@@ -179,7 +179,7 @@ fun DateBasedFragment(navController: NavController) {
                                     expandDiary = true // 한 번 펼치면 다시 접지 못하도록 함.
                                 }
                                 .padding(16.dp),
-                            text = diary?.content ?: "",
+                            text = diary?.title ?: "",
                             style = Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary,
                             minLines = 1,
@@ -220,7 +220,7 @@ fun DateBasedFragment(navController: NavController) {
                             .padding(horizontal = 16.dp)
                             .background(
                                 color = AppYellow,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(80.dp)
                             ),
                         onClick = {
                             navController.navigate(Destinations.DiaryFragmentDestination.route + "/${currentDate}")
@@ -258,7 +258,7 @@ fun DateBasedFragment(navController: NavController) {
                     )
 
                     if (totalDurationMap.isEmpty()) {
-                        createEmptyView(text = "표시할 합계 기록이 없습니다.")()
+                        getEmptyView(text = "표시할 합계 기록이 없습니다.")()
                     } else {
                         LazyVerticalGrid(
                             modifier = Modifier
@@ -311,7 +311,7 @@ fun DateBasedFragment(navController: NavController) {
                                         }
 
                                         Text(
-                                            text = formatDuration(totalDuration, mode = 3),
+                                            text = getDurationString(totalDuration, mode = 3),
                                             style = Typography.titleLarge,
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -346,7 +346,7 @@ fun DateBasedFragment(navController: NavController) {
                     )
 
                     if (wiDList.isEmpty()) {
-                        createEmptyView(text = "표시할 WiD가 없습니다.")()
+                        getEmptyView(text = "표시할 WiD가 없습니다.")()
                     } else {
                         wiDList.forEach { wiD ->
                             Row(
@@ -382,13 +382,13 @@ fun DateBasedFragment(navController: NavController) {
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Text(
-                                            text = "${formatTime(wiD.start, "a hh:mm:ss")} ~ ${formatTime(wiD.finish, "a hh:mm:ss")}",
+                                            text = "${getTimeString(wiD.start, "a hh:mm:ss")} ~ ${getTimeString(wiD.finish, "a hh:mm:ss")}",
                                             style = Typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.primary
                                         )
 
                                         Text(
-                                            text = "${titleMap[wiD.title]} • ${formatDuration(wiD.duration, mode = 3)}",
+                                            text = "${titleMap[wiD.title]} • ${getDurationString(wiD.duration, mode = 3)}",
                                             style = Typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.primary
                                         )
@@ -424,90 +424,87 @@ fun DateBasedFragment(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            Icon(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            expandDatePicker = true
-                        },
-                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                    contentDescription = "날짜 선택",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                    .clickable {
+                        expandDatePicker = true
+                    }
+                    .size(24.dp),
+                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                contentDescription = "날짜 선택",
+                tint = MaterialTheme.colorScheme.primary
+            )
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = false) {
-                            // 클릭 이벤트를 처리할 내용
-                        },
-                    painter = painterResource(R.drawable.baseline_title_24),
-                    contentDescription = "제목 선택",
-                    tint = DarkGray
-                )
+            Icon(
+                modifier = Modifier
+                    .clickable(enabled = false) {
+                        // 클릭 이벤트를 처리할 내용
+                    }
+                    .size(24.dp),
+                painter = painterResource(R.drawable.baseline_title_24),
+                contentDescription = "제목 선택",
+                tint = DarkGray
+            )
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = currentDate != today) {
-                            if (expandDatePicker) {
-                                expandDatePicker = false
-                            }
-                            currentDate = today
+            Icon(
+                modifier = Modifier
+                    .clickable(enabled = currentDate != today) {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
+                        currentDate = today
 
-                            expandDiary = false
-                            diaryOverflow = false
-                        },
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "오늘 날짜",
-                    tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
-                )
+                        expandDiary = false
+                        diaryOverflow = false
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Filled.Refresh,
+                contentDescription = "오늘 날짜",
+                tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
+            )
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            if (expandDatePicker) {
-                                expandDatePicker = false
-                            }
-                            currentDate = currentDate.minusDays(1)
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
+                        currentDate = currentDate.minusDays(1)
 
-                            expandDiary = false
-                            diaryOverflow = false
-                        },
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "이전 날짜",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                        expandDiary = false
+                        diaryOverflow = false
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Default.KeyboardArrowLeft,
+                contentDescription = "이전 날짜",
+                tint = MaterialTheme.colorScheme.primary
+            )
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = currentDate != today) {
-                            if (expandDatePicker) {
-                                expandDatePicker = false
-                            }
-                            currentDate = currentDate.plusDays(1)
+            Icon(
+                modifier = Modifier
+                    .clickable(enabled = currentDate != today) {
+                        if (expandDatePicker) {
+                            expandDatePicker = false
+                        }
+                        currentDate = currentDate.plusDays(1)
 
-                            expandDiary = false
-                            diaryOverflow = false
-                        },
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "다음 날짜",
-                    tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
-                )
-            }
+                        expandDiary = false
+                        diaryOverflow = false
+                    }
+                    .size(24.dp),
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "다음 날짜",
+                tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
+            )
         }
     }
 
+    /**
+     * 대화상자
+     */
     AnimatedVisibility(
         modifier = Modifier
             .fillMaxSize(),
@@ -560,7 +557,7 @@ fun DateBasedFragment(navController: NavController) {
                         modifier = Modifier
                             .align(Alignment.Center),
                         text = "날짜 선택",
-                        style = Typography.titleLarge,
+                        style = Typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
 

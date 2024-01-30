@@ -82,7 +82,9 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 //        }
 //    }
 
-    fun getDiaryByDate(date: LocalDate): Diary? {
+    fun readDiaryByDate(date: LocalDate): Diary? {
+        Log.d("DiaryService", "getDiaryByDate executed")
+
         val db = readableDatabase
 
         val selectQuery = "SELECT * FROM $TABLE_NAME WHERE $COLUMN_DATE = ?"
@@ -170,7 +172,9 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 //        return diaryList
 //    }
 
-    fun getDiaryListByTitleOrContent(searchText: String): List<Diary> {
+    fun readDiaryListByTitleOrContent(searchText: String): List<Diary> {
+        Log.d("DiaryService", "getDiaryListByTitleOrContent executed")
+
         if (searchText.isBlank()) {
             return emptyList()
         }
@@ -228,6 +232,8 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 //    }
 
     fun updateDiary(id: Long, date: LocalDate, title: String, content: String): Int {
+        Log.d("DiaryService", "updateDiary executed")
+
         val db = writableDatabase
 
         val values = ContentValues().apply {

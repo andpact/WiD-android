@@ -4,6 +4,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import android.app.Application
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,18 +49,26 @@ class TimerPlayer(application: Application) : ViewModel() {
     val remainingTime: State<Long> = _remainingTime
 
     fun setTitle(newTitle: String) {
+        Log.d("TimerPlayer", "setTitle executed")
+
         _title.value = newTitle
     }
 
     fun setRemainingTime(newRemainingTime: Long) {
+        Log.d("TimerPlayer", "setRemainingTime executed")
+
         _remainingTime.value = newRemainingTime
     }
 
     fun setInTimerView(isInTimerView: Boolean) {
+        Log.d("TimerPlayer", "setInTimerView executed")
+
         _inTimerView.value = isInTimerView
     }
 
     fun startTimer() {
+        Log.d("TimerPlayer", "startTimer executed")
+
         timer?.cancel()
         _timerState.value = PlayerState.Started
 
@@ -85,6 +94,8 @@ class TimerPlayer(application: Application) : ViewModel() {
     }
 
     fun pauseTimer() {
+        Log.d("TimerPlayer", "pauseTimer executed")
+
         timer?.cancel()
         _timerState.value = PlayerState.Paused
 
@@ -134,6 +145,8 @@ class TimerPlayer(application: Application) : ViewModel() {
     }
 
     fun stopTimer() {
+        Log.d("TimerPlayer", "stopTimer executed")
+
         timer?.cancel()
         _timerState.value = PlayerState.Stopped
 

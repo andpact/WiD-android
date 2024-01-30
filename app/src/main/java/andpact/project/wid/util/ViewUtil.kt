@@ -1,6 +1,7 @@
 package andpact.project.wid.util
 
 import andpact.project.wid.ui.theme.Typography
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +15,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun createEmptyView(text: String): @Composable () -> Unit = {
+fun getEmptyView(text: String): @Composable () -> Unit = {
+    Log.d("ViewUtil", "getEmptyView executed")
+
     Surface(
         modifier = Modifier
             .padding(horizontal = 16.dp),
@@ -39,7 +42,9 @@ fun createEmptyView(text: String): @Composable () -> Unit = {
 }
 
 @Composable
-fun createNoBackgroundEmptyViewWithMultipleLines(text: String): @Composable () -> Unit = {
+fun getNoBackgroundEmptyViewWithMultipleLines(text: String): @Composable () -> Unit = {
+    Log.d("ViewUtil", "getNoBackgroundEmptyViewWithMultipleLines executed")
+
     Column(
         modifier = Modifier
             .fillMaxWidth(),

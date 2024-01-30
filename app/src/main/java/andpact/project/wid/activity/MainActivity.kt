@@ -116,7 +116,7 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd),
-                text = formatTimeHorizontally(stopwatchPlayer.elapsedTime.value),
+                text = getHorizontalTimeString(stopwatchPlayer.elapsedTime.value),
                 style = Typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = FontFamily.Monospace
@@ -163,7 +163,7 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd),
-                text = formatTimeHorizontally(timerPlayer.remainingTime.value),
+                text = getHorizontalTimeString(timerPlayer.remainingTime.value),
                 style = Typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = FontFamily.Monospace
@@ -230,7 +230,7 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
     ) {
         // 홈
         composable(Destinations.HomeFragmentDestination.route) {
-            HomeFragment(navController = navController)
+            HomeFragment(navController = navController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
         }
 
         // 스톱 워치

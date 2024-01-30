@@ -2,6 +2,7 @@ package andpact.project.wid.util
 
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.OrangeRed
+import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
@@ -16,7 +17,9 @@ import java.time.temporal.TemporalAdjusters
 import java.util.*
 
 @Composable
-fun getDayString(date: LocalDate): AnnotatedString {
+fun getDateString(date: LocalDate): AnnotatedString {
+    Log.d("DateUtil", "getDateString executed")
+
     return buildAnnotatedString {
         append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
 
@@ -57,7 +60,9 @@ fun getDayString(date: LocalDate): AnnotatedString {
 //}
 
 @Composable
-fun getDayStringWith3Lines(date: LocalDate): AnnotatedString {
+fun getDateStringWith3Lines(date: LocalDate): AnnotatedString {
+    Log.d("DateUtil", "getDateStringWith3Lines executed")
+
     return buildAnnotatedString {
 //        withStyle(style = ParagraphStyle(lineHeight = 30.sp)) { // @Composable + 문단 스타일 적용하니 에러 발생함.
             append(date.format(DateTimeFormatter.ofPattern("yyyy년\nM월 d일\n")))
@@ -78,11 +83,15 @@ fun getDayStringWith3Lines(date: LocalDate): AnnotatedString {
     }
 }
 
-fun getFirstDayOfWeek(date: LocalDate): LocalDate {
+fun getFirstDateOfWeek(date: LocalDate): LocalDate {
+    Log.d("DateUtil", "getFirstDateOfWeek executed")
+
     return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }
 
-fun getLastDayOfWeek(date: LocalDate): LocalDate {
+fun getLastDateOfWeek(date: LocalDate): LocalDate {
+    Log.d("DateUtil", "getLastDateOfWeek executed")
+
     return date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 }
 
@@ -133,7 +142,9 @@ fun getLastDayOfWeek(date: LocalDate): LocalDate {
 //}
 
 @Composable
-fun getWeekString(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
+fun getPeriodStringOfWeek(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
+    Log.d("DateUtil", "getPeriodStringOfWeek executed")
+
     return buildAnnotatedString {
         append(firstDayOfWeek.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
 
@@ -175,17 +186,23 @@ fun getWeekString(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): Annotate
     }
 }
 
-fun getFirstDayOfMonth(date: LocalDate): LocalDate {
+fun getFirstDateOfMonth(date: LocalDate): LocalDate {
+    Log.d("DateUtil", "getFirstDateOfMonth executed")
+
     val yearMonth = YearMonth.from(date)
     return yearMonth.atDay(1)
 }
 
-fun getLastDayOfMonth(date: LocalDate): LocalDate {
+fun getLastDateOfMonth(date: LocalDate): LocalDate {
+    Log.d("DateUtil", "getLastDateOfMonth executed")
+
     val yearMonth = YearMonth.from(date)
     return yearMonth.atEndOfMonth()
 }
 
-fun getMonthString(date: LocalDate): AnnotatedString {
+fun getPeriodStringOfMonth(date: LocalDate): AnnotatedString {
+    Log.d("DateUtil", "getPeriodStringOfMonth executed")
+
     return buildAnnotatedString {
         append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월")))
     }
