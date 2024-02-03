@@ -37,25 +37,25 @@ import kotlin.concurrent.fixedRateTimer
 @Composable
 fun HomeFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
     // 타이머
-    val now = LocalTime.now()
-    var totalSecondsFromNow by remember { mutableStateOf(now.toSecondOfDay() * 1_000L) }
-    val totalSecondsInADay = 24 * 60 * 60 * 1_000L // Millis
-    val remainingTime = remember(totalSecondsFromNow) { totalSecondsInADay - totalSecondsFromNow }
+//    val now = LocalTime.now()
+//    var totalSecondsFromNow by remember { mutableStateOf(now.toSecondOfDay() * 1_000L) }
+//    val totalSecondsInADay = 24 * 60 * 60 * 1_000L // Millis
+//    val remainingTime = remember(totalSecondsFromNow) { totalSecondsInADay - totalSecondsFromNow }
 //    val remainingTime by remember(totalSecondsFromNow) { mutableStateOf(totalSecondsInADay - totalSecondsFromNow) }
 
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = remember { wiDService.readRandomWiDList() }
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList = remember { wiDService.readRandomWiDList() }
 
-    DisposableEffect(Unit) {
-        val timer = fixedRateTimer("timer", true, 0L, 1000) {
-            totalSecondsFromNow += 1_000L // Millis
-        }
-
-        onDispose {
-            timer.cancel()
-        }
-    }
+//    DisposableEffect(Unit) {
+//        val timer = fixedRateTimer("timer", true, 0L, 1000) {
+//            totalSecondsFromNow += 1_000L // Millis
+//        }
+//
+//        onDispose {
+//            timer.cancel()
+//        }
+//    }
 
     Column(
         modifier = Modifier
@@ -228,53 +228,53 @@ fun HomeFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer,
                     )
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f / 1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(vertical = 16.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter),
-                            text = "오늘",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.Center),
-                            text = "${remainingTime * 100 / totalSecondsInADay}%",
-                            style = Typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 50.sp
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter),
-                            text = getHorizontalTimeString(remainingTime),
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontFamily = FontFamily.Monospace
-                        )
-                    }
-
-                    Text(
-                        text = "남은 시간",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.spacedBy(4.dp)
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .aspectRatio(1f / 1f)
+//                            .clip(RoundedCornerShape(8.dp))
+//                            .background(MaterialTheme.colorScheme.tertiary)
+//                            .padding(vertical = 16.dp)
+//                    ) {
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.TopCenter),
+//                            text = "오늘",
+//                            style = Typography.bodyMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.Center),
+//                            text = "${remainingTime * 100 / totalSecondsInADay}%",
+//                            style = Typography.bodyLarge,
+//                            color = MaterialTheme.colorScheme.primary,
+//                            fontSize = 50.sp
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.BottomCenter),
+//                            text = getHorizontalTimeString(remainingTime),
+//                            style = Typography.bodyMedium,
+//                            color = MaterialTheme.colorScheme.primary,
+//                            fontFamily = FontFamily.Monospace
+//                        )
+//                    }
+//
+//                    Text(
+//                        text = "남은 시간",
+//                        style = Typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.primary
+//                    )
+//                }
             }
 
             // 오른쪽 버튼 열
@@ -283,33 +283,33 @@ fun HomeFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer,
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f / 1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.tertiary)
-                            .padding(vertical = 16.dp)
-                    ) {
-                        if (wiDList.isEmpty()) {
-                            getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
-                        } else {
-                            DateBasedPieChartFragment(wiDList = wiDList)
-                        }
-                    }
-
-                    Text(
-                        text = "88일 전",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth(),
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.spacedBy(4.dp)
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .aspectRatio(1f / 1f)
+//                            .clip(RoundedCornerShape(8.dp))
+//                            .background(MaterialTheme.colorScheme.tertiary)
+//                            .padding(vertical = 16.dp)
+//                    ) {
+//                        if (wiDList.isEmpty()) {
+//                            getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+//                        } else {
+//                            DateBasedPieChartFragment(wiDList = wiDList)
+//                        }
+//                    }
+//
+//                    Text(
+//                        text = "88일 전",
+//                        style = Typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.primary
+//                    )
+//                }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)

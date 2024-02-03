@@ -79,30 +79,30 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
-        ) {
-            Text(
-                text = "오후 오전",
-                style = Typography.bodyMedium,
-                fontSize = 10.sp
-            )
-
-            Text(
-                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-                style = Typography.titleLarge,
-                fontSize = 30.sp
-            )
-
-            Text(
-                text = "${getDurationString(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
-                style = Typography.bodyMedium,
-                fontSize = 10.sp
-            )
-        }
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize(),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+//        ) {
+//            Text(
+//                text = "오후 오전",
+//                style = Typography.bodyMedium,
+//                fontSize = 10.sp
+//            )
+//
+//            Text(
+//                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+//                style = Typography.titleLarge,
+//                fontSize = 30.sp
+//            )
+//
+//            Text(
+//                text = "${getDurationString(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
+//                style = Typography.bodyMedium,
+//                fontSize = 10.sp
+//            )
+//        }
 
         Crossfade(targetState = pieEntries) { pieEntries ->
             val colorScheme = MaterialTheme.colorScheme
@@ -125,6 +125,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     isDrawHoleEnabled = true
                     holeRadius = 80f
                     setHoleColor(Transparent.toArgb())
+                    setDrawRoundedSlices(true)
 
 //                    setDrawCenterText(true)
 //                    centerText = buildAnnotatedString {

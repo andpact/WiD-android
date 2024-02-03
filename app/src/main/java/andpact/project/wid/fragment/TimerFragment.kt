@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import java.time.Duration
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     // 화면
@@ -38,7 +38,6 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
 
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
-    val bottomSheetState = rememberModalBottomSheetState()
 
     // 타이머
     val itemHeight = 30.dp
@@ -47,21 +46,21 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     val coroutineScope = rememberCoroutineScope()
 
     // 타이머 시간 선택
-    var selectedHour by remember { mutableStateOf(0) }
+    var selectedHour by remember { mutableStateOf(0L) }
     val lazyHourListState = rememberLazyListState(Int.MAX_VALUE / 2 - 16) // 정중앙의 0을 찾기 위해서 마이너스 16 해줌.
     val isHourScrollInProgress = remember { derivedStateOf { lazyHourListState.isScrollInProgress } }
     val currentHourIndex = remember { derivedStateOf { lazyHourListState.firstVisibleItemIndex } }
     val currentHourScrollOffset = remember { derivedStateOf { lazyHourListState.firstVisibleItemScrollOffset } }
 
     // 타이머 분 선택
-    var selectedMinute by remember { mutableStateOf(0) }
+    var selectedMinute by remember { mutableStateOf(0L) }
     val lazyMinuteListState = rememberLazyListState(Int.MAX_VALUE / 2 - 4) // 정중앙의 0을 찾기 위해서 마이너스 4 해줌.
     val isMinuteScrollInProgress = remember { derivedStateOf { lazyMinuteListState.isScrollInProgress } }
     val currentMinuteIndex = remember { derivedStateOf { lazyMinuteListState.firstVisibleItemIndex } }
     val currentMinuteScrollOffset = remember { derivedStateOf { lazyMinuteListState.firstVisibleItemScrollOffset } }
 
     // 타이머 초 선택
-    var selectedSecond by remember { mutableStateOf(0) }
+    var selectedSecond by remember { mutableStateOf(0L) }
     val lazySecondListState = rememberLazyListState(Int.MAX_VALUE / 2 - 4) // 정중앙의 0을 찾기 위해서 마이너스 4 해줌.
     val isSecondScrollInProgress = remember { derivedStateOf { lazySecondListState.isScrollInProgress } }
     val currentSecondIndex = remember { derivedStateOf { lazySecondListState.firstVisibleItemIndex } }
@@ -156,11 +155,11 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                     ) {
                         // Interactive mode를 켜야 프리뷰에서 스크롤이 동작한다.
                         items(count = Int.MAX_VALUE) {index ->
-                            val adjustedIndex = index % 24 // adjustedIndex는 시간 할당과 표시에만 사용됨.
+                            val adjustedIndex = index % 24L // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentHourIndex.value) {
                                 selectedHour = (adjustedIndex + 1) % 24 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
-                                timerPlayer.setRemainingTime(newRemainingTime)
+                                val newRemainingTime = Duration.ofHours(selectedHour.toLong()) + Duration.ofMinutes(selectedMinute.toLong()) + Duration.ofSeconds(selectedSecond.toLong())
+                                timerPlayer.setSelectedTime(newRemainingTime)
                             }
 
                             Text(
@@ -199,11 +198,11 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(count = Int.MAX_VALUE) {index ->
-                            val adjustedIndex = index % 60 // adjustedIndex는 시간 할당과 표시에만 사용됨.
+                            val adjustedIndex = index % 60L // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentMinuteIndex.value) {
                                 selectedMinute = (adjustedIndex + 1) % 60 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
-                                timerPlayer.setRemainingTime(newRemainingTime)
+                                val newRemainingTime = Duration.ofHours(selectedHour) + Duration.ofMinutes(selectedMinute) + Duration.ofSeconds(selectedSecond)
+                                timerPlayer.setSelectedTime(newRemainingTime)
                             }
 
                             Text(
@@ -242,11 +241,11 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(count = Int.MAX_VALUE) {index ->
-                            val adjustedIndex = index % 60 // adjustedIndex는 시간 할당과 표시에만 사용됨.
+                            val adjustedIndex = index % 60L // adjustedIndex는 시간 할당과 표시에만 사용됨.
                             if (index == currentSecondIndex.value) {
                                 selectedSecond = (adjustedIndex + 1) % 60 // 가운데 표시된 시간을 사용하기 위해 1을 더해줌.
-                                val newRemainingTime = selectedHour * 3_600_000L + selectedMinute * 60_000L + selectedSecond * 1_000L
-                                timerPlayer.setRemainingTime(newRemainingTime)
+                                val newRemainingTime = Duration.ofHours(selectedHour) + Duration.ofMinutes(selectedMinute) + Duration.ofSeconds(selectedSecond)
+                                timerPlayer.setSelectedTime(newRemainingTime)
                             }
 
                             Text(
@@ -323,12 +322,10 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = getHorizontalTimeString(time = timerPlayer.remainingTime.value),
+                    text = getTimerTimeString(duration = timerPlayer.remainingTime.value),
                     style = TextStyle(
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.primary,
-                        fontSize = 60.sp,
-                        fontFamily = chivoMonoBlackItalic,
                     )
                 )
 
@@ -395,7 +392,12 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                         .clickable(timerPlayer.timerState.value == PlayerState.Stopped) {
                             titleMenuExpanded = true
                         }
-                        .background(color = AppIndigo)
+                        .background(
+                            color = if (timerPlayer.timerState.value == PlayerState.Stopped)
+                                AppIndigo
+                            else
+                                DarkGray
+                        )
                         .padding(16.dp)
                         .size(32.dp),
                     painter = painterResource(titleIconMap[timerPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
@@ -421,10 +423,6 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                                     lazyMinuteListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
                                     lazySecondListState.animateScrollToItem(Int.MAX_VALUE / 2 - 4)
                                 }
-
-                                if (!timerTopBottomBarVisible) {
-                                    timerTopBottomBarVisible = true
-                                }
                             }
                             .background(color = DeepSkyBlue)
                             .padding(16.dp)
@@ -438,7 +436,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                 Icon(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .clickable(0L < timerPlayer.remainingTime.value) {
+                        .clickable(Duration.ZERO < timerPlayer.seletedTime.value) {
                             if (timerPlayer.timerState.value == PlayerState.Started) {
                                 timerPlayer.pauseTimer()
                             } else {
@@ -448,7 +446,7 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
                             }
                         }
                         .background(
-                            color =if (timerPlayer.remainingTime.value <= 0L) DarkGray
+                            color = if (timerPlayer.seletedTime.value <= Duration.ZERO) DarkGray
                             else if (timerPlayer.timerState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
                             else if (timerPlayer.timerState.value == PlayerState.Paused) LimeGreen
                             else OrangeRed

@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -49,11 +50,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * 컴포저블 - Jetpack Compose에서 화면을 그리는 데 사용되는 함수
+ * 컴포넌트 - 소프트웨어 개발에서 재사용 가능한 모듈
+ */
 @Composable
 fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
-        val stopwatchPlayer = StopwatchPlayer()
+//        val stopwatchPlayer = StopwatchPlayer()
+
+        val stopwatchPlayer: StopwatchPlayer = viewModel()
 
         val context = LocalContext.current
         val application = context.applicationContext as Application
@@ -116,7 +123,8 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd),
-                text = getHorizontalTimeString(stopwatchPlayer.elapsedTime.value),
+//                text = getHorizontalTimeString(stopwatchPlayer.elapsedTime.value),
+                text = getDurationString(stopwatchPlayer.duration.value, 1),
                 style = Typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = FontFamily.Monospace
@@ -163,7 +171,7 @@ fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd),
-                text = getHorizontalTimeString(timerPlayer.remainingTime.value),
+                text = getHorizontalTimeString(timerPlayer.remainingTime.value.seconds),
                 style = Typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontFamily = FontFamily.Monospace
