@@ -69,6 +69,19 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return newRowId
     }
 
+    fun getWiDCount(): Int {
+        Log.d("WiDService", "getWiDCount executed")
+
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_NAME", null)
+        cursor.moveToFirst()
+        val count = cursor.getInt(0)
+        cursor.close()
+        db.close()
+
+        return count
+    }
+
 //    fun getYearList(): List<String> {
 //        val years = mutableListOf<String>()
 //        val query = "SELECT DISTINCT substr($COLUMN_DATE, 1, 4) AS year FROM $TABLE_NAME ORDER BY year DESC"

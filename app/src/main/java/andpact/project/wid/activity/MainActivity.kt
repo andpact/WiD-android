@@ -36,6 +36,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import java.time.LocalDate
+import java.time.LocalTime
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,8 +59,9 @@ class MainActivity : ComponentActivity() {
 fun MainFragment() {
     WiDTheme() {
         val navController: NavHostController = rememberNavController()
-//        val stopwatchPlayer = StopwatchPlayer()
 
+        // 아래 두 방식의 차이가 없다?
+//        val stopwatchPlayer = StopwatchPlayer()
         val stopwatchPlayer: StopwatchPlayer = viewModel()
 
         val context = LocalContext.current
@@ -67,118 +69,114 @@ fun MainFragment() {
         val timerPlayer = TimerPlayer(application)
 
         Scaffold(
-            topBar = {
-                TopBar(stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
-            },
+//            topBar = {
+//                TopBar(stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
+//            },
 //            containerColor = MaterialTheme.colorScheme.secondary
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingValues)
-            ) {
-                NavigationGraph(navController = navController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
-            }
+//        ) {
+        ) {
+            NavigationGraph(navController = navController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
         }
     }
 }
 
-@Composable
-fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
-    AnimatedVisibility(
-        visible = !stopwatchPlayer.inStopwatchView.value && stopwatchPlayer.stopwatchState.value != PlayerState.Stopped,
-        enter = expandVertically{ 0 },
-        exit = shrinkVertically{ 0 },
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(28.dp)
-                .background(
-                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                        LimeGreen
-                    } else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
-                        OrangeRed
-                    } else {
-                        MaterialTheme.colorScheme.secondary
-                    }
-                )
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterStart),
-                text = "스톱 워치",
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd),
-//                text = getHorizontalTimeString(stopwatchPlayer.elapsedTime.value),
-                text = getDurationString(stopwatchPlayer.duration.value, 1),
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontFamily = FontFamily.Monospace
-            )
-        }
-    }
-
-    AnimatedVisibility(
-        visible = !timerPlayer.inTimerView.value && timerPlayer.timerState.value != PlayerState.Stopped,
-        enter = expandVertically{ 0 },
-        exit = shrinkVertically{ 0 },
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(28.dp)
-                .background(
-                    if (timerPlayer.timerState.value == PlayerState.Started) {
-                        LimeGreen
-                    } else if (timerPlayer.timerState.value == PlayerState.Paused) {
-                        OrangeRed
-                    } else {
-                        MaterialTheme.colorScheme.secondary
-                    }
-                )
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterStart),
-                text = "타이머",
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                text = titleMap[timerPlayer.title.value] ?: "공부",
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd),
-                text = getHorizontalTimeString(timerPlayer.remainingTime.value.seconds),
-                style = Typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontFamily = FontFamily.Monospace
-            )
-        }
-    }
-}
+//@Composable
+//fun TopBar(stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+//    AnimatedVisibility(
+//        visible = !stopwatchPlayer.inStopwatchView.value && stopwatchPlayer.stopwatchState.value != PlayerState.Stopped,
+//        enter = expandVertically{ 0 },
+//        exit = shrinkVertically{ 0 },
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(28.dp)
+//                .background(
+//                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+//                        LimeGreen
+//                    } else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
+//                        OrangeRed
+//                    } else {
+//                        MaterialTheme.colorScheme.secondary
+//                    }
+//                )
+//                .padding(horizontal = 16.dp)
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.CenterStart),
+//                text = "스톱 워치",
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary
+//            )
+//
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.Center),
+//                text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary
+//            )
+//
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.CenterEnd),
+////                text = getHorizontalTimeString(stopwatchPlayer.elapsedTime.value),
+//                text = getDurationString(stopwatchPlayer.duration.value, 1),
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary,
+//                fontFamily = FontFamily.Monospace
+//            )
+//        }
+//    }
+//
+//    AnimatedVisibility(
+//        visible = !timerPlayer.inTimerView.value && timerPlayer.timerState.value != PlayerState.Stopped,
+//        enter = expandVertically{ 0 },
+//        exit = shrinkVertically{ 0 },
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(28.dp)
+//                .background(
+//                    if (timerPlayer.timerState.value == PlayerState.Started) {
+//                        LimeGreen
+//                    } else if (timerPlayer.timerState.value == PlayerState.Paused) {
+//                        OrangeRed
+//                    } else {
+//                        MaterialTheme.colorScheme.secondary
+//                    }
+//                )
+//                .padding(horizontal = 16.dp)
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.CenterStart),
+//                text = "타이머",
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary
+//            )
+//
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.Center),
+//                text = titleMap[timerPlayer.title.value] ?: "공부",
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary
+//            )
+//
+//            Text(
+//                modifier = Modifier
+//                    .align(Alignment.CenterEnd),
+//                text = getHorizontalTimeString(timerPlayer.remainingTime.value.seconds),
+//                style = Typography.labelMedium,
+//                color = MaterialTheme.colorScheme.primary,
+//                fontFamily = FontFamily.Monospace
+//            )
+//        }
+//    }
+//}
 
 //@Composable
 //fun BottomBar(navController: NavHostController, mainTopBottomBarVisible: MutableState<Boolean>, modifier: Modifier = Modifier) {
@@ -238,56 +236,83 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
     ) {
         // 홈
         composable(Destinations.HomeFragmentDestination.route) {
-            HomeFragment(navController = navController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
-        }
-
-        // 스톱 워치
-        composable(
-            route = Destinations.StopWatchFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            StopWatchFragment(
+            HomeFragment(
                 navController = navController,
-                stopwatchPlayer = stopwatchPlayer
-            )
-        }
-
-        // 타이머
-        composable(
-            route = Destinations.TimerFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            TimerFragment(
-                navController = navController,
+                stopwatchPlayer = stopwatchPlayer,
                 timerPlayer = timerPlayer
             )
         }
 
+        // WiD Tool
+        composable(
+            route = Destinations.WiDToolFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            WiDToolFragment(
+                navController = navController,
+                stopwatchPlayer = stopwatchPlayer,
+                timerPlayer = timerPlayer
+            )
+        }
+
+        // 스톱 워치
+//        composable(
+//            route = Destinations.StopWatchFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            }
+//        ) {
+//            StopWatchFragment(
+//                navController = navController,
+//                stopwatchPlayer = stopwatchPlayer
+//            )
+//        }
+
+        // 타이머
+//        composable(
+//            route = Destinations.TimerFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            }
+//        ) {
+//            TimerFragment(
+//                navController = navController,
+//                timerPlayer = timerPlayer
+//            )
+//        }
+
         // 새로운 WiD
         composable(
-            route = Destinations.NewWiDFragmentDestination.route,
+            route = Destinations.NewWiDFragmentDestination.route + "/{startParam}/{finishParam}",
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
@@ -300,69 +325,20 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
                     animationSpec = tween(500)
                 )
             }
-        ) {
-            NewWiDFragment(navController = navController)
-        }
-
-        // 날짜 별 조회
-        composable(
-            route = Destinations.DateBasedFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            popEnterTransition = { null },
-            exitTransition = { null },
-            popExitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            },
-        ) {
-            DateBasedFragment(navController = navController)
-        }
-
-        // 기간 별 조회
-        composable(
-            route = Destinations.PeriodBasedFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
+        ) { backStackEntry ->
+            val startParam = run {
+                val startString = backStackEntry.arguments?.getString("startParam") ?: LocalTime.MIN.toString()
+                LocalTime.parse(startString)
             }
-        ) {
-            PeriodBasedFragment(navController = navController)
-        }
-
-        // 다이어리 검색
-        composable(
-            route = Destinations.SearchFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            popEnterTransition = { null },
-            exitTransition = { null },
-            popExitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            },
-        ) {
-            SearchFragment(navController = navController)
+            val finishParam = run {
+                val finishString = backStackEntry.arguments?.getString("finishParam") ?: LocalTime.MIN.toString()
+                LocalTime.parse(finishString)
+            }
+            NewWiDFragment(
+                navController = navController,
+                startParam = startParam,
+                finishParam = finishParam
+            )
         }
 
         // WiD
@@ -385,6 +361,52 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
             WiDFragment(
                 wiDId = wiDID,
                 navController = navController,
+            )
+        }
+
+        // WiD Display
+        composable(
+            route = Destinations.WiDDisplayFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            WiDDisplayFragment(
+                navController = navController,
+                stopwatchPlayer = stopwatchPlayer,
+                timerPlayer = timerPlayer
+            )
+        }
+
+        // Diary Display
+        composable(
+            route = Destinations.DiaryDisplayFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            DiaryDisplayFragment(
+                navController = navController,
+                stopwatchPlayer = stopwatchPlayer,
+                timerPlayer = timerPlayer
             )
         }
 
@@ -413,6 +435,90 @@ fun NavigationGraph(navController: NavHostController, stopwatchPlayer: Stopwatch
                 navController = navController,
             )
         }
+
+        // Setting
+        composable(
+            route = Destinations.SettingFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            SettingFragment(
+                navController = navController,
+                stopwatchPlayer = stopwatchPlayer,
+                timerPlayer = timerPlayer
+            )
+        }
+
+        // 날짜 별 조회
+//        composable(
+//            route = Destinations.DateBasedFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            popEnterTransition = { null },
+//            exitTransition = { null },
+//            popExitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//        ) {
+//            DateBasedFragment(navController = navController)
+//        }
+
+        // 기간 별 조회
+//        composable(
+//            route = Destinations.PeriodBasedFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            }
+//        ) {
+//            PeriodBasedFragment(navController = navController)
+//        }
+
+        // 다이어리 검색
+//        composable(
+//            route = Destinations.SearchFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            popEnterTransition = { null },
+//            exitTransition = { null },
+//            popExitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//        ) {
+//            SearchFragment(navController = navController)
+//        }
     }
 }
 
@@ -424,30 +530,42 @@ sealed class Destinations(
     object HomeFragmentDestination : Destinations(
         route = "home_fragment",
     )
-    object StopWatchFragmentDestination : Destinations(
-        route = "stopwatch_fragment",
-    )
-    object TimerFragmentDestination : Destinations(
-        route = "timer_fragment",
+    object WiDToolFragmentDestination : Destinations(
+        route = "wid_tool_fragment",
     )
     object NewWiDFragmentDestination : Destinations(
         route = "newWiD_fragment",
     )
-    object DateBasedFragmentDestination : Destinations(
-        route = "date_based_fragment",
-    )
-    object PeriodBasedFragmentDestination : Destinations(
-        route = "period_based_fragment",
-    )
-    object SearchFragmentDestination : Destinations(
-        route = "search_fragment",
-    )
     object WiDFragmentDestination : Destinations(
         route = "wid_fragment",
+    )
+    object WiDDisplayFragmentDestination : Destinations(
+        route = "wid_display_fragment",
+    )
+    object DiaryDisplayFragmentDestination : Destinations(
+        route = "diary_display_fragment",
     )
     object DiaryFragmentDestination : Destinations(
         route = "diary_fragment",
     )
+    object SettingFragmentDestination : Destinations(
+        route = "setting_fragment",
+    )
+//    object StopWatchFragmentDestination : Destinations(
+//        route = "stopwatch_fragment",
+//    )
+//    object TimerFragmentDestination : Destinations(
+//        route = "timer_fragment",
+//    )
+//    object DateBasedFragmentDestination : Destinations(
+//        route = "date_based_fragment",
+//    )
+//    object PeriodBasedFragmentDestination : Destinations(
+//        route = "period_based_fragment",
+//    )
+//    object SearchFragmentDestination : Destinations(
+//        route = "search_fragment",
+//    )
 }
 
 //@Composable

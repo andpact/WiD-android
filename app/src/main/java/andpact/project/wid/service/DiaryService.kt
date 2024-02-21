@@ -56,6 +56,19 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         return newRowId
     }
 
+    fun getDiaryCount(): Int {
+        Log.d("DiaryService", "getDiaryCount executed")
+
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_NAME", null)
+        cursor.moveToFirst()
+        val count = cursor.getInt(0)
+        cursor.close()
+        db.close()
+
+        return count
+    }
+
 //    fun getDiaryById(diaryId: Long): Diary? {
 //        val db = readableDatabase
 //

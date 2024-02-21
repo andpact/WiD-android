@@ -65,6 +65,8 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
     private var timer: Timer? = null
     private val _timerState = mutableStateOf(PlayerState.Stopped)
     val timerState: State<PlayerState> = _timerState
+    private val _timerTopBottomBarVisible = mutableStateOf(true)
+    val timerTopBottomBarVisible: State<Boolean> = _timerTopBottomBarVisible
 
     fun setTitle(newTitle: String) {
         Log.d("TimerPlayer", "setTitle executed")
@@ -82,6 +84,12 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
         Log.d("TimerPlayer", "setInTimerView executed")
 
         _inTimerView.value = isInTimerView
+    }
+
+    fun setTimerTopBottomBarVisible(timerTopBottomBarVisible: Boolean) {
+        Log.d("TimerPlayer", "setTimerTopBottomBarVisible executed")
+
+        _timerTopBottomBarVisible.value = timerTopBottomBarVisible
     }
 
     fun startTimer() {
@@ -126,6 +134,8 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
 
         timer?.cancel()
         _timerState.value = PlayerState.Paused
+
+        _seletedTime.value = _remainingTime.value
 
         if (start.equals(finish))
             return
@@ -184,5 +194,7 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
 
         _remainingTime.value = Duration.ZERO
         _seletedTime.value = Duration.ZERO
+
+        _timerTopBottomBarVisible.value = true
     }
 }

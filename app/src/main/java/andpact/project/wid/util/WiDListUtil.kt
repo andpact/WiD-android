@@ -64,6 +64,66 @@ fun getEmptyWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList:
     }
 }
 
+fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: List<WiD>): List<WiD> {
+    Log.d("WiDListUtil", "getFullWiDListFromWiDList executed")
+
+    if (wiDList.isEmpty()) {
+        return emptyList()
+    }
+
+    val fullWiDList = mutableListOf<WiD>()
+
+    var emptyWiDStart = LocalTime.MIN
+
+    // 데이터 베이스에서 가져온 WiD는 0나노 세컨드를 가짐.
+    for (currentWiD in wiDList) {
+        val emptyWiDFinish = currentWiD.start
+
+        if (emptyWiDStart.equals(emptyWiDFinish)) {
+            emptyWiDStart = currentWiD.finish
+            continue
+        }
+
+        val emptyWiD = WiD(
+            id = 0,
+            date = date,
+            title = "",
+            start = emptyWiDStart,
+            finish = emptyWiDFinish,
+            duration = Duration.between(emptyWiDStart, emptyWiDFinish)
+        )
+        fullWiDList.add(emptyWiD)
+        fullWiDList.add(currentWiD) // 당연히 currentWiD를 emptyWiD 뒤에 넣어줘야 제대로 동작함
+
+        emptyWiDStart = currentWiD.finish
+    }
+
+    // 빈 WiD가 오늘 날짜의 현재 시간을 넘어가지 않도록함.
+    val today = LocalDate.now()
+    val endOfDay = if (date == today) {
+        currentTime
+    } else {
+        LocalTime.MAX
+    }
+
+    // equals()에 의해서 나노 세컨드 값까지 비교가되므로, 나노세컨드 단위를 버리고 비교함.
+    return if (emptyWiDStart.truncatedTo(ChronoUnit.SECONDS).equals(endOfDay.truncatedTo(ChronoUnit.SECONDS))) {
+        fullWiDList
+    } else { // 마지막 빈 WiD 추가
+        val lastEmptyWiD = WiD(
+            id = 0,
+            date = date,
+            title = "",
+            start = emptyWiDStart,
+            finish = endOfDay,
+            duration = Duration.between(emptyWiDStart, endOfDay)
+        )
+        fullWiDList.add(lastEmptyWiD)
+
+        fullWiDList
+    }
+}
+
 fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
     Log.d("WiDListUtil", "getTotalDurationFromWiDList executed")
 

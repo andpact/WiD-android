@@ -67,6 +67,8 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
     val stopwatchState: State<PlayerState> = _stopwatchState
     private val _inStopwatchView = mutableStateOf(false)
     val inStopwatchView: State<Boolean> = _inStopwatchView
+    private val _stopwatchTopBottomBarVisible = mutableStateOf(true)
+    val stopwatchTopBottomBarVisible: State<Boolean> = _stopwatchTopBottomBarVisible
 
     fun setTitle(newTitle: String) {
         Log.d("StopwatchPlayer", "setTitle executed")
@@ -78,6 +80,12 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
         Log.d("StopwatchPlayer", "setInStopwatchView executed")
 
         _inStopwatchView.value = isInStopwatchView
+    }
+
+    fun setStopwatchTopBottomBarVisible(stopwatchTopBottomBarVisible: Boolean) {
+        Log.d("StopwatchPlayer", "setStopwatchTopBottomBarVisible executed")
+
+        _stopwatchTopBottomBarVisible.value = stopwatchTopBottomBarVisible
     }
 
     fun startStopwatch() {

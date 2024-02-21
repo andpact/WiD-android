@@ -232,7 +232,7 @@ fun PeriodBasedFragment(navController: NavController) {
                     )
                 }
 
-                item("합계, 평균, 최고") {
+                item("합계, 평균, 최저, 최고") {
                     Column(
                         modifier = Modifier
                             .padding(top = 16.dp, bottom = 12.dp),
@@ -373,44 +373,44 @@ fun PeriodBasedFragment(navController: NavController) {
                     )
                 }
 
-                item("기록률") {
-                    Column(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.secondary)
-                            .padding(vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp),
-                            text = "기록률",
-                            style = Typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        if (wiDList.isEmpty()) {
-                            getEmptyView(text = "표시할 기록률이 없습니다.")()
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
-                                    .shadow(
-                                        elevation = 2.dp,
-                                        shape = RoundedCornerShape(8.dp),
-                                        spotColor = MaterialTheme.colorScheme.primary,
-                                    )
-                                    .background(MaterialTheme.colorScheme.secondary)
-                            ) {
-                                VerticalBarChartFragment(
-                                    wiDList = wiDList,
-                                    startDate = startDate,
-                                    finishDate = finishDate
-                                )
-                            }
-                        }
-                    }
-                }
+//                item("기록률") {
+//                    Column(
+//                        modifier = Modifier
+//                            .background(MaterialTheme.colorScheme.secondary)
+//                            .padding(vertical = 16.dp),
+//                        verticalArrangement = Arrangement.spacedBy(8.dp)
+//                    ) {
+//                        Text(
+//                            modifier = Modifier
+//                                .padding(horizontal = 16.dp),
+//                            text = "기록률",
+//                            style = Typography.titleMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        if (wiDList.isEmpty()) {
+//                            getEmptyView(text = "표시할 기록률이 없습니다.")()
+//                        } else {
+//                            Box(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(horizontal = 16.dp)
+//                                    .shadow(
+//                                        elevation = 2.dp,
+//                                        shape = RoundedCornerShape(8.dp),
+//                                        spotColor = MaterialTheme.colorScheme.primary,
+//                                    )
+//                                    .background(MaterialTheme.colorScheme.secondary)
+//                            ) {
+//                                VerticalBarChartFragment(
+//                                    wiDList = wiDList,
+//                                    startDate = startDate,
+//                                    finishDate = finishDate
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
             } else { // 제목이 "전체"가 아닐 때
                 item("선 그래프") {
                     Column(

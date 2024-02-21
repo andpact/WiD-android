@@ -35,10 +35,10 @@ import java.time.LocalTime
 @Composable
 fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer) {
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDService = WiDService(context = LocalContext.current)
 
     // 화면
-    var stopwatchTopBottomBarVisible by remember { mutableStateOf(true) }
+//    var stopwatchTopBottomBarVisible by remember { mutableStateOf(true) }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -63,48 +63,53 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
+//            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
-                stopwatchTopBottomBarVisible = !stopwatchTopBottomBarVisible
+//                stopwatchPlayer.setStopwatchTopBottomBarVisible(!stopwatchPlayer.stopwatchTopBottomBarVisible.value)
+                if (stopwatchPlayer.stopwatchTopBottomBarVisible.value) {
+                    stopwatchPlayer.setStopwatchTopBottomBarVisible(false)
+                } else {
+                    stopwatchPlayer.setStopwatchTopBottomBarVisible(true)
+                }
             }
     ) {
         /**
          * 상단 바
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.TopCenter),
-            visible = stopwatchTopBottomBarVisible,
-            enter = expandVertically{ 0 },
-            exit = shrinkVertically{ 0 },
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterStart)
-                        .clickable {
-                            navController.popBackStack()
-                        },
-                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                    contentDescription = "뒤로 가기",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "스톱 워치",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+//        AnimatedVisibility(
+//            modifier = Modifier
+//                .align(Alignment.TopCenter),
+//            visible = stopwatchTopBottomBarVisible,
+//            enter = expandVertically{ 0 },
+//            exit = shrinkVertically{ 0 },
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .padding(horizontal = 16.dp)
+//                    .fillMaxWidth()
+//                    .height(56.dp)
+//            ) {
+//                Icon(
+//                    modifier = Modifier
+//                        .size(24.dp)
+//                        .align(Alignment.CenterStart)
+//                        .clickable {
+//                            navController.popBackStack()
+//                        },
+//                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+//                    contentDescription = "뒤로 가기",
+//                    tint = MaterialTheme.colorScheme.primary
+//                )
+//
+//                Text(
+//                    modifier = Modifier
+//                        .align(Alignment.Center),
+//                    text = "스톱 워치",
+//                    style = Typography.titleLarge,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
 
         /**
          * 컨텐츠
@@ -126,7 +131,7 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter),
-            visible = stopwatchTopBottomBarVisible,
+            visible = stopwatchPlayer.stopwatchTopBottomBarVisible.value,
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
@@ -206,116 +211,116 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                 )
             }
         }
-    }
 
-    // 컴포저블 안에 기본적으로 박스가 감싸고 있는 구조인 듯.
-    // 위 전체 화면 박스에 배경색을 넣어놔서 아래 박스는 배경 색을 넣을 필요 없음.
-    /**
-     * 제목 바텀 시트
-     */
-    AnimatedVisibility(
-        modifier = Modifier
-            .fillMaxSize(),
-        visible = titleMenuExpanded,
-        enter = fadeIn(), // 위치 이동하는 애니메이션은 적용이 안되네?
-        exit = fadeOut()
-    ) {
-        Box(
+        // 컴포저블 안에 기본적으로 박스가 감싸고 있는 구조인 듯.
+        // 위 전체 화면 박스에 배경색을 넣어놔서 아래 박스는 배경 색을 넣을 필요 없음.
+        /**
+         * 제목 바텀 시트
+         */
+        AnimatedVisibility(
             modifier = Modifier
-                .fillMaxSize()
-                .clickable(titleMenuExpanded) {
-                    titleMenuExpanded = false
-                }
+                .fillMaxSize(),
+            visible = titleMenuExpanded,
+            enter = fadeIn(), // 위치 이동하는 애니메이션은 적용이 안되네?
+            exit = fadeOut()
         ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .height(screenHeight / 2)
-                    .padding(16.dp)
-                    .shadow(
-                        elevation = 2.dp,
-                        shape = RoundedCornerShape(8.dp),
-                        spotColor = MaterialTheme.colorScheme.primary,
-                    )
-                    .background(
-                        color = MaterialTheme.colorScheme.tertiary,
-                        shape = RoundedCornerShape(8.dp)
-                    )
+                    .fillMaxSize()
+                    .clickable(titleMenuExpanded) {
+                        titleMenuExpanded = false
+                    }
             ) {
-                Box(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(false) {} // 클릭 불가능하게 해서 제목 메뉴 닫힘 방지
+                        .align(Alignment.BottomCenter)
+                        .height(screenHeight / 2)
+                        .padding(16.dp)
+//                        .shadow(
+//                            elevation = 2.dp,
+//                            shape = RoundedCornerShape(8.dp),
+//                            spotColor = MaterialTheme.colorScheme.primary,
+//                        )
+                        .background(
+                            color = MaterialTheme.colorScheme.tertiary,
+                            shape = RoundedCornerShape(8.dp)
+                        )
                 ) {
-                    Icon(
+                    Box(
                         modifier = Modifier
-                            .padding(16.dp)
-                            .size(24.dp)
-                            .align(Alignment.CenterStart)
-                            .clickable {
-                                titleMenuExpanded = false
-                            },
-                        painter = painterResource(id = R.drawable.baseline_close_24),
-                        contentDescription = "제목 메뉴 닫기",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        text = "제목 선택",
-                        style = Typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                HorizontalDivider()
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    items(titles.size) { index ->
-                        val itemTitle = titles[index]
-                        val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
-
-                        Row(
+                            .fillMaxWidth()
+                            .clickable(false) {} // 클릭 불가능하게 해서 제목 메뉴 닫힘 방지
+                    ) {
+                        Icon(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
                                 .clickable {
-                                    stopwatchPlayer.setTitle(itemTitle)
                                     titleMenuExpanded = false
                                 },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "제목 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = "제목 선택",
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+//                    HorizontalDivider()
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        items(titles.size) { index ->
+                            val itemTitle = titles[index]
+                            val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
+
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp),
-                                painter = painterResource(id = iconResourceId),
-                                contentDescription = "제목",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                text = titleMap[itemTitle] ?: "공부",
-                                style = Typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-
-                            if (itemTitle == stopwatchPlayer.title.value) {
-                                Text(
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        stopwatchPlayer.setTitle(itemTitle)
+                                        titleMenuExpanded = false
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
                                     modifier = Modifier
-                                        .padding(16.dp),
-                                    text = "선택됨",
-                                    style = Typography.bodyMedium,
+                                        .padding(16.dp)
+                                        .size(24.dp),
+                                    painter = painterResource(id = iconResourceId),
+                                    contentDescription = "제목",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = titleMap[itemTitle] ?: "공부",
+                                    style = Typography.labelMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                if (itemTitle == stopwatchPlayer.title.value) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(16.dp),
+                                        text = "선택됨",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }

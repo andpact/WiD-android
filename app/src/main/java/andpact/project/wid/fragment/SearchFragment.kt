@@ -11,6 +11,7 @@ import andpact.project.wid.util.getDateString
 import andpact.project.wid.util.getEmptyView
 import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -58,7 +59,7 @@ fun SearchFragment(navController: NavController) {
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        focusRequester.requestFocus() // 화면 전환하면 키보드 사라지도록.
     }
 
     Column(
@@ -77,17 +78,6 @@ fun SearchFragment(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable {
-                        navController.popBackStack()
-                    },
-                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                contentDescription = "뒤로 가기",
-                tint = MaterialTheme.colorScheme.primary
-            )
-
             BasicTextField(
                 modifier = Modifier
                     .weight(1f)
@@ -114,12 +104,17 @@ fun SearchFragment(navController: NavController) {
                     Row(
                         modifier = Modifier
                             .height(40.dp)
-                            .shadow(
-                                elevation = 2.dp,
-                                shape = RoundedCornerShape(800.dp),
-                                spotColor = MaterialTheme.colorScheme.primary,
+                            .border(
+                                width = 0.5.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(80.dp)
                             )
-                            .background(MaterialTheme.colorScheme.secondary)
+//                            .shadow(
+//                                elevation = 2.dp,
+//                                shape = RoundedCornerShape(800.dp),
+//                                spotColor = MaterialTheme.colorScheme.primary,
+//                            )
+//                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -160,7 +155,8 @@ fun SearchFragment(navController: NavController) {
          */
         LazyColumn(
             modifier = Modifier
-                .weight(1f),
+                .weight(1f)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (diaryList.isEmpty()) {
@@ -177,32 +173,46 @@ fun SearchFragment(navController: NavController) {
                     }
                 }
             } else {
-//                items(diaryList) { diary ->
+//                items(diaryList.size) { diary ->
                 itemsIndexed(diaryList) { index, diary ->
+                    Text(
+                        text = getDateString(diary.date),
+                        style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = if (index == 0) 16.dp else 0.dp, // 첫 번째 다이어리 위쪽에 16dp 패딩
-                                bottom = if (index == diaryList.size - 1) 16.dp else 0.dp // 마지막 다이어리 아래쪽에 16dp 패딩
+                            .border(
+                                width = 0.5.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(8.dp)
                             )
-                            .shadow(
-                                elevation = 2.dp,
-                                shape = RoundedCornerShape(8.dp),
-                                spotColor = MaterialTheme.colorScheme.primary,
-                            )
-                            .background(MaterialTheme.colorScheme.secondary)
+//                            .padding(
+//                                start = 16.dp,
+//                                end = 16.dp,
+//                                top = if (index == 0) 16.dp else 0.dp, // 첫 번째 다이어리 위쪽에 16dp 패딩
+//                                bottom = if (index == diaryList.size - 1) 16.dp else 0.dp // 마지막 다이어리 아래쪽에 16dp 패딩
+//                            )
+//                            .shadow(
+//                                elevation = 2.dp,
+//                                shape = RoundedCornerShape(8.dp),
+//                                spotColor = MaterialTheme.colorScheme.primary,
+//                            )
+//                            .background(MaterialTheme.colorScheme.secondary)
                             .clickable {
                                 navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
                             },
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(70.dp),
+                                .padding(8.dp)
+                                .size(60.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             val wiDList = wiDService.readDailyWiDListByDate(diary.date)
@@ -215,14 +225,6 @@ fun SearchFragment(navController: NavController) {
                                 .weight(1f),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Text(
-                                text = getDateString(diary.date),
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-
                             Text(
                                 text = diary.title,
                                 style = Typography.labelMedium,

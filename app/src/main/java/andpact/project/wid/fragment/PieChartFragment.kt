@@ -39,7 +39,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun DateBasedPieChartFragment(wiDList: List<WiD>) {
+fun DateBasedPieChartFragment(wiDList: List<WiD>, modifier: Modifier = Modifier) {
     val localContext = LocalContext.current // 폰트 불러오기 위해 선언함.
 
 //    val configuration = LocalConfiguration.current
@@ -74,7 +74,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
@@ -125,7 +125,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     isDrawHoleEnabled = true
                     holeRadius = 80f
                     setHoleColor(Transparent.toArgb())
-                    setDrawRoundedSlices(true)
+//                    setDrawRoundedSlices(true)
 
 //                    setDrawCenterText(true)
 //                    centerText = buildAnnotatedString {
@@ -150,7 +150,8 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        (colorMap[label] ?: colorScheme.primary).toArgb()
+//                        (colorMap[label] ?: colorScheme.primary).toArgb()
+                        (colorMap[label] ?: colorScheme.tertiary).toArgb()
 
 //                        val colorId = colorMap[label] ?: R.color.black
 //                        ContextCompat.getColor(context, colorId)
@@ -168,13 +169,12 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
                     .fillMaxWidth()
                     .aspectRatio(1f)
             ) {
-//                val radius: Float = size.minDimension / 1.85f // 원의 반지름
-                val radius: Float = size.minDimension / 1.9f // 원의 반지름
+                val radius: Float = size.minDimension / 2f // 원의 반지름
                 val centerX = center.x
                 val centerY = center.y + radius / 25
 
                 val textPaint = Paint().apply {
-                    color = colorScheme.secondary.toArgb()
+                    color = colorScheme.primary.toArgb()
                     textSize = radius / 10
                     textAlign = Paint.Align.CENTER
                     typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
@@ -198,7 +198,7 @@ fun DateBasedPieChartFragment(wiDList: List<WiD>) {
 }
 
 @Composable
-fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
+fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>, modifier: Modifier = Modifier) {
     val pieEntries = mutableListOf<PieEntry>()
 
     val totalMinutes = 24 * 60 // 1440분(24시간)
@@ -228,7 +228,7 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
@@ -268,7 +268,7 @@ fun PeriodBasedPieChartFragment(date: LocalDate, wiDList: List<WiD>) {
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        (colorMap[label] ?: colorScheme.primary).toArgb()
+                        (colorMap[label] ?: colorScheme.tertiary).toArgb()
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)

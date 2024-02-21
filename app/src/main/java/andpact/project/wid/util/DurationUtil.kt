@@ -19,7 +19,7 @@ fun getDurationString(duration: Duration, mode: Int): String {
     val seconds = (duration.seconds % 60).toInt()
 
     return when (mode) {
-        0 -> String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        0 -> String.format("%d:%02d:%02d", hours, minutes, seconds)
         1 -> {
             val totalHours = hours + (minutes / 60.0)
             when {
