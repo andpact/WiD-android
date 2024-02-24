@@ -1,41 +1,61 @@
 package andpact.project.wid.fragment
 
-import andpact.project.wid.R
-import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.DeepSkyBlue
+import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WiDToolFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
     // 화면
     val pages = listOf("스톱 워치", "타이머", "WiD 리스트")
-    val pagerState = rememberPagerState(pageCount = { pages.size })
+    val pagerState = rememberPagerState(
+        initialPage = if (timerPlayer.timerState.value != PlayerState.Stopped) 1 else 0,
+        pageCount = { pages.size }
+    )
 
     val coroutineScope = rememberCoroutineScope()
+
+//    val alpha by animateFloatAsState(
+//        targetValue = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) {
+//            1f
+//        } else {
+//            0f
+//        }
+//    )
+
+//    // Animatable을 사용하여 불투명도 애니메이션을 만듭니다.
+//    val alphaValue = remember { Animatable(if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) 1f else 0f) }
+//
+//    // 불투명도 애니메이션을 정의합니다.
+//    val alphaAnimationSpec = tween<Float>(
+//        durationMillis = 500, // 애니메이션 지속 시간 (밀리초)
+//        easing = LinearEasing // 애니메이션 이징 함수
+//    )
+//
+//    // 불투명도를 서서히 변경하는 애니메이션을 시작합니다.
+//    LaunchedEffect(stopwatchPlayer.stopwatchState.value, timerPlayer.timerState.value) {
+//        alphaValue.animateTo(
+//            targetValue = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) 1f else 0f,
+//            animationSpec = alphaAnimationSpec
+//        )
+//    }
 
     Column(
         modifier = Modifier
@@ -43,48 +63,12 @@ fun WiDToolFragment(navController: NavController, stopwatchPlayer: StopwatchPlay
             .background(MaterialTheme.colorScheme.secondary)
     ) {
         /**
-         * 상단 바
-         */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .alpha(
-                    if (stopwatchPlayer.stopwatchTopBottomBarVisible.value && timerPlayer.timerTopBottomBarVisible.value) {
-                        1f
-                    } else {
-                        0f
-                    }
-                ) // 배경 색 전에 선언해야 배경색까지 사라짐.
-                .background(MaterialTheme.colorScheme.secondary)
-                .padding(horizontal = 16.dp)
-                .height(56.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterStart)
-                    .clickable(stopwatchPlayer.stopwatchTopBottomBarVisible.value && timerPlayer.timerTopBottomBarVisible.value) {
-                        navController.popBackStack()
-                    },
-                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                contentDescription = "뒤로 가기",
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                text = "WiD 도구",
-                style = Typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        /**
          * 상단 탭
          */
         ScrollableTabRow(
             modifier = Modifier
+//                .alpha(alphaValue.value),
+//                .alpha(alpha),
                 .alpha(
                     if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) {
                         1f
@@ -102,8 +86,8 @@ fun WiDToolFragment(navController: NavController, stopwatchPlayer: StopwatchPlay
                     text = { Text(
                         text = pages[index],
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )},
+                        color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else DarkGray
+                    ) },
                     selected = pagerState.currentPage == index,
                     onClick = {
                         coroutineScope.launch {
@@ -123,9 +107,9 @@ fun WiDToolFragment(navController: NavController, stopwatchPlayer: StopwatchPlay
             userScrollEnabled = stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped
         ) { page ->
             when (page) {
-                0 -> StopWatchFragment(navController = navController, stopwatchPlayer = stopwatchPlayer)
-                1 -> TimerFragment(navController = navController, timerPlayer = timerPlayer)
-                2 -> WiDListFragment(navController = navController)
+                0 -> StopWatchFragment(stopwatchPlayer = stopwatchPlayer)
+                1 -> TimerFragment(timerPlayer = timerPlayer)
+                2 -> WiDListFragment(mainActivityNavController = mainActivityNavController)
             }
         }
     }

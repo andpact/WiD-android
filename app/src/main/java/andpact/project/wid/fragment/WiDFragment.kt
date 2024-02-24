@@ -34,7 +34,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDFragment(wiDId: Long, navController: NavController) {
+fun WiDFragment(wiDId: Long, mainActivityNavController: NavController) {
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)
@@ -101,7 +101,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
-        navController.popBackStack()
+        mainActivityNavController.popBackStack()
     }
 
     Column(
@@ -123,7 +123,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                     .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
-                        navController.popBackStack()
+                        mainActivityNavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                 contentDescription = "뒤로 가기",
@@ -151,7 +151,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
                             duration = duration
                         )
 
-                        navController.popBackStack()
+                        mainActivityNavController.popBackStack()
                     }
                     .clip(RoundedCornerShape(8.dp))
                     .background(
@@ -479,7 +479,7 @@ fun WiDFragment(wiDId: Long, navController: NavController) {
             onClick = {
                 if (isDeleteButtonPressed) {
                     wiDService.deleteWiDById(id = wiDId)
-                    navController.popBackStack()
+                    mainActivityNavController.popBackStack()
                 } else {
                     isDeleteButtonPressed = true
                 }

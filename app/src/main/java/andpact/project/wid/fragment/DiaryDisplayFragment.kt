@@ -1,10 +1,7 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
-import andpact.project.wid.ui.theme.LimeGreen
-import andpact.project.wid.ui.theme.OrangeRed
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.White
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -27,7 +24,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DiaryDisplayFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun DiaryDisplayFragment(mainActivityNavController: NavController) {
     // 화면
     val pages = listOf("일별 조회", "랜덤 조회", "검색 조회")
     val pagerState = rememberPagerState(pageCount = { pages.size })
@@ -42,88 +39,88 @@ fun DiaryDisplayFragment(navController: NavController, stopwatchPlayer: Stopwatc
         /**
          * 상단 바
          */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-//                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp)
-                .height(56.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterStart)
-                    .clickable {
-                        navController.popBackStack()
-                    },
-                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                contentDescription = "뒤로 가기",
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(stopwatchPlayer.duration.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[timerPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(timerPlayer.remainingTime.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "다이어리 조회",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+////                .background(MaterialTheme.colorScheme.background)
+//                .padding(horizontal = 16.dp)
+//                .height(56.dp)
+//        ) {
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .align(Alignment.CenterStart)
+//                    .clickable {
+//                        navController.popBackStack()
+//                    },
+//                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+//                contentDescription = "뒤로 가기",
+//                tint = MaterialTheme.colorScheme.primary
+//            )
+//
+//            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .padding(horizontal = 8.dp, vertical = 4.dp)
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[timerPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else {
+//                Text(
+//                    modifier = Modifier
+//                        .align(Alignment.Center),
+//                    text = "다이어리 조회",
+//                    style = Typography.titleLarge,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
 
         /**
          * 상단 탭
@@ -145,9 +142,8 @@ fun DiaryDisplayFragment(navController: NavController, stopwatchPlayer: Stopwatc
                         text = { Text(
                             text = pages[index],
                             style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        },
+                            color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else DarkGray
+                        ) },
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
@@ -164,9 +160,9 @@ fun DiaryDisplayFragment(navController: NavController, stopwatchPlayer: Stopwatc
          */
         HorizontalPager(state = pagerState) { page ->
             when (page) {
-                0 -> DayDiaryFragment(navController = navController)
-                1 -> RandomDiaryFragment()
-                2 -> SearchFragment(navController = navController)
+                0 -> DayDiaryFragment(mainActivityNavController = mainActivityNavController)
+                1 -> RandomDiaryFragment(mainActivityNavController = mainActivityNavController)
+                2 -> SearchFragment(mainActivityNavController = mainActivityNavController)
             }
         }
     }

@@ -1,7 +1,6 @@
 package andpact.project.wid.fragment
 
-import andpact.project.wid.R
-import andpact.project.wid.activity.Destinations
+import andpact.project.wid.activity.MainActivityDestinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
@@ -29,11 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun SearchFragment(navController: NavController) {
+fun SearchFragment(mainActivityNavController: NavController) {
     // 검색
     var searchText by remember { mutableStateOf("") }
 //    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
@@ -204,7 +201,7 @@ fun SearchFragment(navController: NavController) {
 //                            )
 //                            .background(MaterialTheme.colorScheme.secondary)
                             .clickable {
-                                navController.navigate(Destinations.DiaryFragmentDestination.route + "/${diary.date}")
+                                mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${diary.date}")
                             },
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically

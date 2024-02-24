@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 
 @Composable
-fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
+fun TimerFragment(timerPlayer: TimerPlayer) {
     // 화면
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -77,14 +77,14 @@ fun TimerFragment(navController: NavController, timerPlayer: TimerPlayer) {
     }
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
-    BackHandler(enabled = true) {
-        navController.popBackStack()
-    }
+//    BackHandler(enabled = true) {
+//        navController.popBackStack()
+//    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = timerPlayer.timerState.value == PlayerState.Started) {
                 timerPlayer.setTimerTopBottomBarVisible(!timerPlayer.timerTopBottomBarVisible.value)
 //                timerTopBottomBarVisible = !timerTopBottomBarVisible

@@ -33,7 +33,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @Composable
-fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer) {
+fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
     // WiD
 //    val wiDService = WiDService(context = LocalContext.current)
 
@@ -45,25 +45,25 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
     // 제목
     var titleMenuExpanded by remember { mutableStateOf(false) }
 
-    DisposableEffect(Unit) {
-        // Fragment가 나타날 때
-        stopwatchPlayer.setInStopwatchView(true)
-
-        onDispose {
-            // Fragment가 사라질 때
-            stopwatchPlayer.setInStopwatchView(false)
-        }
-    }
+//    DisposableEffect(Unit) {
+//        // Fragment가 나타날 때
+//        stopwatchPlayer.setInStopwatchView(true)
+//
+//        onDispose {
+//            // Fragment가 사라질 때
+//            stopwatchPlayer.setInStopwatchView(false)
+//        }
+//    }
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
-    BackHandler(enabled = true) {
-        navController.popBackStack()
-    }
+//    BackHandler(enabled = true) {
+//        navController.popBackStack()
+//    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.secondary)
+            .background(MaterialTheme.colorScheme.secondary)
             .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
 //                stopwatchPlayer.setStopwatchTopBottomBarVisible(!stopwatchPlayer.stopwatchTopBottomBarVisible.value)
                 if (stopwatchPlayer.stopwatchTopBottomBarVisible.value) {
@@ -73,44 +73,6 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
                 }
             }
     ) {
-        /**
-         * 상단 바
-         */
-//        AnimatedVisibility(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter),
-//            visible = stopwatchTopBottomBarVisible,
-//            enter = expandVertically{ 0 },
-//            exit = shrinkVertically{ 0 },
-//        ) {
-//            Box(
-//                modifier = Modifier
-//                    .padding(horizontal = 16.dp)
-//                    .fillMaxWidth()
-//                    .height(56.dp)
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(24.dp)
-//                        .align(Alignment.CenterStart)
-//                        .clickable {
-//                            navController.popBackStack()
-//                        },
-//                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-//                    contentDescription = "뒤로 가기",
-//                    tint = MaterialTheme.colorScheme.primary
-//                )
-//
-//                Text(
-//                    modifier = Modifier
-//                        .align(Alignment.Center),
-//                    text = "스톱 워치",
-//                    style = Typography.titleLarge,
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-//            }
-//        }
-
         /**
          * 컨텐츠
          */
@@ -330,11 +292,11 @@ fun StopWatchFragment(navController: NavController, stopwatchPlayer: StopwatchPl
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun StopWatchFragmentPreview() {
+//@Preview(showBackground = true)
+//@Composable
+//fun StopWatchFragmentPreview() {
 //    val dummyNavController = rememberNavController()
 //    val stopwatchViewModel = StopwatchPlayer()
 //
 //    StopWatchFragment(navController = dummyNavController, stopwatchPlayer = stopwatchViewModel)
-}
+//}

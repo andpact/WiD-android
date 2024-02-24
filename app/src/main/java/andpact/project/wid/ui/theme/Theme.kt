@@ -19,8 +19,7 @@ import androidx.core.view.ViewCompat
  * primary    -> Black-White
  * secondary  -> White-Black
  * tertiary   -> LightGray-Gray
- * background -> AppIndigo-AppYellow
- * surface -> White-Gray
+ * surface    -> AppIndigo-AppYellow
  *
  * 안드로이드 및 iOS 모두 다크 모드일 때 배경, 텍스트, 아이콘의 색을 자동으로 변경해줌.
  * 하지만 안드로이드는 라이트 모드, 다크 모드에 적용되는 기본 색이 흰 색, 검은 색이 아니기 때문에 명시적으로 흰 색과 검은 색을 지정해줌.
@@ -29,16 +28,14 @@ private val LightColorScheme = lightColorScheme(
     primary = Black,
     secondary = White,
     tertiary = LightGray,
-    background = AppIndigo,
-//    surface = White
+    surface = AppIndigo
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = White,
     secondary = Black,
     tertiary = Gray,
-    background = AppYellow,
-//    surface = Gray
+    surface = AppYellow
 )
 
 @Composable

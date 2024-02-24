@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun SettingFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun SettingFragment() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,88 +32,88 @@ fun SettingFragment(navController: NavController, stopwatchPlayer: StopwatchPlay
         /**
          * 상단 바
          */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-//                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp)
-                .height(56.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterStart)
-                    .clickable {
-                        navController.popBackStack()
-                    },
-                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                contentDescription = "뒤로 가기",
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(stopwatchPlayer.duration.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[timerPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(timerPlayer.remainingTime.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "환경 설정",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
+////                .background(MaterialTheme.colorScheme.background)
+//                .padding(horizontal = 16.dp)
+//                .height(56.dp)
+//        ) {
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .align(Alignment.CenterStart)
+//                    .clickable {
+//                        navController.popBackStack()
+//                    },
+//                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+//                contentDescription = "뒤로 가기",
+//                tint = MaterialTheme.colorScheme.primary
+//            )
+//
+//            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .padding(horizontal = 8.dp, vertical = 4.dp)
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[timerPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else {
+//                Text(
+//                    modifier = Modifier
+//                        .align(Alignment.Center),
+//                    text = "환경 설정",
+//                    style = Typography.titleLarge,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
 
         LazyColumn(
             modifier = Modifier

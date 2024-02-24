@@ -1,7 +1,7 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
-import andpact.project.wid.activity.Destinations
+import andpact.project.wid.activity.MainActivityDestinations
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
@@ -10,7 +10,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,9 +35,9 @@ import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WiDListFragment(navController: NavController) {
+fun WiDListFragment(mainActivityNavController: NavController) {
     // 날짜
-    val currentTime: LocalTime = LocalTime.now().withSecond(0)
+    val currentTime: LocalTime = LocalTime.now()
     val today: LocalDate = LocalDate.now()
     var currentDate by remember { mutableStateOf(today) }
     var expandDatePicker by remember { mutableStateOf(false) }
@@ -85,7 +84,7 @@ fun WiDListFragment(navController: NavController) {
                         expandDatePicker = true
                     },
                 text = getDateString(currentDate),
-                style = Typography.bodyMedium,
+                style = Typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -136,7 +135,7 @@ fun WiDListFragment(navController: NavController) {
                 Row(
                     modifier = Modifier
                         .clickable {
-                            navController.navigate(Destinations.NewWiDFragmentDestination.route + "/${LocalTime.MIN}/${LocalTime.MIN}")
+                            mainActivityNavController.navigate(MainActivityDestinations.NewWiDFragmentDestination.route + "/${LocalTime.MIN}/${LocalTime.MIN}")
                         }
                 ) {
                     Text(
@@ -185,9 +184,9 @@ fun WiDListFragment(navController: NavController) {
                                 Row(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8))
-                                        .background(MaterialTheme.colorScheme.background)
+                                        .background(MaterialTheme.colorScheme.tertiary)
                                         .clickable {
-                                            navController.navigate(Destinations.NewWiDFragmentDestination.route + "/${wiD.start}/${wiD.finish}")
+                                            mainActivityNavController.navigate(MainActivityDestinations.NewWiDFragmentDestination.route + "/${wiD.start}/${wiD.finish}")
                                         },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -259,7 +258,7 @@ fun WiDListFragment(navController: NavController) {
                                         .clip(RoundedCornerShape(8))
                                         .background(colorMap[wiD.title] ?: DarkGray)
                                         .clickable {
-                                            navController.navigate(Destinations.WiDFragmentDestination.route + "/${wiD.id}")
+                                            mainActivityNavController.navigate(MainActivityDestinations.WiDFragmentDestination.route + "/${wiD.id}")
                                         },
 //                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically

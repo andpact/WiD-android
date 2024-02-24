@@ -42,7 +42,7 @@ import androidx.navigation.NavController
 import java.time.LocalDate
 
 @Composable
-fun DiaryFragment(date: LocalDate, navController: NavController) {
+fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val clickedDiary = diaryService.readDiaryByDate(date)
@@ -64,7 +64,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
-        navController.popBackStack()
+        mainActivityNavController.popBackStack()
     }
 
     LaunchedEffect(Unit) {
@@ -91,19 +91,75 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .clickable {
-                        navController.popBackStack()
+                        mainActivityNavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                 contentDescription = "뒤로 가기",
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            Text(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                text = "다이어리",
-                style = Typography.titleLarge
-            )
+            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .align(Alignment.Center)
+                        .background(
+                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                                LimeGreen
+                            } else {
+                                OrangeRed
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                ) {
+                    Text(
+                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+                        style = Typography.labelMedium,
+                        color = White
+                    )
+
+                    Text(
+                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+                        style = Typography.labelMedium,
+                        color = White,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .background(
+                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
+                                LimeGreen
+                            } else {
+                                OrangeRed
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                ) {
+                    Text(
+                        text = titleMap[timerPlayer.title.value] ?: "공부",
+                        style = Typography.labelMedium,
+                        color = White
+                    )
+
+                    Text(
+                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+                        style = Typography.labelMedium,
+                        color = White,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+            } else {
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    text = "다이어리",
+                    style = Typography.titleLarge
+                )
+            }
+
 
             Text(
                 modifier = Modifier
@@ -118,7 +174,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
                             diaryService.updateDiary(id = clickedDiary.id, date = date, title = diaryTitle, content = diaryContent)
                         }
 
-                        navController.popBackStack()
+                        mainActivityNavController.popBackStack()
                     }
                     .clip(RoundedCornerShape(8.dp))
                     .background(
@@ -138,7 +194,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
             )
         }
 
-        HorizontalDivider()
+//        HorizontalDivider()
 
         Row(
             modifier = Modifier
@@ -170,7 +226,7 @@ fun DiaryFragment(date: LocalDate, navController: NavController) {
                 if (wiDList.isEmpty()) {
                     getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
                 } else {
-                    DateBasedPieChartFragment(wiDList = wiDList)
+                    DiaryPieChartFragment(wiDList = wiDList)
                 }
             }
         }

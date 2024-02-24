@@ -40,3 +40,14 @@ val Shower = Color(0xFF0000FF).copy(alpha = 0.5f)    // 파랑
 val Travel = Color(0xFF00007F).copy(alpha = 0.5f)    // 남색
 val Sleep = Color(0xFF7F00FF).copy(alpha = 0.5f)     // 보라
 val Etc = Color(0xFF7F007F).copy(alpha = 0.5f)       // 자주색
+
+//val Study = Color(0xFFFF0000).copy(alpha = 0.75f)     // 빨강
+//val Work = Color(0xFFFF7F00).copy(alpha = 0.75f)      // 주황
+//val Exercise = Color(0xFFFFFF00).copy(alpha = 0.75f)  // 노랑
+//val Hobby = Color(0xFF00FF00).copy(alpha = 0.75f)     // 연두
+//val Play = Color(0xFF007F00).copy(alpha = 0.75f)      // 녹색
+//val Meal = Color(0xFF00FFFF).copy(alpha = 0.75f)      // 청록
+//val Shower = Color(0xFF0000FF).copy(alpha = 0.75f)    // 파랑
+//val Travel = Color(0xFF00007F).copy(alpha = 0.75f)    // 남색
+//val Sleep = Color(0xFF7F00FF).copy(alpha = 0.75f)     // 보라
+//val Etc = Color(0xFF7F007F).copy(alpha = 0.75f)       // 자주색

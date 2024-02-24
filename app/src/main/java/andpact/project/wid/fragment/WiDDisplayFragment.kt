@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WiDDisplayFragment(navController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun WiDDisplayFragment() {
     // 화면
     val pages = listOf("일별 조회", "주별 조회", "월별 조회", "제목별 조회")
     val pagerState = rememberPagerState(pageCount = { pages.size })
@@ -39,88 +39,88 @@ fun WiDDisplayFragment(navController: NavController, stopwatchPlayer: StopwatchP
         /**
          * 상단 바
          */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
+//        Box(
+//            modifier = Modifier
+//                .fillMaxWidth()
 //                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp)
-                .height(56.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterStart)
-                    .clickable {
-                        navController.popBackStack()
-                    },
-                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                contentDescription = "뒤로 가기",
-                tint = MaterialTheme.colorScheme.primary
-            )
+//                .padding(horizontal = 16.dp)
+//                .height(56.dp)
+//        ) {
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .align(Alignment.CenterStart)
+//                    .clickable {
+//                        navController.popBackStack()
+//                    },
+//                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+//                contentDescription = "뒤로 가기",
+//                tint = MaterialTheme.colorScheme.primary
+//            )
 
-            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(stopwatchPlayer.duration.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .background(
-                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
-                                LimeGreen
-                            } else {
-                                OrangeRed
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                ) {
-                    Text(
-                        text = titleMap[timerPlayer.title.value] ?: "공부",
-                        style = Typography.labelMedium,
-                        color = White
-                    )
-
-                    Text(
-                        text = getDurationString(timerPlayer.remainingTime.value, 0),
-                        style = Typography.labelMedium,
-                        color = White,
-                        fontFamily = FontFamily.Monospace
-                    )
-                }
-            } else {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "WiD 조회",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+//            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .padding(horizontal = 8.dp, vertical = 4.dp)
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
+//                Row(
+//                    modifier = Modifier
+//                        .align(Alignment.Center)
+//                        .background(
+//                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
+//                                LimeGreen
+//                            } else {
+//                                OrangeRed
+//                            },
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                ) {
+//                    Text(
+//                        text = titleMap[timerPlayer.title.value] ?: "공부",
+//                        style = Typography.labelMedium,
+//                        color = White
+//                    )
+//
+//                    Text(
+//                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+//                        style = Typography.labelMedium,
+//                        color = White,
+//                        fontFamily = FontFamily.Monospace
+//                    )
+//                }
+//            } else {
+//                Text(
+//                    modifier = Modifier
+//                        .align(Alignment.Center),
+//                    text = "WiD 조회",
+//                    style = Typography.titleLarge,
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
 
         /**
          * 상단 탭
@@ -142,8 +142,8 @@ fun WiDDisplayFragment(navController: NavController, stopwatchPlayer: StopwatchP
                         text = { Text(
                             text = pages[index],
                             style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )},
+                            color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else DarkGray
+                        ) },
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {

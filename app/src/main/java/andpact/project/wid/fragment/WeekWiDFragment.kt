@@ -2,10 +2,7 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.DarkGray
-import andpact.project.wid.ui.theme.DeepSkyBlue
-import andpact.project.wid.ui.theme.OrangeRed
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -80,7 +77,7 @@ fun WeekWiDFragment() {
             Text(
                 modifier = Modifier
                     .clickable {
-//                        expandDatePicker = true
+//                        expandDatePicker = true // 주 선택 대화상자 구현해야 함.
                     },
                 text = getPeriodStringOfWeek(firstDayOfWeek = startDate, lastDayOfWeek = finishDate),
                 style = Typography.titleLarge,
@@ -91,45 +88,6 @@ fun WeekWiDFragment() {
                 modifier = Modifier
                     .weight(1f)
             )
-
-//            Icon(
-//                modifier = Modifier
-//                    .clickable {
-//                        expandDatePicker = true
-//                    }
-//                    .size(24.dp),
-//                painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-//                contentDescription = "날짜 선택",
-//                tint = MaterialTheme.colorScheme.primary
-//            )
-
-//            Icon(
-//                modifier = Modifier
-//                    .clickable(enabled = false) {
-//                        // 클릭 이벤트를 처리할 내용
-//                    }
-//                    .size(24.dp),
-//                painter = painterResource(R.drawable.baseline_title_24),
-//                contentDescription = "제목 선택",
-//                tint = DarkGray
-//            )
-
-//            Icon(
-//                modifier = Modifier
-//                    .clickable(enabled = currentDate != today) {
-//                        if (expandDatePicker) {
-//                            expandDatePicker = false
-//                        }
-//                        currentDate = today
-//
-////                        expandDiary = false
-////                        diaryOverflow = false
-//                    }
-//                    .size(24.dp),
-//                imageVector = Icons.Filled.Refresh,
-//                contentDescription = "오늘 날짜",
-//                tint = if (currentDate != today) MaterialTheme.colorScheme.primary else DarkGray
-//            )
 
             Icon(
                 modifier = Modifier
@@ -180,13 +138,14 @@ fun WeekWiDFragment() {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // 요일
                 item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
                     ) {
                         val daysOfWeek = daysOfWeekFromMonday
 
@@ -207,11 +166,13 @@ fun WeekWiDFragment() {
                             )
                         }
                     }
+                }
 
+                // 파이차트
+                item {
                     LazyVerticalGrid(
                         modifier = Modifier
                             .fillMaxWidth()
-    //                        .padding(horizontal = 16.dp)
                             .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
                         columns = GridCells.Fixed(7)
                     ) {
@@ -225,7 +186,6 @@ fun WeekWiDFragment() {
                                 modifier = Modifier
                                     .weight(1f),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-    //                            verticalArrangement = Arrangement.Center
                             ) {
                                 PeriodBasedPieChartFragment(
                                     date = indexDate,
@@ -240,7 +200,10 @@ fun WeekWiDFragment() {
                             }
                         }
                     }
+                }
 
+                // 탭
+                item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -262,13 +225,16 @@ fun WeekWiDFragment() {
                                     textAlign = TextAlign.Center
                                 )
                             },
+                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.tertiary,
                                 labelColor = MaterialTheme.colorScheme.primary,
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.secondary
                             ),
-                            shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp)
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Transparent
+                            )
                         )
 
                         FilterChip(
@@ -288,13 +254,16 @@ fun WeekWiDFragment() {
                                     textAlign = TextAlign.Center
                                 )
                             },
+                            shape = RectangleShape,
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.tertiary,
                                 labelColor = MaterialTheme.colorScheme.primary,
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.secondary
                             ),
-                            shape = RectangleShape
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Transparent
+                            )
                         )
 
                         FilterChip(
@@ -314,13 +283,16 @@ fun WeekWiDFragment() {
                                     textAlign = TextAlign.Center
                                 )
                             },
+                            shape = RectangleShape,
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.tertiary,
                                 labelColor = MaterialTheme.colorScheme.primary,
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.secondary
                             ),
-                            shape = RectangleShape
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Transparent
+                            )
                         )
 
                         FilterChip(
@@ -340,142 +312,65 @@ fun WeekWiDFragment() {
                                     textAlign = TextAlign.Center
                                 )
                             },
+                            shape = RoundedCornerShape(0.dp, 8.dp, 8.dp, 0.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.tertiary,
                                 labelColor = MaterialTheme.colorScheme.primary,
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
                                 selectedLabelColor = MaterialTheme.colorScheme.secondary
                             ),
-                            shape = RoundedCornerShape(0.dp, 8.dp, 8.dp, 0.dp)
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = Transparent
+                            )
                         )
                     }
+                }
 
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .fillMaxWidth()
-//                            .padding(horizontal = 16.dp)
-                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        selectedMap.forEach { (title, duration) ->
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
-                                        .shadow(
-                                            elevation = 2.dp,
-                                            shape = RoundedCornerShape(8.dp),
-                                            spotColor = MaterialTheme.colorScheme.primary,
-                                        )
-                                        .background(MaterialTheme.colorScheme.secondary)
-                                        .padding(vertical = 16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            modifier = Modifier
-                                                .clip(CircleShape)
-                                                .background(
-                                                    (colorMap[title] ?: DarkGray).copy(
-                                                        alpha = 0.1f
-                                                    )
-                                                )
-                                                .padding(8.dp)
-                                                .size(24.dp),
-                                            painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
-                                            contentDescription = "제목",
-                                            tint = colorMap[title] ?: DarkGray
-                                        )
+                // 합계 기록
+                selectedMap.forEach { (title, duration) ->
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8))
+                                .background(colorMap[title] ?: DarkGray),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(8.dp)
+                                    .size(24.dp),
+                                painter = painterResource(
+                                    id = titleIconMap[title] ?: R.drawable.baseline_title_24
+                                ),
+                                contentDescription = "제목",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
 
-                                        Text(
-                                            text = titleMap[title] ?: title,
-                                            style = Typography.titleLarge,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
+                            Text(
+                                text = "${titleMap[title]}",
+                                style = Typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
 
-                                    Text(
-                                        text = getDurationString(duration, mode = 3),
-                                        style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                text = getDurationString(duration, mode = 3),
+                                style = Typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
             }
         }
-
-
-//        if (selectedMap.isEmpty()) {
-//            getEmptyView(text = "표시할 $selectedMapText 기록이 없습니다.")()
-//        } else {
-//            LazyVerticalGrid(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp)
-//                    .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-//                columns = GridCells.Fixed(2),
-//                horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            ) {
-//                selectedMap.forEach { (title, duration) ->
-//                    item {
-//                        Column(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(vertical = 4.dp)
-//                                .shadow(
-//                                    elevation = 2.dp,
-//                                    shape = RoundedCornerShape(8.dp),
-//                                    spotColor = MaterialTheme.colorScheme.primary,
-//                                )
-//                                .background(MaterialTheme.colorScheme.secondary)
-//                                .padding(vertical = 16.dp),
-//                            horizontalAlignment = Alignment.CenterHorizontally,
-//                            verticalArrangement = Arrangement.spacedBy(8.dp)
-//                        ) {
-//                            Row(
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Icon(
-//                                    modifier = Modifier
-//                                        .clip(CircleShape)
-//                                        .background(
-//                                            (colorMap[title] ?: DarkGray).copy(
-//                                                alpha = 0.1f
-//                                            )
-//                                        )
-//                                        .padding(8.dp)
-//                                        .size(24.dp),
-//                                    painter = painterResource(id = titleIconMap[title] ?: R.drawable.baseline_title_24),
-//                                    contentDescription = "제목",
-//                                    tint = colorMap[title] ?: DarkGray
-//                                )
-//
-//                                Text(
-//                                    text = titleMap[title] ?: title,
-//                                    style = Typography.titleLarge,
-//                                    color = MaterialTheme.colorScheme.primary
-//                                )
-//                            }
-//
-//                            Text(
-//                                text = getDurationString(duration, mode = 3),
-//                                style = Typography.titleLarge,
-//                                color = MaterialTheme.colorScheme.primary
-//                            )
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
 }

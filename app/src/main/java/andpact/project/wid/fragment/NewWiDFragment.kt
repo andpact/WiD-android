@@ -36,7 +36,7 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewWiDFragment(navController: NavController, startParam: LocalTime, finishParam: LocalTime) {
+fun NewWiDFragment(mainActivitynavController: NavController, startParam: LocalTime, finishParam: LocalTime) {
     // 날짜
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
     val today: LocalDate = LocalDate.now()
@@ -95,7 +95,7 @@ fun NewWiDFragment(navController: NavController, startParam: LocalTime, finishPa
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
-        navController.popBackStack()
+        mainActivitynavController.popBackStack()
     }
 
     fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
@@ -150,7 +150,7 @@ fun NewWiDFragment(navController: NavController, startParam: LocalTime, finishPa
                     .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
-                        navController.popBackStack()
+                        mainActivitynavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                 contentDescription = "뒤로 가기",
