@@ -1,17 +1,15 @@
-package andpact.project.wid.util
+package andpact.project.wid.viewModel
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.PlayerState
+import andpact.project.wid.util.titles
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import androidx.lifecycle.MutableLiveData
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -19,12 +17,20 @@ import java.util.*
 import kotlin.concurrent.timer
 
 /**
- * 스톱 워치 플레이어에서는 WiD의 날짜, 제목, 시작 시간 할당 및 스톱 워치 시간 측정을 담당함.
  * 값이 변함에 따라 ui를 갱신 해야 하는 State 변수는 직접 Setter 메서드를 선언하고,
  * 값이 변해도 표시할 필요 없는 일반 변수는 get(), set()를 사용함.
  * State 변수에 값을 할당할 때는 (_변수)를 사용해야 함.
  */
-class StopwatchPlayer(application: Application) : AndroidViewModel(application) {
+class StopwatchViewModel(application: Application) : AndroidViewModel(application) {
+    init {
+        Log.d("StopwatchViewModel", "StopwatchViewModel is created")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("StopwatchViewModel", "StopwatchViewModel is cleared")
+    }
+
     // WiD
     private val wiDService = WiDService(application)
 
@@ -38,6 +44,9 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
     // 제목
     private val _title = mutableStateOf(titles[0])
     val title: State<String> = _title
+//    private val _title = MutableLiveData(titles[0])
+//    val title: MutableLiveData<String> = _title
+
 
     // 시작 시간
 //    var start: LocalTime
@@ -65,31 +74,31 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
     private var timer: Timer? = null
     private val _stopwatchState = mutableStateOf(PlayerState.Stopped)
     val stopwatchState: State<PlayerState> = _stopwatchState
-    private val _inStopwatchView = mutableStateOf(false)
-    val inStopwatchView: State<Boolean> = _inStopwatchView
+//    private val _inStopwatchView = mutableStateOf(false)
+//    val inStopwatchView: State<Boolean> = _inStopwatchView
     private val _stopwatchTopBottomBarVisible = mutableStateOf(true)
     val stopwatchTopBottomBarVisible: State<Boolean> = _stopwatchTopBottomBarVisible
 
     fun setTitle(newTitle: String) {
-        Log.d("StopwatchPlayer", "setTitle executed")
+        Log.d("StopwatchViewModel", "setTitle executed")
 
         _title.value = newTitle
     }
 
-    fun setInStopwatchView(isInStopwatchView: Boolean) {
-        Log.d("StopwatchPlayer", "setInStopwatchView executed")
-
-        _inStopwatchView.value = isInStopwatchView
-    }
+//    fun setInStopwatchView(isInStopwatchView: Boolean) {
+//        Log.d("StopwatchViewModel", "setInStopwatchView executed")
+//
+//        _inStopwatchView.value = isInStopwatchView
+//    }
 
     fun setStopwatchTopBottomBarVisible(stopwatchTopBottomBarVisible: Boolean) {
-        Log.d("StopwatchPlayer", "setStopwatchTopBottomBarVisible executed")
+        Log.d("StopwatchViewModel", "setStopwatchTopBottomBarVisible executed")
 
         _stopwatchTopBottomBarVisible.value = stopwatchTopBottomBarVisible
     }
 
     fun startStopwatch() {
-        Log.d("StopwatchPlayer", "startStopwatch executed")
+        Log.d("StopwatchViewModel", "startStopwatch executed")
 
         timer?.cancel()
         _stopwatchState.value = PlayerState.Started
@@ -110,7 +119,7 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
     }
 
     fun pauseStopwatch() {
-        Log.d("StopwatchPlayer", "pauseStopwatch executed")
+        Log.d("StopwatchViewModel", "pauseStopwatch executed")
 
         prevDuration = _duration.value
 
@@ -167,7 +176,7 @@ class StopwatchPlayer(application: Application) : AndroidViewModel(application) 
     }
 
     fun stopStopwatch() {
-        Log.d("StopwatchPlayer", "stopStopwatch executed")
+        Log.d("StopwatchViewModel", "stopStopwatch executed")
 
         timer?.cancel()
         _stopwatchState.value = PlayerState.Stopped

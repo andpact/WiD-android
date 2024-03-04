@@ -262,30 +262,30 @@ fun DiaryPieChartFragment(wiDList: List<WiD>, modifier: Modifier = Modifier) {
             .aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize(),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
-//        ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+        ) {
 //            Text(
 //                text = "오후 오전",
 //                style = Typography.bodyMedium,
 //                fontSize = 10.sp
 //            )
-//
-//            Text(
-//                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
-//                style = Typography.titleLarge,
-//                fontSize = 30.sp
-//            )
-//
+
+            Text(
+                text = "${getTotalDurationPercentageFromWiDList(wiDList = wiDList)}%",
+                style = Typography.titleLarge,
+                fontSize = 30.sp
+            )
+
 //            Text(
 //                text = "${getDurationString(getTotalDurationFromWiDList(wiDList = wiDList), mode = 1)} / 24시간",
 //                style = Typography.bodyMedium,
 //                fontSize = 10.sp
 //            )
-//        }
+        }
 
         Crossfade(targetState = pieEntries) { pieEntries ->
             val colorScheme = MaterialTheme.colorScheme
@@ -377,9 +377,9 @@ fun DiaryPieChartFragment(wiDList: List<WiD>, modifier: Modifier = Modifier) {
                         // 시간 텍스트 그리기
                         val timeText = when (i) {
                             0 -> "자정"
-                            6 -> "오전 6시"
+//                            6 -> "오전 6시"
                             12 -> "정오"
-                            18 -> "오후 6시"
+//                            18 -> "오후 6시"
                             else -> (i % 12).toString()
                         }
 
@@ -388,14 +388,14 @@ fun DiaryPieChartFragment(wiDList: List<WiD>, modifier: Modifier = Modifier) {
                                 textAlign = Paint.Align.CENTER
                                 typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
                             }
-                            6 -> textPaint.apply {
-                                textAlign = Paint.Align.RIGHT
-                                typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
-                            }
-                            18 -> textPaint.apply {
-                                textAlign = Paint.Align.LEFT
-                                typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
-                            }
+//                            6 -> textPaint.apply {
+//                                textAlign = Paint.Align.RIGHT
+//                                typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
+//                            }
+//                            18 -> textPaint.apply {
+//                                textAlign = Paint.Align.LEFT
+//                                typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
+//                            }
                             else -> textPaint
                         }
 

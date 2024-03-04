@@ -1,25 +1,30 @@
-package andpact.project.wid.util
+package andpact.project.wid.viewModel
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.util.PlayerState
+import andpact.project.wid.util.titles
 import android.app.Application
-import android.os.CountDownTimer
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 import kotlin.concurrent.timer
 
-class TimerPlayer(application: Application) : AndroidViewModel(application) {
+class TimerViewModel(application: Application) : AndroidViewModel(application) {
+    init {
+        Log.d("TimerViewModel", "TimerViewModel is created")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("TimerViewModel", "TimerViewModel is cleared")
+    }
+
     // WiD
     private val wiDService = WiDService(application)
 
@@ -57,8 +62,8 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
     val seletedTime: State<Duration> = _seletedTime
 
     // 화면
-    private val _inTimerView = mutableStateOf(false)
-    val inTimerView: State<Boolean> = _inTimerView
+//    private val _inTimerView = mutableStateOf(false)
+//    val inTimerView: State<Boolean> = _inTimerView
 
     // 타이머
 //    private var timer: CountDownTimer? = null
@@ -80,11 +85,11 @@ class TimerPlayer(application: Application) : AndroidViewModel(application) {
         _seletedTime.value = newSelectedTime
     }
 
-    fun setInTimerView(isInTimerView: Boolean) {
-        Log.d("TimerPlayer", "setInTimerView executed")
-
-        _inTimerView.value = isInTimerView
-    }
+//    fun setInTimerView(isInTimerView: Boolean) {
+//        Log.d("TimerPlayer", "setInTimerView executed")
+//
+//        _inTimerView.value = isInTimerView
+//    }
 
     fun setTimerTopBottomBarVisible(timerTopBottomBarVisible: Boolean) {
         Log.d("TimerPlayer", "setTimerTopBottomBarVisible executed")

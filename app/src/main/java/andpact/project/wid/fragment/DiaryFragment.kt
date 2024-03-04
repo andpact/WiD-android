@@ -2,15 +2,15 @@ package andpact.project.wid.fragment
 
 import andpact.project.wid.R
 import andpact.project.wid.model.Diary
-import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.StopwatchViewModel
+import andpact.project.wid.viewModel.TimerViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,29 +20,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.LocalDate
 
 @Composable
-fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     // 다이어리
     val diaryService = DiaryService(context = LocalContext.current)
     val clickedDiary = diaryService.readDiaryByDate(date)
@@ -98,13 +89,13 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
+            if (stopwatchViewModel.stopwatchState.value != PlayerState.Stopped) {
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                         .align(Alignment.Center)
                         .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                            color = if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) {
                                 LimeGreen
                             } else {
                                 OrangeRed
@@ -113,24 +104,24 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                         )
                 ) {
                     Text(
-                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+                        text = titleMap[stopwatchViewModel.title.value] ?: "공부",
                         style = Typography.labelMedium,
                         color = White
                     )
 
                     Text(
-                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+                        text = getDurationString(stopwatchViewModel.duration.value, 0),
                         style = Typography.labelMedium,
                         color = White,
                         fontFamily = FontFamily.Monospace
                     )
                 }
-            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
+            } else if (timerViewModel.timerState.value != PlayerState.Stopped) {
                 Row(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .background(
-                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
+                            color = if (timerViewModel.timerState.value == PlayerState.Started) {
                                 LimeGreen
                             } else {
                                 OrangeRed
@@ -139,13 +130,13 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                         )
                 ) {
                     Text(
-                        text = titleMap[timerPlayer.title.value] ?: "공부",
+                        text = titleMap[timerViewModel.title.value] ?: "공부",
                         style = Typography.labelMedium,
                         color = White
                     )
 
                     Text(
-                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+                        text = getDurationString(timerViewModel.remainingTime.value, 0),
                         style = Typography.labelMedium,
                         color = White,
                         fontFamily = FontFamily.Monospace

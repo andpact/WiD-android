@@ -4,6 +4,7 @@ import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -35,6 +36,15 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDFragment(wiDId: Long, mainActivityNavController: NavController) {
+
+    DisposableEffect(Unit) {
+        Log.d("WiDFragment", "WiDFragment is being composed")
+
+        onDispose {
+            Log.d("WiDFragment", "WiDFragment is being disposed")
+        }
+    }
+
     // WiD
     val wiDService = WiDService(context = LocalContext.current)
     val clickedWiD = wiDService.readWiDById(wiDId)

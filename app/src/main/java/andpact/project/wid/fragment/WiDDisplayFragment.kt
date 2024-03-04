@@ -3,6 +3,9 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.DayWiDViewModel
+import andpact.project.wid.viewModel.WiDListViewModel
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +15,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
@@ -30,7 +35,15 @@ fun WiDDisplayFragment() {
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val coroutineScope = rememberCoroutineScope()
-    
+
+    DisposableEffect(Unit) {
+        Log.d("WiDDisplayFragment", "WiDDisplayFragment is being composed")
+
+        onDispose {
+            Log.d("WiDDisplayFragment", "WiDDisplayFragment is being disposed")
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -147,7 +160,8 @@ fun WiDDisplayFragment() {
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+//                                pagerState.animateScrollToPage(index)
+                                pagerState.scrollToPage(index)
                             }
                         }
                     )

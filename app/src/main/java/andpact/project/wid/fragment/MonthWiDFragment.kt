@@ -4,6 +4,8 @@ import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.MonthWiDViewModel
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -34,30 +37,50 @@ import java.time.temporal.ChronoUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthWiDFragment() {
+    val monthWiDViewModel: MonthWiDViewModel = viewModel()
+
     // 날짜
-    val today = LocalDate.now()
-    var startDate by remember { mutableStateOf(getFirstDateOfMonth(today)) }
-    var finishDate by remember { mutableStateOf(getLastDateOfMonth(today)) }
+//    val today = LocalDate.now()
+    val today = monthWiDViewModel.today
+//    var startDate by remember { mutableStateOf(getFirstDateOfMonth(today)) }
+    var startDate = monthWiDViewModel.startDate.value
+//    var finishDate by remember { mutableStateOf(getLastDateOfMonth(today)) }
+    var finishDate = monthWiDViewModel.finishDate.value
 
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+    val wiDList = monthWiDViewModel.wiDList.value
 
     // 합계
-    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
+//    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
+    val totalDurationMap = monthWiDViewModel.totalDurationMap
 
     // 평균
-    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
+//    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
+    val averageDurationMap = monthWiDViewModel.averageDurationMap
 
     // 최고
-    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+//    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+    val minDurationMap = monthWiDViewModel.minDurationMap
 
     // 최고
-    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
+//    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
+    val maxDurationMap = monthWiDViewModel.maxDurationMap
 
 //    // 맵
-    var selectedMapText by remember { mutableStateOf("합계") }
-    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
+//    var selectedMapText by remember { mutableStateOf("합계") }
+    var selectedMapText = monthWiDViewModel.selectedMapText.value
+//    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
+    var selectedMap = monthWiDViewModel.selectedMap.value
+
+    DisposableEffect(Unit) {
+        Log.d("MonthWiDFragment", "MonthWiDFragment is being composed")
+
+        onDispose {
+            Log.d("MonthWiDFragment", "MonthWiDFragment is being disposed")
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -92,8 +115,10 @@ fun MonthWiDFragment() {
             Icon(
                 modifier = Modifier
                     .clickable {
-                        startDate = getFirstDateOfMonth(startDate.minusDays(15))
-                        finishDate = getLastDateOfMonth(finishDate.minusDays(45))
+                        val newStartDate = getFirstDateOfMonth(startDate.minusDays(15))
+                        val newFinishDate = getLastDateOfMonth(finishDate.minusDays(45))
+
+                        monthWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     }
                     .size(24.dp),
                 imageVector = Icons.Default.KeyboardArrowLeft,
@@ -104,10 +129,14 @@ fun MonthWiDFragment() {
             Icon(
                 modifier = Modifier
                     .clickable(
-                        enabled = !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                        enabled = !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(
+                            today
+                        ))
                     ) {
-                        startDate = getFirstDateOfMonth(startDate.plusDays(45))
-                        finishDate = getLastDateOfMonth(finishDate.plusDays(15))
+                        val newStartDate = getFirstDateOfMonth(startDate.plusDays(45))
+                        val newFinishDate = getLastDateOfMonth(finishDate.plusDays(15))
+
+                        monthWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     }
                     .size(24.dp),
                 imageVector = Icons.Default.KeyboardArrowRight,
@@ -215,8 +244,10 @@ fun MonthWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "합계",
                             onClick = {
-                                selectedMapText = "합계"
-                                selectedMap = totalDurationMap
+//                                selectedMapText = "합계"
+//                                selectedMap = totalDurationMap
+
+                                monthWiDViewModel.updateSelectedMap(newText = "합계", newMap = totalDurationMap)
                             },
                             label = {
                                 Text( // 텍스트 색상은 아래에 지정함.
@@ -244,8 +275,10 @@ fun MonthWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "평균",
                             onClick = {
-                                selectedMapText = "평균"
-                                selectedMap = averageDurationMap
+//                                selectedMapText = "평균"
+//                                selectedMap = averageDurationMap
+
+                                monthWiDViewModel.updateSelectedMap(newText = "평균", newMap = averageDurationMap)
                             },
                             label = {
                                 Text(
@@ -273,8 +306,10 @@ fun MonthWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "최저",
                             onClick = {
-                                selectedMapText = "최저"
-                                selectedMap = minDurationMap
+//                                selectedMapText = "최저"
+//                                selectedMap = minDurationMap
+
+                                monthWiDViewModel.updateSelectedMap(newText = "최저", newMap = minDurationMap)
                             },
                             label = {
                                 Text(
@@ -302,8 +337,10 @@ fun MonthWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "최고",
                             onClick = {
-                                selectedMapText = "최고"
-                                selectedMap = maxDurationMap
+//                                selectedMapText = "최고"
+//                                selectedMap = maxDurationMap
+
+                                monthWiDViewModel.updateSelectedMap(newText = "최고", newMap = maxDurationMap)
                             },
                             label = {
                                 Text(

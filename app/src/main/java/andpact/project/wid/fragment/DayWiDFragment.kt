@@ -4,6 +4,8 @@ import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.DayWiDViewModel
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -31,10 +34,15 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DayWiDFragment() {
+    val dayWiDViewModel: DayWiDViewModel = viewModel()
+
     // 날짜
-    val today = LocalDate.now()
-    var currentDate by remember { mutableStateOf(today) }
-    var expandDatePicker by remember { mutableStateOf(false) }
+//    val today = LocalDate.now()
+    val today = dayWiDViewModel.today
+//    var currentDate by remember { mutableStateOf(today) }
+    val currentDate = dayWiDViewModel.currentDate.value
+//    var expandDatePicker by remember { mutableStateOf(false) }
+    val expandDatePicker = dayWiDViewModel.expandDatePicker.value
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -52,17 +60,21 @@ fun DayWiDFragment() {
     )
 
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
-
-    // 다이어리
-//    val diaryService = DiaryService(context = LocalContext.current)
-//    val diary = remember(currentDate) { diaryService.readDiaryByDate(currentDate) }
-//    var expandDiary by remember { mutableStateOf(false) }
-//    var diaryOverflow by remember { mutableStateOf(false) }
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
+    val wiDList = dayWiDViewModel.wiDList.value
 
     // 합계
-    val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+//    val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
+    val totalDurationMap = dayWiDViewModel.totalDurationMap.value
+
+    DisposableEffect(Unit) {
+        Log.d("DayWiDFragment", "DayWiDFragment is being composed")
+
+        onDispose {
+            Log.d("DayWiDFragment", "DayWiDFragment is being disposed")
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -87,7 +99,8 @@ fun DayWiDFragment() {
                 Text(
                     modifier = Modifier
                         .clickable {
-                            expandDatePicker = true
+//                            expandDatePicker = true
+                            dayWiDViewModel.setExpandDatePicker(expand = true)
                         },
                     text = getDateString(currentDate),
                     style = Typography.titleLarge,
@@ -102,11 +115,13 @@ fun DayWiDFragment() {
                 Icon(
                     modifier = Modifier
                         .clickable {
-                            if (expandDatePicker) {
-                                expandDatePicker = false
-                            }
+//                            if (expandDatePicker) {
+////                                expandDatePicker = false
+//                                dayWiDViewModel.setExpandDatePicker(expand = false)
+//                            }
 
-                            currentDate = currentDate.minusDays(1)
+                            val newDate = currentDate.minusDays(1)
+                            dayWiDViewModel.setCurrentDate(newDate)
                         }
                         .size(24.dp),
                     imageVector = Icons.Default.KeyboardArrowLeft,
@@ -117,11 +132,12 @@ fun DayWiDFragment() {
                 Icon(
                     modifier = Modifier
                         .clickable(enabled = currentDate != today) {
-                            if (expandDatePicker) {
-                                expandDatePicker = false
-                            }
+//                            if (expandDatePicker) {
+//                                expandDatePicker = false
+//                            }
 
-                            currentDate = currentDate.plusDays(1)
+                            val newDate = currentDate.plusDays(1)
+                            dayWiDViewModel.setCurrentDate(newDate)
                         }
                         .size(24.dp),
                     imageVector = Icons.Default.KeyboardArrowRight,
@@ -157,9 +173,7 @@ fun DayWiDFragment() {
                 ) {
                     // 파이 차트
                     item {
-                        DateBasedPieChartFragment(
-                            wiDList = wiDList
-                        )
+                        DateBasedPieChartFragment(wiDList = wiDList)
                     }
 
                     // 합계 기록
@@ -222,7 +236,8 @@ fun DayWiDFragment() {
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable(expandDatePicker) {
-                        expandDatePicker = false
+//                        expandDatePicker = false
+                        dayWiDViewModel.setExpandDatePicker(expand = false)
                     }
             ) {
                 Column(
@@ -252,7 +267,8 @@ fun DayWiDFragment() {
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
                                 .clickable {
-                                    expandDatePicker = false
+//                                    expandDatePicker = false
+                                    dayWiDViewModel.setExpandDatePicker(expand = false)
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
                             contentDescription = "날짜 메뉴 닫기",
@@ -272,11 +288,17 @@ fun DayWiDFragment() {
                                 .align(Alignment.CenterEnd)
                                 .padding(horizontal = 16.dp)
                                 .clickable {
-                                    expandDatePicker = false
-                                    currentDate = Instant
+//                                    expandDatePicker = false
+                                    dayWiDViewModel.setExpandDatePicker(expand = false)
+                                    val newDate = Instant
                                         .ofEpochMilli(datePickerState.selectedDateMillis!!)
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDate()
+//                                    currentDate = Instant
+//                                        .ofEpochMilli(datePickerState.selectedDateMillis!!)
+//                                        .atZone(ZoneId.systemDefault())
+//                                        .toLocalDate()
+                                    dayWiDViewModel.setCurrentDate(newDate)
                                 },
                             text = "확인",
                             style = Typography.bodyMedium,

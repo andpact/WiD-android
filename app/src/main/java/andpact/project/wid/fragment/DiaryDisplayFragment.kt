@@ -147,7 +147,8 @@ fun DiaryDisplayFragment(mainActivityNavController: NavController) {
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+//                                pagerState.animateScrollToPage(index)
+                                pagerState.scrollToPage(index)
                             }
                         }
                     )

@@ -14,6 +14,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -136,84 +137,91 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
             /**
              * 다이어리
              */
-            Row(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1f / 1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
+                item {
+                    Row(
                         modifier = Modifier
-                            .clickable {
-                                expandDatePicker = true
-                            },
-                        text = getDateStringWith3Lines(date = currentDate),
-                        style = Typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .clickable {
+                                        expandDatePicker = true
+                                    },
+                                text = getDateStringWith3Lines(date = currentDate),
+                                style = Typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1f / 1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (wiDList.isEmpty()) {
-                        getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
-                    } else {
-                        DiaryPieChartFragment(wiDList = wiDList)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (wiDList.isEmpty()) {
+                                getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
+                            } else {
+                                DiaryPieChartFragment(wiDList = wiDList)
+                            }
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            text = diary?.title ?: "",
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary,
+        //                    minLines = 1,
+            //                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
+        //                    overflow = TextOverflow.Ellipsis,
+            //                onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
+            //                    if (diaryTitleTextLayoutResult.didOverflowHeight) {
+            //                        diaryOverflow = true
+            //                    }
+            //                }
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            text = diary?.content ?: "당신이 이 날 무엇을 하고,\n그 속에서 어떤 생각과 감정을 느꼈는지\n주체적으로 기록해보세요.",
+                            textAlign = if (diary == null) TextAlign.Center else null,
+                            style = if (diary == null) Typography.labelMedium else Typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+        //                    minLines = 10,
+            //                maxLines = if (expandDiary) Int.MAX_VALUE else 10,
+        //                    overflow = TextOverflow.Ellipsis,
+            //                onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
+            //                    if (diaryContentTextLayoutResult.didOverflowHeight) {
+            //                        diaryOverflow = true
+            //                    }
+            //                }
+                        )
                     }
                 }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(MaterialTheme.colorScheme.secondary)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    text = diary?.title ?: "",
-                    style = Typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    minLines = 1,
-    //                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
-                    overflow = TextOverflow.Ellipsis,
-    //                onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
-    //                    if (diaryTitleTextLayoutResult.didOverflowHeight) {
-    //                        diaryOverflow = true
-    //                    }
-    //                }
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    text = diary?.content ?: "당신이 이 날 무엇을 하고,\n그 속에서 어떤 생각과 감정을 느꼈는지\n주체적으로 기록해보세요.",
-                    textAlign = if (diary == null) TextAlign.Center else null,
-                    style = if (diary == null) Typography.labelMedium else Typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    minLines = 10,
-    //                maxLines = if (expandDiary) Int.MAX_VALUE else 10,
-                    overflow = TextOverflow.Ellipsis,
-    //                onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
-    //                    if (diaryContentTextLayoutResult.didOverflowHeight) {
-    //                        diaryOverflow = true
-    //                    }
-    //                }
-                )
             }
         }
 

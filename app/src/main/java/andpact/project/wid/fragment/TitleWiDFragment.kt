@@ -5,6 +5,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,6 +38,15 @@ import java.time.LocalDate
 
 @Composable
 fun TitleWiDFragment() {
+
+    DisposableEffect(Unit) {
+        Log.d("TitleWiDFragment", "TitleWiDFragment is being composed")
+
+        onDispose {
+            Log.d("TitleWiDFragment", "TitleWiDFragment is being disposed")
+        }
+    }
+
     // 화면
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp

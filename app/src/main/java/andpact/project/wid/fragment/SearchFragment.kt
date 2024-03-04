@@ -9,6 +9,7 @@ import andpact.project.wid.ui.theme.pretendardRegular
 import andpact.project.wid.util.getDateString
 import andpact.project.wid.util.getEmptyView
 import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,6 +41,15 @@ import androidx.navigation.NavController
 
 @Composable
 fun SearchFragment(mainActivityNavController: NavController) {
+
+    DisposableEffect(Unit) {
+        Log.d("SearchFragment", "SearchFragment is being composed")
+
+        onDispose {
+            Log.d("SearchFragment", "SearchFragment is being disposed")
+        }
+    }
+
     // 검색
     var searchText by remember { mutableStateOf("") }
 //    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)

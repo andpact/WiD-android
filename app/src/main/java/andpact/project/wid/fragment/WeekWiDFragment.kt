@@ -4,6 +4,8 @@ import andpact.project.wid.R
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.WeekWiDViewModel
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -34,30 +37,50 @@ import java.time.temporal.ChronoUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeekWiDFragment() {
+    val weekWiDViewModel: WeekWiDViewModel = viewModel()
+
     // 날짜
-    val today = LocalDate.now()
-    var startDate by remember { mutableStateOf(getFirstDateOfWeek(today)) }
-    var finishDate by remember { mutableStateOf(getLastDateOfWeek(today)) }
+//    val today = LocalDate.now()
+    val today = weekWiDViewModel.today
+//    var startDate by remember { mutableStateOf(getFirstDateOfWeek(today)) }
+    val startDate = weekWiDViewModel.startDate.value
+//    var finishDate by remember { mutableStateOf(getLastDateOfWeek(today)) }
+    val finishDate = weekWiDViewModel.finishDate.value
 
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+    val wiDList = weekWiDViewModel.wiDList.value
 
     // 합계
-    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
+//    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
+    val totalDurationMap = weekWiDViewModel.totalDurationMap
 
     // 평균
-    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
+//    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
+    val averageDurationMap = weekWiDViewModel.averageDurationMap
 
     // 최고
-    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+//    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+    val minDurationMap = weekWiDViewModel.minDurationMap
 
     // 최고
-    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
+//    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
+    val maxDurationMap = weekWiDViewModel.maxDurationMap
 
 //    // 맵
-    var selectedMapText by remember { mutableStateOf("합계") }
-    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
+//    var selectedMapText by remember { mutableStateOf("합계") }
+    val selectedMapText = weekWiDViewModel.selectedMapText.value
+//    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
+    val selectedMap = weekWiDViewModel.selectedMap.value
+
+    DisposableEffect(Unit) {
+        Log.d("WeekWiDFragment", "WeekWiDFragment is being composed")
+
+        onDispose {
+            Log.d("WeekWiDFragment", "WeekWiDFragment is being disposed")
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -92,8 +115,10 @@ fun WeekWiDFragment() {
             Icon(
                 modifier = Modifier
                     .clickable {
-                        startDate = startDate.minusWeeks(1)
-                        finishDate = finishDate.minusWeeks(1)
+                        val newStartDate = startDate.minusWeeks(1)
+                        val newFinishDate = finishDate.minusWeeks(1)
+
+                        weekWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     }
                     .size(24.dp),
                 imageVector = Icons.Default.KeyboardArrowLeft,
@@ -104,12 +129,12 @@ fun WeekWiDFragment() {
             Icon(
                 modifier = Modifier
                     .clickable(
-                        enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(
-                            today
-                        ))
+                        enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
                     ) {
-                        startDate = startDate.plusWeeks(1)
-                        finishDate = finishDate.plusWeeks(1)
+                        val newStartDate = startDate.plusWeeks(1)
+                        val newFinishDate = finishDate.plusWeeks(1)
+
+                        weekWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     }
                     .size(24.dp),
                 imageVector = Icons.Default.KeyboardArrowRight,
@@ -212,9 +237,12 @@ fun WeekWiDFragment() {
                             modifier = Modifier
                                 .weight(1f),
                             selected = selectedMapText == "합계",
+//                            selected = selectedMap == totalDurationMap,
                             onClick = {
-                                selectedMapText = "합계"
-                                selectedMap = totalDurationMap
+//                                selectedMapText = "합계"
+//                                selectedMap = totalDurationMap
+
+                                weekWiDViewModel.updateSelectedMap(newText = "합계", newMap = totalDurationMap)
                             },
                             label = {
                                 Text( // 텍스트 색상은 아래에 지정함.
@@ -242,8 +270,10 @@ fun WeekWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "평균",
                             onClick = {
-                                selectedMapText = "평균"
-                                selectedMap = averageDurationMap
+//                                selectedMapText = "평균"
+//                                selectedMap = averageDurationMap
+
+                                weekWiDViewModel.updateSelectedMap(newText = "평균", newMap = averageDurationMap)
                             },
                             label = {
                                 Text(
@@ -271,8 +301,10 @@ fun WeekWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "최저",
                             onClick = {
-                                selectedMapText = "최저"
-                                selectedMap = minDurationMap
+//                                selectedMapText = "최저"
+//                                selectedMap = minDurationMap
+
+                                weekWiDViewModel.updateSelectedMap(newText = "최저", newMap = minDurationMap)
                             },
                             label = {
                                 Text(
@@ -300,8 +332,10 @@ fun WeekWiDFragment() {
                                 .weight(1f),
                             selected = selectedMapText == "최고",
                             onClick = {
-                                selectedMapText = "최고"
-                                selectedMap = maxDurationMap
+//                                selectedMapText = "최고"
+//                                selectedMap = maxDurationMap
+
+                                weekWiDViewModel.updateSelectedMap(newText = "최고", newMap = maxDurationMap)
                             },
                             label = {
                                 Text(

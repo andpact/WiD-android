@@ -1,11 +1,10 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
-import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import androidx.activity.compose.BackHandler
+import andpact.project.wid.viewModel.StopwatchViewModel
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,27 +12,31 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import kotlinx.coroutines.launch
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
 
 @Composable
-fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
+fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
+
+    DisposableEffect(Unit) {
+        Log.d("StopWatchFragment", "StopWatchFragment is being composed")
+
+        onDispose {
+            Log.d("StopWatchFragment", "StopWatchFragment is being disposed")
+        }
+    }
+
+
     // WiD
 //    val wiDService = WiDService(context = LocalContext.current)
 
@@ -47,11 +50,11 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
 
 //    DisposableEffect(Unit) {
 //        // Fragment가 나타날 때
-//        stopwatchPlayer.setInStopwatchView(true)
+//        stopwatchViewModel.setInStopwatchView(true)
 //
 //        onDispose {
 //            // Fragment가 사라질 때
-//            stopwatchPlayer.setInStopwatchView(false)
+//            stopwatchViewModel.setInStopwatchView(false)
 //        }
 //    }
 
@@ -64,12 +67,12 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
-//                stopwatchPlayer.setStopwatchTopBottomBarVisible(!stopwatchPlayer.stopwatchTopBottomBarVisible.value)
-                if (stopwatchPlayer.stopwatchTopBottomBarVisible.value) {
-                    stopwatchPlayer.setStopwatchTopBottomBarVisible(false)
+            .clickable(enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
+//                stopwatchViewModel.setStopwatchTopBottomBarVisible(!stopwatchViewModel.stopwatchTopBottomBarVisible.value)
+                if (stopwatchViewModel.stopwatchTopBottomBarVisible.value) {
+                    stopwatchViewModel.setStopwatchTopBottomBarVisible(false)
                 } else {
-                    stopwatchPlayer.setStopwatchTopBottomBarVisible(true)
+                    stopwatchViewModel.setStopwatchTopBottomBarVisible(true)
                 }
             }
     ) {
@@ -80,7 +83,7 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = screenHeight / 2),
-            text = getStopWatchTimeString(stopwatchPlayer.duration.value),
+            text = getStopWatchTimeString(stopwatchViewModel.duration.value),
             style = TextStyle(
                 textAlign = TextAlign.End,
                 color = MaterialTheme.colorScheme.primary
@@ -93,7 +96,7 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
         AnimatedVisibility(
             modifier = Modifier
                 .align(Alignment.BottomCenter),
-            visible = stopwatchPlayer.stopwatchTopBottomBarVisible.value,
+            visible = stopwatchViewModel.stopwatchTopBottomBarVisible.value,
             enter = expandVertically{ 0 },
             exit = shrinkVertically{ 0 },
         ) {
@@ -107,18 +110,18 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
                 Icon(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable(stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) {
+                        .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Stopped) {
                             titleMenuExpanded = true
                         }
                         .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped)
+                            color = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped)
                                 AppIndigo
                             else
                                 DarkGray
                         )
                         .padding(16.dp)
                         .size(32.dp),
-                    painter = painterResource(titleIconMap[stopwatchPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
+                    painter = painterResource(titleIconMap[stopwatchViewModel.title.value] ?: R.drawable.baseline_menu_book_16),
                     contentDescription = "제목",
                     tint = White
                 )
@@ -128,12 +131,12 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
                         .weight(1f)
                 )
 
-                if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
+                if (stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
                     Icon(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable(stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
-                                stopwatchPlayer.stopStopwatch()
+                            .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
+                                stopwatchViewModel.stopStopwatch()
                             }
                             .background(color = DeepSkyBlue)
                             .padding(16.dp)
@@ -148,28 +151,28 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
                     modifier = Modifier
                         .clip(CircleShape)
                         .clickable { // 스톱 워치 모든 상태일 때 클릭 가능
-                            if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
-                                stopwatchPlayer.pauseStopwatch()
+                            if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
+                                stopwatchViewModel.pauseStopwatch()
                             } else { // 스톱 워치 중지, 정지 상태
-                                stopwatchPlayer.startStopwatch()
+                                stopwatchViewModel.startStopwatch()
                             }
                         }
                         .background(
-                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
-                            else if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) LimeGreen
+                            color = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.primary
+                            else if (stopwatchViewModel.stopwatchState.value == PlayerState.Paused) LimeGreen
                             else OrangeRed
                         )
                         .padding(16.dp)
                         .size(32.dp),
                     painter = painterResource(
-                        id = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                        id = if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) {
                             R.drawable.baseline_pause_24
                         } else {
                             R.drawable.baseline_play_arrow_24
                         }
                     ),
                     contentDescription = "스톱 워치 시작 및 중지",
-                    tint = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
+                    tint = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped) MaterialTheme.colorScheme.secondary else White
                 )
             }
         }
@@ -249,7 +252,7 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        stopwatchPlayer.setTitle(itemTitle)
+                                        stopwatchViewModel.setTitle(itemTitle)
                                         titleMenuExpanded = false
                                     },
                                 verticalAlignment = Alignment.CenterVertically,
@@ -274,7 +277,7 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
                                         .weight(1f)
                                 )
 
-                                if (itemTitle == stopwatchPlayer.title.value) {
+                                if (itemTitle == stopwatchViewModel.title.value) {
                                     Text(
                                         modifier = Modifier
                                             .padding(16.dp),
@@ -296,7 +299,7 @@ fun StopWatchFragment(stopwatchPlayer: StopwatchPlayer) {
 //@Composable
 //fun StopWatchFragmentPreview() {
 //    val dummyNavController = rememberNavController()
-//    val stopwatchViewModel = StopwatchPlayer()
+//    val stopwatchViewModel = StopwatchViewModel()
 //
-//    StopWatchFragment(navController = dummyNavController, stopwatchPlayer = stopwatchViewModel)
+//    StopWatchFragment(navController = dummyNavController, stopwatchViewModel = stopwatchViewModel)
 //}

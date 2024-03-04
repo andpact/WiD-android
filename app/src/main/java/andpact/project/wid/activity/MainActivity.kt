@@ -1,32 +1,23 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.fragment.*
-import andpact.project.wid.ui.theme.LimeGreen
-import andpact.project.wid.ui.theme.OrangeRed
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.fragment.DiaryFragment
+import andpact.project.wid.fragment.MainFragment
+import andpact.project.wid.fragment.NewWiDFragment
+import andpact.project.wid.fragment.WiDFragment
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.StopwatchViewModel
+import andpact.project.wid.viewModel.TimerViewModel
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -58,31 +49,32 @@ fun MainScreen() {
         val mainActivityNavController: NavHostController = rememberNavController()
 
         // 아래 두 방식의 차이가 없다?
-//        val stopwatchPlayer = StopwatchPlayer()
-        val stopwatchPlayer: StopwatchPlayer = viewModel()
+//        val stopwatchViewModel = StopwatchViewModel()
+        val stopwatchViewModel: StopwatchViewModel = viewModel()
 
-        val context = LocalContext.current
-        val application = context.applicationContext as Application
-        val timerPlayer = TimerPlayer(application)
+//        val context = LocalContext.current
+//        val application = context.applicationContext as Application
+//        val timerViewModel = TimerViewModel(application)
+        val timerViewModel: TimerViewModel = viewModel()
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            MainActivityNavigationGraph(mainActivityNavController = mainActivityNavController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
+            MainActivityNavigationGraph(mainActivityNavController = mainActivityNavController, stopwatchViewModel = stopwatchViewModel, timerViewModel = timerViewModel)
         }
     }
 }
 
 @Composable // 네비게이션 그래프에는 NavController가 아닌 NavHostController가 파라미터로 들어감.
-fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     NavHost(
         navController = mainActivityNavController,
         startDestination = MainActivityDestinations.MainFragmentDestination.route
     ) {
         // 메인 프래그먼트
         composable(MainActivityDestinations.MainFragmentDestination.route) {
-            MainFragment(mainActivityNavController = mainActivityNavController, stopwatchPlayer = stopwatchPlayer, timerPlayer = timerPlayer)
+            MainFragment(mainActivityNavController = mainActivityNavController, stopwatchViewModel = stopwatchViewModel, timerViewModel = timerViewModel)
         }
 
         // 새로운 WiD
@@ -111,7 +103,7 @@ fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, st
             }
 
             NewWiDFragment(
-                mainActivitynavController = mainActivityNavController,
+                mainActivityNavController = mainActivityNavController,
                 startParam = startParam,
                 finishParam = finishParam
             )
@@ -163,8 +155,8 @@ fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, st
             DiaryFragment(
                 date = date,
                 mainActivityNavController = mainActivityNavController,
-                stopwatchPlayer = stopwatchPlayer,
-                timerPlayer = timerPlayer
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
             )
         }
     }

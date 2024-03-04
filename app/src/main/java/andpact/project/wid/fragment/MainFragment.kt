@@ -1,23 +1,25 @@
 package andpact.project.wid.fragment
 
 import andpact.project.wid.R
-import andpact.project.wid.service.DiaryService
-import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.ui.theme.DarkGray
+import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
-import android.app.Application
+import andpact.project.wid.viewModel.HomeViewModel
+import andpact.project.wid.viewModel.StopwatchViewModel
+import andpact.project.wid.viewModel.TimerViewModel
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -38,15 +40,20 @@ import androidx.navigation.compose.rememberNavController
  * mutableStateOf { 값 }-> 재 렌더링 됨.
  */
 @Composable
-fun MainFragment(mainActivityNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun MainFragment(mainActivityNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
+
+    DisposableEffect(Unit) {
+        Log.d("MainFragment", "MainFragment is being composed")
+
+        onDispose {
+            Log.d("MainFragment", "MainFragment is being disposed")
+        }
+    }
+
     // 화면
     val mainFragmentNavController: NavHostController = rememberNavController()
 
-//    val stopwatchPlayer: StopwatchPlayer = viewModel()
-//
-//    val context = LocalContext.current
-//    val application = context.applicationContext as Application
-//    val timerPlayer = TimerPlayer(application)
+    val homeViewModel: HomeViewModel = viewModel()
 
     Scaffold(
         modifier = Modifier
@@ -55,14 +62,14 @@ fun MainFragment(mainActivityNavController: NavController, stopwatchPlayer: Stop
         topBar = {
             MainFragmentTopBar(
                 mainFragmentNavController = mainFragmentNavController,
-                stopwatchPlayer = stopwatchPlayer,
-                timerPlayer = timerPlayer
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
             )},
         bottomBar = {
             MainFragmentBottomBar(
                 mainFragmentNavController = mainFragmentNavController,
-                stopwatchPlayer = stopwatchPlayer,
-                timerPlayer = timerPlayer
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
             )},
     ) { contentPadding -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
         Box(
@@ -72,15 +79,16 @@ fun MainFragment(mainActivityNavController: NavController, stopwatchPlayer: Stop
             MainFragmentNavigationGraph(
                 mainActivityNavController = mainActivityNavController,
                 mainFragmentNavController = mainFragmentNavController,
-                stopwatchPlayer = stopwatchPlayer,
-                timerPlayer = timerPlayer
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel,
+                homeViewModel = homeViewModel
             )
         }
     }
 }
 
 @Composable
-fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -98,7 +106,13 @@ fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchPlayer
             .fillMaxWidth()
             .height(56.dp)
             .background(MaterialTheme.colorScheme.secondary)
-            .alpha(if (stopwatchPlayer.stopwatchTopBottomBarVisible.value && timerPlayer.timerTopBottomBarVisible.value) { 1f } else { 0f })
+            .alpha(
+                if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
+                    1f
+                } else {
+                    0f
+                }
+            )
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -111,7 +125,7 @@ fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchPlayer
 }
 
 @Composable
-fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -127,13 +141,19 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.secondary)
-            .alpha(if (stopwatchPlayer.stopwatchTopBottomBarVisible.value && timerPlayer.timerTopBottomBarVisible.value) { 1f } else { 0f })
+            .alpha(
+                if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
+                    1f
+                } else {
+                    0f
+                }
+            )
     ) {
-        if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped && currentRoute != MainFragmentDestinations.WiDToolFragmentDestination.route) {
+        if (stopwatchViewModel.stopwatchState.value != PlayerState.Stopped && currentRoute != MainFragmentDestinations.WiDToolFragmentDestination.route) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colorMap[stopwatchPlayer.title.value] ?: DarkGray)
+                    .background(colorMap[stopwatchViewModel.title.value] ?: DarkGray)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -145,7 +165,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                         .background(MaterialTheme.colorScheme.secondary)
                         .padding(8.dp)
                         .size(24.dp),
-                    painter = painterResource(titleIconMap[stopwatchPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
+                    painter = painterResource(titleIconMap[stopwatchViewModel.title.value] ?: R.drawable.baseline_menu_book_16),
                     contentDescription = "제목",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -155,24 +175,24 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                         .weight(1f)
                 ) {
                     Text(
-                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
+                        text = titleMap[stopwatchViewModel.title.value] ?: "공부",
                         style = Typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
 
                     Text(
-                        text = getDurationString(stopwatchPlayer.duration.value, 0),
+                        text = getDurationString(stopwatchViewModel.duration.value, 0),
                         style = Typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontFamily = FontFamily.Monospace
                     )
                 }
 
-                if (stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
+                if (stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
                     Icon(
                         modifier = Modifier
-                            .clickable(stopwatchPlayer.stopwatchState.value == PlayerState.Paused) {
-                                stopwatchPlayer.stopStopwatch()
+                            .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
+                                stopwatchViewModel.stopStopwatch()
                             }
 //                            .padding(16.dp)
                             .size(24.dp),
@@ -185,16 +205,16 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                 Icon(
                     modifier = Modifier
                         .clickable { // 스톱 워치 모든 상태일 때 클릭 가능
-                            if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
-                                stopwatchPlayer.pauseStopwatch()
+                            if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
+                                stopwatchViewModel.pauseStopwatch()
                             } else { // 스톱 워치 중지, 정지 상태
-                                stopwatchPlayer.startStopwatch()
+                                stopwatchViewModel.startStopwatch()
                             }
                         }
 //                        .padding(16.dp)
                         .size(24.dp),
                     painter = painterResource(
-                        id = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
+                        id = if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) {
                             R.drawable.baseline_pause_24
                         } else {
                             R.drawable.baseline_play_arrow_24
@@ -204,11 +224,11 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-        } else if (timerPlayer.timerState.value != PlayerState.Stopped && currentRoute != MainFragmentDestinations.WiDToolFragmentDestination.route) {
+        } else if (timerViewModel.timerState.value != PlayerState.Stopped && currentRoute != MainFragmentDestinations.WiDToolFragmentDestination.route) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colorMap[timerPlayer.title.value] ?: DarkGray)
+                    .background(colorMap[timerViewModel.title.value] ?: DarkGray)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -220,7 +240,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                         .background(MaterialTheme.colorScheme.secondary)
                         .padding(8.dp)
                         .size(24.dp),
-                    painter = painterResource(titleIconMap[timerPlayer.title.value] ?: R.drawable.baseline_menu_book_16),
+                    painter = painterResource(titleIconMap[timerViewModel.title.value] ?: R.drawable.baseline_menu_book_16),
                     contentDescription = "제목",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -230,24 +250,24 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                         .weight(1f)
                 ) {
                     Text(
-                        text = titleMap[timerPlayer.title.value] ?: "공부",
+                        text = titleMap[timerViewModel.title.value] ?: "공부",
                         style = Typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
 
                     Text(
-                        text = getDurationString(timerPlayer.remainingTime.value, 0),
+                        text = getDurationString(timerViewModel.remainingTime.value, 0),
                         style = Typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontFamily = FontFamily.Monospace
                     )
                 }
 
-                if (timerPlayer.timerState.value == PlayerState.Paused) {
+                if (timerViewModel.timerState.value == PlayerState.Paused) {
                     Icon(
                         modifier = Modifier
-                            .clickable(timerPlayer.timerState.value == PlayerState.Paused) {
-                                timerPlayer.stopTimer()
+                            .clickable(timerViewModel.timerState.value == PlayerState.Paused) {
+                                timerViewModel.stopTimer()
                             }
                             .size(24.dp),
                         painter = painterResource(id = R.drawable.baseline_refresh_24),
@@ -259,15 +279,15 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                 Icon(
                     modifier = Modifier
                         .clickable { // 타이머 모든 상태일 때 클릭 가능
-                            if (timerPlayer.timerState.value == PlayerState.Started) { // 타이머 시작 상태
-                                timerPlayer.pauseTimer()
+                            if (timerViewModel.timerState.value == PlayerState.Started) { // 타이머 시작 상태
+                                timerViewModel.pauseTimer()
                             } else { // 타이머 중지, 정지 상태
-                                timerPlayer.startTimer()
+                                timerViewModel.startTimer()
                             }
                         }
                         .size(24.dp),
                     painter = painterResource(
-                        id = if (timerPlayer.timerState.value == PlayerState.Started) {
+                        id = if (timerViewModel.timerState.value == PlayerState.Started) {
                             R.drawable.baseline_pause_24
                         } else {
                             R.drawable.baseline_play_arrow_24
@@ -315,7 +335,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         indicatorColor = MaterialTheme.colorScheme.secondary
                     ),
-                    enabled = stopwatchPlayer.stopwatchTopBottomBarVisible.value && timerPlayer.timerTopBottomBarVisible.value
+                    enabled = stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value
                 )
             }
         }
@@ -323,22 +343,28 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchPla
 }
 
 @Composable
-fun MainFragmentNavigationGraph(mainActivityNavController: NavController, mainFragmentNavController: NavHostController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun MainFragmentNavigationGraph(
+    mainActivityNavController: NavController,
+    mainFragmentNavController: NavHostController,
+    stopwatchViewModel: StopwatchViewModel,
+    timerViewModel: TimerViewModel,
+    homeViewModel: HomeViewModel
+) {
     NavHost(
         navController = mainFragmentNavController,
         startDestination = MainFragmentDestinations.HomeFragmentDestination.route
     ) {
         // 홈
         composable(MainFragmentDestinations.HomeFragmentDestination.route) {
-            HomeFragment()
+            HomeFragment(homeViewModel = homeViewModel)
         }
 
         // WiD 도구
         composable(MainFragmentDestinations.WiDToolFragmentDestination.route) {
             WiDToolFragment(
                 mainActivityNavController = mainActivityNavController,
-                stopwatchPlayer = stopwatchPlayer,
-                timerPlayer = timerPlayer
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
             )
         }
 
@@ -389,11 +415,11 @@ sealed class MainFragmentDestinations(
 //@Preview(showBackground = true)
 //@Composable
 //fun HomeFragmentPreview() {
-//    val stopwatchPlayer: StopwatchPlayer = viewModel()
+//    val stopwatchViewModel: StopwatchViewModel = viewModel()
 //
 //    val context = LocalContext.current
 //    val application = context.applicationContext as Application
-//    val timerPlayer = TimerPlayer(application)
+//    val timerViewModel = TimerViewModel(application)
 //
-//    HomeFragment(NavController(LocalContext.current), stopwatchPlayer, timerPlayer)
+//    HomeFragment(NavController(LocalContext.current), stopwatchViewModel, timerViewModel)
 //}

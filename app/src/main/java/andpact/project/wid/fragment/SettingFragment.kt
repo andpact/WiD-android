@@ -6,6 +6,7 @@ import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.*
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -24,6 +26,15 @@ import androidx.navigation.NavController
 
 @Composable
 fun SettingFragment() {
+
+    DisposableEffect(Unit) {
+        Log.d("SettingFragment", "SettingFragment is being composed")
+
+        onDispose {
+            Log.d("SettingFragment", "SettingFragment is being disposed")
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

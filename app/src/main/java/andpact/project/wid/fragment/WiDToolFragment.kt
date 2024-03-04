@@ -3,12 +3,13 @@ package andpact.project.wid.fragment
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import andpact.project.wid.viewModel.StopwatchViewModel
+import andpact.project.wid.viewModel.TimerViewModel
+import andpact.project.wid.viewModel.WiDListViewModel
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,23 +18,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: StopwatchPlayer, timerPlayer: TimerPlayer) {
+fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     // 화면
     val pages = listOf("스톱 워치", "타이머", "WiD 리스트")
     val pagerState = rememberPagerState(
-        initialPage = if (timerPlayer.timerState.value != PlayerState.Stopped) 1 else 0,
+        initialPage = if (timerViewModel.timerState.value != PlayerState.Stopped) 1 else 0,
         pageCount = { pages.size }
     )
 
+//    val wiDListViewModel: WiDListViewModel = viewModel()
     val coroutineScope = rememberCoroutineScope()
 
+    DisposableEffect(Unit) {
+        Log.d("WiDToolFragment", "WiDToolFragment is being composed")
+
+        onDispose {
+            Log.d("WiDToolFragment", "WiDToolFragment is being disposed")
+        }
+    }
+
 //    val alpha by animateFloatAsState(
-//        targetValue = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) {
+//        targetValue = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) {
 //            1f
 //        } else {
 //            0f
@@ -41,7 +52,7 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
 //    )
 
 //    // Animatable을 사용하여 불투명도 애니메이션을 만듭니다.
-//    val alphaValue = remember { Animatable(if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) 1f else 0f) }
+//    val alphaValue = remember { Animatable(if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) 1f else 0f) }
 //
 //    // 불투명도 애니메이션을 정의합니다.
 //    val alphaAnimationSpec = tween<Float>(
@@ -50,9 +61,9 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
 //    )
 //
 //    // 불투명도를 서서히 변경하는 애니메이션을 시작합니다.
-//    LaunchedEffect(stopwatchPlayer.stopwatchState.value, timerPlayer.timerState.value) {
+//    LaunchedEffect(stopwatchViewModel.stopwatchState.value, timerViewModel.timerState.value) {
 //        alphaValue.animateTo(
-//            targetValue = if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) 1f else 0f,
+//            targetValue = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) 1f else 0f,
 //            animationSpec = alphaAnimationSpec
 //        )
 //    }
@@ -61,6 +72,9 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
+//            .clickable(wiDListViewModel.expandDatePicker.value) {
+//                wiDListViewModel.setExpandDatePicker(expand = false)
+//            }
     ) {
         /**
          * 상단 탭
@@ -70,7 +84,7 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
 //                .alpha(alphaValue.value),
 //                .alpha(alpha),
                 .alpha(
-                    if (stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped) {
+                    if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) {
                         1f
                     } else {
                         0f
@@ -91,10 +105,11 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
                     selected = pagerState.currentPage == index,
                     onClick = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(index)
+//                            pagerState.animateScrollToPage(index) // 애니메이션 스크롤은 중간의 모든 프래그먼트를 불필요하게 만들게 됨.
+                            pagerState.scrollToPage(index)
                         }
                     },
-                    enabled = stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped
+                    enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped
                 )
             }
         }
@@ -104,11 +119,11 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchPlayer: S
          */
         HorizontalPager(
             state = pagerState,
-            userScrollEnabled = stopwatchPlayer.stopwatchState.value == PlayerState.Stopped && timerPlayer.timerState.value == PlayerState.Stopped
+            userScrollEnabled = stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped
         ) { page ->
             when (page) {
-                0 -> StopWatchFragment(stopwatchPlayer = stopwatchPlayer)
-                1 -> TimerFragment(timerPlayer = timerPlayer)
+                0 -> StopWatchFragment(stopwatchViewModel = stopwatchViewModel)
+                1 -> TimerFragment(timerViewModel = timerViewModel)
                 2 -> WiDListFragment(mainActivityNavController = mainActivityNavController)
             }
         }

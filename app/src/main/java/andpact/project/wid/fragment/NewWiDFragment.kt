@@ -5,6 +5,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -36,7 +37,16 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewWiDFragment(mainActivitynavController: NavController, startParam: LocalTime, finishParam: LocalTime) {
+fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTime, finishParam: LocalTime) {
+
+    DisposableEffect(Unit) {
+        Log.d("NewWiDFragment", "NewWiDFragment is being composed")
+
+        onDispose {
+            Log.d("NewWiDFragment", "NewWiDFragment is being disposed")
+        }
+    }
+
     // 날짜
     val currentTime: LocalTime = LocalTime.now().withSecond(0)
     val today: LocalDate = LocalDate.now()
@@ -95,7 +105,7 @@ fun NewWiDFragment(mainActivitynavController: NavController, startParam: LocalTi
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
     BackHandler(enabled = true) {
-        mainActivitynavController.popBackStack()
+        mainActivityNavController.popBackStack()
     }
 
     fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
@@ -150,7 +160,7 @@ fun NewWiDFragment(mainActivitynavController: NavController, startParam: LocalTi
                     .size(24.dp)
                     .align(Alignment.CenterStart)
                     .clickable {
-                        mainActivitynavController.popBackStack()
+                        mainActivityNavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
                 contentDescription = "뒤로 가기",
