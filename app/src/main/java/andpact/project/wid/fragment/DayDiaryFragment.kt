@@ -8,11 +8,13 @@ import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.getDateStringWith3Lines
 import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
+import andpact.project.wid.viewModel.DayDiaryViewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.Instant
 import java.time.LocalDate
@@ -37,11 +40,16 @@ import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DayDiaryFragment(mainActivityNavController: NavController) {
+fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel: DayDiaryViewModel) {
+//    val dayDiaryViewModel: DayDiaryViewModel = viewModel()
+
     // 날짜
-    val today = LocalDate.now()
-    var currentDate by remember { mutableStateOf(today) }
-    var expandDatePicker by remember { mutableStateOf(false) }
+//    val today = LocalDate.now()
+    val today = dayDiaryViewModel.today
+//    var currentDate by remember { mutableStateOf(today) }
+    val currentDate = dayDiaryViewModel.currentDate.value
+//    var expandDatePicker by remember { mutableStateOf(false) }
+    var expandDatePicker = dayDiaryViewModel.expandDatePicker.value
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -59,12 +67,14 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
     )
 
     // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
+    val wiDList = dayDiaryViewModel.wiDList.value
 
     // 다이어리
-    val diaryService = DiaryService(context = LocalContext.current)
-    val diary = remember(currentDate) { diaryService.readDiaryByDate(currentDate) }
+//    val diaryService = DiaryService(context = LocalContext.current)
+//    val diary = remember(currentDate) { diaryService.readDiaryByDate(currentDate) }
+    val diary = dayDiaryViewModel.diary.value
 
     Box(
         modifier = Modifier
@@ -92,7 +102,10 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .clickable {
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${currentDate}")
                         },
                     text = "다이어리 수정",
@@ -107,11 +120,18 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
 
                 Icon(
                     modifier = Modifier
-                        .clickable {
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             if (expandDatePicker) {
-                                expandDatePicker = false
+//                                expandDatePicker = false
+                                dayDiaryViewModel.setExpandDatePicker(expand = false)
                             }
-                            currentDate = currentDate.minusDays(1)
+//                            currentDate = currentDate.minusDays(1)
+
+                            val newDate = currentDate.minusDays(1)
+                            dayDiaryViewModel.setCurrentDate(newDate)
                         }
                         .size(24.dp),
                     imageVector = Icons.Default.KeyboardArrowLeft,
@@ -121,11 +141,19 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
 
                 Icon(
                     modifier = Modifier
-                        .clickable(enabled = currentDate != today) {
+                        .clickable(
+                            enabled = currentDate != today,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             if (expandDatePicker) {
-                                expandDatePicker = false
+//                                expandDatePicker = false
+                                dayDiaryViewModel.setExpandDatePicker(expand = false)
                             }
-                            currentDate = currentDate.plusDays(1)
+//                            currentDate = currentDate.plusDays(1)
+
+                            val newDate = currentDate.plusDays(1)
+                            dayDiaryViewModel.setCurrentDate(newDate)
                         }
                         .size(24.dp),
                     imageVector = Icons.Default.KeyboardArrowRight,
@@ -155,11 +183,15 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
                         ) {
                             Text(
                                 modifier = Modifier
-                                    .clickable {
-                                        expandDatePicker = true
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+//                                        expandDatePicker = true
+                                        dayDiaryViewModel.setExpandDatePicker(expand = true)
                                     },
                                 text = getDateStringWith3Lines(date = currentDate),
-                                style = Typography.titleLarge,
+                                style = Typography.bodyMedium,
                                 textAlign = TextAlign.Center,
                                 fontSize = 20.sp,
                                 color = MaterialTheme.colorScheme.primary
@@ -191,7 +223,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             text = diary?.title ?: "",
-                            style = Typography.titleLarge,
+                            style = Typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
         //                    minLines = 1,
             //                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
@@ -238,8 +270,13 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(expandDatePicker) {
-                        expandDatePicker = false
+                    .clickable(
+                        enabled = expandDatePicker,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+//                        expandDatePicker = false
+                        dayDiaryViewModel.setExpandDatePicker(expand = false)
                     }
             ) {
                 Column(
@@ -261,15 +298,23 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {}
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
-                                    expandDatePicker = false
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+//                                    expandDatePicker = false
+                                    dayDiaryViewModel.setExpandDatePicker(expand = false)
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
                             contentDescription = "날짜 메뉴 닫기",
@@ -288,14 +333,24 @@ fun DayDiaryFragment(mainActivityNavController: NavController) {
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(horizontal = 16.dp)
-                                .clickable {
-                                    expandDatePicker = false
-                                    currentDate = Instant
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+//                                    expandDatePicker = false
+//                                    currentDate = Instant
+//                                        .ofEpochMilli(datePickerState.selectedDateMillis!!)
+//                                        .atZone(
+//                                            ZoneId.systemDefault()
+//                                        )
+//                                        .toLocalDate()
+                                    dayDiaryViewModel.setExpandDatePicker(expand = false)
+                                    val newDate = Instant
                                         .ofEpochMilli(datePickerState.selectedDateMillis!!)
-                                        .atZone(
-                                            ZoneId.systemDefault()
-                                        )
+                                        .atZone(ZoneId.systemDefault())
                                         .toLocalDate()
+
+                                    dayDiaryViewModel.setCurrentDate(newDate)
                                 },
                             text = "확인",
                             style = Typography.bodyMedium,

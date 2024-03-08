@@ -10,6 +10,7 @@ import andpact.project.wid.viewModel.StopwatchViewModel
 import andpact.project.wid.viewModel.TimerViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -155,7 +156,11 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .clickable(diaryTitle.isNotBlank() && diaryContent.isNotBlank()) {
+                    .clickable(
+                        enabled = diaryTitle.isNotBlank() && diaryContent.isNotBlank(),
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         keyboardController?.hide()
 
                         if (clickedDiary == null) {

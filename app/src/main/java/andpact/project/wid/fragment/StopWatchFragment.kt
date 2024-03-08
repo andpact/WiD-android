@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -67,7 +68,11 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
+            .clickable(
+                enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Started,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
 //                stopwatchViewModel.setStopwatchTopBottomBarVisible(!stopwatchViewModel.stopwatchTopBottomBarVisible.value)
                 if (stopwatchViewModel.stopwatchTopBottomBarVisible.value) {
                     stopwatchViewModel.setStopwatchTopBottomBarVisible(false)
@@ -110,7 +115,11 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                 Icon(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Stopped) {
+                        .clickable(
+                            enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Stopped,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             titleMenuExpanded = true
                         }
                         .background(
@@ -135,7 +144,11 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                     Icon(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
+                            .clickable(
+                                enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Paused,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
                                 stopwatchViewModel.stopStopwatch()
                             }
                             .background(color = DeepSkyBlue)
@@ -150,7 +163,10 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                 Icon(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .clickable { // 스톱 워치 모든 상태일 때 클릭 가능
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { // 스톱 워치 모든 상태일 때 클릭 가능
                             if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
                                 stopwatchViewModel.pauseStopwatch()
                             } else { // 스톱 워치 중지, 정지 상태
@@ -192,7 +208,11 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(titleMenuExpanded) {
+                    .clickable(
+                        enabled = titleMenuExpanded,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         titleMenuExpanded = false
                     }
             ) {
@@ -214,14 +234,21 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {} // 클릭 불가능하게 해서 제목 메뉴 닫힘 방지
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {} // 클릭 불가능하게 해서 제목 메뉴 닫힘 방지
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     titleMenuExpanded = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
@@ -251,7 +278,10 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         stopwatchViewModel.setTitle(itemTitle)
                                         titleMenuExpanded = false
                                     },

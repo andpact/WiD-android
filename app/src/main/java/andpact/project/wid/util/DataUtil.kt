@@ -139,3 +139,15 @@ enum class PlayerState {
     Paused,
     Stopped
 }
+
+val searchFilterList = listOf(
+    "ByTitleOrContent",
+    "ByTitle",
+    "ByContent"
+)
+
+val searchFilterMap = mapOf(
+    "ByTitleOrContent" to "제목 + 내용",
+    "ByTitle" to "제목",
+    "ByContent" to "내용",
+)

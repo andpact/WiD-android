@@ -7,8 +7,10 @@ import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.*
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun SettingFragment() {
+fun SettingFragment(mainActivityNavController: NavController) {
 
     DisposableEffect(Unit) {
         Log.d("SettingFragment", "SettingFragment is being composed")
@@ -33,6 +36,11 @@ fun SettingFragment() {
         onDispose {
             Log.d("SettingFragment", "SettingFragment is being disposed")
         }
+    }
+
+    // 휴대폰 뒤로 가기 버튼 클릭 시
+    BackHandler(enabled = true) {
+        mainActivityNavController.popBackStack()
     }
 
     Column(
@@ -43,88 +51,35 @@ fun SettingFragment() {
         /**
          * 상단 바
          */
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-////                .background(MaterialTheme.colorScheme.background)
-//                .padding(horizontal = 16.dp)
-//                .height(56.dp)
-//        ) {
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp)
-//                    .align(Alignment.CenterStart)
-//                    .clickable {
-//                        navController.popBackStack()
-//                    },
-//                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-//                contentDescription = "뒤로 가기",
-//                tint = MaterialTheme.colorScheme.primary
-//            )
-//
-//            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
-//                Row(
-//                    modifier = Modifier
-//                        .padding(horizontal = 8.dp, vertical = 4.dp)
-//                        .align(Alignment.Center)
-//                        .background(
-//                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-//                                LimeGreen
-//                            } else {
-//                                OrangeRed
-//                            },
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                ) {
-//                    Text(
-//                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-//                        style = Typography.labelMedium,
-//                        color = White
-//                    )
-//
-//                    Text(
-//                        text = getDurationString(stopwatchPlayer.duration.value, 0),
-//                        style = Typography.labelMedium,
-//                        color = White,
-//                        fontFamily = FontFamily.Monospace
-//                    )
-//                }
-//            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
-//                Row(
-//                    modifier = Modifier
-//                        .align(Alignment.Center)
-//                        .background(
-//                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
-//                                LimeGreen
-//                            } else {
-//                                OrangeRed
-//                            },
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                ) {
-//                    Text(
-//                        text = titleMap[timerPlayer.title.value] ?: "공부",
-//                        style = Typography.labelMedium,
-//                        color = White
-//                    )
-//
-//                    Text(
-//                        text = getDurationString(timerPlayer.remainingTime.value, 0),
-//                        style = Typography.labelMedium,
-//                        color = White,
-//                        fontFamily = FontFamily.Monospace
-//                    )
-//                }
-//            } else {
-//                Text(
-//                    modifier = Modifier
-//                        .align(Alignment.Center),
-//                    text = "환경 설정",
-//                    style = Typography.titleLarge,
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-//            }
-//        }
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterStart)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        mainActivityNavController.popBackStack()
+                    },
+                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                contentDescription = "뒤로 가기",
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center),
+                text = "설정",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
 
         LazyColumn(
             modifier = Modifier

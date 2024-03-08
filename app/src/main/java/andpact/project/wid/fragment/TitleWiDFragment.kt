@@ -5,6 +5,7 @@ import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.TitleWiDViewModel
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -12,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -32,12 +34,63 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.Duration
 import java.time.LocalDate
 
 @Composable
-fun TitleWiDFragment() {
+fun TitleWiDFragment(titleWiDViewModel: TitleWiDViewModel) {
+    // 화면
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    // 뷰 모델
+//    val titleWiDViewModel: TitleWiDViewModel = viewModel()
+
+    // 날짜
+//    val today = LocalDate.now()
+    val today = titleWiDViewModel.today
+//    var startDate by remember { mutableStateOf(getFirstDateOfWeek(today)) }
+    val startDate = titleWiDViewModel.startDate.value
+//    var finishDate by remember { mutableStateOf(getLastDateOfWeek(today)) }
+    val finishDate = titleWiDViewModel.finishDate.value
+    val weekMonthPickerExpanded = titleWiDViewModel.weekMonthPickerExpanded.value
+
+    // 제목
+//    var selectedTitle by remember { mutableStateOf(titles[0]) }
+    val selectedTitle = titleWiDViewModel.selectedTitle.value
+//    var titleMenuExpanded by remember { mutableStateOf(false) }
+//    var titleMenuExpanded = titleWiDViewModel.titleMenuExpanded.value
+
+    // WiD
+//    val wiDService = WiDService(context = LocalContext.current)
+//    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
+//    val wiDList = titleWiDViewModel.wiDList
+//    val filteredWiDListByTitle by remember(wiDList, selectedTitle) { mutableStateOf(wiDList.filter { it.title == selectedTitle }) }
+    val filteredWiDListByTitle = titleWiDViewModel.filteredWiDListByTitle.value
+
+    // 기간
+//    var selectedPeriod by remember { mutableStateOf(periods[0]) }
+    val selectedPeriod = titleWiDViewModel.selectedPeriod.value
+//    var periodMenuExpanded by remember { mutableStateOf(false) }
+//    var periodMenuExpanded = titleWiDViewModel.periodMenuExpanded.value
+
+    // 합계
+//    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
+    val totalDurationMap = titleWiDViewModel.totalDurationMap.value
+
+    // 평균
+//    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
+    val averageDurationMap = titleWiDViewModel.averageDurationMap.value
+
+    // 최저
+//    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
+    val minDurationMap = titleWiDViewModel.minDurationMap.value
+
+    // 최고
+//    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
+    val maxDurationMap = titleWiDViewModel.maxDurationMap.value
 
     DisposableEffect(Unit) {
         Log.d("TitleWiDFragment", "TitleWiDFragment is being composed")
@@ -46,40 +99,6 @@ fun TitleWiDFragment() {
             Log.d("TitleWiDFragment", "TitleWiDFragment is being disposed")
         }
     }
-
-    // 화면
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-
-    // 날짜
-    val today = LocalDate.now()
-    var startDate by remember { mutableStateOf(getFirstDateOfWeek(today)) }
-    var finishDate by remember { mutableStateOf(getLastDateOfWeek(today)) }
-
-    // 제목
-    var selectedTitle by remember { mutableStateOf(titles[0]) }
-    var titleMenuExpanded by remember { mutableStateOf(false) }
-
-    // WiD
-    val wiDService = WiDService(context = LocalContext.current)
-    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
-    val filteredWiDListByTitle by remember(wiDList, selectedTitle) { mutableStateOf(wiDList.filter { it.title == selectedTitle }) }
-
-    // 기간
-    var selectedPeriod by remember { mutableStateOf(periods[0]) }
-    var periodMenuExpanded by remember { mutableStateOf(false) }
-
-    // 합계
-    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
-
-    // 평균
-    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
-
-    // 최고
-    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
-
-    // 최고
-    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
 
     Box(
         modifier = Modifier
@@ -102,13 +121,16 @@ fun TitleWiDFragment() {
             ) {
                 Text(
                     modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
-
-                            periodMenuExpanded = true
+//                        .weight(1f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+//                            if (titleMenuExpanded) {
+//                                titleMenuExpanded = false
+//                            }
+//
+//                            periodMenuExpanded = true
                         },
                     text = when (selectedPeriod) {
                         periods[0] -> getPeriodStringOfWeek(firstDayOfWeek = startDate, lastDayOfWeek = finishDate)
@@ -121,50 +143,57 @@ fun TitleWiDFragment() {
                     textAlign = TextAlign.Start
                 )
 
-//                Spacer(
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+//                Icon(
 //                    modifier = Modifier
-//                        .weight(1f)
+//                        .background(
+//                            color = MaterialTheme.colorScheme.surface,
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                        .padding(4.dp)
+//                        .clickable {
+//                            if (periodMenuExpanded) {
+//                                periodMenuExpanded = false
+//                            }
+//
+//                            titleMenuExpanded = true
+//                        }
+//                        .size(24.dp),
+//                    painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
+//                    contentDescription = "제목 선택",
+//                    tint = MaterialTheme.colorScheme.secondary
 //                )
 
                 Icon(
                     modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(4.dp)
-                        .clickable {
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
-
-                            titleMenuExpanded = true
-                        }
-                        .size(24.dp),
-                    painter = painterResource(titleIconMap[selectedTitle] ?: R.drawable.baseline_title_24),
-                    contentDescription = "제목 선택",
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-
-                Icon(
-                    modifier = Modifier
-                        .clickable {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
-
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+//                            if (titleMenuExpanded) {
+//                                titleMenuExpanded = false
+//                            }
+//
+//                            if (periodMenuExpanded) {
+//                                periodMenuExpanded = false
+//                            }
 
                             when (selectedPeriod) {
                                 periods[0] -> {
-                                    startDate = startDate.minusWeeks(1)
-                                    finishDate = finishDate.minusWeeks(1)
+                                    val newStartDate = startDate.minusWeeks(1)
+                                    val newFinishDate = finishDate.minusWeeks(1)
+
+                                    titleWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                                 }
                                 periods[1] -> {
-                                    startDate = getFirstDateOfMonth(startDate.minusDays(15))
-                                    finishDate = getLastDateOfMonth(finishDate.minusDays(45))
+                                    val newStartDate = getFirstDateOfMonth(startDate.minusDays(15))
+                                    val newFinishDate = getLastDateOfMonth(finishDate.minusDays(45))
+
+                                    titleWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                                 }
                             }
                         }
@@ -178,27 +207,37 @@ fun TitleWiDFragment() {
                     modifier = Modifier
                         .clickable(
                             enabled = when (selectedPeriod) {
-                                periods[0] -> !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
-                                periods[1] -> !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(today))
+                                periods[0] -> !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(
+                                    today
+                                ))
+                                periods[1] -> !(startDate == getFirstDateOfMonth(today) && finishDate == getLastDateOfMonth(
+                                    today
+                                ))
                                 else -> false
-                            }
+                            },
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
                         ) {
-                            if (titleMenuExpanded) {
-                                titleMenuExpanded = false
-                            }
-
-                            if (periodMenuExpanded) {
-                                periodMenuExpanded = false
-                            }
+//                            if (titleMenuExpanded) {
+//                                titleMenuExpanded = false
+//                            }
+//
+//                            if (periodMenuExpanded) {
+//                                periodMenuExpanded = false
+//                            }
 
                             when (selectedPeriod) {
                                 periods[0] -> {
-                                    startDate = startDate.plusWeeks(1)
-                                    finishDate = finishDate.plusWeeks(1)
+                                    val newStartDate = startDate.plusWeeks(1)
+                                    val newFinishDate = finishDate.plusWeeks(1)
+
+                                    titleWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                                 }
                                 periods[1] -> {
-                                    startDate = getFirstDateOfMonth(startDate.plusDays(45))
-                                    finishDate = getLastDateOfMonth(finishDate.plusDays(15))
+                                    val newStartDate = getFirstDateOfMonth(startDate.plusDays(45))
+                                    val newFinishDate = getLastDateOfMonth(finishDate.plusDays(15))
+
+                                    titleWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                                 }
                             }
                         }
@@ -372,29 +411,31 @@ fun TitleWiDFragment() {
         }
 
         /**
-         * 대화상자
+         * 월 선택 대화상자
          */
         AnimatedVisibility(
             modifier = Modifier
                 .fillMaxSize(),
-            visible = titleMenuExpanded || periodMenuExpanded,
+            visible = weekMonthPickerExpanded,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(titleMenuExpanded || periodMenuExpanded) {
-                        titleMenuExpanded = false
-                        periodMenuExpanded = false
+                    .clickable(
+                        enabled = weekMonthPickerExpanded,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+//                        expandDatePicker = false
+                        titleWiDViewModel.setWeekMonthPickerExpanded(expand = false)
                     }
             ) {
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
-//                        .height(screenHeight / 2)
                         .padding(16.dp)
-                        .then(if (titleMenuExpanded) Modifier.height(screenHeight / 2) else Modifier) // 제목 대화상자만 높이를 지정함.
                         .shadow(
                             elevation = 2.dp,
                             shape = RoundedCornerShape(8.dp),
@@ -407,177 +448,53 @@ fun TitleWiDFragment() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (titleMenuExpanded) {
-                        Box(
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
+                    ) {
+                        Icon(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(false) {}
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable {
-                                        titleMenuExpanded = false
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "제목 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "제목 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-//                        HorizontalDivider()
-
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(titles.size) { index ->
-                                val itemTitle = titles[index]
-                                val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedTitle = itemTitle
-                                            titleMenuExpanded = false
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically,
+                                .padding(16.dp)
+                                .size(24.dp)
+                                .align(Alignment.CenterStart)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
                                 ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .size(24.dp),
-                                        painter = painterResource(id = iconResourceId),
-                                        contentDescription = "제목",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
+                                    titleWiDViewModel.setWeekMonthPickerExpanded(expand = false)
+                                },
+                            painter = painterResource(id = R.drawable.baseline_close_24),
+                            contentDescription = "주 & 월 선택 메뉴 닫기",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
 
-                                    Text(
-                                        text = titleMap[itemTitle] ?: "공부",
-                                        style = Typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    )
-
-                                    if (selectedTitle == itemTitle) {
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(16.dp),
-                                            text = "선택됨",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    } else if (periodMenuExpanded) {
-                        Box(
+                        Text(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(false) {}
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable {
-                                        periodMenuExpanded = false
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "기간 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                                .align(Alignment.Center),
+                            text = "주 & 월 선택",
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
 
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "기간 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-//                        HorizontalDivider()
-
-                        LazyColumn(
+                        Text(
                             modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(periods.size) { index ->
-                                val itemPeriod = periods[index]
-//                                val iconResourceId = titleIconMap[itemTitle] ?: R.drawable.baseline_calendar_month_24 // 기본 아이콘
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedPeriod = itemPeriod
-                                            periodMenuExpanded = false
-
-                                            when (selectedPeriod) {
-                                                periods[0] -> {
-                                                    startDate = getFirstDateOfWeek(today)
-                                                    finishDate = getLastDateOfWeek(today)
-                                                }
-                                                periods[1] -> {
-                                                    startDate = getFirstDateOfMonth(today)
-                                                    finishDate = getLastDateOfMonth(today)
-                                                }
-                                            }
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically,
+                                .align(Alignment.CenterEnd)
+                                .padding(horizontal = 16.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
                                 ) {
-//                                    Icon(
-//                                        modifier = Modifier
-//                                            .padding(16.dp)
-//                                            .size(24.dp),
-//                                        painter = painterResource(id = iconResourceId),
-//                                        contentDescription = "제목",
-//                                        tint = MaterialTheme.colorScheme.primary
-//                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = periodMap[itemPeriod] ?: "일주일",
-                                        style = Typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    )
-
-                                    if (selectedPeriod == itemPeriod) {
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(16.dp),
-                                            text = "선택됨",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                                    titleWiDViewModel.setWeekMonthPickerExpanded(expand = false)
+                                },
+                            text = "확인",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

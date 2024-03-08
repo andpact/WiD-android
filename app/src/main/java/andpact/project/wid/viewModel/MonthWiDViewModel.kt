@@ -11,6 +11,9 @@ import androidx.lifecycle.AndroidViewModel
 import java.time.Duration
 import java.time.LocalDate
 
+/**
+ * _변수는 뷰 모델 내부에서 사용됨.
+ */
 class MonthWiDViewModel(application: Application) : AndroidViewModel(application) {
     init {
         Log.d("MonthWiDViewModel", "MonthWiDViewModel is created")
@@ -27,6 +30,8 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     val startDate: State<LocalDate> = _startDate
     private val _finishDate = mutableStateOf(getLastDateOfMonth(today))
     val finishDate: State<LocalDate> = _finishDate
+    private val _monthPickerExpanded = mutableStateOf(false)
+    val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
 
     // WiD
     private val wiDService = WiDService(context = application)
@@ -36,13 +41,13 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     // 합계 selectedMap만 화면에 표시하니 state로 선언할 필요 없음.
     var totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 평균
     var averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 최소
     var minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 최고
     var maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
 
     private val _selectedMapText = mutableStateOf("합계")
@@ -51,7 +56,14 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     private val _selectedMap = mutableStateOf(totalDurationMap)
     var selectedMap: State<Map<String, Duration>> = _selectedMap
 
+    fun setMonthPickerExpanded(expand: Boolean) {
+        Log.d("MonthWiDViewModel", "setMonthPickerExpanded executed")
+        _monthPickerExpanded.value = expand
+    }
+
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
+        Log.d("MonthWiDViewModel", "setStartDateAndFinishDate executed")
+
         _startDate.value = startDate
         _finishDate.value = finishDate
 
@@ -66,6 +78,8 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateSelectedMap(newText: String, newMap: Map<String, Duration>) {
+        Log.d("MonthWiDViewModel", "updateSelectedMap executed")
+
         _selectedMapText.value = newText
         _selectedMap.value = newMap
     }

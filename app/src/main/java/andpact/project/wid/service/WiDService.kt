@@ -69,18 +69,18 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
         return newRowId
     }
 
-    fun getWiDCount(): Int {
-        Log.d("WiDService", "getWiDCount executed")
-
-        val db = readableDatabase
-        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_NAME", null)
-        cursor.moveToFirst()
-        val count = cursor.getInt(0)
-        cursor.close()
-        db.close()
-
-        return count
-    }
+//    fun getWiDCount(): Int {
+//        Log.d("WiDService", "getWiDCount executed")
+//
+//        val db = readableDatabase
+//        val cursor = db.rawQuery("SELECT COUNT(*) FROM $TABLE_NAME", null)
+//        cursor.moveToFirst()
+//        val count = cursor.getInt(0)
+//        cursor.close()
+//        db.close()
+//
+//        return count
+//    }
 
     fun checkWiDExistence(startDate: LocalDate, finishDate: LocalDate): Map<LocalDate, Boolean> {
         val db = readableDatabase

@@ -74,13 +74,13 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     val timerTopBottomBarVisible: State<Boolean> = _timerTopBottomBarVisible
 
     fun setTitle(newTitle: String) {
-        Log.d("TimerPlayer", "setTitle executed")
+        Log.d("TimerViewModel", "setTitle executed")
 
         _title.value = newTitle
     }
 
     fun setSelectedTime(newSelectedTime: Duration) {
-        Log.d("TimerPlayer", "setRemainingTime executed")
+        Log.d("TimerViewModel", "setRemainingTime executed")
 
         _seletedTime.value = newSelectedTime
     }
@@ -92,13 +92,13 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
 //    }
 
     fun setTimerTopBottomBarVisible(timerTopBottomBarVisible: Boolean) {
-        Log.d("TimerPlayer", "setTimerTopBottomBarVisible executed")
+        Log.d("TimerViewModel", "setTimerTopBottomBarVisible executed")
 
         _timerTopBottomBarVisible.value = timerTopBottomBarVisible
     }
 
     fun startTimer() {
-        Log.d("TimerPlayer", "startTimer executed")
+        Log.d("TimerViewModel", "startTimer executed")
 
         timer?.cancel()
         _timerState.value = PlayerState.Started
@@ -135,7 +135,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun pauseTimer() {
-        Log.d("TimerPlayer", "pauseTimer executed")
+        Log.d("TimerViewModel", "pauseTimer executed")
 
         timer?.cancel()
         _timerState.value = PlayerState.Paused
@@ -192,7 +192,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun stopTimer() {
-        Log.d("TimerPlayer", "stopTimer executed")
+        Log.d("TimerViewModel", "stopTimer executed")
 
         timer?.cancel()
         _timerState.value = PlayerState.Stopped

@@ -3,22 +3,26 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
+import andpact.project.wid.viewModel.DayDiaryViewModel
+import andpact.project.wid.viewModel.SearchViewModel
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
@@ -28,8 +32,23 @@ fun DiaryDisplayFragment(mainActivityNavController: NavController) {
     // 화면
     val pages = listOf("일별 조회", "랜덤 조회", "검색 조회")
     val pagerState = rememberPagerState(pageCount = { pages.size })
-
     val coroutineScope = rememberCoroutineScope()
+
+    // 뷰모델
+    val dayDiaryViewModel: DayDiaryViewModel = viewModel()
+    val datePickerExpanded = dayDiaryViewModel.expandDatePicker.value
+    val searchViewModel: SearchViewModel = viewModel()
+
+    // 검색
+//    val searchFilter = searchViewModel.searchFilter.value
+    var searchFilterExpanded by remember { mutableStateOf(false) }
+
+    BackHandler(
+        enabled = datePickerExpanded,
+        onBack = {
+            dayDiaryViewModel.setExpandDatePicker(expand = false)
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -39,98 +58,100 @@ fun DiaryDisplayFragment(mainActivityNavController: NavController) {
         /**
          * 상단 바
          */
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-////                .background(MaterialTheme.colorScheme.background)
-//                .padding(horizontal = 16.dp)
-//                .height(56.dp)
-//        ) {
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp)
-//                    .align(Alignment.CenterStart)
-//                    .clickable {
-//                        navController.popBackStack()
-//                    },
-//                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-//                contentDescription = "뒤로 가기",
-//                tint = MaterialTheme.colorScheme.primary
-//            )
-//
-//            if (stopwatchPlayer.stopwatchState.value != PlayerState.Stopped) {
-//                Row(
-//                    modifier = Modifier
-//                        .padding(horizontal = 8.dp, vertical = 4.dp)
-//                        .align(Alignment.Center)
-//                        .background(
-//                            color = if (stopwatchPlayer.stopwatchState.value == PlayerState.Started) {
-//                                LimeGreen
-//                            } else {
-//                                OrangeRed
-//                            },
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                ) {
-//                    Text(
-//                        text = titleMap[stopwatchPlayer.title.value] ?: "공부",
-//                        style = Typography.labelMedium,
-//                        color = White
-//                    )
-//
-//                    Text(
-//                        text = getDurationString(stopwatchPlayer.duration.value, 0),
-//                        style = Typography.labelMedium,
-//                        color = White,
-//                        fontFamily = FontFamily.Monospace
-//                    )
-//                }
-//            } else if (timerPlayer.timerState.value != PlayerState.Stopped) {
-//                Row(
-//                    modifier = Modifier
-//                        .align(Alignment.Center)
-//                        .background(
-//                            color = if (timerPlayer.timerState.value == PlayerState.Started) {
-//                                LimeGreen
-//                            } else {
-//                                OrangeRed
-//                            },
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                ) {
-//                    Text(
-//                        text = titleMap[timerPlayer.title.value] ?: "공부",
-//                        style = Typography.labelMedium,
-//                        color = White
-//                    )
-//
-//                    Text(
-//                        text = getDurationString(timerPlayer.remainingTime.value, 0),
-//                        style = Typography.labelMedium,
-//                        color = White,
-//                        fontFamily = FontFamily.Monospace
-//                    )
-//                }
-//            } else {
-//                Text(
-//                    modifier = Modifier
-//                        .align(Alignment.Center),
-//                    text = "다이어리 조회",
-//                    style = Typography.titleLarge,
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-//            }
-//        }
+        Box {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "다이어리",
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                if (pagerState.currentPage == 2) {
+                    Row(
+                        modifier = Modifier
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                searchFilterExpanded = true
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        searchFilterExpanded = true
+                                    },
+                                painter = painterResource(R.drawable.baseline_filter_alt_24),
+                                contentDescription = "검색 필터 설정",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+
+                            DropdownMenu(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.tertiary),
+                                expanded = searchFilterExpanded,
+                                onDismissRequest = { searchFilterExpanded = false }
+                            ) {
+                                searchFilterList.forEach { filter ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = searchFilterMap[filter] ?: "",
+                                                style = Typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        },
+                                        onClick = {
+                                            searchViewModel.setSearchFilter(filter)
+                                            searchFilterExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 대화상자 제거용
+            if (datePickerExpanded) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+//                            enabled = datePickerExpanded,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            dayDiaryViewModel.setExpandDatePicker(expand = false)
+                        }
+                )
+            }
+        }
 
         /**
          * 상단 탭
          */
-//        Row( // 좌, 우 상단 코너 만들기 위해 선언함.
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(MaterialTheme.colorScheme.background)
-//                .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp))
-//        ) {
+        Box{
             ScrollableTabRow(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 selectedTabIndex = pagerState.currentPage,
@@ -147,23 +168,44 @@ fun DiaryDisplayFragment(mainActivityNavController: NavController) {
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-//                                pagerState.animateScrollToPage(index)
+    //                                pagerState.animateScrollToPage(index)
                                 pagerState.scrollToPage(index)
                             }
                         }
                     )
                 }
             }
-//        }
+
+            // 대화상자 제거용
+            if (datePickerExpanded) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+//                            enabled = datePickerExpanded,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            dayDiaryViewModel.setExpandDatePicker(expand = false)
+                        }
+                )
+            }
+        }
 
         /**
          * 컨텐츠
          */
         HorizontalPager(state = pagerState) { page ->
             when (page) {
-                0 -> DayDiaryFragment(mainActivityNavController = mainActivityNavController)
+                0 -> DayDiaryFragment(
+                    mainActivityNavController = mainActivityNavController,
+                    dayDiaryViewModel = dayDiaryViewModel
+                )
                 1 -> RandomDiaryFragment(mainActivityNavController = mainActivityNavController)
-                2 -> SearchFragment(mainActivityNavController = mainActivityNavController)
+                2 -> SearchFragment(
+                    mainActivityNavController = mainActivityNavController,
+                    searchViewModel = searchViewModel
+                )
             }
         }
     }

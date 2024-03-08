@@ -10,12 +10,14 @@ import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,18 +55,16 @@ fun MainFragment(mainActivityNavController: NavController, stopwatchViewModel: S
     // 화면
     val mainFragmentNavController: NavHostController = rememberNavController()
 
-    val homeViewModel: HomeViewModel = viewModel()
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary),
-        topBar = {
-            MainFragmentTopBar(
-                mainFragmentNavController = mainFragmentNavController,
-                stopwatchViewModel = stopwatchViewModel,
-                timerViewModel = timerViewModel
-            )},
+//        topBar = {
+//            MainFragmentTopBar(
+//                mainFragmentNavController = mainFragmentNavController,
+//                stopwatchViewModel = stopwatchViewModel,
+//                timerViewModel = timerViewModel
+//            )},
         bottomBar = {
             MainFragmentBottomBar(
                 mainFragmentNavController = mainFragmentNavController,
@@ -80,49 +80,48 @@ fun MainFragment(mainActivityNavController: NavController, stopwatchViewModel: S
                 mainActivityNavController = mainActivityNavController,
                 mainFragmentNavController = mainFragmentNavController,
                 stopwatchViewModel = stopwatchViewModel,
-                timerViewModel = timerViewModel,
-                homeViewModel = homeViewModel
+                timerViewModel = timerViewModel
             )
         }
     }
 }
 
-@Composable
-fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
-    val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    val title = when (currentRoute) {
-        MainFragmentDestinations.HomeFragmentDestination.route -> "홈"
-        MainFragmentDestinations.WiDToolFragmentDestination.route -> "WiD 도구"
-        MainFragmentDestinations.WiDDisplayFragmentDestination.route -> "WiD 조회"
-        MainFragmentDestinations.DiaryDisplayFragmentDestination.route -> "다이어리 조회"
-        MainFragmentDestinations.SettingFragmentDestination.route -> "환경 설정"
-        else -> "" // 이 경우에 대한 기본값 설정
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .background(MaterialTheme.colorScheme.secondary)
-            .alpha(
-                if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
-                    1f
-                } else {
-                    0f
-                }
-            )
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = Typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
+//@Composable
+//fun MainFragmentTopBar(mainFragmentNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
+//    val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
+//    val currentRoute = navBackStackEntry?.destination?.route
+//
+//    val title = when (currentRoute) {
+//        MainFragmentDestinations.HomeFragmentDestination.route -> "홈"
+//        MainFragmentDestinations.WiDToolFragmentDestination.route -> "WiD 도구"
+//        MainFragmentDestinations.WiDDisplayFragmentDestination.route -> "WiD 조회"
+//        MainFragmentDestinations.DiaryDisplayFragmentDestination.route -> "다이어리 조회"
+//        MainFragmentDestinations.SettingFragmentDestination.route -> "환경 설정"
+//        else -> "" // 이 경우에 대한 기본값 설정
+//    }
+//
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(56.dp)
+//            .background(MaterialTheme.colorScheme.secondary)
+//            .alpha(
+//                if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
+//                    1f
+//                } else {
+//                    0f
+//                }
+//            )
+//            .padding(horizontal = 16.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Text(
+//            text = title,
+//            style = Typography.titleLarge,
+//            color = MaterialTheme.colorScheme.primary
+//        )
+//    }
+//}
 
 @Composable
 fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
@@ -134,7 +133,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
         MainFragmentDestinations.WiDToolFragmentDestination,
         MainFragmentDestinations.WiDDisplayFragmentDestination,
         MainFragmentDestinations.DiaryDisplayFragmentDestination,
-        MainFragmentDestinations.SettingFragmentDestination
+//        MainFragmentDestinations.SettingFragmentDestination
     )
 
     Column(
@@ -191,7 +190,11 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
                 if (stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
                     Icon(
                         modifier = Modifier
-                            .clickable(stopwatchViewModel.stopwatchState.value == PlayerState.Paused) {
+                            .clickable(
+                                enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Paused,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
                                 stopwatchViewModel.stopStopwatch()
                             }
 //                            .padding(16.dp)
@@ -204,7 +207,10 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
 
                 Icon(
                     modifier = Modifier
-                        .clickable { // 스톱 워치 모든 상태일 때 클릭 가능
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { // 스톱 워치 모든 상태일 때 클릭 가능
                             if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) { // 스톱 워치 시작 상태
                                 stopwatchViewModel.pauseStopwatch()
                             } else { // 스톱 워치 중지, 정지 상태
@@ -266,7 +272,11 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
                 if (timerViewModel.timerState.value == PlayerState.Paused) {
                     Icon(
                         modifier = Modifier
-                            .clickable(timerViewModel.timerState.value == PlayerState.Paused) {
+                            .clickable(
+                                enabled = timerViewModel.timerState.value == PlayerState.Paused,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
                                 timerViewModel.stopTimer()
                             }
                             .size(24.dp),
@@ -278,7 +288,10 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
 
                 Icon(
                     modifier = Modifier
-                        .clickable { // 타이머 모든 상태일 때 클릭 가능
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { // 타이머 모든 상태일 때 클릭 가능
                             if (timerViewModel.timerState.value == PlayerState.Started) { // 타이머 시작 상태
                                 timerViewModel.pauseTimer()
                             } else { // 타이머 중지, 정지 상태
@@ -347,8 +360,7 @@ fun MainFragmentNavigationGraph(
     mainActivityNavController: NavController,
     mainFragmentNavController: NavHostController,
     stopwatchViewModel: StopwatchViewModel,
-    timerViewModel: TimerViewModel,
-    homeViewModel: HomeViewModel
+    timerViewModel: TimerViewModel
 ) {
     NavHost(
         navController = mainFragmentNavController,
@@ -356,7 +368,7 @@ fun MainFragmentNavigationGraph(
     ) {
         // 홈
         composable(MainFragmentDestinations.HomeFragmentDestination.route) {
-            HomeFragment(homeViewModel = homeViewModel)
+            HomeFragment(mainActivityNavController = mainActivityNavController)
         }
 
         // WiD 도구
@@ -376,11 +388,6 @@ fun MainFragmentNavigationGraph(
         // 다이어리 조회
         composable(MainFragmentDestinations.DiaryDisplayFragmentDestination.route) {
             DiaryDisplayFragment(mainActivityNavController = mainActivityNavController)
-        }
-
-        // 환경 설정
-        composable(MainFragmentDestinations.SettingFragmentDestination.route) {
-            SettingFragment()
         }
     }
 }
@@ -405,10 +412,6 @@ sealed class MainFragmentDestinations(
     object DiaryDisplayFragmentDestination : MainFragmentDestinations(
         icon = R.drawable.baseline_calendar_month_24,
         route = "diary_display_fragment",
-    )
-    object SettingFragmentDestination : MainFragmentDestinations(
-        icon = R.drawable.baseline_settings_24,
-        route = "setting_fragment",
     )
 }
 

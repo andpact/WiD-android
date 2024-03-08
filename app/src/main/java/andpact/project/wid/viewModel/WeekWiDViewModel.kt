@@ -26,6 +26,8 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
     val startDate: State<LocalDate> = _startDate
     private val _finishDate = mutableStateOf(getLastDateOfWeek(today))
     val finishDate: State<LocalDate> = _finishDate
+    private val _weekPickerExpanded = mutableStateOf(false)
+    val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
 
     // WiD
     private val wiDService = WiDService(context = application)
@@ -58,6 +60,11 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
     private val _selectedMap = mutableStateOf(totalDurationMap)
     var selectedMap: State<Map<String, Duration>> = _selectedMap
 
+    fun setWeekPickerExpanded(expand: Boolean) {
+        Log.d("WeekWiDViewModel", "setWeekPickerExpanded executed")
+        _weekPickerExpanded.value = expand
+    }
+
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
         _startDate.value = startDate
         _finishDate.value = finishDate
@@ -73,6 +80,8 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun updateSelectedMap(newText: String, newMap: Map<String, Duration>) {
+        Log.d("WeekWiDViewModel", "updateSelectedMap executed")
+
         _selectedMapText.value = newText
         _selectedMap.value = newMap
     }

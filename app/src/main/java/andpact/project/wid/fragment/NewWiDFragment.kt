@@ -11,6 +11,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -159,7 +160,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                 modifier = Modifier
                     .size(24.dp)
                     .align(Alignment.CenterStart)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         mainActivityNavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
@@ -178,7 +182,11 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .clickable(!isTimeOverlap && durationExist) {
+                    .clickable(
+                        enabled = !isTimeOverlap && durationExist,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         val newWiD = WiD(
                             id = 0,
                             date = date,
@@ -300,7 +308,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         titleMenuExpanded = !titleMenuExpanded
                     },
                 verticalAlignment = Alignment.CenterVertically
@@ -357,7 +368,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         expandStartPicker = !expandStartPicker
                     },
                 verticalAlignment = Alignment.CenterVertically
@@ -414,7 +428,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(IntrinsicSize.Min)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         expandFinishPicker = !expandFinishPicker
                     },
                 verticalAlignment = Alignment.CenterVertically
@@ -919,7 +936,11 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
             modifier = Modifier
                 .fillMaxSize()
 //                .clickable(expandDatePicker || titleMenuExpanded || expandStartPicker || expandFinishPicker) {
-                .clickable(titleMenuExpanded || expandStartPicker || expandFinishPicker) {
+                .clickable(
+                    enabled = titleMenuExpanded || expandStartPicker || expandFinishPicker,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
 //                    expandDatePicker = false
                     titleMenuExpanded = false
                     expandStartPicker = false
@@ -1009,14 +1030,21 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {}
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     titleMenuExpanded = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
@@ -1046,7 +1074,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         title = itemTitle
                                         titleMenuExpanded = false
                                     },
@@ -1090,14 +1121,21 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {}
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     expandStartPicker = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
@@ -1117,7 +1155,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(horizontal = 16.dp)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     expandStartPicker = false
                                     val newStart = LocalTime.of(
                                         startTimePickerState.hour,
@@ -1148,14 +1189,21 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {}
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     expandFinishPicker = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
@@ -1175,7 +1223,10 @@ fun NewWiDFragment(mainActivityNavController: NavController, startParam: LocalTi
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .padding(horizontal = 16.dp)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     expandFinishPicker = false
                                     val newFinish = LocalTime.of(
                                         finishTimePickerState.hour,

@@ -1,5 +1,6 @@
 package andpact.project.wid.viewModel
 
+import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.getFirstDateOfMonth
@@ -34,6 +35,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val wiDService = WiDService(context = application)
     private val _wiDExistenceList = mutableStateOf(wiDService.checkWiDExistence(startDate = startDate, finishDate = finishDate))
     val wiDExistenceList: State<Map<LocalDate, Boolean>> = _wiDExistenceList
+    private val _lastWiD = mutableStateOf(wiDService.readWiDById(1)) // 메서드 변경해야함.!
+    val lastWiD: State<WiD?> = _lastWiD
 
     // 다이어리
     private val diaryService = DiaryService(context = application)

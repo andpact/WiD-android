@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -95,7 +96,11 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.secondary)
-            .clickable(enabled = timerViewModel.timerState.value == PlayerState.Started) {
+            .clickable(
+                enabled = timerViewModel.timerState.value == PlayerState.Started,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
                 timerViewModel.setTimerTopBottomBarVisible(!timerViewModel.timerTopBottomBarVisible.value)
 //                timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
@@ -177,7 +182,10 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(itemHeight)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         coroutineScope.launch {
                                             lazyHourListState.animateScrollToItem(index - 1) // 아이템 클릭 시 열의 가운데로 오도록 함.
                                         }
@@ -220,7 +228,10 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(itemHeight)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         coroutineScope.launch {
                                             lazyMinuteListState.animateScrollToItem(index - 1) // 아이템 클릭 시 열의 가운데로 오도록 함.
                                         }
@@ -263,7 +274,10 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(itemHeight)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         coroutineScope.launch {
                                             lazySecondListState.animateScrollToItem(index - 1) // 아이템 클릭 시 열의 가운데로 오도록 함.
                                         }
@@ -400,7 +414,11 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                 Icon(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable(timerViewModel.timerState.value == PlayerState.Stopped) {
+                        .clickable(
+                            enabled = timerViewModel.timerState.value == PlayerState.Stopped,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             titleMenuExpanded = true
                         }
                         .background(
@@ -425,7 +443,10 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                     Icon(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable {
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
                                 timerViewModel.stopTimer()
 
                                 // 초기화 버튼을 누르면 0시로 초기화 해버림.
@@ -447,7 +468,11 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                 Icon(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .clickable(Duration.ZERO < timerViewModel.seletedTime.value) {
+                        .clickable(
+                            enabled = Duration.ZERO < timerViewModel.seletedTime.value,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             if (timerViewModel.timerState.value == PlayerState.Started) {
                                 timerViewModel.pauseTimer()
                             } else {
@@ -490,7 +515,11 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable(titleMenuExpanded) {
+                    .clickable(
+                        enabled = titleMenuExpanded,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         titleMenuExpanded = false
                     }
             ) {
@@ -512,14 +541,21 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(false) {}
+                            .clickable(
+                                enabled = false,
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {}
                     ) {
                         Icon(
                             modifier = Modifier
                                 .padding(16.dp)
                                 .size(24.dp)
                                 .align(Alignment.CenterStart)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     titleMenuExpanded = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
@@ -549,7 +585,11 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable(timerViewModel.timerState.value == PlayerState.Stopped) {
+                                    .clickable(
+                                        enabled = timerViewModel.timerState.value == PlayerState.Stopped,
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
                                         timerViewModel.setTitle(itemTitle)
                                         titleMenuExpanded = false
                                     },

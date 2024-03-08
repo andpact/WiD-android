@@ -1,9 +1,6 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.fragment.DiaryFragment
-import andpact.project.wid.fragment.MainFragment
-import andpact.project.wid.fragment.NewWiDFragment
-import andpact.project.wid.fragment.WiDFragment
+import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.viewModel.StopwatchViewModel
 import andpact.project.wid.viewModel.TimerViewModel
@@ -46,8 +43,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     WiDTheme() {
+        // 네비게이션
         val mainActivityNavController: NavHostController = rememberNavController()
 
+        // 뷰 모델
         // 아래 두 방식의 차이가 없다?
 //        val stopwatchViewModel = StopwatchViewModel()
         val stopwatchViewModel: StopwatchViewModel = viewModel()
@@ -61,20 +60,32 @@ fun MainScreen() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            MainActivityNavigationGraph(mainActivityNavController = mainActivityNavController, stopwatchViewModel = stopwatchViewModel, timerViewModel = timerViewModel)
+            MainActivityNavigationGraph(
+                mainActivityNavController = mainActivityNavController,
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
+            )
         }
     }
 }
 
 @Composable // 네비게이션 그래프에는 NavController가 아닌 NavHostController가 파라미터로 들어감.
-fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
+fun MainActivityNavigationGraph(
+    mainActivityNavController: NavHostController,
+    stopwatchViewModel: StopwatchViewModel,
+    timerViewModel: TimerViewModel
+) {
     NavHost(
         navController = mainActivityNavController,
         startDestination = MainActivityDestinations.MainFragmentDestination.route
     ) {
         // 메인 프래그먼트
         composable(MainActivityDestinations.MainFragmentDestination.route) {
-            MainFragment(mainActivityNavController = mainActivityNavController, stopwatchViewModel = stopwatchViewModel, timerViewModel = timerViewModel)
+            MainFragment(
+                mainActivityNavController = mainActivityNavController,
+                stopwatchViewModel = stopwatchViewModel,
+                timerViewModel = timerViewModel
+            )
         }
 
         // 새로운 WiD
@@ -159,6 +170,25 @@ fun MainActivityNavigationGraph(mainActivityNavController: NavHostController, st
                 timerViewModel = timerViewModel
             )
         }
+
+        // 환경설정 프래그먼트
+        composable(
+            route = MainActivityDestinations.SettingFragmentDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            SettingFragment(mainActivityNavController = mainActivityNavController)
+        }
     }
 }
 
@@ -178,6 +208,9 @@ sealed class MainActivityDestinations(
     )
     object DiaryFragmentDestination : MainActivityDestinations(
         route = "diary_fragment",
+    )
+    object SettingFragmentDestination : MainActivityDestinations(
+        route = "setting_fragment",
     )
 }
 
