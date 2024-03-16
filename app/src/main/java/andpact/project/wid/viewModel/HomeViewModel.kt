@@ -1,5 +1,6 @@
 package andpact.project.wid.viewModel
 
+import andpact.project.wid.model.Diary
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
@@ -33,13 +34,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     // WiD
     private val wiDService = WiDService(context = application)
-    private val _wiDExistenceList = mutableStateOf(wiDService.checkWiDExistence(startDate = startDate, finishDate = finishDate))
-    val wiDExistenceList: State<Map<LocalDate, Boolean>> = _wiDExistenceList
-    private val _lastWiD = mutableStateOf(wiDService.readWiDById(1)) // 메서드 변경해야함.!
+//    private val _wiDExistenceList = mutableStateOf(wiDService.checkWiDExistence(startDate = startDate, finishDate = finishDate))
+//    val wiDExistenceList: State<Map<LocalDate, Boolean>> = _wiDExistenceList
+    private val _lastWiD = mutableStateOf(wiDService.readMostRecentWiD())
     val lastWiD: State<WiD?> = _lastWiD
 
     // 다이어리
     private val diaryService = DiaryService(context = application)
-    private val _diaryExistenceList = mutableStateOf(diaryService.checkDiaryExistence(startDate = startDate, finishDate = finishDate))
-    val diaryExistenceList: State<Map<LocalDate, Boolean>> = _diaryExistenceList
+    private val _lastDiary = mutableStateOf(diaryService.readMostRecentDiary())
+    val lastDiary: State<Diary?> = _lastDiary
+//    private val _diaryExistenceList = mutableStateOf(diaryService.checkDiaryExistence(startDate = startDate, finishDate = finishDate))
+//    val diaryExistenceList: State<Map<LocalDate, Boolean>> = _diaryExistenceList
+
+    private val _wiDList = mutableStateOf(
+        _lastDiary.value?.let { diary ->
+            wiDService.readDailyWiDListByDate(diary.date)
+        } ?: emptyList()
+    )
+    val wiDList: State<List<WiD>> = _wiDList
 }

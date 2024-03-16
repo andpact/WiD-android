@@ -69,34 +69,34 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         return count
     }
 
-    fun checkDiaryExistence(startDate: LocalDate, finishDate: LocalDate): Map<LocalDate, Boolean> {
-        val diaryExistenceMap = mutableMapOf<LocalDate, Boolean>()
-        val db = readableDatabase
-
-        var currentDate = startDate
-        while (currentDate <= finishDate) {
-            val dateString = currentDate.toString()
-            val cursor = db.query(
-                TABLE_NAME,
-                arrayOf(COLUMN_ID),
-                "$COLUMN_DATE = ?",
-                arrayOf(dateString),
-                null,
-                null,
-                null
-            )
-
-            val exists = cursor.count > 0
-            diaryExistenceMap[currentDate] = exists
-
-            cursor.close()
-            currentDate = currentDate.plusDays(1)
-        }
-
-        db.close()
-
-        return diaryExistenceMap
-    }
+//    fun checkDiaryExistence(startDate: LocalDate, finishDate: LocalDate): Map<LocalDate, Boolean> {
+//        val diaryExistenceMap = mutableMapOf<LocalDate, Boolean>()
+//        val db = readableDatabase
+//
+//        var currentDate = startDate
+//        while (currentDate <= finishDate) {
+//            val dateString = currentDate.toString()
+//            val cursor = db.query(
+//                TABLE_NAME,
+//                arrayOf(COLUMN_ID),
+//                "$COLUMN_DATE = ?",
+//                arrayOf(dateString),
+//                null,
+//                null,
+//                null
+//            )
+//
+//            val exists = cursor.count > 0
+//            diaryExistenceMap[currentDate] = exists
+//
+//            cursor.close()
+//            currentDate = currentDate.plusDays(1)
+//        }
+//
+//        db.close()
+//
+//        return diaryExistenceMap
+//    }
 
 //    fun getDiaryById(diaryId: Long): Diary? {
 //        val db = readableDatabase
@@ -123,6 +123,34 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 //            diary
 //        }
 //    }
+
+    fun readMostRecentDiary(): Diary? {
+        Log.d("DiaryService", "readMostRecentDiary executed")
+
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME ORDER BY $COLUMN_ID DESC LIMIT 1"
+
+        val cursor = db.rawQuery(selectQuery, null)
+
+        var diary: Diary? = null
+
+        with(cursor) {
+            if (moveToFirst()) {
+                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val content = getString(getColumnIndexOrThrow(COLUMN_CONTENT))
+
+                diary = Diary(id, date, title, content)
+            }
+            close()
+        }
+
+        db.close()
+
+        return diary
+    }
 
     fun readDiaryByDate(date: LocalDate): Diary? {
         Log.d("DiaryService", "getDiaryByDate executed")

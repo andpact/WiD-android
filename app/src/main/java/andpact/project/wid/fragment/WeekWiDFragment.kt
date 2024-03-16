@@ -147,7 +147,9 @@ fun WeekWiDFragment(weekWiDViewModel: WeekWiDViewModel) {
                 Icon(
                     modifier = Modifier
                         .clickable(
-                            enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today)),
+                            enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(
+                                today
+                            )),
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
@@ -430,7 +432,7 @@ fun WeekWiDFragment(weekWiDViewModel: WeekWiDViewModel) {
         }
 
         /**
-         * 월 선택 대화상자
+         * 주 선택 대화상자
          */
         AnimatedVisibility(
             modifier = Modifier
@@ -467,53 +469,94 @@ fun WeekWiDFragment(weekWiDViewModel: WeekWiDViewModel) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                enabled = false,
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {}
-                    ) {
-                        Icon(
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .clickable(
+//                                enabled = false,
+//                                interactionSource = remember { MutableInteractionSource() },
+//                                indication = null
+//                            ) {}
+//                    ) {
+//                        Icon(
+//                            modifier = Modifier
+//                                .padding(16.dp)
+//                                .size(24.dp)
+//                                .align(Alignment.CenterStart)
+//                                .clickable(
+//                                    interactionSource = remember { MutableInteractionSource() },
+//                                    indication = null
+//                                ) {
+//                                    weekWiDViewModel.setWeekPickerExpanded(expand = false)
+//                                },
+//                            painter = painterResource(id = R.drawable.baseline_close_24),
+//                            contentDescription = "주 선택 메뉴 닫기",
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.Center),
+//                            text = "주 선택",
+//                            style = Typography.titleMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.CenterEnd)
+//                                .padding(horizontal = 16.dp)
+//                                .clickable(
+//                                    interactionSource = remember { MutableInteractionSource() },
+//                                    indication = null
+//                                ) {
+//                                    weekWiDViewModel.setWeekPickerExpanded(expand = false)
+//                                },
+//                            text = "확인",
+//                            style = Typography.bodyMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//                    }
+
+                    repeat(5) { index -> // 0부터 시작
+
+                        val reverseIndex = 4 - index // 역순 인덱스 계산
+
+                        val firstDayOfWeek = getFirstDateOfWeek(today).minusWeeks(reverseIndex.toLong())
+                        val lastDayOfWeek = getLastDateOfWeek(today).minusWeeks(reverseIndex.toLong())
+
+                        Row(
                             modifier = Modifier
-                                .padding(16.dp)
-                                .size(24.dp)
-                                .align(Alignment.CenterStart)
+                                .fillMaxWidth()
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
+                                    weekWiDViewModel.setStartDateAndFinishDate(startDate = firstDayOfWeek, finishDate = lastDayOfWeek)
+
                                     weekWiDViewModel.setWeekPickerExpanded(expand = false)
                                 },
-                            painter = painterResource(id = R.drawable.baseline_close_24),
-                            contentDescription = "주 선택 메뉴 닫기",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                text = getPeriodStringOfWeek(firstDayOfWeek = firstDayOfWeek, lastDayOfWeek = lastDayOfWeek),
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
 
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.Center),
-                            text = "주 선택",
-                            style = Typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
 
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(horizontal = 16.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    weekWiDViewModel.setWeekPickerExpanded(expand = false)
-                                },
-                            text = "확인",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                            // Add radio button here
+                            RadioButton(
+                                selected = startDate == firstDayOfWeek && finishDate == lastDayOfWeek, // Set this according to your logic
+                                onClick = { },
+                            )
+                        }
                     }
                 }
             }

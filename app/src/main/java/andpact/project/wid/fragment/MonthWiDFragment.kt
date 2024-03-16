@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
@@ -475,121 +476,93 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                enabled = false,
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {}
-                    ) {
-                        Icon(
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .clickable(
+//                                enabled = false,
+//                                interactionSource = remember { MutableInteractionSource() },
+//                                indication = null
+//                            ) {}
+//                    ) {
+//                        Icon(
+//                            modifier = Modifier
+//                                .padding(16.dp)
+//                                .size(24.dp)
+//                                .align(Alignment.CenterStart)
+//                                .clickable(
+//                                    interactionSource = remember { MutableInteractionSource() },
+//                                    indication = null
+//                                ) {
+//                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
+//                                },
+//                            painter = painterResource(id = R.drawable.baseline_close_24),
+//                            contentDescription = "월 선택 메뉴 닫기",
+//                            tint = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.Center),
+//                            text = "월 선택",
+//                            style = Typography.titleMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//
+//                        Text(
+//                            modifier = Modifier
+//                                .align(Alignment.CenterEnd)
+//                                .padding(horizontal = 16.dp)
+//                                .clickable(
+//                                    interactionSource = remember { MutableInteractionSource() },
+//                                    indication = null
+//                                ) {
+//                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
+//                                },
+//                            text = "확인",
+//                            style = Typography.bodyMedium,
+//                            color = MaterialTheme.colorScheme.primary
+//                        )
+//                    }
+
+                    repeat(5) { index ->
+                        val reverseIndex = 4 - index // 역순 인덱스 계산
+
+                        val currentDate = LocalDate.now()
+                        val targetDate = currentDate.minusMonths(reverseIndex.toLong())
+
+                        val firstDayOfMonth = YearMonth.from(targetDate).atDay(1)
+                        val lastDayOfMonth = YearMonth.from(targetDate).atEndOfMonth()
+
+                        Row(
                             modifier = Modifier
-                                .padding(16.dp)
-                                .size(24.dp)
-                                .align(Alignment.CenterStart)
+                                .fillMaxWidth()
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
+                                    monthWiDViewModel.setStartDateAndFinishDate(startDate = firstDayOfMonth, finishDate = lastDayOfMonth)
+
                                     monthWiDViewModel.setMonthPickerExpanded(expand = false)
                                 },
-                            painter = painterResource(id = R.drawable.baseline_close_24),
-                            contentDescription = "월 선택 메뉴 닫기",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.Center),
-                            text = "월 선택",
-                            style = Typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(horizontal = 16.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
-                                },
-                            text = "확인",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(32.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${currentYear}년",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Spacer(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                        Icon(
-                            modifier = Modifier
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    currentYear -= 1
-                                }
-                                .size(24.dp),
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "이전 달",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Icon(
-                            modifier = Modifier
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    currentYear += 1
-                                }
-                                .size(24.dp),
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "다음 달",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .fillMaxWidth()
-//                            .padding(bottom = 16.dp)
-                            .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                        columns = GridCells.Fixed(3),
-//                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(12) { index ->
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 modifier = Modifier
-                                    .padding(vertical = 16.dp)
-                                    .weight(1f)
-                                    .clickable {
-
-                                    },
-                                text = "${index}월",
+                                    .padding(16.dp),
+                                text = getPeriodStringOfMonth(date = firstDayOfMonth),
                                 style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Spacer(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            RadioButton(
+                                selected = startDate == firstDayOfMonth && finishDate == lastDayOfMonth,
+                                onClick = { },
                             )
                         }
                     }

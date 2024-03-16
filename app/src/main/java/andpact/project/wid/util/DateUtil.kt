@@ -220,6 +220,10 @@ fun getFirstDateOfMonth(date: LocalDate): LocalDate {
 
     val yearMonth = YearMonth.from(date)
     return yearMonth.atDay(1)
+
+//    return date.withDayOfMonth(1)
+//
+//    return date.minusMonths(1).withDayOfMonth(1)
 }
 
 fun getLastDateOfMonth(date: LocalDate): LocalDate {
@@ -227,6 +231,10 @@ fun getLastDateOfMonth(date: LocalDate): LocalDate {
 
     val yearMonth = YearMonth.from(date)
     return yearMonth.atEndOfMonth()
+
+//    return date.withDayOfMonth(date.lengthOfMonth())
+//
+//    return date.minusMonths(1).withDayOfMonth(date.minusMonths(1).lengthOfMonth())
 }
 
 //fun getDate1yearAgo(date: LocalDate): LocalDate {

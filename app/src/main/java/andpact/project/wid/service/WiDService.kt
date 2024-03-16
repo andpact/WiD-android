@@ -82,36 +82,36 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //        return count
 //    }
 
-    fun checkWiDExistence(startDate: LocalDate, finishDate: LocalDate): Map<LocalDate, Boolean> {
-        val db = readableDatabase
-        val wiDExistenceMap = mutableMapOf<LocalDate, Boolean>()
-
-        // startDate부터 finishDate까지 각 날짜에 대해 WiD 존재 여부 확인
-        var currentDate = startDate
-        while (currentDate <= finishDate) {
-            val dateString = currentDate.toString()
-            val cursor = db.query(
-                TABLE_NAME,
-                arrayOf(COLUMN_ID),
-                "$COLUMN_DATE = ?",
-                arrayOf(dateString),
-                null,
-                null,
-                null
-            )
-
-            // 해당 날짜에 WiD가 존재하는지 여부 판단
-            val exists = cursor.count > 0
-            wiDExistenceMap[currentDate] = exists
-
-            cursor.close()
-            currentDate = currentDate.plusDays(1) // 다음 날짜로 이동
-        }
-
-        db.close()
-
-        return wiDExistenceMap
-    }
+//    fun checkWiDExistence(startDate: LocalDate, finishDate: LocalDate): Map<LocalDate, Boolean> {
+//        val db = readableDatabase
+//        val wiDExistenceMap = mutableMapOf<LocalDate, Boolean>()
+//
+//        // startDate부터 finishDate까지 각 날짜에 대해 WiD 존재 여부 확인
+//        var currentDate = startDate
+//        while (currentDate <= finishDate) {
+//            val dateString = currentDate.toString()
+//            val cursor = db.query(
+//                TABLE_NAME,
+//                arrayOf(COLUMN_ID),
+//                "$COLUMN_DATE = ?",
+//                arrayOf(dateString),
+//                null,
+//                null,
+//                null
+//            )
+//
+//            // 해당 날짜에 WiD가 존재하는지 여부 판단
+//            val exists = cursor.count > 0
+//            wiDExistenceMap[currentDate] = exists
+//
+//            cursor.close()
+//            currentDate = currentDate.plusDays(1) // 다음 날짜로 이동
+//        }
+//
+//        db.close()
+//
+//        return wiDExistenceMap
+//    }
 
 //    fun getYearList(): List<String> {
 //        val years = mutableListOf<String>()
@@ -132,6 +132,36 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
 //
 //        return years
 //    }
+
+    fun readMostRecentWiD(): WiD? {
+        Log.d("WiDService", "readMostRecentWiD executed")
+
+        val db = readableDatabase
+
+        val selectQuery = "SELECT * FROM $TABLE_NAME ORDER BY $COLUMN_ID DESC LIMIT 1"
+
+        val cursor = db.rawQuery(selectQuery, null)
+
+        var wiD: WiD? = null
+
+        with(cursor) {
+            if (moveToFirst()) {
+                val id = getLong(getColumnIndexOrThrow(COLUMN_ID))
+                val date = LocalDate.parse(getString(getColumnIndexOrThrow(COLUMN_DATE)))
+                val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
+                val startTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_START)))
+                val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
+                val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
+
+                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+            }
+            close()
+        }
+
+        db.close()
+
+        return wiD
+    }
 
     fun readWiDById(id: Long): WiD? {
         Log.d("WiDService", "readWiDById executed")
