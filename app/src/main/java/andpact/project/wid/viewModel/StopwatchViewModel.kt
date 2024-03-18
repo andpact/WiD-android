@@ -2,10 +2,13 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.service.WiDService
+import andpact.project.wid.ui.theme.changeStatusBarAndNavigationBarColor
 import andpact.project.wid.util.PlayerState
 import andpact.project.wid.util.titles
 import android.app.Application
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -181,5 +184,6 @@ class StopwatchViewModel(application: Application) : AndroidViewModel(applicatio
         timer?.cancel()
         _stopwatchState.value = PlayerState.Stopped
         _duration.value = Duration.ZERO
+        prevDuration = Duration.ZERO
     }
 }

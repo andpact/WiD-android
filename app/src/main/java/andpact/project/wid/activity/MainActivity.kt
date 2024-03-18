@@ -2,6 +2,7 @@ package andpact.project.wid.activity
 
 import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
+import andpact.project.wid.ui.theme.changeStatusBarAndNavigationBarColor
 import andpact.project.wid.viewModel.StopwatchViewModel
 import andpact.project.wid.viewModel.TimerViewModel
 import android.app.Application
@@ -12,13 +13,16 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,15 +50,16 @@ fun MainScreen() {
         // 네비게이션
         val mainActivityNavController: NavHostController = rememberNavController()
 
-        // 뷰 모델
-        // 아래 두 방식의 차이가 없다?
-//        val stopwatchViewModel = StopwatchViewModel()
+        // 뷰 모델, 메인 네비게이션 그래프에 뷰 모델을 넘겨야 해서 여기에 선언함.
         val stopwatchViewModel: StopwatchViewModel = viewModel()
-
-//        val context = LocalContext.current
-//        val application = context.applicationContext as Application
-//        val timerViewModel = TimerViewModel(application)
         val timerViewModel: TimerViewModel = viewModel()
+
+        // 스톱워치나 타이머 상하단 바 제거헐 때, 네비게이션 바 색상 변경함.
+        if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
+            changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary)
+        } else {
+            changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary)
+        }
 
         Box(
             modifier = Modifier
@@ -75,6 +80,16 @@ fun MainActivityNavigationGraph(
     stopwatchViewModel: StopwatchViewModel,
     timerViewModel: TimerViewModel
 ) {
+    val navBackStackEntry by mainActivityNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // 화면 전환 시 상태 바, 네비게이션 바 색상을 변경함.
+    if (currentRoute != MainActivityDestinations.MainFragmentDestination.route) {
+        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary)
+    } else {
+        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary)
+    }
+
     NavHost(
         navController = mainActivityNavController,
         startDestination = MainActivityDestinations.MainFragmentDestination.route
@@ -90,7 +105,7 @@ fun MainActivityNavigationGraph(
 
         // 새로운 WiD
         composable(
-            route = MainActivityDestinations.NewWiDFragmentDestination.route + "/{startParam}/{finishParam}",
+            route = MainActivityDestinations.NewWiDFragmentDestination.route + "/{dateParam}/{startParam}/{finishParam}",
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
@@ -104,6 +119,11 @@ fun MainActivityNavigationGraph(
                 )
             }
         ) { backStackEntry ->
+            val dateParam = run {
+                val dateString = backStackEntry.arguments?.getString("dateParam") ?: LocalDate.now().toString()
+                LocalDate.parse(dateString)
+            }
+
             val startParam = run {
                 val startString = backStackEntry.arguments?.getString("startParam") ?: LocalTime.MIN.toString()
                 LocalTime.parse(startString)
@@ -115,6 +135,7 @@ fun MainActivityNavigationGraph(
 
             NewWiDFragment(
                 mainActivityNavController = mainActivityNavController,
+                date = dateParam,
                 startParam = startParam,
                 finishParam = finishParam
             )
@@ -172,23 +193,23 @@ fun MainActivityNavigationGraph(
         }
 
         // 환경설정 프래그먼트
-        composable(
-            route = MainActivityDestinations.SettingFragmentDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            SettingFragment(mainActivityNavController = mainActivityNavController)
-        }
+//        composable(
+//            route = MainActivityDestinations.SettingFragmentDestination.route,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            }
+//        ) {
+//            SettingFragment(mainActivityNavController = mainActivityNavController)
+//        }
     }
 }
 
@@ -209,9 +230,9 @@ sealed class MainActivityDestinations(
     object DiaryFragmentDestination : MainActivityDestinations(
         route = "diary_fragment",
     )
-    object SettingFragmentDestination : MainActivityDestinations(
-        route = "setting_fragment",
-    )
+//    object SettingFragmentDestination : MainActivityDestinations(
+//        route = "setting_fragment",
+//    )
 }
 
 //@Composable

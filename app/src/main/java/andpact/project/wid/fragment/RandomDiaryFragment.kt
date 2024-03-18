@@ -1,10 +1,12 @@
 package andpact.project.wid.fragment
 
+import andpact.project.wid.R
 import andpact.project.wid.activity.MainActivityDestinations
 import andpact.project.wid.model.Diary
 import andpact.project.wid.service.DiaryService
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.DarkGray
+import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.getDateStringWith3Lines
 import andpact.project.wid.util.getFirstDateOfMonth
@@ -20,12 +22,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,9 +38,14 @@ import androidx.navigation.NavController
 import java.time.LocalDate
 
 @Composable
-fun RandomDiaryFragment(mainActivityNavController: NavController) {
-    // 뷰 모델
-    val randomDiaryViewModel: RandomDiaryViewModel = viewModel()
+fun RandomDiaryFragment(mainActivityNavController: NavController, randomDiaryViewModel: RandomDiaryViewModel) {
+    // 다이어리
+    val totalDiaryCount = randomDiaryViewModel.totalDiaryCount
+    val diaryMap = randomDiaryViewModel.diaryMap.value
+    val diaryDateList = randomDiaryViewModel.diaryDateList.value
+
+    // WiD
+    val wiDMap = randomDiaryViewModel.wiDMap.value
 
     DisposableEffect(Unit) {
         Log.d("RandomDiaryFragment", "RandomDiaryFragment is being composed")
@@ -45,18 +54,6 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
             Log.d("RandomDiaryFragment", "RandomDiaryFragment is being disposed")
         }
     }
-
-    // 다이어리
-//    val diaryService = DiaryService(LocalContext.current)
-//    val totalDiaryCount = diaryService.getDiaryCount()
-    val totalDiaryCount = randomDiaryViewModel.totalDiaryCount
-//    var diaryList by remember { mutableStateOf(emptyList<Diary>()) }
-    val diaryMap = randomDiaryViewModel.diaryMap.value
-    val diaryDateList = randomDiaryViewModel.diaryDateList.value
-
-    // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-    val wiDMap = randomDiaryViewModel.wiDMap.value
 
     Column(
         modifier = Modifier
@@ -77,15 +74,23 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-//                        diaryList = diaryService.readRandomDiaries(diaryList)
                         randomDiaryViewModel.fetchRandomDiaryDates()
                     },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "다이어리 불러오기",
                     style = Typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = DeepSkyBlue
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    painter = painterResource(id = R.drawable.outline_add_box_24),
+                    contentDescription = "다이어리 불러오기",
+                    tint = DeepSkyBlue
                 )
             }
         } else {
@@ -110,7 +115,6 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-//                            diaryList = diaryService.readRandomDiaries(diaryList)
                             randomDiaryViewModel.fetchRandomDiaryDates()
                         }
                         .background(
@@ -121,12 +125,22 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                             },
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "다이어리 추가",
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Icon(
+                        modifier = Modifier
+                            .size(24.dp),
+                        painter = painterResource(id = R.drawable.outline_add_box_24),
+                        contentDescription = "새로운 WiD",
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
@@ -150,10 +164,6 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                             .padding(
                                 bottom = if (index == diaryDateList.size - 1) 32.dp else 0.dp
                             )
-//                            .background(
-//                                color = MaterialTheme.colorScheme.surface.copy(0.3f),
-//                                shape = RoundedCornerShape(8.dp)
-//                            ),
                             .border(
                                 width = 0.5.dp,
                                 color = MaterialTheme.colorScheme.primary,
@@ -194,8 +204,6 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                                     .aspectRatio(1f / 1f),
                                 contentAlignment = Alignment.Center
                             ) {
-//                                val wiDList = wiDService.readDailyWiDListByDate(diaryDate)
-
                                 if (wiDList.isEmpty()) {
                                     getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
                                 } else {
@@ -213,7 +221,7 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                         ) {
                             Text(
                                 text = diary.title,
-                                style = Typography.titleLarge,
+                                style = Typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.primary
                             )
 
@@ -225,90 +233,6 @@ fun RandomDiaryFragment(mainActivityNavController: NavController) {
                         }
                     }
                 }
-
-//                items(diaryList.size) { index ->
-//                    val diary = diaryList[index]
-//                    val diaryDate = diary.date
-//
-//                    Column(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(horizontal = 16.dp) // 바깥 패딩
-//                            .padding(
-//                                bottom = if (index == diaryList.size - 1) 32.dp else 0.dp
-//                            )
-////                            .background(
-////                                color = MaterialTheme.colorScheme.surface.copy(0.3f),
-////                                shape = RoundedCornerShape(8.dp)
-////                            ),
-//                            .border(
-//                                width = 0.5.dp,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                shape = RoundedCornerShape(8.dp)
-//                            )
-//                            .clickable {
-//                                mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${diaryDate}")
-//                            },
-//                        verticalArrangement = Arrangement.spacedBy(16.dp)
-//                    ) {
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 16.dp)
-//                                .padding(top = 16.dp)
-//                        ) {
-//                            Box(
-//                                modifier = Modifier
-//                                    .weight(1f)
-//                                    .aspectRatio(1f / 1f),
-//                                contentAlignment = Alignment.Center
-//                            ) {
-//                                Text(
-//                                    text = getDateStringWith3Lines(date = diaryDate),
-//                                    style = Typography.titleLarge,
-//                                    textAlign = TextAlign.Center,
-//                                    fontSize = 20.sp,
-//                                    color = MaterialTheme.colorScheme.primary
-//                                )
-//                            }
-//
-//                            Box(
-//                                modifier = Modifier
-//                                    .weight(1f)
-//                                    .aspectRatio(1f / 1f),
-//                                contentAlignment = Alignment.Center
-//                            ) {
-////                                val wiDList = wiDService.readDailyWiDListByDate(diaryDate)
-//
-//                                if (wiDList.isEmpty()) {
-//                                    getNoBackgroundEmptyViewWithMultipleLines(text = "표시할\n타임라인이\n없습니다.")()
-//                                } else {
-//                                    DiaryPieChartFragment(wiDList = wiDList)
-//                                }
-//                            }
-//                        }
-//
-//                        Column(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(horizontal = 16.dp)
-//                                .padding(bottom = 16.dp),
-//                            verticalArrangement = Arrangement.spacedBy(16.dp)
-//                        ) {
-//                            Text(
-//                                text = diary.title,
-//                                style = Typography.titleLarge,
-//                                color = MaterialTheme.colorScheme.primary
-//                            )
-//
-//                            Text(
-//                                text = diary.content,
-//                                style = Typography.bodyLarge,
-//                                color = MaterialTheme.colorScheme.onSurface
-//                            )
-//                        }
-//                    }
-//                }
             }
         }
     }

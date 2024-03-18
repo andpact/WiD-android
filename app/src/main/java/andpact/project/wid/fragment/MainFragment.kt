@@ -3,6 +3,7 @@ package andpact.project.wid.fragment
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.changeStatusBarAndNavigationBarColor
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.HomeViewModel
 import andpact.project.wid.viewModel.StopwatchViewModel
@@ -13,15 +14,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -199,7 +201,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
                             }
 //                            .padding(16.dp)
                             .size(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_refresh_24),
+                        painter = painterResource(id = R.drawable.baseline_stop_24),
                         contentDescription = "스톱워치 초기화",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -280,7 +282,7 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
                                 timerViewModel.stopTimer()
                             }
                             .size(24.dp),
-                        painter = painterResource(id = R.drawable.baseline_refresh_24),
+                        painter = painterResource(id = R.drawable.baseline_stop_24),
                         contentDescription = "타이머 초기화",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -312,44 +314,46 @@ fun MainFragmentBottomBar(mainFragmentNavController: NavController, stopwatchVie
             }
         }
 
-        NavigationBar(
-            modifier = Modifier
-                .height(56.dp),
-            containerColor = MaterialTheme.colorScheme.secondary,
-        ) {
-//            val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
-//            val currentRoute = navBackStackEntry?.destination?.route
+        CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) { // 리플 제거용
+            NavigationBar(
+                modifier = Modifier
+                    .height(56.dp),
+    //            containerColor = MaterialTheme.colorScheme.secondary,
+                containerColor = MaterialTheme.colorScheme.tertiary,
+            ) {
+//                val navBackStackEntry by mainFragmentNavController.currentBackStackEntryAsState()
+//                val currentRoute = navBackStackEntry?.destination?.route
 
-            destinationList.forEach { destination ->
-                NavigationBarItem(
-                    alwaysShowLabel = false,
-                    icon = {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = destination.icon),
-                            contentDescription = ""
-                        )
-                           },
-                    selected = currentRoute == destination.route,
-                    onClick = {
-                        mainFragmentNavController.navigate(destination.route) {
-                            popUpTo(mainFragmentNavController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
-                                saveState = true
+                destinationList.forEach { destination ->
+                    NavigationBarItem(
+                        alwaysShowLabel = false,
+                        icon = {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp),
+                                painter = painterResource(id = destination.icon),
+                                contentDescription = ""
+                            ) },
+                        selected = currentRoute == destination.route,
+                        onClick = {
+                            mainFragmentNavController.navigate(destination.route) {
+                                popUpTo(mainFragmentNavController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
+                                    saveState = true
+                                }
+                                launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
+                                restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
                             }
-                            launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
-                            restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedTextColor = DarkGray,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = DarkGray,
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    enabled = stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value
-                )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            unselectedTextColor = DarkGray,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = DarkGray,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.tertiary
+                        ),
+                        enabled = stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value
+                    )
+                }
             }
         }
     }
@@ -413,6 +417,14 @@ sealed class MainFragmentDestinations(
         icon = R.drawable.baseline_calendar_month_24,
         route = "diary_display_fragment",
     )
+}
+
+object NoRippleTheme : RippleTheme {
+    @Composable
+    override fun defaultColor() = Color.Unspecified
+
+    @Composable
+    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
 }
 
 //@Preview(showBackground = true)

@@ -27,8 +27,10 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
     val startDate: State<LocalDate> = _startDate
     private val _finishDate = mutableStateOf(getLastDateOfWeek(today))
     val finishDate: State<LocalDate> = _finishDate
-    private val _weekMonthPickerExpanded = mutableStateOf(false)
-    val weekMonthPickerExpanded: State<Boolean> = _weekMonthPickerExpanded
+//    private val _weekPickerExpanded = mutableStateOf(false)
+//    val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
+//    private val _monthPickerExpanded = mutableStateOf(false)
+//    val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
 
     // 제목
     private val _selectedTitle = mutableStateOf(titles[0])
@@ -46,7 +48,8 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
     private val wiDService = WiDService(context = application)
 //    private val _wiDList = mutableStateOf(wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value))
 //    val wiDList: State<List<WiD>> = _wiDList
-    var wiDList = wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value)
+//    var wiDList = wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value)
+    var wiDList = emptyList<WiD>()
     private val _filteredWiDListByTitle = mutableStateOf(wiDList.filter { it.title == _selectedTitle.value })
     val filteredWiDListByTitle: State<List<WiD>> = _filteredWiDListByTitle
 
@@ -70,10 +73,15 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
     private val _maxDurationMap = mutableStateOf(getMaxDurationMapByTitle(wiDList = _filteredWiDListByTitle.value))
     val maxDurationMap: State<Map<String, Duration>> = _maxDurationMap
 
-    fun setWeekMonthPickerExpanded(expand: Boolean) {
-        Log.d("TitleWiDViewModel", "setWeekMonthPickerExpanded executed")
-        _weekMonthPickerExpanded.value = expand
-    }
+//    fun setWeekPickerExpanded(expand: Boolean) {
+//        Log.d("TitleWiDViewModel", "setWeekPickerExpanded executed")
+//        _weekPickerExpanded.value = expand
+//    }
+//
+//    fun setMonthPickerExpanded(expand: Boolean) {
+//        Log.d("TitleWiDViewModel", "setMonthPickerExpanded executed")
+//        _monthPickerExpanded.value = expand
+//    }
 
     fun setTitle(newTitle: String) {
         Log.d("TitleWiDViewModel", "setTitle executed")
@@ -97,10 +105,14 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
             periods[0] -> { // 일주일
                 _startDate.value = getFirstDateOfWeek(today)
                 _finishDate.value = getLastDateOfWeek(today)
+
+                setStartDateAndFinishDate(startDate = _startDate.value, finishDate = _finishDate.value)
             }
             periods[1] -> { // 한 달
                 _startDate.value = getFirstDateOfMonth(today)
                 _finishDate.value = getLastDateOfMonth(today)
+
+                setStartDateAndFinishDate(startDate = _startDate.value, finishDate = _finishDate.value)
             }
         }
     }
@@ -111,6 +123,7 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
 //        _periodMenuExpanded.value = expanded
 //    }
 
+    // startDate, finishDate 변겨될 때 호출됨.
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
         Log.d("TitleWiDViewModel", "setStartDateAndFinishDate executed")
 

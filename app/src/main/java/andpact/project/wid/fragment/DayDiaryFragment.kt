@@ -9,6 +9,8 @@ import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.getDateStringWith3Lines
 import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
 import andpact.project.wid.viewModel.DayDiaryViewModel
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -41,15 +43,10 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel: DayDiaryViewModel) {
-//    val dayDiaryViewModel: DayDiaryViewModel = viewModel()
-
     // 날짜
-//    val today = LocalDate.now()
     val today = dayDiaryViewModel.today
-//    var currentDate by remember { mutableStateOf(today) }
     val currentDate = dayDiaryViewModel.currentDate.value
-//    var expandDatePicker by remember { mutableStateOf(false) }
-    var expandDatePicker = dayDiaryViewModel.expandDatePicker.value
+    var expandDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -67,14 +64,27 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
     )
 
     // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-//    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
     val wiDList = dayDiaryViewModel.wiDList.value
 
     // 다이어리
-//    val diaryService = DiaryService(context = LocalContext.current)
-//    val diary = remember(currentDate) { diaryService.readDiaryByDate(currentDate) }
     val diary = dayDiaryViewModel.diary.value
+
+    DisposableEffect(Unit) {
+        Log.d("DayDiaryFragment", "DayDiaryFragment is being composed")
+
+        dayDiaryViewModel.setCurrentDate(dayDiaryViewModel.currentDate.value)
+
+        onDispose {
+            Log.d("DayDiaryFragment", "DayDiaryFragment is being disposed")
+        }
+    }
+
+    BackHandler(
+        enabled = expandDatePicker,
+        onBack = {
+            expandDatePicker = false
+        }
+    )
 
     Box(
         modifier = Modifier
@@ -124,12 +134,6 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            if (expandDatePicker) {
-//                                expandDatePicker = false
-                                dayDiaryViewModel.setExpandDatePicker(expand = false)
-                            }
-//                            currentDate = currentDate.minusDays(1)
-
                             val newDate = currentDate.minusDays(1)
                             dayDiaryViewModel.setCurrentDate(newDate)
                         }
@@ -146,12 +150,6 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            if (expandDatePicker) {
-//                                expandDatePicker = false
-                                dayDiaryViewModel.setExpandDatePicker(expand = false)
-                            }
-//                            currentDate = currentDate.plusDays(1)
-
                             val newDate = currentDate.plusDays(1)
                             dayDiaryViewModel.setCurrentDate(newDate)
                         }
@@ -187,8 +185,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
                                     ) {
-//                                        expandDatePicker = true
-                                        dayDiaryViewModel.setExpandDatePicker(expand = true)
+                                        expandDatePicker = true
                                     },
                                 text = getDateStringWith3Lines(date = currentDate),
                                 style = Typography.bodyMedium,
@@ -223,16 +220,8 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             text = diary?.title ?: "",
-                            style = Typography.bodyMedium,
+                            style = Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary,
-        //                    minLines = 1,
-            //                maxLines = if (expandDiary) Int.MAX_VALUE else 1,
-        //                    overflow = TextOverflow.Ellipsis,
-            //                onTextLayout = { diaryTitleTextLayoutResult: TextLayoutResult ->
-            //                    if (diaryTitleTextLayoutResult.didOverflowHeight) {
-            //                        diaryOverflow = true
-            //                    }
-            //                }
                         )
 
                         Text(
@@ -241,16 +230,9 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                                 .padding(16.dp),
                             text = diary?.content ?: "당신이 이 날 무엇을 하고,\n그 속에서 어떤 생각과 감정을 느꼈는지\n주체적으로 기록해보세요.",
                             textAlign = if (diary == null) TextAlign.Center else null,
-                            style = if (diary == null) Typography.labelMedium else Typography.bodyLarge,
+                            style = if (diary == null) Typography.bodyMedium else Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.primary,
-        //                    minLines = 10,
-            //                maxLines = if (expandDiary) Int.MAX_VALUE else 10,
-        //                    overflow = TextOverflow.Ellipsis,
-            //                onTextLayout = { diaryContentTextLayoutResult: TextLayoutResult ->
-            //                    if (diaryContentTextLayoutResult.didOverflowHeight) {
-            //                        diaryOverflow = true
-            //                    }
-            //                }
+                            lineHeight = 30.sp
                         )
                     }
                 }
@@ -260,13 +242,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
         /**
          * 대화상자
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = expandDatePicker,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
+        if (expandDatePicker) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -275,8 +251,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-//                        expandDatePicker = false
-                        dayDiaryViewModel.setExpandDatePicker(expand = false)
+                        expandDatePicker = false
                     }
             ) {
                 Column(
@@ -313,8 +288,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-                                    dayDiaryViewModel.setExpandDatePicker(expand = false)
+                                    expandDatePicker = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
                             contentDescription = "날짜 메뉴 닫기",
@@ -337,14 +311,7 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-//                                    currentDate = Instant
-//                                        .ofEpochMilli(datePickerState.selectedDateMillis!!)
-//                                        .atZone(
-//                                            ZoneId.systemDefault()
-//                                        )
-//                                        .toLocalDate()
-                                    dayDiaryViewModel.setExpandDatePicker(expand = false)
+                                    expandDatePicker = false
                                     val newDate = Instant
                                         .ofEpochMilli(datePickerState.selectedDateMillis!!)
                                         .atZone(ZoneId.systemDefault())
@@ -357,8 +324,6 @@ fun DayDiaryFragment(mainActivityNavController: NavController, dayDiaryViewModel
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-
-//                    HorizontalDivider()
 
                     DatePicker(
                         state = datePickerState,

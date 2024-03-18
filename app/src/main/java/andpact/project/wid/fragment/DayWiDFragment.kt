@@ -6,6 +6,7 @@ import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.DayWiDViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,15 +36,10 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
-//    val dayWiDViewModel: DayWiDViewModel = viewModel()
-
     // 날짜
-//    val today = LocalDate.now()
     val today = dayWiDViewModel.today
-//    var currentDate by remember { mutableStateOf(today) }
     val currentDate = dayWiDViewModel.currentDate.value
-//    var expandDatePicker by remember { mutableStateOf(false) }
-    val datePickerExpanded = dayWiDViewModel.datePickerExpanded.value
+    var datePickerExpanded by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -61,21 +57,27 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
     )
 
     // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-//    val wiDList = remember(currentDate) { wiDService.readDailyWiDListByDate(currentDate) }
     val wiDList = dayWiDViewModel.wiDList.value
 
     // 합계
-//    val totalDurationMap = getTotalDurationMapByTitle(wiDList = wiDList)
     val totalDurationMap = dayWiDViewModel.totalDurationMap.value
 
     DisposableEffect(Unit) {
         Log.d("DayWiDFragment", "DayWiDFragment is being composed")
 
+        dayWiDViewModel.setCurrentDate(dayWiDViewModel.currentDate.value)
+
         onDispose {
             Log.d("DayWiDFragment", "DayWiDFragment is being disposed")
         }
     }
+
+    BackHandler(
+        enabled = datePickerExpanded,
+        onBack = {
+            datePickerExpanded = false
+        }
+    )
 
     Box(
         modifier = Modifier
@@ -97,41 +99,18 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                 horizontalArrangement = Arrangement.spacedBy(32.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                Row(
-//                    modifier = Modifier
-//                        .clickable {
-////                            dayWiDViewModel.setExpandDatePicker(expand = true)
-//                            expandDatePicker = true
-//                        },
-//                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Icon(
-//                        modifier = Modifier
-////                            .clickable {
-//    //                                titleWiDViewModel.setPeriodMenuExpanded(true)
-//    //                            periodMenuExpanded = true
-////                            }
-//                            .size(24.dp),
-//                        painter = painterResource(R.drawable.baseline_calendar_month_24),
-//                        contentDescription = "날짜 선택",
-//                        tint = MaterialTheme.colorScheme.primary
-//                    )
-
-                    Text(
-                        modifier = Modifier
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-//                                expandDatePicker = true
-                                dayWiDViewModel.setDatePickerExpanded(expand = true)
-                            },
-                        text = getDateString(currentDate),
-                        style = Typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-//                }
+                Text(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            datePickerExpanded = true
+                        },
+                    text = getDateString(currentDate),
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
                 Spacer(
                     modifier = Modifier
@@ -144,11 +123,6 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-//                            if (expandDatePicker) {
-////                                expandDatePicker = false
-//                                dayWiDViewModel.setExpandDatePicker(expand = false)
-//                            }
-
                             val newDate = currentDate.minusDays(1)
                             dayWiDViewModel.setCurrentDate(newDate)
                         }
@@ -165,10 +139,6 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-//                            if (expandDatePicker) {
-//                                expandDatePicker = false
-//                            }
-
                             val newDate = currentDate.plusDays(1)
                             dayWiDViewModel.setCurrentDate(newDate)
                         }
@@ -258,13 +228,7 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
         /**
          * 날짜 선택 대화상자
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = datePickerExpanded,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
+        if (datePickerExpanded) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -273,8 +237,7 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-//                        expandDatePicker = false
-                        dayWiDViewModel.setDatePickerExpanded(expand = false)
+                        datePickerExpanded = false
                     }
             ) {
                 Column(
@@ -311,8 +274,7 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-                                    dayWiDViewModel.setDatePickerExpanded(expand = false)
+                                    datePickerExpanded = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
                             contentDescription = "날짜 메뉴 닫기",
@@ -335,16 +297,11 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-                                    dayWiDViewModel.setDatePickerExpanded(expand = false)
+                                    datePickerExpanded = false
                                     val newDate = Instant
                                         .ofEpochMilli(datePickerState.selectedDateMillis!!)
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDate()
-//                                    currentDate = Instant
-//                                        .ofEpochMilli(datePickerState.selectedDateMillis!!)
-//                                        .atZone(ZoneId.systemDefault())
-//                                        .toLocalDate()
                                     dayWiDViewModel.setCurrentDate(newDate)
                                 },
                             text = "확인",
@@ -353,7 +310,7 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
                         )
                     }
 
-//                    HorizontalDivider()
+                    HorizontalDivider()
 
                     DatePicker(
                         state = datePickerState,
@@ -366,10 +323,3 @@ fun DayWiDFragment(dayWiDViewModel: DayWiDViewModel) {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun DateBasedFragmentPreview() {
-//    val navController: NavHostController = rememberNavController()
-//    DateBasedFragment(navController = navController)
-//}

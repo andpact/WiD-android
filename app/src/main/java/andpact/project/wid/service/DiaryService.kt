@@ -285,7 +285,7 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         val db = readableDatabase
 
         val selectQuery = "SELECT DISTINCT $COLUMN_DATE FROM $TABLE_NAME WHERE $COLUMN_TITLE LIKE ? ORDER BY $COLUMN_DATE ASC"
-        val selectionArgs = arrayOf("%$searchText%", "%$searchText%")
+        val selectionArgs = arrayOf("%$searchText%")
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
         val dateList = mutableListOf<LocalDate>()
@@ -313,7 +313,7 @@ class DiaryService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         val db = readableDatabase
 
         val selectQuery = "SELECT DISTINCT $COLUMN_DATE FROM $TABLE_NAME WHERE $COLUMN_CONTENT LIKE ? ORDER BY $COLUMN_DATE ASC"
-        val selectionArgs = arrayOf("%$searchText%", "%$searchText%")
+        val selectionArgs = arrayOf("%$searchText%")
         val cursor = db.rawQuery(selectQuery, selectionArgs)
 
         val dateList = mutableListOf<LocalDate>()

@@ -35,8 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,30 +51,20 @@ import androidx.navigation.NavController
  */
 @Composable
 fun SearchFragment(mainActivityNavController: NavController, searchViewModel: SearchViewModel) {
-//    val searchViewModel: SearchViewModel = viewModel()
     // 검색
-//    var searchText by remember { mutableStateOf("") }
     val searchText = searchViewModel.searchText.value
-//    val lazyGridState = rememberLazyGridState(initialFirstVisibleItemScrollOffset = Int.MAX_VALUE)
-    var searchComplete by remember { mutableStateOf(false) }
+    val searchComplete = searchViewModel.searchComplete.value
     val searchFilter = searchViewModel.searchFilter.value
 
     // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
     val wiDMap = searchViewModel.wiDMap.value
 
     // 다이어리
-//    val diaryService = DiaryService(LocalContext.current)
-//    var diaryList by remember { mutableStateOf(emptyList<Diary>()) }
     val diaryDateList = searchViewModel.diaryDateList.value
     val diaryMap = searchViewModel.diaryMap.value
 
     // 키보드
     val focusRequester = remember { FocusRequester() }
-
-//    LaunchedEffect(Unit) {
-//        focusRequester.requestFocus() // 화면 전환하면 키보드 표시
-//    }
 
     DisposableEffect(Unit) {
         Log.d("SearchFragment", "SearchFragment is being composed")
@@ -109,7 +101,6 @@ fun SearchFragment(mainActivityNavController: NavController, searchViewModel: Se
                     color = MaterialTheme.colorScheme.primary
                 ),
                 onValueChange = { newText ->
-//                    searchText = newText
                     searchViewModel.setSearchText(newText)
                 },
                 singleLine = true,
@@ -118,7 +109,6 @@ fun SearchFragment(mainActivityNavController: NavController, searchViewModel: Se
                 ),
                 keyboardActions = KeyboardActions(
                     onSearch = {
-//                        diaryList = diaryService.readDiaryListByTitleOrContent(searchText = searchText)
                         searchViewModel.fetchDiaryDates()
                     }
                 ),
@@ -131,12 +121,6 @@ fun SearchFragment(mainActivityNavController: NavController, searchViewModel: Se
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(80.dp)
                             )
-//                            .shadow(
-//                                elevation = 2.dp,
-//                                shape = RoundedCornerShape(800.dp),
-//                                spotColor = MaterialTheme.colorScheme.primary,
-//                            )
-//                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -167,9 +151,7 @@ fun SearchFragment(mainActivityNavController: NavController, searchViewModel: Se
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-                        searchComplete = true
-
-//                        diaryList = diaryService.readDiaryListByTitleOrContent(searchText = searchText)
+                        searchViewModel.setSearchComplete(isComplete = true)
 
                         searchViewModel.fetchDiaryDates()
                     },
@@ -187,192 +169,115 @@ fun SearchFragment(mainActivityNavController: NavController, searchViewModel: Se
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (diaryDateList.isEmpty()) {
-                item {
-                    if (searchComplete) {
-                        getEmptyView(text = "검색 결과가 없습니다.")()
-                    } else {
-                        Box(
+            if (searchComplete) { // 검색 후
+                if (diaryDateList.isEmpty()) {
+                    item {
+                        Row(
                             modifier = Modifier
-                                .padding(vertical = 48.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            getNoBackgroundEmptyViewWithMultipleLines(text = "과거의 다이어리를 통해\n당신의 성장과 여정을\n다시 살펴보세요.")()
+                            Text(
+                                text = "검색 결과가 없습니다.",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
-                }
-            } else {
-                items(diaryDateList.size) { index: Int ->
-                    val itemDate = diaryDateList[index]
-                    val diary = diaryMap[itemDate] ?: Diary(id = -1, date = itemDate, title = "", content = "")
-                    val wiDList = wiDMap[itemDate] ?: emptyList()
+                } else {
+                    items(diaryDateList.size) { index: Int ->
+                        val itemDate = diaryDateList[index]
+                        val diary = diaryMap[itemDate] ?: Diary(id = -1, date = itemDate, title = "", content = "")
+                        val wiDList = wiDMap[itemDate] ?: emptyList()
 
-                    Text(
-                        text = getDateString(diary.date),
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                width = 0.5.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-//                            .padding(
-//                                start = 16.dp,
-//                                end = 16.dp,
-//                                top = if (index == 0) 16.dp else 0.dp, // 첫 번째 다이어리 위쪽에 16dp 패딩
-//                                bottom = if (index == diaryList.size - 1) 16.dp else 0.dp // 마지막 다이어리 아래쪽에 16dp 패딩
-//                            )
-//                            .shadow(
-//                                elevation = 2.dp,
-//                                shape = RoundedCornerShape(8.dp),
-//                                spotColor = MaterialTheme.colorScheme.primary,
-//                            )
-//                            .background(MaterialTheme.colorScheme.secondary)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${diary.date}")
-                            },
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .size(60.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-//                            val wiDList = wiDService.readDailyWiDListByDate(diary.date)
-
-                            PeriodBasedPieChartFragment(date = diary.date, wiDList = wiDList)
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = diary.title,
-                                style = Typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-
-                            Text(
-                                text = diary.content,
-                                style = Typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-
-                        Icon(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .size(24.dp),
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "이 다이어리로 전환하기",
-                            tint = MaterialTheme.colorScheme.primary
+                        Text(
+                            text = getDateString(diary.date),
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    width = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${diary.date}")
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(60.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                SearchPieChartFragment(wiDList = wiDList)
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = diary.title,
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+
+                                Text(
+                                    text = diary.content,
+                                    style = Typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+
+                            Icon(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .size(24.dp),
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = "이 다이어리로 전환하기",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
-
-//                items(diaryList.size) { diary ->
-//                itemsIndexed(diaryList) { index, diary ->
-//                    Text(
-//                        text = getDateString(diary.date),
-//                        style = Typography.bodyMedium,
-//                        color = MaterialTheme.colorScheme.primary,
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis,
-//                    )
-//
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .border(
-//                                width = 0.5.dp,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                shape = RoundedCornerShape(8.dp)
-//                            )
-////                            .padding(
-////                                start = 16.dp,
-////                                end = 16.dp,
-////                                top = if (index == 0) 16.dp else 0.dp, // 첫 번째 다이어리 위쪽에 16dp 패딩
-////                                bottom = if (index == diaryList.size - 1) 16.dp else 0.dp // 마지막 다이어리 아래쪽에 16dp 패딩
-////                            )
-////                            .shadow(
-////                                elevation = 2.dp,
-////                                shape = RoundedCornerShape(8.dp),
-////                                spotColor = MaterialTheme.colorScheme.primary,
-////                            )
-////                            .background(MaterialTheme.colorScheme.secondary)
-//                            .clickable {
-//                                mainActivityNavController.navigate(MainActivityDestinations.DiaryFragmentDestination.route + "/${diary.date}")
-//                            },
-//                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Box(
-//                            modifier = Modifier
-//                                .padding(8.dp)
-//                                .size(60.dp),
-//                            contentAlignment = Alignment.Center
-//                        ) {
-//                            val wiDList = wiDService.readDailyWiDListByDate(diary.date)
-//
-//                            PeriodBasedPieChartFragment(date = diary.date, wiDList = wiDList)
-//                        }
-//
-//                        Column(
-//                            modifier = Modifier
-//                                .weight(1f),
-//                            verticalArrangement = Arrangement.spacedBy(4.dp)
-//                        ) {
-//                            Text(
-//                                text = diary.title,
-//                                style = Typography.labelMedium,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                maxLines = 1,
-//                                overflow = TextOverflow.Ellipsis,
-//                            )
-//
-//                            Text(
-//                                text = diary.content,
-//                                style = Typography.labelMedium,
-//                                color = MaterialTheme.colorScheme.primary,
-//                                maxLines = 1,
-//                                overflow = TextOverflow.Ellipsis,
-//                            )
-//                        }
-//
-//                        Icon(
-//                            modifier = Modifier
-//                                .padding(horizontal = 16.dp)
-//                                .size(24.dp),
-//                            imageVector = Icons.Default.KeyboardArrowRight,
-//                            contentDescription = "이 다이어리로 전환하기",
-//                            tint = MaterialTheme.colorScheme.primary
-//                        )
-//                    }
-//                }
+            } else { // 검색 전
+                item {
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 48.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "과거의 다이어리를 통해\n당신의 성장과 여정을\n다시 살펴보세요.",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 30.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun SearchFragmentPreview() {
-//    SearchFragment()
-//}

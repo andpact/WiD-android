@@ -57,4 +57,12 @@ class RandomDiaryViewModel(application: Application) : AndroidViewModel(applicat
         _wiDMap.value = newWiDMap
         _diaryMap.value = newDiaryMap
     }
+
+//    fun clearData() {
+//        Log.d("RandomDiaryViewModel", "clearData executed")
+//
+//        _wiDMap.value = emptyMap()
+//        _diaryDateList.value = emptyList()
+//        _diaryMap.value = emptyMap()
+//    }
 }

@@ -28,22 +28,23 @@ class DayWiDViewModel(application: Application) : AndroidViewModel(application) 
     val today: LocalDate = LocalDate.now()
     private val _currentDate = mutableStateOf(today)
     val currentDate: State<LocalDate> = _currentDate
-    private val _datePickerExpanded = mutableStateOf(false)
-    val datePickerExpanded: State<Boolean> = _datePickerExpanded
+//    private val _datePickerExpanded = mutableStateOf(false)
+//    val datePickerExpanded: State<Boolean> = _datePickerExpanded
 
     // WiD
     private val wiDService = WiDService(context = application)
-    private val _wiDList = mutableStateOf(wiDService.readDailyWiDListByDate(today))
+    private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
 
     // 합계
     private val _totalDurationMap = mutableStateOf(getTotalDurationMapByTitle(wiDList = _wiDList.value))
     val totalDurationMap: State<Map<String, Duration>> = _totalDurationMap
 
-    fun setDatePickerExpanded(expand: Boolean) {
-        Log.d("DayWiDViewModel", "setDatePickerExpanded executed")
-        _datePickerExpanded.value = expand
-    }
+//    fun setDatePickerExpanded(expand: Boolean) {
+//        Log.d("DayWiDViewModel", "setDatePickerExpanded executed")
+//
+//        _datePickerExpanded.value = expand
+//    }
 
     // 정해진 날짜로 이동
     fun setCurrentDate(newDate: LocalDate) {

@@ -6,6 +6,7 @@ import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.MonthWiDViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,53 +45,50 @@ import java.time.temporal.ChronoUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
-    // 뷰 모델
-//    val monthWiDViewModel: MonthWiDViewModel = viewModel()
-
     // 날짜
-//    val today = LocalDate.now()
     val today = monthWiDViewModel.today
-//    var startDate by remember { mutableStateOf(getFirstDateOfMonth(today)) }
     val startDate = monthWiDViewModel.startDate.value
-//    var finishDate by remember { mutableStateOf(getLastDateOfMonth(today)) }
     val finishDate = monthWiDViewModel.finishDate.value
-//    val monthPickerExpanded by remember { mutableStateOf(false) }
-    val monthPickerExpanded = monthWiDViewModel.monthPickerExpanded.value
+    var monthPickerExpanded by remember { mutableStateOf(false) }
 
     // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-//    val wiDList by remember(startDate, finishDate) { mutableStateOf(wiDService.readWiDListByDateRange(startDate, finishDate)) }
     val wiDList = monthWiDViewModel.wiDList.value
 
     // 합계
-//    val totalDurationMap by remember(wiDList) { mutableStateOf(getTotalDurationMapByTitle(wiDList = wiDList)) }
     val totalDurationMap = monthWiDViewModel.totalDurationMap
 
     // 평균
-//    val averageDurationMap by remember(wiDList) { mutableStateOf(getAverageDurationMapByTitle(wiDList = wiDList)) }
     val averageDurationMap = monthWiDViewModel.averageDurationMap
 
     // 최고
-//    val minDurationMap by remember(wiDList) { mutableStateOf(getMinDurationMapByTitle(wiDList = wiDList)) }
     val minDurationMap = monthWiDViewModel.minDurationMap
 
     // 최고
-//    val maxDurationMap by remember(wiDList) { mutableStateOf(getMaxDurationMapByTitle(wiDList = wiDList)) }
     val maxDurationMap = monthWiDViewModel.maxDurationMap
 
-//    // 맵
-//    var selectedMapText by remember { mutableStateOf("합계") }
+    // 맵
     val selectedMapText = monthWiDViewModel.selectedMapText.value
-//    var selectedMap by remember(wiDList) { mutableStateOf(totalDurationMap) }
     val selectedMap = monthWiDViewModel.selectedMap.value
 
     DisposableEffect(Unit) {
         Log.d("MonthWiDFragment", "MonthWiDFragment is being composed")
 
+        monthWiDViewModel.setStartDateAndFinishDate(
+            startDate = monthWiDViewModel.startDate.value,
+            finishDate = monthWiDViewModel.finishDate.value
+        )
+
         onDispose {
             Log.d("MonthWiDFragment", "MonthWiDFragment is being disposed")
         }
     }
+
+    BackHandler(
+        enabled = monthPickerExpanded,
+        onBack = {
+            monthPickerExpanded = false
+        }
+    )
 
     Box(
         modifier = Modifier
@@ -117,8 +115,7 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-    //                        expandDatePicker = true // 월 선택 대화상자 구현해야 함.
-                            monthWiDViewModel.setMonthPickerExpanded(expand = true)
+                            monthPickerExpanded = true
                         },
                     text = getPeriodStringOfMonth(date = startDate),
                     style = Typography.titleLarge,
@@ -267,9 +264,6 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                                     .weight(1f),
                                 selected = selectedMapText == "합계",
                                 onClick = {
-    //                                selectedMapText = "합계"
-    //                                selectedMap = totalDurationMap
-
                                     monthWiDViewModel.updateSelectedMap(newText = "합계", newMap = totalDurationMap)
                                 },
                                 label = {
@@ -298,9 +292,6 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                                     .weight(1f),
                                 selected = selectedMapText == "평균",
                                 onClick = {
-    //                                selectedMapText = "평균"
-    //                                selectedMap = averageDurationMap
-
                                     monthWiDViewModel.updateSelectedMap(newText = "평균", newMap = averageDurationMap)
                                 },
                                 label = {
@@ -329,9 +320,6 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                                     .weight(1f),
                                 selected = selectedMapText == "최저",
                                 onClick = {
-    //                                selectedMapText = "최저"
-    //                                selectedMap = minDurationMap
-
                                     monthWiDViewModel.updateSelectedMap(newText = "최저", newMap = minDurationMap)
                                 },
                                 label = {
@@ -360,9 +348,6 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                                     .weight(1f),
                                 selected = selectedMapText == "최고",
                                 onClick = {
-    //                                selectedMapText = "최고"
-    //                                selectedMap = maxDurationMap
-
                                     monthWiDViewModel.updateSelectedMap(newText = "최고", newMap = maxDurationMap)
                                 },
                                 label = {
@@ -439,15 +424,7 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
         /**
          * 월 선택 대화상자
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = monthPickerExpanded,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
-            var currentYear: Int = LocalDate.now().year
-
+        if (monthPickerExpanded) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -456,8 +433,7 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-//                        expandDatePicker = false
-                        monthWiDViewModel.setMonthPickerExpanded(expand = false)
+                        monthPickerExpanded = false
                     }
             ) {
                 Column(
@@ -476,55 +452,6 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .clickable(
-//                                enabled = false,
-//                                interactionSource = remember { MutableInteractionSource() },
-//                                indication = null
-//                            ) {}
-//                    ) {
-//                        Icon(
-//                            modifier = Modifier
-//                                .padding(16.dp)
-//                                .size(24.dp)
-//                                .align(Alignment.CenterStart)
-//                                .clickable(
-//                                    interactionSource = remember { MutableInteractionSource() },
-//                                    indication = null
-//                                ) {
-//                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
-//                                },
-//                            painter = painterResource(id = R.drawable.baseline_close_24),
-//                            contentDescription = "월 선택 메뉴 닫기",
-//                            tint = MaterialTheme.colorScheme.primary
-//                        )
-//
-//                        Text(
-//                            modifier = Modifier
-//                                .align(Alignment.Center),
-//                            text = "월 선택",
-//                            style = Typography.titleMedium,
-//                            color = MaterialTheme.colorScheme.primary
-//                        )
-//
-//                        Text(
-//                            modifier = Modifier
-//                                .align(Alignment.CenterEnd)
-//                                .padding(horizontal = 16.dp)
-//                                .clickable(
-//                                    interactionSource = remember { MutableInteractionSource() },
-//                                    indication = null
-//                                ) {
-//                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
-//                                },
-//                            text = "확인",
-//                            style = Typography.bodyMedium,
-//                            color = MaterialTheme.colorScheme.primary
-//                        )
-//                    }
-
                     repeat(5) { index ->
                         val reverseIndex = 4 - index // 역순 인덱스 계산
 
@@ -543,7 +470,7 @@ fun MonthWiDFragment(monthWiDViewModel: MonthWiDViewModel) {
                                 ) {
                                     monthWiDViewModel.setStartDateAndFinishDate(startDate = firstDayOfMonth, finishDate = lastDayOfMonth)
 
-                                    monthWiDViewModel.setMonthPickerExpanded(expand = false)
+                                    monthPickerExpanded = false
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {

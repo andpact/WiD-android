@@ -146,121 +146,121 @@ import java.time.temporal.ChronoUnit
 
 //data class BarChartData (val value: Float, val color: Color)
 
-@Composable
-fun VerticalBarChartFragment(wiDList: List<WiD>, startDate: LocalDate, finishDate: LocalDate) {
+//@Composable
+//fun VerticalBarChartFragment(wiDList: List<WiD>, startDate: LocalDate, finishDate: LocalDate) {
+//
+//    val dateList = mutableListOf<String>()
+//    val entryList = mutableListOf<BarEntry>()
+//
+//    for (index in 0 until ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) {
+//        val indexDate = startDate.plusDays(index.toLong())
+//
+//        val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
+//        val percentage = getTotalDurationPercentageFromWiDList(filteredWiDListByDate)
+//
+//        val xValue = index.toFloat()
+//        val yValue = percentage.toFloat()
+//
+//        dateList.add(indexDate.dayOfMonth.toString())
+//        entryList.add(BarEntry(xValue, yValue))
+//    }
+//
+//    Box(modifier = Modifier
+//        .fillMaxWidth()
+//        .padding(16.dp)
+//        .aspectRatio(1.5f)
+//    ) {
+//        // Crossfade 적용 안하면 차트 갱신이 안된다.
+//        Crossfade(targetState = entryList) { entryList ->
+//            val colorScheme = MaterialTheme.colorScheme
+//            AndroidView(factory = { context ->
+//                BarChart(context).apply {
+//                    // 데이터
+//                    val dataSet = BarDataSet(entryList, "단위 : 퍼센트").apply {
+//                        setDrawValues(false) // 막대 끝에 값 표시하기
+//                        color = AppYellow.toArgb()
+//                    }
+//                    val data = BarData(dataSet)
+//                    setData(data)
+//
+//                    // 차트 설정
+//                    layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+//                    legend.isEnabled = true
+//                    legend.textColor = colorScheme.primary.toArgb()
+//                    legend.textSize = 12f
+//                    legend.form = Legend.LegendForm.LINE // 범례 아이콘 형태
+//                    legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT // 범례 수평 정렬
+//                    legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP // 범례 수직 정렬
+//                    description.isEnabled = false
+//                    setTouchEnabled(false)
+//                    isDragEnabled = false
+//                    setScaleEnabled(false)
+//                    setPinchZoom(false)
+////                    animateY(500)
+//
+//                    // x축
+//                    xAxis.apply {
+//                        position = XAxis.XAxisPosition.BOTTOM // 축 위치
+//                        setDrawGridLines(false) // 그리드 라인
+//                        setDrawAxisLine(false) // 축선 표시
+//                        granularity = 1f // 축 라벨 표시 단위
+//                        textColor = colorScheme.primary.toArgb()
+//                        textSize = 12f // 축 라벨 글자 크기
+//                        val labelCount = if (dateList.size <= 7) { dateList.size / 1 } else { dateList.size / 3 }
+//                        setLabelCount(labelCount, false) // 라벨 표시 간격
+//                        valueFormatter = object : ValueFormatter() { // x축 라벨
+//                            override fun getFormattedValue(value: Float): String {
+//                                return "${dateList[value.toInt()]}일"
+//                            }
+//                        }
+//                    }
+//
+//                    // 왼축
+//                    axisLeft.apply {
+//                        isEnabled = true // 축 표시 여부
+//                        setDrawAxisLine(false) // 축선 표시
+//                        setDrawGridLines(true) // 그리드 라인
+//                        textColor = colorScheme.primary.toArgb()
+//                        textSize = 12f
+//                    }
+//
+//                    // 오른 축
+//                    axisRight.apply {
+//                        isEnabled = false // 축 표시 여부
+//                    }
+//
+//                    invalidate()
+//                }
+//            })
+//        }
+//    }
+//}
 
-    val dateList = mutableListOf<String>()
-    val entryList = mutableListOf<BarEntry>()
-
-    for (index in 0 until ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1) {
-        val indexDate = startDate.plusDays(index.toLong())
-
-        val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
-        val percentage = getTotalDurationPercentageFromWiDList(filteredWiDListByDate)
-
-        val xValue = index.toFloat()
-        val yValue = percentage.toFloat()
-
-        dateList.add(indexDate.dayOfMonth.toString())
-        entryList.add(BarEntry(xValue, yValue))
-    }
-
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-        .aspectRatio(1.5f)
-    ) {
-        // Crossfade 적용 안하면 차트 갱신이 안된다.
-        Crossfade(targetState = entryList) { entryList ->
-            val colorScheme = MaterialTheme.colorScheme
-            AndroidView(factory = { context ->
-                BarChart(context).apply {
-                    // 데이터
-                    val dataSet = BarDataSet(entryList, "단위 : 퍼센트").apply {
-                        setDrawValues(false) // 막대 끝에 값 표시하기
-                        color = AppYellow.toArgb()
-                    }
-                    val data = BarData(dataSet)
-                    setData(data)
-
-                    // 차트 설정
-                    layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                    legend.isEnabled = true
-                    legend.textColor = colorScheme.primary.toArgb()
-                    legend.textSize = 12f
-                    legend.form = Legend.LegendForm.LINE // 범례 아이콘 형태
-                    legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT // 범례 수평 정렬
-                    legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP // 범례 수직 정렬
-                    description.isEnabled = false
-                    setTouchEnabled(false)
-                    isDragEnabled = false
-                    setScaleEnabled(false)
-                    setPinchZoom(false)
-//                    animateY(500)
-
-                    // x축
-                    xAxis.apply {
-                        position = XAxis.XAxisPosition.BOTTOM // 축 위치
-                        setDrawGridLines(false) // 그리드 라인
-                        setDrawAxisLine(false) // 축선 표시
-                        granularity = 1f // 축 라벨 표시 단위
-                        textColor = colorScheme.primary.toArgb()
-                        textSize = 12f // 축 라벨 글자 크기
-                        val labelCount = if (dateList.size <= 7) { dateList.size / 1 } else { dateList.size / 3 }
-                        setLabelCount(labelCount, false) // 라벨 표시 간격
-                        valueFormatter = object : ValueFormatter() { // x축 라벨
-                            override fun getFormattedValue(value: Float): String {
-                                return "${dateList[value.toInt()]}일"
-                            }
-                        }
-                    }
-
-                    // 왼축
-                    axisLeft.apply {
-                        isEnabled = true // 축 표시 여부
-                        setDrawAxisLine(false) // 축선 표시
-                        setDrawGridLines(true) // 그리드 라인
-                        textColor = colorScheme.primary.toArgb()
-                        textSize = 12f
-                    }
-
-                    // 오른 축
-                    axisRight.apply {
-                        isEnabled = false // 축 표시 여부
-                    }
-
-                    invalidate()
-                }
-            })
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun BarChartFragmentPreview() {
-    val days: Long = 7
-    val tmpStartDate = LocalDate.now()
-    val tmpFinishDate = tmpStartDate.minusDays(days - 1)
-
-    val tmpWiDList = mutableListOf<WiD>()
-
-    for (index in 0 until days) {
-        val indexDate = tmpStartDate.plusDays(index)
-
-        tmpWiDList.add(
-            WiD(
-                id = 0,
-                date = indexDate,
-                title = "STUDY",
-                start = LocalTime.of(0, 0),
-                finish = LocalTime.of(2, 0),
-                duration = Duration.ofHours(2)
-            )
-        )
-    }
+//@Preview(showBackground = true)
+//@Composable
+//fun BarChartFragmentPreview() {
+//    val days: Long = 7
+//    val tmpStartDate = LocalDate.now()
+//    val tmpFinishDate = tmpStartDate.minusDays(days - 1)
+//
+//    val tmpWiDList = mutableListOf<WiD>()
+//
+//    for (index in 0 until days) {
+//        val indexDate = tmpStartDate.plusDays(index)
+//
+//        tmpWiDList.add(
+//            WiD(
+//                id = 0,
+//                date = indexDate,
+//                title = "STUDY",
+//                start = LocalTime.of(0, 0),
+//                finish = LocalTime.of(2, 0),
+//                duration = Duration.ofHours(2)
+//            )
+//        )
+//    }
 
 //    StackedHorizontalBarChartFragment(tmpWiDList)
 
 //    VerticalBarChartFragment(tmpWiDList, tmpStartDate, tmpFinishDate)
-}
+//}

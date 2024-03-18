@@ -5,6 +5,7 @@ import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,14 +15,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -34,15 +33,6 @@ import java.time.Duration
 
 @Composable
 fun TimerFragment(timerViewModel: TimerViewModel) {
-
-    DisposableEffect(Unit) {
-        Log.d("TimerFragment", "TimerFragment is being composed")
-
-        onDispose {
-            Log.d("TimerFragment", "TimerFragment is being disposed")
-        }
-    }
-
     // 화면
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -53,7 +43,6 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
     // 타이머
     val itemHeight = 30.dp
     val pickerHeight = itemHeight * 3 + (16.dp * 2) // 아이템 사이의 여백 16을 두 번 추가해줌.
-//    var timerTopBottomBarVisible by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
     // 타이머 시간 선택
@@ -77,20 +66,18 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
     val currentSecondIndex = remember { derivedStateOf { lazySecondListState.firstVisibleItemIndex } }
     val currentSecondScrollOffset = remember { derivedStateOf { lazySecondListState.firstVisibleItemScrollOffset } }
 
-//    DisposableEffect(Unit) {
-//        // Fragment가 나타날 때
-//        timerViewModel.setInTimerView(true)
-//
-//        onDispose {
-//            // Fragment가 사라질 때
-//            timerViewModel.setInTimerView(false)
-//        }
-//    }
+    DisposableEffect(Unit) {
+        Log.d("TimerFragment", "TimerFragment is being composed")
+
+        onDispose {
+            Log.d("TimerFragment", "TimerFragment is being disposed")
+        }
+    }
 
     // 휴대폰 뒤로 가기 버튼 클릭 시
-//    BackHandler(enabled = true) {
-//        navController.popBackStack()
-//    }
+    BackHandler(enabled = titleMenuExpanded) {
+        titleMenuExpanded = false
+    }
 
     Box(
         modifier = Modifier
@@ -102,55 +89,16 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                 indication = null
             ) {
                 timerViewModel.setTimerTopBottomBarVisible(!timerViewModel.timerTopBottomBarVisible.value)
-//                timerTopBottomBarVisible = !timerTopBottomBarVisible
             }
     ) {
-        /**
-         * 상단 바
-         */
-//        AnimatedVisibility(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter),
-//            visible = timerTopBottomBarVisible,
-//            enter = expandVertically{ 0 },
-//            exit = shrinkVertically{ 0 },
-//        ) {
-//            Box(
-//                modifier = Modifier
-//                    .padding(horizontal = 16.dp)
-//                    .fillMaxWidth()
-//                    .height(56.dp)
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(24.dp)
-//                        .align(Alignment.CenterStart)
-//                        .clickable {
-//                            navController.popBackStack()
-//                        },
-//                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-//                    contentDescription = "뒤로 가기",
-//                    tint = MaterialTheme.colorScheme.primary
-//                )
-//
-//                Text(
-//                    modifier = Modifier
-//                        .align(Alignment.Center),
-//                    text = "타이머",
-//                    style = Typography.titleLarge,
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-//            }
-//        }
-
         /**
          * 컨텐츠
          */
         if (timerViewModel.timerState.value == PlayerState.Stopped) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = screenHeight / 2),
+                    .align(Alignment.Center),
+//                    .padding(bottom = screenHeight / 2),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 HorizontalDivider(
@@ -353,61 +301,18 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                         color = MaterialTheme.colorScheme.primary,
                     )
                 )
-
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.SpaceEvenly
-//                ) {
-//                    TextButton(
-//                        onClick = {
-//                            finishTime += 5 * 60 * 1000
-//                        }
-//                    ) {
-//                        Text("+ 5m")
-//                    }
-//
-//                    TextButton(
-//                        onClick = {
-//                            finishTime += 15 * 60 * 1000
-//                        }
-//                    ) {
-//                        Text("+ 15m")
-//                    }
-//
-//                    TextButton(
-//                        onClick = {
-//                            finishTime += 30 * 60 * 1000
-//                        }
-//                    ) {
-//                        Text("+ 30m")
-//                    }
-//
-//                    TextButton(
-//                        onClick = {
-//                            finishTime += 60 * 60 * 1000
-//                        }
-//                    ) {
-//                        Text("+ 60m")
-//                    }
-//                }
             }
         }
 
         /**
          * 하단 바
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.BottomCenter),
-            visible = timerViewModel.timerTopBottomBarVisible.value,
-            enter = expandVertically{ 0 },
-            exit = shrinkVertically{ 0 },
-        ) {
+        if (timerViewModel.timerTopBottomBarVisible.value) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .align(Alignment.BottomCenter),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -459,7 +364,7 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                             .background(color = DeepSkyBlue)
                             .padding(16.dp)
                             .size(32.dp),
-                        painter = painterResource(id = R.drawable.baseline_refresh_24),
+                        painter = painterResource(id = R.drawable.baseline_stop_24),
                         contentDescription = "타이머 초기화",
                         tint = White
                     )
@@ -505,13 +410,7 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
         /**
          * 제목 바텀 시트
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = titleMenuExpanded,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
+        if (titleMenuExpanded) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -528,52 +427,16 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                         .align(Alignment.BottomCenter)
                         .height(screenHeight / 2)
                         .padding(16.dp)
-//                        .shadow(
-//                            elevation = 2.dp,
-//                            shape = RoundedCornerShape(8.dp),
-//                            spotColor = MaterialTheme.colorScheme.primary,
-//                        )
+                        .shadow(
+                            elevation = 2.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            spotColor = MaterialTheme.colorScheme.primary,
+                        )
                         .background(
                             color = MaterialTheme.colorScheme.tertiary,
                             shape = RoundedCornerShape(8.dp)
                         )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                enabled = false,
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {}
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .size(24.dp)
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    titleMenuExpanded = false
-                                },
-                            painter = painterResource(id = R.drawable.baseline_close_24),
-                            contentDescription = "제목 메뉴 닫기",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.Center),
-                            text = "제목 선택",
-                            style = Typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-//                    HorizontalDivider()
-
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -615,15 +478,10 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
                                         .weight(1f)
                                 )
 
-                                if (itemTitle == timerViewModel.title.value) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = "선택됨",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
+                                RadioButton(
+                                    selected = itemTitle == timerViewModel.title.value,
+                                    onClick = { },
+                                )
                             }
                         }
                     }
@@ -632,16 +490,3 @@ fun TimerFragment(timerViewModel: TimerViewModel) {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun TimerFragmentPreview() {
-//    val dummyNavController = rememberNavController()
-//
-//    val context = LocalContext.current
-//    val dummyApplication = context.applicationContext as Application
-//
-//    val timerViewModel = TimerViewModel(dummyApplication)
-//
-//    TimerFragment(dummyNavController, timerViewModel)
-//}

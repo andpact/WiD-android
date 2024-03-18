@@ -5,6 +5,7 @@ import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.StopwatchViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,11 +16,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -28,6 +31,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
+    // 화면
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    // 제목
+    var titleMenuExpanded by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         Log.d("StopWatchFragment", "StopWatchFragment is being composed")
@@ -37,32 +46,9 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
         }
     }
 
-
-    // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-
-    // 화면
-//    var stopwatchTopBottomBarVisible by remember { mutableStateOf(true) }
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-
-    // 제목
-    var titleMenuExpanded by remember { mutableStateOf(false) }
-
-//    DisposableEffect(Unit) {
-//        // Fragment가 나타날 때
-//        stopwatchViewModel.setInStopwatchView(true)
-//
-//        onDispose {
-//            // Fragment가 사라질 때
-//            stopwatchViewModel.setInStopwatchView(false)
-//        }
-//    }
-
-    // 휴대폰 뒤로 가기 버튼 클릭 시
-//    BackHandler(enabled = true) {
-//        navController.popBackStack()
-//    }
+    BackHandler(enabled = titleMenuExpanded) {
+        titleMenuExpanded = false
+    }
 
     Box(
         modifier = Modifier
@@ -73,7 +59,6 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
-//                stopwatchViewModel.setStopwatchTopBottomBarVisible(!stopwatchViewModel.stopwatchTopBottomBarVisible.value)
                 if (stopwatchViewModel.stopwatchTopBottomBarVisible.value) {
                     stopwatchViewModel.setStopwatchTopBottomBarVisible(false)
                 } else {
@@ -86,8 +71,7 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
          */
         Text(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = screenHeight / 2),
+                .align(Alignment.Center),
             text = getStopWatchTimeString(stopwatchViewModel.duration.value),
             style = TextStyle(
                 textAlign = TextAlign.End,
@@ -98,17 +82,12 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
         /**
          * 하단 바
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.BottomCenter),
-            visible = stopwatchViewModel.stopwatchTopBottomBarVisible.value,
-            enter = expandVertically{ 0 },
-            exit = shrinkVertically{ 0 },
-        ) {
+        if (stopwatchViewModel.stopwatchTopBottomBarVisible.value) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .align(Alignment.BottomCenter),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -154,7 +133,7 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                             .background(color = DeepSkyBlue)
                             .padding(16.dp)
                             .size(32.dp),
-                        painter = painterResource(id = R.drawable.baseline_refresh_24),
+                        painter = painterResource(id = R.drawable.baseline_stop_24),
                         contentDescription = "스톱워치 초기화",
                         tint = White
                     )
@@ -198,13 +177,7 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
         /**
          * 제목 바텀 시트
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = titleMenuExpanded,
-            enter = fadeIn(), // 위치 이동하는 애니메이션은 적용이 안되네?
-            exit = fadeOut()
-        ) {
+        if (titleMenuExpanded) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -221,52 +194,16 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                         .align(Alignment.BottomCenter)
                         .height(screenHeight / 2)
                         .padding(16.dp)
-//                        .shadow(
-//                            elevation = 2.dp,
-//                            shape = RoundedCornerShape(8.dp),
-//                            spotColor = MaterialTheme.colorScheme.primary,
-//                        )
+                        .shadow(
+                            elevation = 2.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            spotColor = MaterialTheme.colorScheme.primary,
+                        )
                         .background(
                             color = MaterialTheme.colorScheme.tertiary,
                             shape = RoundedCornerShape(8.dp)
                         )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                enabled = false,
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {} // 클릭 불가능하게 해서 제목 메뉴 닫힘 방지
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .size(24.dp)
-                                .align(Alignment.CenterStart)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    titleMenuExpanded = false
-                                },
-                            painter = painterResource(id = R.drawable.baseline_close_24),
-                            contentDescription = "제목 메뉴 닫기",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            modifier = Modifier
-                                .align(Alignment.Center),
-                            text = "제목 선택",
-                            style = Typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-//                    HorizontalDivider()
-
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -307,15 +244,11 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
                                         .weight(1f)
                                 )
 
-                                if (itemTitle == stopwatchViewModel.title.value) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = "선택됨",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
+
+                                RadioButton(
+                                    selected = itemTitle == stopwatchViewModel.title.value,
+                                    onClick = { },
+                                )
                             }
                         }
                     }
@@ -324,12 +257,3 @@ fun StopWatchFragment(stopwatchViewModel: StopwatchViewModel) {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun StopWatchFragmentPreview() {
-//    val dummyNavController = rememberNavController()
-//    val stopwatchViewModel = StopwatchViewModel()
-//
-//    StopWatchFragment(navController = dummyNavController, stopwatchViewModel = stopwatchViewModel)
-//}

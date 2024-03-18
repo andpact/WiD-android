@@ -30,12 +30,13 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     val startDate: State<LocalDate> = _startDate
     private val _finishDate = mutableStateOf(getLastDateOfMonth(today))
     val finishDate: State<LocalDate> = _finishDate
-    private val _monthPickerExpanded = mutableStateOf(false)
-    val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
+//    private val _monthPickerExpanded = mutableStateOf(false)
+//    val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
 
     // WiD
     private val wiDService = WiDService(context = application)
-    private val _wiDList = mutableStateOf(wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value))
+//    private val _wiDList = mutableStateOf(wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value))
+    private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
 
     // 합계 selectedMap만 화면에 표시하니 state로 선언할 필요 없음.
@@ -56,10 +57,10 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
     private val _selectedMap = mutableStateOf(totalDurationMap)
     var selectedMap: State<Map<String, Duration>> = _selectedMap
 
-    fun setMonthPickerExpanded(expand: Boolean) {
-        Log.d("MonthWiDViewModel", "setMonthPickerExpanded executed")
-        _monthPickerExpanded.value = expand
-    }
+//    fun setMonthPickerExpanded(expand: Boolean) {
+//        Log.d("MonthWiDViewModel", "setMonthPickerExpanded executed")
+//        _monthPickerExpanded.value = expand
+//    }
 
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
         Log.d("MonthWiDViewModel", "setStartDateAndFinishDate executed")

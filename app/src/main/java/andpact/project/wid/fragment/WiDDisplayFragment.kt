@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,13 +37,10 @@ fun WiDDisplayFragment() {
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val coroutineScope = rememberCoroutineScope()
 
-    // 뷰 모델
+    // 뷰 모델(한 번에 다 선언해서 관리함)
     val dayWiDViewModel: DayWiDViewModel = viewModel()
-    val datePickerExpanded = dayWiDViewModel.datePickerExpanded.value
     val weekWiDViewModel: WeekWiDViewModel = viewModel()
-    val weekPickerExpanded = weekWiDViewModel.weekPickerExpanded.value
     val monthWiDViewModel: MonthWiDViewModel = viewModel()
-    val monthPickerExpanded = monthWiDViewModel.monthPickerExpanded.value
     val titleWiDViewModel: TitleWiDViewModel = viewModel()
 
     // 제목
@@ -59,15 +57,6 @@ fun WiDDisplayFragment() {
         }
     }
 
-    BackHandler(
-        enabled = datePickerExpanded,
-        onBack = {
-            dayWiDViewModel.setDatePickerExpanded(expand = false)
-            weekWiDViewModel.setWeekPickerExpanded(expand = false)
-            monthWiDViewModel.setMonthPickerExpanded(expand = false)
-        }
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -76,140 +65,122 @@ fun WiDDisplayFragment() {
         /**
          * 상단 바
          */
-        Box {
-            Row(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(MaterialTheme.colorScheme.tertiary)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "WiD",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(MaterialTheme.colorScheme.secondary)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "WiD",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                    .weight(1f)
+            )
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
-                if (pagerState.currentPage == 3) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box {
-                            Icon(
-                                modifier = Modifier
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        //                                titleWiDViewModel.setTitleMenuExpanded(true)
-                                        titleMenuExpanded = true
-                                    }
-                                    .size(24.dp),
-                                painter = painterResource(
-                                    titleIconMap[titleWiDViewModel.selectedTitle.value]
-                                        ?: R.drawable.baseline_title_24
-                                ),
-                                contentDescription = "제목 선택",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            DropdownMenu(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.tertiary),
-                                expanded = titleMenuExpanded,
-                                onDismissRequest = { titleMenuExpanded = false }
-                            ) {
-                                titles.forEach { itemTitle ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = titleMap[itemTitle] ?: "",
-                                                style = Typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        onClick = {
-                                            titleWiDViewModel.setTitle(itemTitle)
-                                            titleMenuExpanded = false
-                                        }
-                                    )
+            if (pagerState.currentPage == 3) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box {
+                        Icon(
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    titleMenuExpanded = true
                                 }
+                                .size(24.dp),
+                            painter = painterResource(
+                                titleIconMap[titleWiDViewModel.selectedTitle.value]
+                                    ?: R.drawable.baseline_title_24
+                            ),
+                            contentDescription = "제목 선택",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        DropdownMenu(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            expanded = titleMenuExpanded,
+                            onDismissRequest = { titleMenuExpanded = false }
+                        ) {
+                            titles.forEach { itemTitle ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = titleMap[itemTitle] ?: "",
+                                            style = Typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    onClick = {
+                                        titleWiDViewModel.setTitle(itemTitle)
+                                        titleMenuExpanded = false
+                                    }
+                                )
                             }
                         }
+                    }
 
-                        Box {
-                            Icon(
-                                modifier = Modifier
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        //                                titleWiDViewModel.setPeriodMenuExpanded(true)
-                                        periodMenuExpanded = true
-                                    }
-                                    .size(24.dp),
-                                painter = painterResource(R.drawable.baseline_calendar_month_24),
-                                contentDescription = "기간 선택",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            DropdownMenu(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.tertiary),
-                                expanded = periodMenuExpanded,
-                                onDismissRequest = { periodMenuExpanded = false }
-                            ) {
-                                periods.forEach { itemPeriod ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = periodMap[itemPeriod] ?: "",
-                                                style = Typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        },
-                                        onClick = {
-                                            titleWiDViewModel.setPeriod(itemPeriod)
-                                            periodMenuExpanded = false
-                                        }
-                                    )
+                    Box {
+                        Icon(
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    periodMenuExpanded = true
                                 }
+                                .size(24.dp),
+                            painter = painterResource(R.drawable.baseline_calendar_month_24),
+                            contentDescription = "기간 선택",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        DropdownMenu(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            expanded = periodMenuExpanded,
+                            onDismissRequest = { periodMenuExpanded = false }
+                        ) {
+                            periods.forEach { itemPeriod ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = periodMap[itemPeriod] ?: "",
+                                            style = Typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    },
+                                    onClick = {
+                                        titleWiDViewModel.setPeriod(itemPeriod)
+                                        periodMenuExpanded = false
+                                    }
+                                )
                             }
                         }
                     }
                 }
-            }
-
-            // 대화상자 제거용
-            if (datePickerExpanded || weekPickerExpanded || monthPickerExpanded) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(
-//                            enabled = datePickerExpanded,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            dayWiDViewModel.setDatePickerExpanded(expand = false)
-                            weekWiDViewModel.setWeekPickerExpanded(expand = false)
-                            monthWiDViewModel.setMonthPickerExpanded(expand = false)
-                        }
-                )
             }
         }
 
         /**
          * 상단 탭
          */
-        Box {
+        CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
             ScrollableTabRow(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.tertiary)
+                    .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
                 containerColor = MaterialTheme.colorScheme.secondary,
                 selectedTabIndex = pagerState.currentPage,
                 divider = {},
@@ -227,32 +198,13 @@ fun WiDDisplayFragment() {
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-                                //                                pagerState.animateScrollToPage(index)
                                 pagerState.scrollToPage(index)
                             }
                         }
                     )
                 }
             }
-
-            // 대화상자 제거용
-            if (datePickerExpanded || weekPickerExpanded || monthPickerExpanded) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(
-//                            enabled = datePickerExpanded,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            dayWiDViewModel.setDatePickerExpanded(expand = false)
-                            weekWiDViewModel.setWeekPickerExpanded(expand = false)
-                            monthWiDViewModel.setMonthPickerExpanded(expand = false)
-                        }
-                )
-            }
         }
-
 
         /**
          * 컨텐츠

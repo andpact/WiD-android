@@ -56,13 +56,10 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-//            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
-
-            (view.context as Activity).window.statusBarColor = colorScheme.secondary.toArgb() // 상태 바 색상
+            (view.context as Activity).window.statusBarColor = colorScheme.tertiary.toArgb() // 상태 바 색상
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태바 의 컨텐츠를 어둡게 함.
 
-            (view.context as Activity).window.navigationBarColor = colorScheme.secondary.toArgb() // 네비게이션 바 색상
+            (view.context as Activity).window.navigationBarColor = colorScheme.tertiary.toArgb() // 네비게이션 바 색상
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 네비게이션 바 의 컨텐츠를 어둡게 함.
         }
     }
@@ -73,6 +70,18 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
         typography = Typography,
         content = content
     )
+}
+
+@Composable
+fun changeStatusBarAndNavigationBarColor(color: Color) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            (view.context as Activity).window.statusBarColor = color.toArgb()
+
+            (view.context as Activity).window.navigationBarColor = color.toArgb()
+        }
+    }
 }
 
 @Composable

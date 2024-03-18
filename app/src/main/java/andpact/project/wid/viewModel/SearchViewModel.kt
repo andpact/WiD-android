@@ -33,13 +33,29 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val diaryService = DiaryService(context = application)
     private val _searchText = mutableStateOf("")
     val searchText: State<String> = _searchText
+    private val _searchComplete = mutableStateOf(false)
+    val searchComplete: State<Boolean> = _searchComplete
     private val _diaryDateList = mutableStateOf<List<LocalDate>>(emptyList())
     val diaryDateList: State<List<LocalDate>> = _diaryDateList
     private val _diaryMap = mutableStateOf<Map<LocalDate, Diary?>>(emptyMap())
     val diaryMap: State<Map<LocalDate, Diary?>> = _diaryMap
 
     fun setSearchFilter(newSearchFilter: String) {
+        Log.d("SearchViewModel", "setSearchFilter executed")
+
         _searchFilter.value = newSearchFilter
+    }
+
+    fun setSearchText(text: String) {
+        Log.d("SearchViewModel", "setSearchText executed")
+
+        _searchText.value = text
+    }
+
+    fun setSearchComplete(isComplete: Boolean) {
+        Log.d("SearchViewModel", "setSearchComplete executed")
+
+        _searchComplete.value = isComplete
     }
 
     // 날짜를 가져오면서 WiDMap과 DiaryMap도 같이 할당함.
@@ -70,9 +86,11 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         _diaryMap.value = newDiaryMap
     }
 
-    fun setSearchText(text: String) {
-        Log.d("SearchViewModel", "setSearchText executed")
-
-        _searchText.value = text
-    }
+//    fun clearData() {
+//        Log.d("SearchViewModel", "clearData executed")
+//
+//        _wiDMap.value = emptyMap()
+//        _diaryDateList.value = emptyList()
+//        _diaryMap.value = emptyMap()
+//    }
 }

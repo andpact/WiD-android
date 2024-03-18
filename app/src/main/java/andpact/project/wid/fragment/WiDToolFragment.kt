@@ -17,11 +17,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,12 +36,11 @@ import kotlinx.coroutines.launch
 fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel: StopwatchViewModel, timerViewModel: TimerViewModel) {
     // 뷰모델
     val wiDListViewModel: WiDListViewModel = viewModel()
-    val datePickerExpanded = wiDListViewModel.expandDatePicker.value
 
     // 화면
     val pages = listOf("스톱 워치", "타이머", "WiD 리스트")
     val pagerState = rememberPagerState(
-        initialPage = if (timerViewModel.timerState.value != PlayerState.Stopped) 1 else 0,
+        initialPage = if (timerViewModel.timerState.value != PlayerState.Stopped) 1 else 0, // 스톱 워치가 0 페이지니까, 타이머 실행 중일 때만 1페이지로 초기화함.
         pageCount = { pages.size }
     )
     val coroutineScope = rememberCoroutineScope()
@@ -51,38 +53,6 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel
         }
     }
 
-    BackHandler(
-        enabled = datePickerExpanded,
-        onBack = {
-            wiDListViewModel.setExpandDatePicker(expand = false)
-        }
-    )
-
-//    val alpha by animateFloatAsState(
-//        targetValue = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) {
-//            1f
-//        } else {
-//            0f
-//        }
-//    )
-
-//    // Animatable을 사용하여 불투명도 애니메이션을 만듭니다.
-//    val alphaValue = remember { Animatable(if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) 1f else 0f) }
-//
-//    // 불투명도 애니메이션을 정의합니다.
-//    val alphaAnimationSpec = tween<Float>(
-//        durationMillis = 500, // 애니메이션 지속 시간 (밀리초)
-//        easing = LinearEasing // 애니메이션 이징 함수
-//    )
-//
-//    // 불투명도를 서서히 변경하는 애니메이션을 시작합니다.
-//    LaunchedEffect(stopwatchViewModel.stopwatchState.value, timerViewModel.timerState.value) {
-//        alphaValue.animateTo(
-//            targetValue = if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) 1f else 0f,
-//            animationSpec = alphaAnimationSpec
-//        )
-//    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,65 +61,48 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel
         /**
          * 상단 바
          */
-        Box {
-            Row(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .alpha(
+                    if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
+                        1f
+                    } else {
+                        0f
+                    }
+                )
+                .background(MaterialTheme.colorScheme.tertiary)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "도구",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(MaterialTheme.colorScheme.secondary)
-                    .alpha(
-                        if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
-                            1f
-                        } else {
-                            0f
-                        }
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "도구",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-            }
-
-            // 대화상자 제거용
-            if (datePickerExpanded) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(
-//                            enabled = datePickerExpanded,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            wiDListViewModel.setExpandDatePicker(expand = false)
-                        }
-                )
-            }
+                    .weight(1f)
+            )
         }
 
         /**
          * 상단 탭
          */
-        Box {
+        CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
             ScrollableTabRow(
                 modifier = Modifier
-    //                .alpha(alphaValue.value),
-    //                .alpha(alpha),
                     .alpha(
                         if (stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped) {
                             1f
                         } else {
                             0f
                         }
-                    ),
+                    )
+                    .background(MaterialTheme.colorScheme.tertiary)
+                    .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
                 containerColor = MaterialTheme.colorScheme.secondary, // 색상 지정안하니 기본 색상이 지정됨.
                 selectedTabIndex = pagerState.currentPage,
                 divider = {},
@@ -165,28 +118,12 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
-    //                            pagerState.animateScrollToPage(index) // 애니메이션 스크롤은 중간의 모든 프래그먼트를 불필요하게 만들게 됨.
                                 pagerState.scrollToPage(index)
                             }
                         },
                         enabled = stopwatchViewModel.stopwatchState.value == PlayerState.Stopped && timerViewModel.timerState.value == PlayerState.Stopped
                     )
                 }
-            }
-
-            // 대화상자 제거용
-            if (datePickerExpanded) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable(
-//                            enabled = datePickerExpanded,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            wiDListViewModel.setExpandDatePicker(expand = false)
-                        }
-                )
             }
         }
 
@@ -205,9 +142,3 @@ fun WiDToolFragment(mainActivityNavController: NavController, stopwatchViewModel
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDToolFragmentPreview() {
-//    WiDToolFragment()
-//}

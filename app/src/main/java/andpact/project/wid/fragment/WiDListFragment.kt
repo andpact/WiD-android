@@ -4,10 +4,12 @@ import andpact.project.wid.R
 import andpact.project.wid.activity.MainActivityDestinations
 import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.DarkGray
+import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.WiDListViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -40,15 +42,10 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: WiDListViewModel) {
-//    val wiDListViewModel: WiDListViewModel = viewModel()
-
     // 날짜
-//    val currentTime: LocalTime = LocalTime.now()
     val today = wiDListViewModel.today
-//    var currentDate by remember { mutableStateOf(today) }
     val currentDate = wiDListViewModel.currentDate.value
-//    var expandDatePicker by remember { mutableStateOf(false) }
-    var expandDatePicker = wiDListViewModel.expandDatePicker.value
+    var expandDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
         selectableDates = object : SelectableDates {
@@ -66,25 +63,29 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
     )
 
     // WiD
-//    val wiDService = WiDService(context = LocalContext.current)
-//    val wiDList by remember(currentDate) { mutableStateOf(wiDService.readDailyWiDListByDate(currentDate)) }
-//    val fullWiDList by remember(currentDate, wiDList) { mutableStateOf(getFullWiDListFromWiDList(date = currentDate, currentTime = currentTime, wiDList = wiDList)) }
     val fullWiDList = wiDListViewModel.fullWiDList.value
 
     DisposableEffect(Unit) {
         Log.d("WiDListFragment", "WiDListFragment is being composed")
+
+        // WiD를 삭제하거나 생성한 후 돌아 왔을 때, 리스트가 갱신되도록.
+        wiDListViewModel.setCurrentDate(wiDListViewModel.currentDate.value)
 
         onDispose {
             Log.d("WiDListFragment", "WiDListFragment is being disposed")
         }
     }
 
+    BackHandler(
+        enabled = expandDatePicker,
+        onBack = {
+            expandDatePicker = false
+        }
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .clickable(expandDatePicker) {
-//                wiDListViewModel.setExpandDatePicker(expand = false)
-//            }
     ) {
         Column(
             modifier = Modifier
@@ -101,39 +102,18 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                 horizontalArrangement = Arrangement.spacedBy(32.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                Row(
-//                    modifier = Modifier
-//                        .clickable {
-////                            wiDListViewModel.setExpandDatePicker(true)
-//                            expandDatePicker = true
-//                        },
-//                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-//                ) {
-//                    Icon(
-//                        modifier = Modifier
-////                            .clickable {
-////                                wiDListViewModel.setExpandDatePicker(true)
-////                            }
-//                            .size(24.dp),
-//                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-//                        contentDescription = "날짜 선택",
-//                        tint = MaterialTheme.colorScheme.primary
-//                    )
-
-                    Text(
-                        modifier = Modifier
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-//                                expandDatePicker = true
-                                wiDListViewModel.setExpandDatePicker(true)
-                            },
-                        text = getDateString(currentDate),
-                        style = Typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-//                }
+                Text(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            expandDatePicker = true
+                        },
+                    text = getDateString(currentDate),
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
                 Spacer(
                     modifier = Modifier
@@ -147,7 +127,6 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            //                        currentDate = currentDate.minusDays(1)
                             val newDate = currentDate.minusDays(1)
                             wiDListViewModel.setCurrentDate(newDate)
                         },
@@ -164,13 +143,12 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            //                        currentDate = currentDate.plusDays(1)
                             val newDate = currentDate.plusDays(1)
                             wiDListViewModel.setCurrentDate(newDate)
                         },
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = "다음 날짜",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = if (currentDate == today) DarkGray else MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -180,10 +158,8 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                         .fillMaxWidth()
                         .weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                 ) {
-    //                getEmptyView(text = "표시할 WiD가 없습니다.")()
-
                     Text(
                         text = "표시할 기록이 없습니다.",
                         style = Typography.bodyMedium,
@@ -196,21 +172,23 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) {
-                                mainActivityNavController.navigate(MainActivityDestinations.NewWiDFragmentDestination.route + "/${LocalTime.MIN}/${LocalTime.MIN}")
-                            }
+                                mainActivityNavController.navigate(MainActivityDestinations.NewWiDFragmentDestination.route + "/${wiDListViewModel.currentDate.value}/${LocalTime.MIN}/${LocalTime.MIN}")
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "새로운 WiD 만들기",
                             style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = DeepSkyBlue
                         )
 
                         Icon(
                             modifier = Modifier
                                 .size(24.dp),
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "New WiD",
-                            tint = MaterialTheme.colorScheme.primary
+                            painter = painterResource(id = R.drawable.outline_add_box_24),
+                            contentDescription = "새로운 WiD",
+                            tint = DeepSkyBlue
                         )
                     }
                 }
@@ -250,9 +228,7 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null
                                             ) {
-                                                mainActivityNavController.navigate(
-                                                    MainActivityDestinations.NewWiDFragmentDestination.route + "/${wiD.start}/${wiD.finish}"
-                                                )
+                                                mainActivityNavController.navigate(MainActivityDestinations.NewWiDFragmentDestination.route + "/${wiDListViewModel.currentDate.value}/${LocalTime.MIN}/${LocalTime.MIN}")
                                             },
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -395,15 +371,16 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
         }
 
         /**
-         * 대화상자
+         * 날짜 대화상자
          */
-        AnimatedVisibility(
-            modifier = Modifier
-                .fillMaxSize(),
-            visible = expandDatePicker,
-            enter = fadeIn(),
-            exit = fadeOut(),
-        ) {
+//        AnimatedVisibility(
+//            modifier = Modifier
+//                .fillMaxSize(),
+//            visible = expandDatePicker,
+//            enter = fadeIn(),
+//            exit = fadeOut(),
+//        ) {
+        if (expandDatePicker) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -412,13 +389,12 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-//                        expandDatePicker = false
-                        wiDListViewModel.setExpandDatePicker(expand = false)
+                        expandDatePicker = false
                     }
             ) {
                 Column(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.Center)
                         .padding(16.dp)
                         .shadow(
                             elevation = 2.dp,
@@ -435,7 +411,6 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-//                            .clickable(false) {}
                     ) {
                         Icon(
                             modifier = Modifier
@@ -446,8 +421,7 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-                                    wiDListViewModel.setExpandDatePicker(expand = false)
+                                    expandDatePicker = false
                                 },
                             painter = painterResource(id = R.drawable.baseline_close_24),
                             contentDescription = "날짜 메뉴 닫기",
@@ -470,9 +444,7 @@ fun WiDListFragment(mainActivityNavController: NavController, wiDListViewModel: 
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-//                                    expandDatePicker = false
-                                    wiDListViewModel.setExpandDatePicker(false)
-//                                    currentDate = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                                    expandDatePicker = false
                                     val newDate = Instant
                                         .ofEpochMilli(datePickerState.selectedDateMillis!!)
                                         .atZone(ZoneId.systemDefault())

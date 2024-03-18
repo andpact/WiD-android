@@ -82,7 +82,10 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
             Icon(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         mainActivityNavController.popBackStack()
                     },
                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
@@ -93,7 +96,6 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
             if (stopwatchViewModel.stopwatchState.value != PlayerState.Stopped) {
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
                         .align(Alignment.Center)
                         .background(
                             color = if (stopwatchViewModel.stopwatchState.value == PlayerState.Started) {
@@ -103,6 +105,7 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                             },
                             shape = RoundedCornerShape(8.dp)
                         )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = titleMap[stopwatchViewModel.title.value] ?: "공부",
@@ -129,6 +132,7 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                             },
                             shape = RoundedCornerShape(8.dp)
                         )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = titleMap[timerViewModel.title.value] ?: "공부",
@@ -227,10 +231,10 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
             }
         }
 
-        HorizontalDivider(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        )
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
 
         // 제목 입력
         OutlinedTextField(
@@ -238,11 +242,11 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                 .fillMaxWidth()
                 .focusRequester(focusRequester = focusRequester),
             value = diaryTitle,
-            textStyle = Typography.bodyMedium,
+            textStyle = Typography.bodyLarge,
             placeholder = {
                 Text(
                     text = "제목을 입력해 주세요.",
-                    style = Typography.bodyMedium,
+                    style = Typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary
                 ) },
             onValueChange = { diaryTitle = it } ,
@@ -260,10 +264,10 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
             ),
         )
 
-        HorizontalDivider(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-        )
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
 
         // 내용 입력
         OutlinedTextField(
@@ -271,11 +275,11 @@ fun DiaryFragment(date: LocalDate, mainActivityNavController: NavController, sto
                 .imePadding()
                 .fillMaxSize(),
             value = diaryContent,
-            textStyle = Typography.labelMedium,
+            textStyle = Typography.bodyLarge,
             placeholder = {
                 Text(
                     text = "내용을 입력해 주세요.",
-                    style = Typography.bodyMedium,
+                    style = Typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary
                 ) },
             onValueChange = { diaryContent = it },

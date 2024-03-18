@@ -65,7 +65,7 @@ fun LineChartFragment(title: String, wiDList: List<WiD>, startDate: LocalDate, f
     Box(modifier = Modifier
         .fillMaxWidth()
         .padding(16.dp)
-        .aspectRatio(1.5f)
+        .aspectRatio(1f / 1f)
     ) {
         // Crossfade 적용 안하면 차트 갱신이 안된다.
         Crossfade(targetState = entryList) { entryList ->
