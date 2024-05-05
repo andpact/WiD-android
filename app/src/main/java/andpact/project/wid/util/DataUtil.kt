@@ -2,7 +2,37 @@ package andpact.project.wid.util
 
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.toArgb
+
+/**
+ * map -> 불변
+ * hashMap -> 가변
+ */
+val defaultTitleColorMapWithColors = hashMapOf(
+    "공부" to Study,
+    "노동" to Work,
+    "운동" to Exercise,
+    "취미" to Hobby,
+    "놀기" to Play,
+    "식사" to Meal,
+    "샤워" to Shower,
+    "이동" to Travel,
+    "취침" to Sleep,
+    "기타" to Etc
+)
+
+val defaultTitleColorMapWithIntegers = hashMapOf(
+    "공부" to Study.toArgb(),
+    "노동" to Work.toArgb(),
+    "운동" to Exercise.toArgb(),
+    "취미" to Hobby.toArgb(),
+    "놀기" to Play.toArgb(),
+    "식사" to Meal.toArgb(),
+    "샤워" to Shower.toArgb(),
+    "이동" to Travel.toArgb(),
+    "취침" to Sleep.toArgb(),
+    "기타" to Etc.toArgb()
+)
 
 val titles = arrayOf(
     "STUDY", // 공부
@@ -17,32 +47,32 @@ val titles = arrayOf(
     "ETC" // 기타
 )
 
-val titleMap = mapOf(
-    "STUDY" to "공부",
-    "WORK" to "노동",
-    "EXERCISE" to "운동",
-    "HOBBY" to "취미",
-    "PLAY" to "놀기",
-    "MEAL" to "식사",
-    "SHOWER" to "샤워",
-    "TRAVEL" to "이동",
-    "SLEEP" to "수면",
-    "ETC" to "기타"
-)
+//val titleMap = mapOf(
+//    "STUDY" to "공부",
+//    "WORK" to "노동",
+//    "EXERCISE" to "운동",
+//    "HOBBY" to "취미",
+//    "PLAY" to "놀기",
+//    "MEAL" to "식사",
+//    "SHOWER" to "샤워",
+//    "TRAVEL" to "이동",
+//    "SLEEP" to "수면",
+//    "ETC" to "기타"
+//)
 
-val titleIconMap = mapOf(
-    "ALL" to R.drawable.baseline_title_24,
-    "STUDY" to R.drawable.baseline_menu_book_16,
-    "WORK" to R.drawable.baseline_construction_16,
-    "EXERCISE" to R.drawable.baseline_fitness_center_16,
-    "HOBBY" to R.drawable.outline_brush_24,
-    "PLAY" to R.drawable.outline_videogame_asset_16,
-    "MEAL" to R.drawable.baseline_local_dining_16,
-    "SHOWER" to R.drawable.outline_shower_16,
-    "TRAVEL" to R.drawable.baseline_commute_16,
-    "SLEEP" to R.drawable.outline_bed_16,
-    "ETC" to R.drawable.baseline_more_horiz_16
-)
+//val titleIconMap = mapOf(
+//    "ALL" to R.drawable.baseline_title_24,
+//    "STUDY" to R.drawable.baseline_menu_book_16,
+//    "WORK" to R.drawable.baseline_construction_16,
+//    "EXERCISE" to R.drawable.baseline_fitness_center_16,
+//    "HOBBY" to R.drawable.outline_brush_24,
+//    "PLAY" to R.drawable.outline_videogame_asset_16,
+//    "MEAL" to R.drawable.baseline_local_dining_16,
+//    "SHOWER" to R.drawable.outline_shower_16,
+//    "TRAVEL" to R.drawable.baseline_commute_16,
+//    "SLEEP" to R.drawable.outline_bed_16,
+//    "ETC" to R.drawable.baseline_more_horiz_16
+//)
 
 //val titleExampleMap = mapOf(
 //    "STUDY" to "중간 및 기말고사, 자격증, 공시, 승진시험",
@@ -151,3 +181,8 @@ val searchFilterMap = mapOf(
     "ByTitle" to "제목",
     "ByContent" to "내용",
 )
+
+enum class SignInMethod {
+    EmailLink,
+    EmailAndPassword,
+}

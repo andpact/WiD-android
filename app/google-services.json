@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "952444611184",
+    "project_id": "wid-time-diary",
+    "storage_bucket": "wid-time-diary.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952444611184:android:337c0de40c053db0a2a2b5",
+        "android_client_info": {
+          "package_name": "andpact.project.wid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbDH3ImvXKQMSEdC0aenqqY116IJEoZXY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

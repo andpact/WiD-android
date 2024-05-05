@@ -12,13 +12,15 @@ import androidx.lifecycle.AndroidViewModel
 import java.time.LocalDate
 
 class DayDiaryViewModel(application: Application) : AndroidViewModel(application) {
+    private val TAG = "DayDiaryViewModel"
+
     init {
-        Log.d("DayDiaryViewModel", "DayDiaryViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("DayDiaryViewModel", "DayDiaryViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
 
     // 날짜
@@ -46,7 +48,7 @@ class DayDiaryViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun setCurrentDate(newDate: LocalDate) {
-        Log.d("DayDiaryViewModel", "setCurrentDate executed")
+        Log.d(TAG, "setCurrentDate executed")
 
         _currentDate.value = newDate
         _wiDList.value = wiDService.readDailyWiDListByDate(_currentDate.value)

@@ -67,11 +67,26 @@ import java.time.temporal.ChronoUnit
 fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: List<WiD>): List<WiD> {
     Log.d("WiDListUtil", "getFullWiDListFromWiDList executed")
 
+    val fullWiDList = mutableListOf<WiD>()
+
     if (wiDList.isEmpty()) {
-        return emptyList()
+        val start = LocalTime.MIN
+        val finish = LocalTime.MAX
+
+        val emptyWiD = WiD(
+            id = "",
+            date = date,
+            title = "",
+            start = LocalTime.MIN,
+            finish = LocalTime.MAX,
+            duration = Duration.between(start, finish)
+        )
+
+        fullWiDList.add(emptyWiD)
+
+        return fullWiDList
     }
 
-    val fullWiDList = mutableListOf<WiD>()
 
     var emptyWiDStart = LocalTime.MIN
 
@@ -88,7 +103,7 @@ fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: 
         }
 
         val emptyWiD = WiD(
-            id = 0,
+            id = "",
             date = date,
             title = "",
             start = emptyWiDStart,
@@ -115,7 +130,7 @@ fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: 
         fullWiDList
     } else { // 마지막 빈 WiD 추가
         val lastEmptyWiD = WiD(
-            id = 0,
+            id = "",
             date = date,
             title = "",
             start = emptyWiDStart,
@@ -149,7 +164,7 @@ fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
     val result = mutableMapOf<String, Duration>()
 
     for (wiD in wiDList) {
-        val title = wiD.title
+        val title = wiD.title.takeUnless { it.isEmpty() } ?: "기록 없음"
         val duration = wiD.duration
 
         // 제목 별로 소요 시간을 누적

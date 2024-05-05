@@ -12,13 +12,15 @@ import java.time.Duration
 import java.time.LocalDate
 
 class TitleWiDViewModel(application: Application) : AndroidViewModel(application) {
+    private val TAG = "TitleWiDViewModel"
+
     init {
-        Log.d("TitleWiDViewModel", "TitleWiDViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("TitleWiDViewModel", "TitleWiDViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
 
     // 날짜
@@ -84,7 +86,7 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun setTitle(newTitle: String) {
-        Log.d("TitleWiDViewModel", "setTitle executed")
+        Log.d(TAG, "setTitle executed")
 
         _selectedTitle.value = newTitle
         _filteredWiDListByTitle.value = wiDList.filter { it.title == newTitle }
@@ -97,7 +99,7 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun setPeriod(newPeriod: String) {
-        Log.d("TitleWiDViewModel", "setPeriod executed")
+        Log.d(TAG, "setPeriod executed")
 
         _selectedPeriod.value = newPeriod
 
@@ -125,7 +127,7 @@ class TitleWiDViewModel(application: Application) : AndroidViewModel(application
 
     // startDate, finishDate 변겨될 때 호출됨.
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
-        Log.d("TitleWiDViewModel", "setStartDateAndFinishDate executed")
+        Log.d(TAG, "setStartDateAndFinishDate executed")
 
         _startDate.value = startDate
         _finishDate.value = finishDate

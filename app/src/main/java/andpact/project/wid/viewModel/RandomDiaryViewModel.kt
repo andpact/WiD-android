@@ -12,13 +12,15 @@ import androidx.lifecycle.AndroidViewModel
 import java.time.LocalDate
 
 class RandomDiaryViewModel(application: Application) : AndroidViewModel(application) {
+    private val TAG = "RandomDiaryViewModel"
+
     init {
-        Log.d("RandomDiaryViewModel", "RandomDiaryViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("RandomDiaryViewModel", "RandomDiaryViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
 
     // WiD
@@ -38,7 +40,7 @@ class RandomDiaryViewModel(application: Application) : AndroidViewModel(applicat
 
     // 랜덤 날짜를 가져오면서 WiDMap과 DiaryMap도 같이 할당함.
     fun fetchRandomDiaryDates() {
-        Log.d("RandomDiaryViewModel", "fetchRandomDiaryDates executed")
+        Log.d(TAG, "fetchRandomDiaryDates executed")
 
         val existingDates = _diaryDateList.value
         val randomDates = diaryService.readRandomDiaryDates(existingDates)
@@ -59,7 +61,7 @@ class RandomDiaryViewModel(application: Application) : AndroidViewModel(applicat
     }
 
 //    fun clearData() {
-//        Log.d("RandomDiaryViewModel", "clearData executed")
+//        Log.d(TAG, "clearData executed")
 //
 //        _wiDMap.value = emptyMap()
 //        _diaryDateList.value = emptyList()

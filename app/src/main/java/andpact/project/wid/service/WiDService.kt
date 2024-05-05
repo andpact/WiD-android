@@ -6,6 +6,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -153,7 +154,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                 val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
                 val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+//                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
             }
             close()
         }
@@ -183,7 +184,7 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                 val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
                 val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+//                wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
             }
             close()
         }
@@ -213,8 +214,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                     val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
                     val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
-                    wiDList.add(wiD)
+//                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+//                    wiDList.add(wiD)
                 } while (moveToNext())
             }
             close()
@@ -246,8 +247,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                     val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
                     val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
-                    wiDList.add(wiD)
+//                    val wiD = WiD(id, date, title, startTime, finishTime, durationMillis)
+//                    wiDList.add(wiD)
                 } while (moveToNext())
             }
             close()
@@ -295,8 +296,8 @@ class WiDService(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nu
                                 val finishTime = LocalTime.parse(getString(getColumnIndexOrThrow(COLUMN_FINISH)))
                                 val durationMillis = getLong(getColumnIndexOrThrow(COLUMN_DURATION))
 
-                                val wiD = WiD(id, LocalDate.parse(randomDate), title, startTime, finishTime, durationMillis)
-                                wiDList.add(wiD)
+//                                val wiD = WiD(id, LocalDate.parse(randomDate), title, startTime, finishTime, durationMillis)
+//                                wiDList.add(wiD)
                             } while (moveToNext())
                         }
                         close()

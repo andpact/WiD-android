@@ -12,13 +12,15 @@ import androidx.lifecycle.AndroidViewModel
 import java.time.LocalDate
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
+    private val TAG = "SearchViewModel"
+
     init {
-        Log.d("SearchViewModel", "SearchViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("SearchViewModel", "SearchViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
 
     // WiD
@@ -41,26 +43,26 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     val diaryMap: State<Map<LocalDate, Diary?>> = _diaryMap
 
     fun setSearchFilter(newSearchFilter: String) {
-        Log.d("SearchViewModel", "setSearchFilter executed")
+        Log.d(TAG, "setSearchFilter executed")
 
         _searchFilter.value = newSearchFilter
     }
 
     fun setSearchText(text: String) {
-        Log.d("SearchViewModel", "setSearchText executed")
+        Log.d(TAG, "setSearchText executed")
 
         _searchText.value = text
     }
 
     fun setSearchComplete(isComplete: Boolean) {
-        Log.d("SearchViewModel", "setSearchComplete executed")
+        Log.d(TAG, "setSearchComplete executed")
 
         _searchComplete.value = isComplete
     }
 
     // 날짜를 가져오면서 WiDMap과 DiaryMap도 같이 할당함.
     fun fetchDiaryDates() {
-        Log.d("SearchViewModel", "fetchDiaryDates executed")
+        Log.d(TAG, "fetchDiaryDates executed")
 
 //        val existingDates = _diaryDateList.value
 
@@ -87,7 +89,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
 //    fun clearData() {
-//        Log.d("SearchViewModel", "clearData executed")
+//        Log.d(TAG, "clearData executed")
 //
 //        _wiDMap.value = emptyMap()
 //        _diaryDateList.value = emptyList()

@@ -1,24 +1,35 @@
 package andpact.project.wid.viewModel
 
+import andpact.project.wid.dataSource.UserDataSource
+import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
-import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.*
-import androidx.lifecycle.AndroidViewModel
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
+import javax.inject.Inject
 
-class WeekWiDViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class WeekWiDViewModel @Inject constructor(
+    private val userDataSource: UserDataSource,
+    private val wiDDataSource: WiDDataSource,
+) : ViewModel() {
+    private val TAG = "WeekWiDViewModel"
+
     init {
-        Log.d("WeekWiDViewModel", "WeekWiDViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("WeekWiDViewModel", "WeekWiDViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
+
+    private val email: String = userDataSource.firebaseUser.value?.email ?: ""
 
     // 날짜
     val today: LocalDate = LocalDate.now()
@@ -30,7 +41,7 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
 //    val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
 
     // WiD
-    private val wiDService = WiDService(context = application)
+//    private val wiDService = WiDService(context = application)
 //    private val _wiDList = mutableStateOf<List<WiD>>(wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value))
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
@@ -40,17 +51,17 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
 //    val totalDurationMap: State<Map<String, Duration>> = _totalDurationMap
     var totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 평균
 //    private val _averageDurationMap = mutableStateOf(getAverageDurationMapByTitle(wiDList = _wiDList.value))
 //    val averageDurationMap: State<Map<String, Duration>> = _averageDurationMap
     var averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 최소
 //    private val _minDurationMap = mutableStateOf(getMinDurationMapByTitle(wiDList = _wiDList.value))
 //    val minDurationMap: State<Map<String, Duration>> = _minDurationMap
     var minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
 
-    // 합계
+    // 최고
 //    private val _maxDurationMap = mutableStateOf(getMaxDurationMapByTitle(wiDList = _wiDList.value))
 //    val maxDurationMap: State<Map<String, Duration>> = _maxDurationMap
     var maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
@@ -67,22 +78,35 @@ class WeekWiDViewModel(application: Application) : AndroidViewModel(application)
 //    }
 
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
+        Log.d(TAG, "setStartDateAndFinishDate executed")
+
         _startDate.value = startDate
         _finishDate.value = finishDate
 
-        _wiDList.value = wiDService.readWiDListByDateRange(startDate, finishDate)
-        totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
-        averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
-        minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
-        maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+        wiDDataSource.getWiDListFromFirstDateToLastDate(email = email, firstDate = startDate, lastDate = finishDate) { wiDList ->
+            _wiDList.value = wiDList
 
-        _selectedMapText.value = "합계"
-        _selectedMap.value = totalDurationMap
+            totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
+            averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
+            minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
+            maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+
+            _selectedMapText.value = "합계"
+            _selectedMap.value = totalDurationMap
+        }
+//        _wiDList.value = wiDService.readWiDListByDateRange(startDate, finishDate)
+//        totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
+//        averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
+//        minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
+//        maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+//
+//        _selectedMapText.value = "합계"
+//        _selectedMap.value = totalDurationMap
     }
 
     // 합, 평, 고, 저 맵은 미리 준비되어 있고, 보여줄 맵만 변경함.
     fun updateSelectedMap(newText: String, newMap: Map<String, Duration>) {
-        Log.d("WeekWiDViewModel", "updateSelectedMap executed")
+        Log.d(TAG, "updateSelectedMap executed")
 
         _selectedMapText.value = newText
         _selectedMap.value = newMap

@@ -1,262 +1,129 @@
 package andpact.project.wid.activity
 
-import andpact.project.wid.fragment.*
 import andpact.project.wid.ui.theme.WiDTheme
-import andpact.project.wid.ui.theme.changeStatusBarAndNavigationBarColor
-import andpact.project.wid.viewModel.StopwatchViewModel
-import andpact.project.wid.viewModel.TimerViewModel
-import android.app.Application
+import andpact.project.wid.view.MainActivityView
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import java.time.LocalDate
-import java.time.LocalTime
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
+import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * 이메일 링크는 6시간의 유효 기간이 설정되어 있는 듯 하고,
+ * 한 번 사용되면 재사용 할 수 없고,
+ * 여러 개의 링크를 한 번에 보내면 마지막으로 보낸 링크만 사용이 가능한 듯 하다.
+ * 인증에 한도가 존재함. (한 번 인증 후, 동일한 이메일로 다시 인증 하려니 안됨. 한도 초과라고 나옴.)
+ */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val TAG = "MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate() called")
 
         // window inset(상태 바, 네비게이션 바 패딩)을 수동으로 설정할 때
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        val intent: Intent = intent
+
         setContent {
-            MainScreen()
+            val dynamicLink = remember { mutableStateOf<String?>(null) }
+
+            // 동적 링크를 Repository 객체를 통해서 감지할 필요가 없음.
+            FirebaseDynamicLinks
+                .getInstance()
+                .getDynamicLink(intent)
+                .addOnSuccessListener { pendingDynamicLinkData ->
+                    if (pendingDynamicLinkData == null) {
+                        dynamicLink.value = null
+                    } else {
+                        dynamicLink.value = pendingDynamicLinkData.link.toString()
+                        Log.d("dynamicLink", dynamicLink.value.toString())
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "getDynamicLink:onFailure", e)
+                }
+
+            WiDTheme {
+                MainActivityView(dynamicLink.value)
+            }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart() called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy() called")
     }
 }
 
-/**
- * 컴포저블 - Jetpack Compose에서 화면을 그리는 데 사용되는 함수
- * 컴포넌트 - 소프트웨어 개발에서 재사용 가능한 모듈
- */
-@Composable
-fun MainScreen() {
-    WiDTheme() {
-        // 네비게이션
-        val mainActivityNavController: NavHostController = rememberNavController()
+//fun parseWiDFromString(wiDString: String): WiD {
+//    val parts = wiDString.split(",")
+//    require(parts.size == 6) { "Invalid string format" }
+//    val id = parts[0].toLong()
+//    val date = LocalDate.parse(parts[1])
+//    val title = parts[2]
+//    val start = LocalTime.parse(parts[3])
+//    val finish = LocalTime.parse(parts[4])
+//    val durationMillis = parts[5].toLong()
+//    val duration = Duration.ofMillis(durationMillis)
+//    return WiD(id, date, title, start, finish, duration)
+//}
 
-        // 뷰 모델, 메인 네비게이션 그래프에 뷰 모델을 넘겨야 해서 여기에 선언함.
-        val stopwatchViewModel: StopwatchViewModel = viewModel()
-        val timerViewModel: TimerViewModel = viewModel()
-
-        // 스톱워치나 타이머 상하단 바 제거헐 때, 네비게이션 바 색상 변경함.
-        if (stopwatchViewModel.stopwatchTopBottomBarVisible.value && timerViewModel.timerTopBottomBarVisible.value) {
-            changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary)
-        } else {
-            changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary)
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            MainActivityNavigationGraph(
-                mainActivityNavController = mainActivityNavController,
-                stopwatchViewModel = stopwatchViewModel,
-                timerViewModel = timerViewModel
-            )
-        }
-    }
-}
-
-@Composable // 네비게이션 그래프에는 NavController가 아닌 NavHostController가 파라미터로 들어감.
-fun MainActivityNavigationGraph(
-    mainActivityNavController: NavHostController,
-    stopwatchViewModel: StopwatchViewModel,
-    timerViewModel: TimerViewModel
-) {
-    val navBackStackEntry by mainActivityNavController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    // 화면 전환 시 상태 바, 네비게이션 바 색상을 변경함.
-    if (currentRoute != MainActivityDestinations.MainFragmentDestination.route) {
-        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary)
-    } else {
-        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary)
-    }
-
-    NavHost(
-        navController = mainActivityNavController,
-        startDestination = MainActivityDestinations.MainFragmentDestination.route
-    ) {
-        // 메인 프래그먼트
-        composable(MainActivityDestinations.MainFragmentDestination.route) {
-            MainFragment(
-                mainActivityNavController = mainActivityNavController,
-                stopwatchViewModel = stopwatchViewModel,
-                timerViewModel = timerViewModel
-            )
-        }
-
-        // 새로운 WiD
-        composable(
-            route = MainActivityDestinations.NewWiDFragmentDestination.route + "/{dateParam}/{startParam}/{finishParam}",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) { backStackEntry ->
-            val dateParam = run {
-                val dateString = backStackEntry.arguments?.getString("dateParam") ?: LocalDate.now().toString()
-                LocalDate.parse(dateString)
-            }
-
-            val startParam = run {
-                val startString = backStackEntry.arguments?.getString("startParam") ?: LocalTime.MIN.toString()
-                LocalTime.parse(startString)
-            }
-            val finishParam = run {
-                val finishString = backStackEntry.arguments?.getString("finishParam") ?: LocalTime.MIN.toString()
-                LocalTime.parse(finishString)
-            }
-
-            NewWiDFragment(
-                mainActivityNavController = mainActivityNavController,
-                date = dateParam,
-                startParam = startParam,
-                finishParam = finishParam
-            )
-        }
-
-        // WiD
-        composable(
-            route = MainActivityDestinations.WiDFragmentDestination.route + "/{wiDID}",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) { backStackEntry ->
-            val wiDID = backStackEntry.arguments?.getString("wiDID")?.toLongOrNull() ?: -1L
-            WiDFragment(
-                wiDId = wiDID,
-                mainActivityNavController = mainActivityNavController,
-            )
-        }
-
-        // 다이어리
-        composable(
-            route = MainActivityDestinations.DiaryFragmentDestination.route + "/{date}",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) { backStackEntry ->
-            val date = run {
-                val dateString = backStackEntry.arguments?.getString("date") ?: ""
-                LocalDate.parse(dateString)
-            }
-            DiaryFragment(
-                date = date,
-                mainActivityNavController = mainActivityNavController,
-                stopwatchViewModel = stopwatchViewModel,
-                timerViewModel = timerViewModel
-            )
-        }
-
-        // 환경설정 프래그먼트
-//        composable(
-//            route = MainActivityDestinations.SettingFragmentDestination.route,
-//            enterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Left,
-//                    animationSpec = tween(500)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Right,
-//                    animationSpec = tween(500)
-//                )
-//            }
-//        ) {
-//            SettingFragment(mainActivityNavController = mainActivityNavController)
-//        }
-    }
-}
-
-sealed class MainActivityDestinations(
+sealed class MainActivityViewDestinations(
     val route: String,
     val title: String? = null,
     val icon: Int? = null
 ) {
-    object MainFragmentDestination : MainActivityDestinations(
-        route = "main_fragment",
-    )
-    object NewWiDFragmentDestination : MainActivityDestinations(
-        route = "newWiD_fragment",
-    )
-    object WiDFragmentDestination : MainActivityDestinations(
-        route = "wid_fragment",
-    )
-    object DiaryFragmentDestination : MainActivityDestinations(
-        route = "diary_fragment",
-    )
-//    object SettingFragmentDestination : MainActivityDestinations(
-//        route = "setting_fragment",
-//    )
+    object SplashViewDestination : MainActivityViewDestinations(route = "splash_view")
+    object AuthenticationViewDestination : MainActivityViewDestinations(route = "authentication_view")
+//    object SignUpViewDestination : MainActivityViewDestinations(route = "sign_up_view")
+//    object SignInViewDestination : MainActivityViewDestinations(route = "sign_in_view")
+    object MainViewDestination : MainActivityViewDestinations(route = "main_view")
+    object NewWiDViewDestination : MainActivityViewDestinations(route = "newWiD_view")
+    object WiDViewDestination : MainActivityViewDestinations(route = "wid_view")
+    object DiaryViewDestination : MainActivityViewDestinations(route = "diary_view")
+    object SettingViewDestination : MainActivityViewDestinations(route = "setting_view")
 }
-
-//@Composable
-//fun SplashFragment() {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(MaterialTheme.colorScheme.secondary),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        Text(
-//            text = "WiD",
-//            style = TextStyle(
-//                color = MaterialTheme.colorScheme.primary,
-//                fontSize = 70.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontFamily = acmeRegular
-//            )
-//        )
-//    }
-//}
 
 //@Preview(showBackground = true)
 //@Composable
 //fun WiDMainActivityPreview() {
 //    WiDMainActivity()
 //}
+
+/**
+ * 사용할 거면 액티비티 안에 작성해서 사용하자.
+ */
+//    private fun showAppOpenAd() {
+//        val application = application as? AppOpenAdUtil
+//
+//        if (application == null) {
+//            Log.e(LOG_TAG, "showAppOpenAd : Failed to cast application to AppOpenAdUtil.")
+//
+//            startMainActivity()
+//
+//            return
+//        }
+//
+//        application.showAdIfAvailable(this)
+
+//        application.showAdIfAvailable(
+//            this@SplashActivity,
+//            object : AppOpenAdUtil.OnShowAdCompleteListener {
+//                override fun onShowAdComplete() {
+//                    startMainActivity()
+//                }
+//            }
+//        )
+//    }

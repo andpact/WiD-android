@@ -1,28 +1,39 @@
 package andpact.project.wid.viewModel
 
+import andpact.project.wid.dataSource.UserDataSource
+import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.util.*
-import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
+import javax.inject.Inject
 
 /**
  * _변수는 뷰 모델 내부에서 사용됨.
  */
-class MonthWiDViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class MonthWiDViewModel @Inject constructor(
+    private val userDataSource: UserDataSource,
+    private val wiDDataSource: WiDDataSource
+//    private val wiDRepository: WiDRepository
+) : ViewModel() {
+    private val TAG = "MonthWiDViewModel"
+
     init {
-        Log.d("MonthWiDViewModel", "MonthWiDViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("MonthWiDViewModel", "MonthWiDViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
+
+    private val email = userDataSource.firebaseUser.value?.email ?: ""
 
     // 날짜
     val today: LocalDate = LocalDate.now()
@@ -34,7 +45,7 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
 //    val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
 
     // WiD
-    private val wiDService = WiDService(context = application)
+//    private val wiDService = WiDService(context = application)
 //    private val _wiDList = mutableStateOf(wiDService.readWiDListByDateRange(_startDate.value, _finishDate.value))
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
@@ -63,23 +74,35 @@ class MonthWiDViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun setStartDateAndFinishDate(startDate: LocalDate, finishDate: LocalDate) {
-        Log.d("MonthWiDViewModel", "setStartDateAndFinishDate executed")
+        Log.d(TAG, "setStartDateAndFinishDate executed")
 
         _startDate.value = startDate
         _finishDate.value = finishDate
 
-        _wiDList.value = wiDService.readWiDListByDateRange(startDate, finishDate)
-        totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
-        averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
-        minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
-        maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+        wiDDataSource.getWiDListFromFirstDateToLastDate(email = email, firstDate = startDate, lastDate = finishDate) { wiDList ->
+            _wiDList.value = wiDList
 
-        _selectedMapText.value = "합계"
-        _selectedMap.value = totalDurationMap
+            totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
+            averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
+            minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
+            maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+
+            _selectedMapText.value = "합계"
+            _selectedMap.value = totalDurationMap
+        }
+
+//        _wiDList.value = wiDService.readWiDListByDateRange(startDate, finishDate)
+//        totalDurationMap = getTotalDurationMapByTitle(wiDList = _wiDList.value)
+//        averageDurationMap = getAverageDurationMapByTitle(wiDList = _wiDList.value)
+//        minDurationMap = getMinDurationMapByTitle(wiDList = _wiDList.value)
+//        maxDurationMap = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+//
+//        _selectedMapText.value = "합계"
+//        _selectedMap.value = totalDurationMap
     }
 
     fun updateSelectedMap(newText: String, newMap: Map<String, Duration>) {
-        Log.d("MonthWiDViewModel", "updateSelectedMap executed")
+        Log.d(TAG, "updateSelectedMap executed")
 
         _selectedMapText.value = newText
         _selectedMap.value = newMap

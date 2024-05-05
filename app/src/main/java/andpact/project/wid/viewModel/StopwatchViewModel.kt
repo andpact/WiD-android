@@ -1,189 +1,90 @@
 package andpact.project.wid.viewModel
 
-import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
-import andpact.project.wid.ui.theme.changeStatusBarAndNavigationBarColor
+import andpact.project.wid.dataSource.StopwatchDataSource
+import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.util.PlayerState
-import andpact.project.wid.util.titles
-import android.app.Application
+import andpact.project.wid.util.defaultTitleColorMapWithColors
 import android.util.Log
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.*
-import kotlin.concurrent.timer
+import javax.inject.Inject
 
 /**
  * 값이 변함에 따라 ui를 갱신 해야 하는 State 변수는 직접 Setter 메서드를 선언하고,
  * 값이 변해도 표시할 필요 없는 일반 변수는 get(), set()를 사용함.
  * State 변수에 값을 할당할 때는 (_변수)를 사용해야 함.
+ *
+ * MutableLiveData는 Composable 밖(액티비티?)에서도 사용 가능함.
+ * mutableState는 Composable 안에서 만 사용 가능 한듯.
  */
-class StopwatchViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class StopwatchViewModel @Inject constructor(
+    private val stopwatchDataSource: StopwatchDataSource,
+    private val userDataSource: UserDataSource
+) : ViewModel() {
+    private val TAG = "StopwatchViewModel"
+
     init {
-        Log.d("StopwatchViewModel", "StopwatchViewModel is created")
+        Log.d(TAG, "created")
     }
 
     override fun onCleared() {
         super.onCleared()
-        Log.d("StopwatchViewModel", "StopwatchViewModel is cleared")
+        Log.d(TAG, "cleared")
     }
 
-    // WiD
-    private val wiDService = WiDService(application)
-
-    // 날짜
-//    var date: LocalDate
-//        get() = _date
-//        set(value) { _date = value }
-//    private var _date: LocalDate = LocalDate.now()
-    private var date: LocalDate = LocalDate.now()
+    private val email: String = userDataSource.firebaseUser.value?.email ?: ""
 
     // 제목
-    private val _title = mutableStateOf(titles[0])
-    val title: State<String> = _title
-//    private val _title = MutableLiveData(titles[0])
-//    val title: MutableLiveData<String> = _title
+    val title: State<String> = stopwatchDataSource.title
 
+    private val _titleColorMap = mutableStateOf(userDataSource.user.value?.titleColorMap ?: defaultTitleColorMapWithColors)
+    val titleColorMap: State<Map<String, Color>> = _titleColorMap
 
-    // 시작 시간
-//    var start: LocalTime
-//        get() = _start
-//        set(value) { _start = value }
-//    private var _start: LocalTime = LocalTime.now()
-    private var start: LocalTime = LocalTime.now()
-
-    // 종료 시간
-//    var finish: LocalTime
-//        get() = _finish
-//        set(value) { _finish = value }
-//    private var _finish: LocalTime = LocalTime.now()
-    private var finish: LocalTime = LocalTime.now()
-
-    // 소요 시간 - 시간 표시용
-    private val _duration = mutableStateOf(Duration.ZERO)
-    val duration: State<Duration> = _duration
-    //    private var prevDuration: Duration
-//        get() = _prevDuration
-//        set(value) { _prevDuration = value }
-    private var prevDuration: Duration = Duration.ZERO
+    // 소요 시간
+    val duration: State<Duration> = stopwatchDataSource.duration
 
     // 스톱 워치
-    private var timer: Timer? = null
-    private val _stopwatchState = mutableStateOf(PlayerState.Stopped)
-    val stopwatchState: State<PlayerState> = _stopwatchState
-//    private val _inStopwatchView = mutableStateOf(false)
-//    val inStopwatchView: State<Boolean> = _inStopwatchView
-    private val _stopwatchTopBottomBarVisible = mutableStateOf(true)
-    val stopwatchTopBottomBarVisible: State<Boolean> = _stopwatchTopBottomBarVisible
+    val stopwatchState: State<PlayerState> = stopwatchDataSource.stopwatchState
+
+    private val _hideStopwatchViewBar = mutableStateOf(false)
+    val hideStopwatchViewBar: State<Boolean> = _hideStopwatchViewBar
 
     fun setTitle(newTitle: String) {
-        Log.d("StopwatchViewModel", "setTitle executed")
+        Log.d(TAG, "setTitle executed")
 
-        _title.value = newTitle
+        stopwatchDataSource.setTitle(newTitle)
     }
 
-//    fun setInStopwatchView(isInStopwatchView: Boolean) {
-//        Log.d("StopwatchViewModel", "setInStopwatchView executed")
-//
-//        _inStopwatchView.value = isInStopwatchView
-//    }
+    fun setHideStopwatchViewBar(hideStopwatchViewBar: Boolean) {
+        Log.d(TAG, "setHideStopwatchViewBar executed")
 
-    fun setStopwatchTopBottomBarVisible(stopwatchTopBottomBarVisible: Boolean) {
-        Log.d("StopwatchViewModel", "setStopwatchTopBottomBarVisible executed")
-
-        _stopwatchTopBottomBarVisible.value = stopwatchTopBottomBarVisible
+        _hideStopwatchViewBar.value = hideStopwatchViewBar
     }
 
     fun startStopwatch() {
-        Log.d("StopwatchViewModel", "startStopwatch executed")
+        Log.d(TAG, "startStopwatch executed")
 
-        timer?.cancel()
-        _stopwatchState.value = PlayerState.Started
-
-        date = LocalDate.now()
-        start = LocalTime.now().withNano(0)
-
-        timer = timer(period = 1_000) {
-            finish = LocalTime.now().withNano(0)
-
-            // 소요 시간은 start와 finish 사이의 값으로 구해야 한다.
-            if (start.equals(finish) || start.isBefore(finish)) {
-                _duration.value = prevDuration + Duration.between(start, finish)
-            } else {
-                _duration.value = prevDuration + Duration.between(start, LocalTime.MAX.withNano(0)) + Duration.between(LocalTime.MIN, finish)
-            }
-        }
+        stopwatchDataSource.startStopwatch()
     }
 
     fun pauseStopwatch() {
-        Log.d("StopwatchViewModel", "pauseStopwatch executed")
+        Log.d(TAG, "pauseStopwatch executed")
 
-        prevDuration = _duration.value
-
-        timer?.cancel()
-        _stopwatchState.value = PlayerState.Paused
-
-        if (start.equals(finish))
-            return
-
-        if (start.isBefore(finish)) {
-             // 1분 미만의 WiD는 생성 안됨.
-//            if (duration.value < Duration.ofMinutes(1)) {
-//                return
-//            }
-
-            val newWiD = WiD(
-                id = 0,
-                date = date,
-                title = title.value,
-                start = start,
-                finish = finish,
-                duration = Duration.between(start, finish)
-            )
-            wiDService.createWiD(newWiD)
-        } else { // 자정 넘어가는 경우
-            val previousDate = date.minusDays(1)
-            val midnight = LocalTime.MIDNIGHT
-
-            // 1분 미만의 WiD는 생성 안됨.
-            if (Duration.between(start, midnight.plusSeconds(-1)) + Duration.between(midnight, finish) < Duration.ofMinutes(1)) {
-                return
-            }
-
-            val firstWiD = WiD(
-                id = 0,
-                date = previousDate,
-                title = title.value,
-                start = start,
-                finish = midnight.plusSeconds(-1),
-                duration = Duration.between(start, midnight.plusSeconds(-1))
-            )
-            wiDService.createWiD(firstWiD)
-
-            val secondWiD = WiD(
-                id = 0,
-                date = date,
-                title = title.value,
-                start = midnight,
-                finish = finish,
-                duration = Duration.between(midnight, finish)
-            )
-            wiDService.createWiD(secondWiD)
-        }
+        stopwatchDataSource.pauseStopwatch(email = email)
     }
 
     fun stopStopwatch() {
-        Log.d("StopwatchViewModel", "stopStopwatch executed")
+        Log.d(TAG, "stopStopwatch executed")
 
-        timer?.cancel()
-        _stopwatchState.value = PlayerState.Stopped
-        _duration.value = Duration.ZERO
-        prevDuration = Duration.ZERO
+        stopwatchDataSource.stopStopwatch()
     }
+
+//    fun setTitleColorMap() {
+//        stopwatchDataSource.setTitleColorMap(map = titleColorMap.value)
+//    }
 }

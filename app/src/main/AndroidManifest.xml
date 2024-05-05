@@ -23,12 +23,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.WiD"
+        android:name=".application.WiDApplication"
         tools:targetApi="31">
 
 <!--        액티비티를 네비게이션 스택에서 제거하길 원할 때-->
 <!--        android:noHistory="true"-->
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".activity.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.WiD">
             <intent-filter>
@@ -36,21 +37,37 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <!--                path를 지정하면 해당 동적 링크가 사용되고, 지정하지 않으면 대표 동적 링크가 사용 되는 듯.??-->
+                <data
+                    android:host="thewid.page.link"
+                    android:scheme="https"
+                    android:path="/welcometowid" />
+            </intent-filter>
         </activity>
 
-        <activity
-            android:name=".activity.MainActivity"
-            android:exported="true" />
-<!--            android:windowSoftInputMode="adjustResize"-->
+<!--        <activity-->
+<!--            android:name=".activity.AuthenticationActivity"-->
+<!--            android:exported="true" />-->
+        <!--            android:windowSoftInputMode="adjustResize"-->
+
+<!--        <activity-->
+<!--            android:name=".activity.MainActivity"-->
+<!--            android:exported="true" />-->
 
 <!--        실제 앱 WiD ID-->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3641806776840744~1276681086"/>
-
-<!--        테스트 광고 용 앱 ID-->
 <!--        <meta-data-->
 <!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
-<!--            android:value="ca-app-pub-3940256099942544~3347511713"/>-->
+<!--            android:value="ca-app-pub-3641806776840744~1276681086"/>-->
+
+<!--        테스트 광고 용 앱 ID-->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
     </application>
 </manifest>

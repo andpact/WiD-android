@@ -16,6 +16,10 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.*
 
+/**
+ * MaterialTheme.colorScheme이 @Composable을 사용하기 때문에,
+ * 아래 메서드는 @Composable 어노테이션을 적용해야함.
+ */
 @Composable
 fun getDateString(date: LocalDate): AnnotatedString {
     Log.d("DateUtil", "getDateString executed")
