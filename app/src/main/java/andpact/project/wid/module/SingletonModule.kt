@@ -43,14 +43,8 @@ object SingletonModule {
 
     @Singleton
     @Provides
-    fun provideStopwatchDataSource(): StopwatchDataSource {
-        return StopwatchDataSource(wiDRepository = provideWiDRepository())
-    }
-
-    @Singleton
-    @Provides
-    fun provideTimerDataSource(): TimerDataSource {
-        return TimerDataSource(wiDRepository = provideWiDRepository())
+    fun provideToolDataSource(): ToolDataSource {
+        return ToolDataSource(wiDRepository = provideWiDRepository())
     }
 
     @Singleton

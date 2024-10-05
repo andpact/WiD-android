@@ -1,6 +1,7 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
+import andpact.project.wid.ui.theme.SplashTheme
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.viewModel.SplashViewModel
 import android.util.Log
@@ -63,11 +64,11 @@ fun SplashView(
         }
     }
 
-    WiDTheme {
+    SplashTheme {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.secondary)
+                .background(color = MaterialTheme.colorScheme.surface)
         ) {
             Column(
                 modifier = Modifier
@@ -76,38 +77,38 @@ fun SplashView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
-//                    modifier = Modifier
-//                        .size(96.dp),
+    //                    modifier = Modifier
+    //                        .size(96.dp),
                     painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
                     contentDescription = "앱 아이콘"
                 )
 
-//                Text(
-//                    text = "WiD",
-//                    style = TextStyle(
-//                        color = MaterialTheme.colorScheme.primary,
-//                        textAlign = TextAlign.Center,
-//                        fontSize = 70.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        fontFamily = acmeRegular
-//                    )
-//                )
+    //                Text(
+    //                    text = "WiD",
+    //                    style = TextStyle(
+    //                        color = MaterialTheme.colorScheme.primary,
+    //                        textAlign = TextAlign.Center,
+    //                        fontSize = 70.sp,
+    //                        fontWeight = FontWeight.Bold,
+    //                        fontFamily = acmeRegular
+    //                    )
+    //                )
             }
-
-//            if (!isInternetConnected) {
-//                Column(modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(bottom = 100.dp),
-//                    verticalArrangement = Arrangement.Center,
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text(
-//                        text = "인터넷 연결을 확인하세요.",
-//                        style = Typography.bodyMedium,
-//                        color = MaterialTheme.colorScheme.primary
-//                    )
-//                }
-//            }
+/** 인터넷 연결 확인 메시지는 대화상자로 띄우자. */
+    //            if (!isInternetConnected) {
+    //                Column(modifier = Modifier
+    //                    .fillMaxSize()
+    //                    .padding(bottom = 100.dp),
+    //                    verticalArrangement = Arrangement.Center,
+    //                    horizontalAlignment = Alignment.CenterHorizontally
+    //                ) {
+    //                    Text(
+    //                        text = "인터넷 연결을 확인하세요.",
+    //                        style = Typography.bodyMedium,
+    //                        color = MaterialTheme.colorScheme.primary
+    //                    )
+    //                }
+    //            }
         }
     }
 }

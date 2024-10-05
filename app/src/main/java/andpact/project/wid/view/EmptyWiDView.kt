@@ -2,34 +2,28 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.model.WiD
-import andpact.project.wid.service.WiDService
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.EmptyWiDViewModel
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.*
 import java.util.*
@@ -51,17 +45,27 @@ fun EmptyWiDView(
 
     // 제목
     val showTitleMenu = emptyWiDViewModel.showTitleMenu.value
-    val titleColorMap = emptyWiDViewModel.titleColorMap.value
+    val titleColorMap = emptyWiDViewModel.titleColorMap
 
     // 시작 시간
     val showStartPicker = emptyWiDViewModel.showStartPicker.value
-    val startTimePickerState = rememberTimePickerState(initialHour = emptyWiD.start.hour, initialMinute = emptyWiD.start.minute, is24Hour = false)
+    val startTimePickerState = rememberTimePickerState(
+        initialHour = emptyWiD.start.hour,
+        initialMinute = emptyWiD.start.minute,
+        is24Hour = false
+    )
     val startOverlap = emptyWiDViewModel.startOverlap.value
+    val startModified = emptyWiDViewModel.startModified.value
 
     // 종료 시간
     val showFinishPicker = emptyWiDViewModel.showFinishPicker.value
-    val finishTimePickerState = rememberTimePickerState(initialHour = emptyWiD.finish.hour, initialMinute = emptyWiD.finish.minute, is24Hour = false)
+    val finishTimePickerState = rememberTimePickerState(
+        initialHour = emptyWiD.finish.hour,
+        initialMinute = emptyWiD.finish.minute,
+        is24Hour = false
+    )
     val finishOverlap = emptyWiDViewModel.finishOverlap.value
+    val finishModified = emptyWiDViewModel.finishModified.value
 
     // 소요 시간
     val durationExist = emptyWiDViewModel.durationExist.value
@@ -70,571 +74,608 @@ fun EmptyWiDView(
         Log.d(TAG, "composed")
 
         val emptyWiDDate = emptyWiD.date
-        emptyWiDViewModel.setWiDList(emptyWiDDate)
+        emptyWiDViewModel.getWiDListByDate(collectionDate = emptyWiDDate)
 
         onDispose {
             Log.d(TAG, "disposed")
         }
     }
 
-    Box(
+    Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onBackButtonPressed()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "뒤로 가기",
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = "새로운 WiD",
+                        style = Typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
+        }
+    ) { contentPadding -> // Scaffold 내부는 박스로 되어 있음.
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(contentPadding)
         ) {
-            /**
-             * 상단 바
-             */
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(color = titleColorMap[emptyWiD.title] ?: Transparent)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            onBackButtonPressed()
-                        },
-                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                    contentDescription = "뒤로 가기",
-                    tint = titleColorMap[emptyWiD.title]?.let { textColor ->
-                        if (textColor.luminance() > 0.5f)
-                            Black
-                        else
-                            White
-                    } ?: MaterialTheme.colorScheme.primary,
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "새로운 WiD",
-                    style = Typography.titleLarge,
-                    color = titleColorMap[emptyWiD.title]?.let { textColor ->
-                        if (textColor.luminance() > 0.5f)
-                            Black
-                        else
-                            White
-                    } ?: MaterialTheme.colorScheme.primary,
-                )
-
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .clickable(
-                            enabled = !startOverlap && !finishOverlap && durationExist,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            emptyWiDViewModel.createWiD() {
-                                onBackButtonPressed()
-                            }
-                        }
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            if (!startOverlap && !finishOverlap && durationExist) {
-                                DeepSkyBlue
-                            } else {
-                                MaterialTheme.colorScheme.tertiary
-                            }
-                        )
-                        .padding(
-                            horizontal = 8.dp,
-                            vertical = 4.dp
-                        ),
-                    text = "등록",
-                    style = Typography.bodyMedium,
-                    color = White
-                )
-            }
-
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Icon(
+                    painter = painterResource(R.drawable.baseline_calendar_month_24),
+                    contentDescription = "날짜",
+                )
+
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        modifier = Modifier
-                            .padding(16.dp),
                         text = "날짜",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
+                        style = Typography.titleMedium,
                     )
 
                     Text(
                         text = getDateString(date = emptyWiD.date),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
+            }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable {
+                        emptyWiDViewModel.setShowTitleMenu(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_title_24),
+                    contentDescription = "제목",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        modifier = Modifier
-                            .padding(16.dp),
                         text = "제목",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
+                        style = Typography.titleMedium,
                     )
 
                     Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                emptyWiDViewModel.setShowTitleMenu(show = true)
-                            },
-                        text = emptyWiD.title,
+                        text = titleNumberStringToTitleKRStringMap[emptyWiD.title] ?: "",
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "제목 수정",
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable {
+                        emptyWiDViewModel.setShowStartPicker(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_alarm_24),
+                    contentDescription = "시작 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "시작",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    if (startOverlap) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "시작 시간 겹침",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "시작",
+                            style = Typography.titleMedium,
+                        )
+
+                        if (startModified && startOverlap) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "시작 시간 사용 불가",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "사용 불가",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else if (startModified) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                                contentDescription = "시작 시간 사용 가능",
+                            )
+
+                            Text(
+                                text = "사용 가능",
+                                style = Typography.labelSmall,
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
                         )
                     }
 
                     Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                emptyWiDViewModel.setShowStartPicker(show = true)
-                            },
                         text = getTimeString(
                             time = emptyWiD.start,
                             patten = "a hh:mm:ss"
                         ),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "시작 시간 수정",
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable {
+                        emptyWiDViewModel.setShowFinishPicker(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_alarm_on_24),
+                    contentDescription = "종료 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "종료",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    if (finishOverlap) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "종료 시간 겹침",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "종료",
+                            style = Typography.titleMedium,
+                        )
+
+                        if (finishModified && finishOverlap) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "종료 시간 사용 불가",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "사용 불가",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else if (finishModified) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                                contentDescription = "종료 시간 사용 가능",
+                            )
+
+                            Text(
+                                text = "사용 가능",
+                                style = Typography.labelSmall,
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
                         )
                     }
 
                     Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                emptyWiDViewModel.setShowFinishPicker(show = true)
-                            },
                         text = getTimeString(
                             time = emptyWiD.finish,
                             patten = "a hh:mm:ss"
                         ),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "종료 시간 수정",
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_timelapse_24),
+                    contentDescription = "소요 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "소요",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "소요",
+                            style = Typography.titleMedium,
+                        )
 
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
+                        if (startModified && finishModified && !durationExist) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "소요 시간 부족",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "소요 시간 부족",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                    }
 
                     Text(
                         text = getDurationString(emptyWiD.duration, mode = 3),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            FilledIconButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                onClick = {
+                    emptyWiDViewModel.createWiD() { createWiDSuccess: Boolean ->
+                        if (createWiDSuccess) {
+                            onBackButtonPressed()
+                        }
+                    }
+                },
+                enabled = !startOverlap && !finishOverlap && durationExist,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 8.dp,
+                        alignment = Alignment.CenterHorizontally
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_add_box_24),
+                        contentDescription = "새로운 WiD 만들기",
+                    )
+
+                    Text(
+                        text = "새로운 WiD 만들기",
+                        style = Typography.bodyMedium
                     )
                 }
             }
         }
 
-        /**
-         * 제목, 시작 시간, 종료 시간 선택 대화 상자
-         */
-//    AnimatedVisibility(
-//        modifier = Modifier
-//            .fillMaxSize(),
-////        visible = expandDatePicker || titleMenuExpanded || expandStartPicker || expandFinishPicker,
-//        visible = titleMenuExpanded || expandStartPicker || expandFinishPicker,
-//        enter = fadeIn(),
-//        exit = fadeOut(),
-//    ) {
-        if (showTitleMenu || showStartPicker || showFinishPicker) {
-            Box(
+        if (showTitleMenu) {
+            AlertDialog(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        emptyWiDViewModel.setShowTitleMenu(show = false)
-                        emptyWiDViewModel.setShowStartPicker(show = false)
-                        emptyWiDViewModel.setShowFinishPicker(show = false)
-                    }
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = MaterialTheme.shapes.extraLarge
+                    ),
+                onDismissRequest = {
+                    emptyWiDViewModel.setShowTitleMenu(show = false)
+                },
             ) {
                 Column(
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp)
-                        .then(if (showTitleMenu) Modifier.height(screenHeight / 2) else Modifier)
-                        .shadow(
-                            elevation = 2.dp,
-                            shape = RoundedCornerShape(8.dp),
-                            spotColor = MaterialTheme.colorScheme.primary,
-                        )
-                        .background(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (showTitleMenu) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(screenHeight / 2)
-                        ) {
-                            items(titleColorMap.size) { index ->
-                                val itemTitle = titleColorMap.keys.elementAt(index)
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "제목 선택",
+                        style = Typography.titleLarge
+                    )
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            val date = emptyWiD.date
-                                            val title = itemTitle
-                                            val start = emptyWiD.start
-                                            val finish = emptyWiD.finish
-                                            val duration = Duration.between(start, finish)
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(screenHeight / 2)
+                    ) {
+                        items(titleColorMap.size) { index ->
+                            val itemTitle = titleColorMap.keys.elementAt(index)
 
-                                            val newEmptyWiD = WiD(
-                                                id = "",
-                                                date = date,
-                                                title = title,
-                                                start = start,
-                                                finish = finish,
-                                                duration = duration
-                                            )
-
-                                            emptyWiDViewModel.setEmptyWiD(emptyWiD = newEmptyWiD)
-
-                                            emptyWiDViewModel.setShowTitleMenu(show = false)
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = itemTitle,
-                                        style = Typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    )
-
-                                    RadioButton(
-                                        selected = emptyWiD.title == itemTitle,
-                                        onClick = {
-                                            val date = emptyWiD.date
-                                            val title = itemTitle
-                                            val start = emptyWiD.start
-                                            val finish = emptyWiD.finish
-                                            val duration = Duration.between(start, finish)
-
-                                            val newEmptyWiD = WiD(
-                                                id = "",
-                                                date = date,
-                                                title = title,
-                                                start = start,
-                                                finish = finish,
-                                                duration = duration
-                                            )
-
-                                            emptyWiDViewModel.setEmptyWiD(emptyWiD = newEmptyWiD)
-
-                                            emptyWiDViewModel.setShowTitleMenu(show = false)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    if (showStartPicker) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    enabled = false,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                }
-                        ) {
-                            Icon(
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
+                                    .fillMaxWidth()
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
                                     ) {
-                                        emptyWiDViewModel.setShowStartPicker(show = false)
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "시작 시간 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "시작 시간 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(horizontal = 16.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        emptyWiDViewModel.setShowStartPicker(show = false)
-
                                         val date = emptyWiD.date
-                                        val title = emptyWiD.title
-                                        val newStart = LocalTime.of(
-                                            startTimePickerState.hour,
-                                            startTimePickerState.minute
-                                        )
-                                        val finish = emptyWiD.finish
-                                        val duration = Duration.between(newStart, finish)
-
-                                        val newEmptyWiD = WiD(
-                                            id = "",
-                                            date = date,
-                                            title = title,
-                                            start = newStart,
-                                            finish = finish,
-                                            duration = duration
-                                        )
-
-                                        emptyWiDViewModel.setEmptyWiD(emptyWiD = newEmptyWiD)
-                                    },
-                                text = "확인",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        HorizontalDivider()
-
-                        TimePicker(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp),
-                            state = startTimePickerState
-                        )
-                    }
-
-                    if (showFinishPicker) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    enabled = false,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-
-                                }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        emptyWiDViewModel.setShowFinishPicker(show = false)
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "종료 시간 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "종료 시간 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(horizontal = 16.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        emptyWiDViewModel.setShowFinishPicker(show = false)
-
-                                        val date = emptyWiD.date
-                                        val title = emptyWiD.title
+                                        val title = itemTitle
                                         val start = emptyWiD.start
-                                        val newFinish = LocalTime.of(
-                                            finishTimePickerState.hour,
-                                            finishTimePickerState.minute
-                                        )
-                                        val duration = Duration.between(start, newFinish)
+                                        val finish = emptyWiD.finish
+                                        val duration = Duration.between(start, finish)
 
-                                        val newEmptyWiD = WiD(
+                                        val newWiD = WiD(
                                             id = "",
                                             date = date,
                                             title = title,
                                             start = start,
-                                            finish = newFinish,
+                                            finish = finish,
                                             duration = duration
                                         )
 
-                                        emptyWiDViewModel.setEmptyWiD(emptyWiD = newEmptyWiD)
+                                        emptyWiDViewModel.setEmptyWiD(newWiD = newWiD)
+
+                                        emptyWiDViewModel.setShowTitleMenu(show = false)
                                     },
-                                text = "확인",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    text = itemTitle,
+                                    style = Typography.bodyMedium,
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                RadioButton(
+                                    selected = emptyWiD.title == itemTitle,
+                                    onClick = {
+                                        val date = emptyWiD.date
+                                        val title = itemTitle
+                                        val start = emptyWiD.start
+                                        val finish = emptyWiD.finish
+                                        val duration = Duration.between(start, finish)
+
+                                        val newWiD = WiD(
+                                            id = "",
+                                            date = date,
+                                            title = title,
+                                            start = start,
+                                            finish = finish,
+                                            duration = duration
+                                        )
+
+                                        emptyWiDViewModel.setEmptyWiD(newWiD = newWiD)
+
+                                        emptyWiDViewModel.setShowTitleMenu(show = false)
+                                    }
+                                )
+                            }
                         }
+                    }
+                }
+            }
+        }
 
-                        HorizontalDivider()
+        if (showStartPicker) {
+            DatePickerDialog(
+                onDismissRequest = {
+                    emptyWiDViewModel.setShowStartPicker(show = false)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val date = emptyWiD.date
+                            val title = emptyWiD.title
+                            val newStart = LocalTime.of(
+                                startTimePickerState.hour,
+                                startTimePickerState.minute
+                            )
+                            val finish = emptyWiD.finish
+                            val duration = Duration.between(newStart, finish)
 
-                        TimePicker(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp),
-                            state = finishTimePickerState
+                            val newWiD = WiD(
+                                id = "",
+                                date = date,
+                                title = title,
+                                start = newStart,
+                                finish = finish,
+                                duration = duration
+                            )
+
+                            emptyWiDViewModel.setEmptyWiD(newWiD = newWiD)
+
+                            emptyWiDViewModel.setStartModified(modified = true)
+                            emptyWiDViewModel.setShowStartPicker(show = false)
+                        }) {
+                        Text(
+                            text = "확인",
+                            style = Typography.bodyMedium
                         )
                     }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            emptyWiDViewModel.setShowStartPicker(show = false)
+                        }
+                    ) {
+                        Text(
+                            text = "취소",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "시작 시간 선택",
+                        style = Typography.titleLarge
+                    )
+
+                    TimePicker(state = startTimePickerState)
+                }
+            }
+        }
+
+        if (showFinishPicker) {
+            DatePickerDialog(
+                onDismissRequest = {
+                    emptyWiDViewModel.setShowFinishPicker(show = false)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val date = emptyWiD.date
+                            val title = emptyWiD.title
+                            val start = emptyWiD.start
+                            val newFinish = LocalTime.of(
+                                finishTimePickerState.hour,
+                                finishTimePickerState.minute
+                            )
+                            val duration = Duration.between(start, newFinish)
+
+                            val newWiD = WiD(
+                                id = "",
+                                date = date,
+                                title = title,
+                                start = start,
+                                finish = newFinish,
+                                duration = duration
+                            )
+
+                            emptyWiDViewModel.setEmptyWiD(newWiD = newWiD)
+
+                            emptyWiDViewModel.setFinishModified(modified = true)
+                            emptyWiDViewModel.setShowFinishPicker(show = false)
+                        }) {
+                        Text(
+                            text = "확인",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            emptyWiDViewModel.setShowFinishPicker(show = false)
+                        }
+                    ) {
+                        Text(
+                            text = "취소",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "종료 시간 선택",
+                        style = Typography.titleLarge
+                    )
+
+                    TimePicker(state = finishTimePickerState)
                 }
             }
         }

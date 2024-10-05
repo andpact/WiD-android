@@ -15,88 +15,144 @@ class WiDDataSource @Inject constructor(
     private val wiDRepository: WiDRepository
 ) {
     private val TAG = "WiDDataSource"
+    init { Log.d(TAG, "created") }
+    fun onCleared() { Log.d(TAG, "cleared") }
 
-    init {
-        Log.d(TAG, "created")
-    }
-
-    fun onCleared() {
-        Log.d(TAG, "cleared")
-    }
-
-    // 일주일, 한달(기간) 조회 시 - 뷰 모델이 Map을 참조하고, 뷰에서 firstDate ~ lastDate에 해당하는 WiDList를 참조하도록.
     private val _wiDListMap = mutableStateOf<Map<LocalDate, List<WiD>>>(emptyMap())
 
     private val defaultWiD = WiD(
         id = "",
         date = LocalDate.now(),
-        title = "",
+        title = "무엇을 하셨나요?",
         start = LocalTime.MIN,
         finish = LocalTime.MIN,
         duration = Duration.ZERO
     )
 
-    // EmptyWiD
     private val _emptyWiD = mutableStateOf(defaultWiD)
     val emptyWiD: State<WiD> = _emptyWiD
 
-    // ClickedWiD
-    private var _clickedWiD = mutableStateOf(defaultWiD)
-    val clickedWiD: State<WiD> = _clickedWiD
+    private var _existingWiD = mutableStateOf(defaultWiD) // 얘는 수정할 일이 없음.
+    val existingWiD: State<WiD> = _existingWiD
 
-    fun createWiD(email: String, onCreateWiDSuccess: () -> Unit) {
+    private var _updatedWiD = mutableStateOf(defaultWiD)
+    val updatedWiD: State<WiD> = _updatedWiD
+
+    /** 데이터 소스 단에서 이메일을 참조할 수 없으니, 뷰 모델 단에서 실행해야 함. */
+//    fun addSnapshotListenerToWiDCollectionByDate(
+//        email: String,
+//        collectionDate: LocalDate,
+//        onWiDCollectionChanged: (List<WiD>) -> Unit
+//    ) {
+//        Log.d(TAG, "addSnapshotListenerToWiDCollectionByDate executed")
+//
+//        wiDRepository.addSnapshotListenerToWiDCollectionByDate(
+//            email = email,
+//            collectionDate = collectionDate,
+//            onWiDCollectionChanged = { wiDList: List<WiD> ->
+////                _wiDListMap.value += (collectionDate to wiDList)
+//
+//                onWiDCollectionChanged(wiDList)
+//            }
+//        )
+//    }
+
+//    fun addSnapshotListenerToWiDCollectionFromFirstDateToLastDate(
+//        email: String,
+//        collectionFirstDate: LocalDate,
+//        collectionLastDate: LocalDate,
+//        onWiDCollectionChanged: (List<WiD>) -> Unit
+//    ) {
+//        Log.d(TAG, "addSnapshotListenerToWiDCollectionFromFirstDateToLastDate executed")
+//
+//        wiDRepository.addSnapshotListenerToWiDCollectionFromFirstDateToLastDate(
+//            email = email,
+//            collectionFirstDate = collectionFirstDate,
+//            collectionLastDate = collectionLastDate,
+//            onWiDCollectionChanged = { wiDList: List<WiD> ->
+//                onWiDCollectionChanged(wiDList)
+//            }
+//        )
+//    }
+
+    fun createWiD(
+        email: String,
+        onWiDCreated: (Boolean) -> Unit
+    ) {
         Log.d(TAG, "createWiD executed")
 
-        wiDRepository.createWiD(email = email, wid = _emptyWiD.value) { createdDocumentID ->
-            val createdWiD = WiD(
-                id = createdDocumentID,
-                date = _emptyWiD.value.date,
-                title = _emptyWiD.value.title,
-                start = _emptyWiD.value.start,
-                finish = _emptyWiD.value.finish,
-                duration = _emptyWiD.value.duration
-            )
+        wiDRepository.createWiD(
+            email = email,
+            wid = _emptyWiD.value,
+            onWiDCreated = { createdDocumentID: String, wiDCreated: Boolean ->
+                if (wiDCreated) {
+                    val createdWiD = WiD(
+                        id = createdDocumentID,
+                        date = _emptyWiD.value.date,
+                        title = _emptyWiD.value.title,
+                        start = _emptyWiD.value.start,
+                        finish = _emptyWiD.value.finish,
+                        duration = _emptyWiD.value.duration
+                    )
 
-            addWiD(date = createdWiD.date, createdWiD = createdWiD)
+                    addWiDToMap(createdWiD = createdWiD)
+                }
 
-            onCreateWiDSuccess()
-        }
+                onWiDCreated(wiDCreated)
+            }
+        )
     }
 
-    private fun addWiD(date: LocalDate, createdWiD: WiD) {
-        Log.d(TAG, "addWiD executed")
+    fun addWiDToMap(createdWiD: WiD) {
+        Log.d(TAG, "addWiDtoMap executed")
 
         val currentMap = _wiDListMap.value.toMutableMap()
-        val currentList = currentMap[date]?.toMutableList() ?: mutableListOf()
+        val currentList = currentMap[createdWiD.date]?.toMutableList() ?: mutableListOf()
 
         currentList.add(createdWiD)
 
         val sortedList = currentList.sortedBy { it.start }
 
-        currentMap[date] = sortedList
+        currentMap[createdWiD.date] = sortedList
 
         _wiDListMap.value = currentMap
     }
 
-    fun getWiDListByDate(email: String, date: LocalDate, onGetWiDListByDateSuccess: (List<WiD>) -> Unit) {
-        val existingWiDList = _wiDListMap.value[date]
+    fun getWiDListByDate(
+        email: String,
+        collectionDate: LocalDate,
+        onWiDListFetchedByDate: (List<WiD>) -> Unit
+    ) {
+        Log.d(TAG, "getWiDListByDate executed")
+
+        // 다른 클라이언트에서 위드를 추가한 상태에서, 캐싱 맵의 위드 리스트를 사용하면 동기화가 안될 수 있음
+        val existingWiDList = _wiDListMap.value[collectionDate]
 
         if (existingWiDList != null) { // 캐시된 WiDList가 있을 때
             Log.d(TAG, "getWiDListByDate executed : WiDList from Client")
 
-            onGetWiDListByDateSuccess(existingWiDList)
+            onWiDListFetchedByDate(existingWiDList)
         } else { // 캐시된 WiDList가 없을 때
-            wiDRepository.readWiDListByDate(email = email, date = date) { wiDList ->
-                _wiDListMap.value += (date to wiDList)
+            wiDRepository.getWiDListByDate(
+                email = email,
+                collectionDate = collectionDate,
+                onWiDListFetchedByDate = { wiDList: List<WiD> ->
+                    _wiDListMap.value += (collectionDate to wiDList)
 
-                Log.d(TAG, "getWiDListByDate executed : WiDList from Server")
+                    Log.d(TAG, "getWiDListByDate executed : WiDList from Server")
 
-                onGetWiDListByDateSuccess(wiDList)
-            }
+                    onWiDListFetchedByDate(wiDList)
+                }
+            )
         }
     }
 
-    fun getWiDListFromFirstDateToLastDate(email: String, firstDate: LocalDate, lastDate: LocalDate, callback: (List<WiD>) -> Unit) {
+    fun getWiDListFromFirstDateToLastDate(
+        email: String,
+        firstDate: LocalDate,
+        lastDate: LocalDate,
+        onWiDListFetchedFromFirstDateToLastDate: (List<WiD>) -> Unit
+    ) {
         Log.d(TAG, "getWiDListFromFirstDateToLastDate executed")
 
         val resultList = mutableListOf<WiD>()
@@ -110,10 +166,14 @@ class WiDDataSource @Inject constructor(
                 resultList.addAll(existingWiDList)
             } else {
                 // 캐시된 WiDList가 없는 경우 wiDRepository를 통해 데이터를 가져와서 결과 리스트에 추가합니다.
-                wiDRepository.readWiDListByDate(email = email, date = currentDate) { wiDs ->
-                    _wiDListMap.value += (currentDate to wiDs)
-                    resultList.addAll(wiDs)
-                }
+                wiDRepository.getWiDListByDate(
+                    email = email,
+                    collectionDate = currentDate,
+                    onWiDListFetchedByDate = { wiDList: List<WiD> ->
+                        _wiDListMap.value += (currentDate to wiDList)
+                        resultList.addAll(wiDList)
+                    }
+                )
             }
 
             // 다음 날짜로 이동합니다.
@@ -121,38 +181,58 @@ class WiDDataSource @Inject constructor(
         }
 
         // 모든 날짜에 대한 처리가 끝나면 콜백을 호출합니다.
-        callback(resultList)
+        onWiDListFetchedFromFirstDateToLastDate(resultList)
     }
 
-    fun setEmptyWiD(newEmptyWiD: WiD) {
+    fun setEmptyWiD(newWiD: WiD) {
         Log.d(TAG, "setEmptyWiD executed")
 
-        _emptyWiD.value = newEmptyWiD
+        _emptyWiD.value = newWiD
     }
 
-    fun setClickedWiD(updatedClickedWiD: WiD) {
-        Log.d(TAG, "setClickedWiD executed")
+    fun setExistingWiD(existingWiD: WiD) {
+        Log.d(TAG, "setExistingWiD executed")
 
-        _clickedWiD.value = updatedClickedWiD
+        _existingWiD.value = existingWiD
     }
 
-    fun updateClickedWiD(email: String, onUpdateWiDSuccess: () -> Unit) {
-        Log.d(TAG, "updateClickedWiD executed")
+    fun setUpdatedWiD(updatedWiD: WiD) {
+        Log.d(TAG, "setUpdatedWiD executed")
 
-        wiDRepository.updateWiD(email = email, updatedWiD = _clickedWiD.value) {
-            onUpdateWiDSuccess()
-        }
+        _updatedWiD.value = updatedWiD
     }
 
-    fun deleteCLickedWiD(email: String, onDeleteWiDSuccess: () -> Unit) {
-        Log.d(TAG, "deleteCLickedWiD executed")
+    fun updateWiD(
+        email: String,
+        onWiDUpdated: (Boolean) -> Unit
+    ) {
+        Log.d(TAG, "updateWiD executed")
 
-        wiDRepository.deleteWiD(email = email, clickedWiD = _clickedWiD.value) {
-            onDeleteWiDSuccess()
-        }
+        wiDRepository.updateWiD(
+            email = email,
+            updatedWiD = _updatedWiD.value,
+            onWiDUpdated = { wiDUpdated: Boolean ->
+                onWiDUpdated(wiDUpdated)
+            }
+        )
+    }
 
-        val clickedWiDDate = _clickedWiD.value.date
-        val clickedWiDID = _clickedWiD.value.id
+    fun deleteWiD(
+        email: String,
+        onWiDDeleted: (Boolean) -> Unit
+    ) {
+        Log.d(TAG, "deleteWiD executed")
+
+        wiDRepository.deleteWiD(
+            email = email,
+            wiD = _existingWiD.value, // existingWiD 사용해도 되고, updatedWiD 사용해도 됨. id는 동일하니.
+            onWiDDeleted = { wiDDeleted: Boolean ->
+                onWiDDeleted(wiDDeleted)
+            }
+        )
+
+        val clickedWiDDate = _existingWiD.value.date
+        val clickedWiDID = _existingWiD.value.id
 
         val currentMap = _wiDListMap.value.toMutableMap()
         val currentList = currentMap[clickedWiDDate]?.toMutableList()

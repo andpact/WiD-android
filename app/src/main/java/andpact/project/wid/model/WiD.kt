@@ -1,29 +1,25 @@
 package andpact.project.wid.model
 
+import andpact.project.wid.util.CurrentTool
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
 data class WiD (
     val id: String,
-    var date: LocalDate,
+//    val email: String,
+    val date: LocalDate, // 클라이언트 : LocalDate <-> 서버 : String("yyyy-MM-dd")
     val title: String,
-    var start: LocalTime,
-    val finish: LocalTime,
-    val duration: Duration,
+    val start: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
+    val finish: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
+    val duration: Duration, // 클라이언트 : Duration <-> 서버 : Int
+//    val location: String,
+//    val detail: String,
+//    val createdBy: CurrentTool,
+//    val modified: Boolean // 수정 여부
+//    val version: Int,
+//    val lastModifiedOn: LocalDate // 최종 수정 날짜
 ) {
-//    override fun toString(): String {
-//        return "$id,$date,$title,$start,$finish,${duration.toMillis()}"
-//    }
-//    constructor() : this(
-//        0L,
-//        LocalDate.now(),
-//        "",
-//        LocalTime.now(),
-//        LocalTime.now(),
-//        Duration.ZERO
-//    )
-
     constructor(
         id: String,
         date: LocalDate,

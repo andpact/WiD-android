@@ -30,10 +30,7 @@ class SplashViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
     private val TAG = "SplashViewModel"
-
-    init {
-        Log.d(TAG, "created")
-    }
+    init { Log.d(TAG, "created") }
 
     override fun onCleared() {
         super.onCleared()
@@ -53,7 +50,10 @@ class SplashViewModel @Inject constructor(
         return userDataSource.hasFirebaseUser()
     }
 
-    fun verifyAuthenticationLink(dynamicLink: String?, onAuthenticationLinkVerified: (Boolean) -> Unit) {
+    fun verifyAuthenticationLink(
+        dynamicLink: String?,
+        onAuthenticationLinkVerified: (Boolean) -> Unit
+    ) {
         Log.d(TAG, "verifyAuthenticationLink executed")
 
         val email = getEmailFromSharedPreferences()

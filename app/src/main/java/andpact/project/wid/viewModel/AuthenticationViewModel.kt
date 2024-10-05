@@ -15,11 +15,7 @@ class AuthenticationViewModel @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
     private val TAG = "AuthenticationViewModel"
-
-    init {
-        Log.d(TAG, "created")
-    }
-
+    init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "cleared")
@@ -27,14 +23,14 @@ class AuthenticationViewModel @Inject constructor(
 
     private val _email = mutableStateOf("")
     val email: State<String> = _email
-    private val _isEmailEdited = mutableStateOf(false)
-    val isEmailEdited: State<Boolean> = _isEmailEdited
-    private val _isEmailValid = mutableStateOf(false)
-    val isEmailValid: State<Boolean> = _isEmailValid
-    private val _isAuthenticationLinkSentButtonClicked = mutableStateOf(false)
-    val isAuthenticationLinkSentButtonClicked: State<Boolean> = _isAuthenticationLinkSentButtonClicked
-    private val _isAuthenticationLinkSent = mutableStateOf(false)
-    val isAuthenticationLinkSent: State<Boolean> = _isAuthenticationLinkSent
+    private val _emailModified = mutableStateOf(false)
+    val emailModified: State<Boolean> = _emailModified
+    private val _emailValid = mutableStateOf(false)
+    val emailValid: State<Boolean> = _emailValid
+    private val _authenticationLinkSentButtonClicked = mutableStateOf(false)
+    val authenticationLinkSentButtonClicked: State<Boolean> = _authenticationLinkSentButtonClicked
+    private val _authenticationLinkSent = mutableStateOf(false)
+    val authenticationLinkSent: State<Boolean> = _authenticationLinkSent
 
     fun setEmail(newEmail: String) {
         Log.d(TAG, "setEmail executed")
@@ -42,36 +38,42 @@ class AuthenticationViewModel @Inject constructor(
         _email.value = newEmail
     }
 
-    fun setEmailEdited(edited: Boolean) {
-        Log.d(TAG, "setSignUpEmailEdited executed")
+    fun setEmailModified(edited: Boolean) {
+        Log.d(TAG, "setEmailModified executed")
 
-        _isEmailEdited.value = edited
+        _emailModified.value = edited
     }
 
     fun setEmailValid(signUpEmail: String) {
-        Log.d(TAG, "setSignUpEmailValid executed")
+        Log.d(TAG, "setEmailValid executed")
 
 //        val emailRegex = Regex("^\\w+@[a-zA-Z_]+?\\.[a-zA-Z]{2,3}\$")
         val emailRegex = Regex("^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}\$")
-        _isEmailValid.value = signUpEmail.matches(emailRegex)
+        _emailValid.value = signUpEmail.matches(emailRegex)
     }
 
     fun setAuthenticationLinkSentButtonClicked(clicked: Boolean) {
-        _isAuthenticationLinkSentButtonClicked.value = clicked
+        Log.d(TAG, "setAuthenticationLinkSentButtonClicked executed : $clicked")
+
+        _authenticationLinkSentButtonClicked.value = clicked
     }
 
     private fun setAuthenticationLinkSent(sent: Boolean) {
-        _isAuthenticationLinkSent.value = sent
+        Log.d(TAG, "setAuthenticationLinkSent executed : $sent")
+
+        _authenticationLinkSent.value = sent
     }
 
     fun sendAuthenticationLinkToEmail(email: String) {
-        Log.d(TAG, "sendLinkToEmail executed")
+        Log.d(TAG, "sendAuthenticationLinkToEmail executed")
 
         setEmailToSharedPreferences(email = email)
 
         userDataSource.sendAuthenticationLinkToEmail(email) { authenticationLinkSent ->
             setAuthenticationLinkSent(authenticationLinkSent)
         }
+
+//        setAuthenticationLinkSent(sent = true)
     }
 
     private fun setEmailToSharedPreferences(email: String) {

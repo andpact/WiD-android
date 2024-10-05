@@ -1,6 +1,8 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.activity.MainActivityViewDestinations
+import andpact.project.wid.destinations.MainActivityViewDestinations
+import andpact.project.wid.ui.theme.changeNavigationBarColor
+import andpact.project.wid.ui.theme.changeStatusBarColor
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,8 +14,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import java.time.LocalDate
-import java.time.LocalTime
 
 /**
  * 컴포저블 - Jetpack Compose에서 화면을 그리는 데 사용되는 함수,
@@ -24,28 +24,18 @@ fun MainActivityView(dynamicLink: String?) {
     // 네비게이션
     val mainActivityViewNavController: NavHostController = rememberNavController()
 
-    // 메인 화면으로 전환 시 상태 바, 네비게이션 바 색상 변경해줌.
-//    changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary) // Gray - DarkGray
+    var mainActivityBarVisible by remember { mutableStateOf(true) }
 
-    var hideMainActivityBar by remember { mutableStateOf(false) }
-
-    // LaunchedEffect 사용해도 될려나? -> 안됨.
-    // 스톱워치나 타이머 상하단 바 제거할 때, 네비게이션 바 색상도 같이 변경함.
-//    if (stopwatchTopBottomBarVisible && timerTopBottomBarVisible) {
-//        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary) // Gray - DarkGray
-//    } else {
-//        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary) // White - Black
-//    }
+    if (mainActivityBarVisible) {
+        changeStatusBarColor(color = MaterialTheme.colorScheme.secondaryContainer)
+        changeNavigationBarColor(color = MaterialTheme.colorScheme.surfaceContainer)
+    } else {
+        changeStatusBarColor(color = MaterialTheme.colorScheme.surface)
+        changeNavigationBarColor(color = MaterialTheme.colorScheme.surface)
+    }
 
     val navBackStackEntry by mainActivityViewNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    // 화면 전환 시 상태 바, 네비게이션 바 색상을 변경함.
-//    if (currentRoute == MainActivityViewDestinations.MainViewDestination.route || currentRoute == MainActivityViewDestinations.SettingViewDestination.route) {
-//        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.tertiary) // Gray - DarkGray
-//    } else {
-//        changeStatusBarAndNavigationBarColor(color = MaterialTheme.colorScheme.secondary) // White - Black
-//    }
 
     NavHost(
         modifier = Modifier
@@ -61,9 +51,9 @@ fun MainActivityView(dynamicLink: String?) {
             SplashView(
                 dynamicLink = dynamicLink,
                 onEmailLinkVerified = { emailLinkVerified ->
-                    if (emailLinkVerified) { // 이메일 링크 인증 완료
+                    if (emailLinkVerified) { // 이메일 링크 인증 완료 -> 메인 뷰로 전환
                         mainActivityViewNavController.navigate(MainActivityViewDestinations.MainViewDestination.route)
-                    } else { // 이메일 링크 인증 실패
+                    } else { // 이메일 링크 인증 실패 -> 인증 뷰로 전환
                         mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
                     }
                 }
@@ -76,40 +66,6 @@ fun MainActivityView(dynamicLink: String?) {
         ) {
             AuthenticationView()
         }
-
-        // 회원가입 뷰
-//        composable(
-//            route = MainActivityViewDestinations.SignUpViewDestination.route,
-//        ) {
-//            SignUpView(
-//                onSignInButtonPressed = {
-//                    mainActivityViewNavController.navigate(MainActivityViewDestinations.SignInViewDestination.route)
-//                },
-//            )
-//        }
-
-        // 로그인 뷰
-//        composable(
-//            route = MainActivityViewDestinations.SignInViewDestination.route,
-//            enterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Left,
-//                    animationSpec = tween(500)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Right,
-//                    animationSpec = tween(500)
-//                )
-//            }
-//        ) {
-//            SignInView(
-//                onBackButtonPressed = {
-//                    mainActivityViewNavController.popBackStack()
-//                },
-//            )
-//        }
 
         // 메인 뷰
         composable(
@@ -137,11 +93,11 @@ fun MainActivityView(dynamicLink: String?) {
                 onWiDClicked = {
                     mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
                 },
-                onDiaryClicked = {
-                    wiDList, diary -> mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route + "/${wiDList}" + "/${diary}")
-                },
-                onHideMainViewBarChanged = { hide ->
-                    hideMainActivityBar = hide
+//                onDiaryClicked = {
+//                    wiDList, diary -> mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route + "/${wiDList}" + "/${diary}")
+//                },
+                onMainViewBarVisibleChanged = { visible ->
+                    mainActivityBarVisible = visible
                 },
 //                onStopwatchTopBottomBarVisible = {
 //                    visible -> stopwatchTopBottomBarVisible = visible
@@ -199,34 +155,34 @@ fun MainActivityView(dynamicLink: String?) {
         }
 
         // 다이어리 뷰
-        composable(
-            route = MainActivityViewDestinations.DiaryViewDestination.route + "/{wiDList}/{diary}",
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) { backStackEntry ->
-            // 어떻게 역직렬화 시킬 건가?
-            val wiDListString = backStackEntry.arguments?.getString("wiDList")
-            val diaryString = backStackEntry.arguments?.getString("diary")
-
-            val date = run {
-                val dateString = backStackEntry.arguments?.getString("date") ?: ""
-                LocalDate.parse(dateString)
-            }
-            DiaryView(
-                onBackButtonPressed = { mainActivityViewNavController.popBackStack() },
-                date = date,
-            )
-        }
+//        composable(
+//            route = MainActivityViewDestinations.DiaryViewDestination.route + "/{wiDList}/{diary}",
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Left,
+//                    animationSpec = tween(500)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Right,
+//                    animationSpec = tween(500)
+//                )
+//            }
+//        ) { backStackEntry ->
+//            // 어떻게 역직렬화 시킬 건가?
+//            val wiDListString = backStackEntry.arguments?.getString("wiDList")
+//            val diaryString = backStackEntry.arguments?.getString("diary")
+//
+//            val date = run {
+//                val dateString = backStackEntry.arguments?.getString("date") ?: ""
+//                LocalDate.parse(dateString)
+//            }
+//            DiaryView(
+//                onBackButtonPressed = { mainActivityViewNavController.popBackStack() },
+//                date = date,
+//            )
+//        }
 
         // 환경설정 뷰
         composable(
@@ -248,10 +204,8 @@ fun MainActivityView(dynamicLink: String?) {
                 onBackButtonPressed = {
                     mainActivityViewNavController.popBackStack()
                 },
-                onUserSignedOut = { userSignedOut: Boolean ->
-                    if (userSignedOut) {
-                        mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                    }
+                onUserSignedOut = {
+                    mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
                 },
                 onUserDeleted = { userDeleted: Boolean ->
                     if (userDeleted) {

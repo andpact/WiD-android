@@ -38,7 +38,7 @@ fun ClickedWiDView(
 ) {
     val TAG = "ClickedWiDView"
 
-    val clickedWiD = clickedWiDViewModel.clickedWiD.value
+    val updatedWiD = clickedWiDViewModel.updatedWiD.value
 
     // 화면
     val configuration = LocalConfiguration.current
@@ -46,17 +46,27 @@ fun ClickedWiDView(
 
     // 제목
     val showTitleMenu = clickedWiDViewModel.showTitleMenu.value
-    val titleColorMap = clickedWiDViewModel.titleColorMap.value
+    val titleColorMap = clickedWiDViewModel.titleColorMap
 
     // 시작 시간
     val showStartPicker = clickedWiDViewModel.showStartPicker.value
-    val startTimePickerState = rememberTimePickerState(initialHour = clickedWiD.start.hour, initialMinute = clickedWiD.start.minute, is24Hour = false)
+    val startTimePickerState = rememberTimePickerState(
+        initialHour = updatedWiD.start.hour,
+        initialMinute = updatedWiD.start.minute,
+        is24Hour = false
+    )
     val startOverlap = clickedWiDViewModel.startOverlap.value
+    val startModified = clickedWiDViewModel.startModified.value
 
     // 종료 시간
     val showFinishPicker = clickedWiDViewModel.showFinishPicker.value
-    val finishTimePickerState = rememberTimePickerState(initialHour = clickedWiD.finish.hour, initialMinute = clickedWiD.finish.minute, is24Hour = false)
+    val finishTimePickerState = rememberTimePickerState(
+        initialHour = updatedWiD.finish.hour,
+        initialMinute = updatedWiD.finish.minute,
+        is24Hour = false
+    )
     val finishOverlap = clickedWiDViewModel.finishOverlap.value
+    val finishModified = clickedWiDViewModel.finishModified.value
 
     // 소요 시간
     val durationExist = clickedWiDViewModel.durationExist.value
@@ -66,288 +76,351 @@ fun ClickedWiDView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        val clickedWiDDate = clickedWiD.date
-        clickedWiDViewModel.setWiDList(clickedWiDDate)
+        val clickedWiDDate = updatedWiD.date
+        clickedWiDViewModel.getWiDListByDate(currentDate = clickedWiDDate)
 
         onDispose {
             Log.d(TAG, "disposed")
         }
     }
 
-    Box(
+    Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onBackButtonPressed()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "뒤로 가기",
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = "WiD",
+                        style = Typography.titleLarge,
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(show = true)
+                        }
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(24.dp),
+                            painter = painterResource(id = R.drawable.outline_delete_16),
+                            contentDescription = "클릭한 위드 삭제",
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
+        }
+    ) { contentPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(contentPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            /**
-             * 상단 바
-             */
-            Box(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(color = titleColorMap[clickedWiD.title] ?: Transparent)
-                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            onBackButtonPressed()
-                        },
-                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                    contentDescription = "뒤로 가기",
-                    tint = titleColorMap[clickedWiD.title]?.let { textColor ->
-                        if (textColor.luminance() > 0.5f)
-                            Black
-                        else
-                            White
-                    } ?: MaterialTheme.colorScheme.primary,
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_calendar_month_24),
+                    contentDescription = "날짜",
                 )
 
-                Text(
+                Column(
                     modifier = Modifier
-                        .align(Alignment.Center),
-                    text = "WiD",
-                    style = Typography.titleLarge,
-                    color = titleColorMap[clickedWiD.title]?.let { textColor ->
-                        if (textColor.luminance() > 0.5f)
-                            Black
-                        else
-                            White
-                    } ?: MaterialTheme.colorScheme.primary,
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "날짜",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = getDateString(date = updatedWiD.date),
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        clickedWiDViewModel.setShowTitleMenu(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_title_24),
+                    contentDescription = "제목",
                 )
 
-                Text(
+                Column(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .clickable(
-                            enabled = !startOverlap && !finishOverlap && durationExist,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            clickedWiDViewModel.updateClickedWiD() {
-                                onBackButtonPressed()
-                            }
-                        }
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(
-                            if (!startOverlap && !finishOverlap && durationExist) {
-                                LimeGreen
-                            } else {
-                                MaterialTheme.colorScheme.tertiary
-                            }
-                        )
-                        .padding(
-                            horizontal = 8.dp,
-                            vertical = 4.dp
-                        ),
-                    text = "완료",
-                    style = Typography.bodyMedium,
-                    color = White
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "제목",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = titleNumberStringToTitleKRStringMap[updatedWiD.title] ?: "",
+                        style = Typography.bodyMedium,
+                    )
+                }
+
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "제목 수정",
                 )
             }
 
-            Column(
+            HorizontalDivider()
+
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .clickable {
+                        clickedWiDViewModel.setShowStartPicker(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Icon(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "날짜",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Text(
-                        text = getDateString(date = clickedWiD.date),
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_alarm_24),
+                    contentDescription = "시작 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "제목",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                clickedWiDViewModel.setShowTitleMenu(show = true)
-                            },
-                        text = clickedWiD.title,
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "시작",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    if (startOverlap) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "시작 시간 겹침",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "시작",
+                            style = Typography.titleMedium,
+                        )
+
+                        if (startModified && startOverlap) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "시작 시간 사용 불가",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "사용 불가",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else if (startModified) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                                contentDescription = "시작 시간 사용 가능",
+                            )
+
+                            Text(
+                                text = "사용 가능",
+                                style = Typography.labelSmall,
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
                         )
                     }
 
                     Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                clickedWiDViewModel.setShowStartPicker(show = true)
-                            },
                         text = getTimeString(
-                            time = clickedWiD.start,
+                            time = updatedWiD.start,
                             patten = "a hh:mm:ss"
                         ),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "시작 시간 수정",
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        clickedWiDViewModel.setShowFinishPicker(show = true)
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_alarm_on_24),
+                    contentDescription = "종료 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "종료",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    if (finishOverlap) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "종료 시간 겹침",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "종료",
+                            style = Typography.titleMedium,
+                        )
+
+                        if (finishModified && finishOverlap) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "종료 시간 사용 불가",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "사용 불가",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else if (finishModified) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_check_circle_outline_24),
+                                contentDescription = "종료 시간 사용 가능",
+                            )
+
+                            Text(
+                                text = "사용 가능",
+                                style = Typography.labelSmall,
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
                         )
                     }
 
                     Text(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DeepSkyBlue.copy(alpha = 0.2f))
-                            .padding(16.dp)
-                            .clickable {
-                                clickedWiDViewModel.setShowFinishPicker(show = true)
-                            },
                         text = getTimeString(
-                            time = clickedWiD.finish,
+                            time = updatedWiD.finish,
                             patten = "a hh:mm:ss"
                         ),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.primary,
+                Icon(
+                    painter = painterResource(R.drawable.baseline_edit_24),
+                    contentDescription = "종료 시간 수정",
+                )
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_timelapse_24),
+                    contentDescription = "소요 시간",
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "소요",
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "소요",
+                            style = Typography.titleMedium,
+                        )
 
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
+                        if (!durationExist) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(12.dp),
+                                painter = painterResource(R.drawable.baseline_error_outline_24),
+                                contentDescription = "소요 시간 부족",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+
+                            Text(
+                                text = "소요 시간 부족",
+                                style = Typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                    }
 
                     Text(
-                        text = getDurationString(clickedWiD.duration, mode = 3),
+                        text = getDurationString(updatedWiD.duration, mode = 3),
                         style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -357,345 +430,333 @@ fun ClickedWiDView(
                     .weight(1f)
             )
 
-            Box(
+            FilledIconButton(
                 modifier = Modifier
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                onClick = {
+                    clickedWiDViewModel.updateWiD() { updateWiDSuccess: Boolean ->
+                        if (updateWiDSuccess) {
+                            onBackButtonPressed()
+                        }
+                    }
+                },
+                enabled = !startOverlap && !finishOverlap && durationExist,
+                shape = MaterialTheme.shapes.medium
             ) {
-                Icon(
+                Row(
                     modifier = Modifier
-                        .padding(16.dp)
-                        .size(24.dp)
-//                        .align(Alignment.CenterStart)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(show = true)
-                        },
-                    painter = painterResource(id = R.drawable.outline_delete_16),
-                    contentDescription = "클릭한 위드 삭제",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 8.dp,
+                        alignment = Alignment.CenterHorizontally
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_done_24),
+                        contentDescription = "수정 완료",
+                    )
+
+                    Text(
+                        text = "수정 완료",
+                        style = Typography.bodyMedium
+                    )
+                }
             }
         }
 
-        if (showTitleMenu || showStartPicker || showFinishPicker || showDeleteClickedWiDDialog) {
-            Box(
+        if (showTitleMenu) {
+            AlertDialog(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        clickedWiDViewModel.setShowTitleMenu(show = false)
-                        clickedWiDViewModel.setShowStartPicker(show = false)
-                        clickedWiDViewModel.setShowFinishPicker(show = false)
-                        clickedWiDViewModel.setShowDeleteClickedWiDDialog(show = false)
-                    }
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = MaterialTheme.shapes.extraLarge
+                    ),
+                onDismissRequest = {
+                    clickedWiDViewModel.setShowTitleMenu(show = false)
+                },
             ) {
                 Column(
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp)
-                        .then(if (showTitleMenu) Modifier.height(screenHeight / 2) else Modifier)
-                        .shadow(
-                            elevation = 2.dp,
-                            shape = RoundedCornerShape(8.dp),
-                            spotColor = MaterialTheme.colorScheme.primary,
-                        )
-                        .background(
-                            color = MaterialTheme.colorScheme.tertiary,
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (showTitleMenu) {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(screenHeight / 2)
-                        ) {
-                            items(titleColorMap.size) { index ->
-                                val itemTitle = titleColorMap.keys.elementAt(index)
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "제목 선택",
+                        style = Typography.titleLarge
+                    )
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            val date = clickedWiD.date
-                                            val title = itemTitle
-                                            val start = clickedWiD.start
-                                            val finish = clickedWiD.finish
-                                            val duration = Duration.between(start, finish)
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(screenHeight / 2)
+                    ) {
+                        items(titleColorMap.size) { index ->
+                            val itemTitle = titleColorMap.keys.elementAt(index)
 
-                                            val updatedClickedWiD = WiD(
-                                                id = "",
-                                                date = date,
-                                                title = title,
-                                                start = start,
-                                                finish = finish,
-                                                duration = duration
-                                            )
-
-                                            clickedWiDViewModel.setClickedWiD(clickedWiD = updatedClickedWiD)
-
-                                            clickedWiDViewModel.setShowTitleMenu(show = false)
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = itemTitle,
-                                        style = Typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    )
-
-                                    RadioButton(
-                                        selected = clickedWiD.title == itemTitle,
-                                        onClick = {
-                                            val date = clickedWiD.date
-                                            val title = itemTitle
-                                            val start = clickedWiD.start
-                                            val finish = clickedWiD.finish
-                                            val duration = Duration.between(start, finish)
-
-                                            val updatedClickedWiD = WiD(
-                                                id = "",
-                                                date = date,
-                                                title = title,
-                                                start = start,
-                                                finish = finish,
-                                                duration = duration
-                                            )
-
-                                            clickedWiDViewModel.setClickedWiD(clickedWiD = updatedClickedWiD)
-
-                                            clickedWiDViewModel.setShowTitleMenu(show = false)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    if (showStartPicker) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    enabled = false,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                }
-                        ) {
-                            Icon(
+                            Row(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
+                                    .fillMaxWidth()
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
                                     ) {
-                                        clickedWiDViewModel.setShowStartPicker(show = false)
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "시작 시간 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                                        val date = updatedWiD.date
+                                        val title = itemTitle
+                                        val start = updatedWiD.start
+                                        val finish = updatedWiD.finish
+                                        val duration = Duration.between(start, finish)
 
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "시작 시간 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(horizontal = 16.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        clickedWiDViewModel.setShowStartPicker(show = false)
-
-                                        val date = clickedWiD.date
-                                        val title = clickedWiD.title
-                                        val newStart = LocalTime.of(
-                                            startTimePickerState.hour,
-                                            startTimePickerState.minute
-                                        )
-                                        val finish = clickedWiD.finish
-                                        val duration = Duration.between(newStart, finish)
-
-                                        val updatedClickedWiD = WiD(
-                                            id = "",
-                                            date = date,
-                                            title = title,
-                                            start = newStart,
-                                            finish = finish,
-                                            duration = duration
-                                        )
-
-                                        clickedWiDViewModel.setClickedWiD(clickedWiD = updatedClickedWiD)
-                                        clickedWiDViewModel.checkNewStartOverlap()
-                                        clickedWiDViewModel.checkNewWiDOverlap()
-                                        clickedWiDViewModel.checkDurationExist()
-                                    },
-                                text = "확인",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        HorizontalDivider()
-
-                        TimePicker(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp),
-                            state = startTimePickerState
-                        )
-                    }
-
-                    if (showFinishPicker) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    enabled = false,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-
-                                }
-                        ) {
-                            Icon(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(24.dp)
-                                    .align(Alignment.CenterStart)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        clickedWiDViewModel.setShowFinishPicker(show = false)
-                                    },
-                                painter = painterResource(id = R.drawable.baseline_close_24),
-                                contentDescription = "종료 시간 메뉴 닫기",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.Center),
-                                text = "종료 시간 선택",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .padding(horizontal = 16.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        clickedWiDViewModel.setShowFinishPicker(show = false)
-
-                                        val date = clickedWiD.date
-                                        val title = clickedWiD.title
-                                        val start = clickedWiD.start
-                                        val newFinish = LocalTime.of(
-                                            finishTimePickerState.hour,
-                                            finishTimePickerState.minute
-                                        )
-                                        val duration = Duration.between(start, newFinish)
-
-                                        val updatedClickedWiD = WiD(
+                                        val updatedWiD = WiD(
                                             id = "",
                                             date = date,
                                             title = title,
                                             start = start,
-                                            finish = newFinish,
+                                            finish = finish,
                                             duration = duration
                                         )
 
-                                        clickedWiDViewModel.setClickedWiD(clickedWiD = updatedClickedWiD)
-                                        clickedWiDViewModel.checkNewFinishOverlap()
-                                        clickedWiDViewModel.checkNewWiDOverlap()
-                                        clickedWiDViewModel.checkDurationExist()
+                                        clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
+
+                                        clickedWiDViewModel.setShowTitleMenu(show = false)
                                     },
-                                text = "확인",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(16.dp),
+                                    text = itemTitle,
+                                    style = Typography.bodyMedium,
+                                )
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+
+                                RadioButton(
+                                    selected = updatedWiD.title == itemTitle,
+                                    onClick = {
+                                        val date = updatedWiD.date
+                                        val title = itemTitle
+                                        val start = updatedWiD.start
+                                        val finish = updatedWiD.finish
+                                        val duration = Duration.between(start, finish)
+
+                                        val updatedWiD = WiD(
+                                            id = "",
+                                            date = date,
+                                            title = title,
+                                            start = start,
+                                            finish = finish,
+                                            duration = duration
+                                        )
+
+                                        clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
+
+                                        clickedWiDViewModel.setShowTitleMenu(show = false)
+                                    }
+                                )
+                            }
                         }
-
-                        HorizontalDivider()
-
-                        TimePicker(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp),
-                            state = finishTimePickerState
-                        )
                     }
+                }
+            }
+        }
 
-                    if (showDeleteClickedWiDDialog) {
+        if (showStartPicker) {
+            DatePickerDialog(
+                onDismissRequest = {
+                    clickedWiDViewModel.setShowStartPicker(show = false)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val date = updatedWiD.date
+                            val title = updatedWiD.title
+                            val newStart = LocalTime.of(
+                                startTimePickerState.hour,
+                                startTimePickerState.minute
+                            )
+                            val finish = updatedWiD.finish
+                            val duration = Duration.between(newStart, finish)
+
+                            val updatedWiD = WiD(
+                                id = "",
+                                date = date,
+                                title = title,
+                                start = newStart,
+                                finish = finish,
+                                duration = duration
+                            )
+
+                            clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
+                            clickedWiDViewModel.checkNewStartOverlap()
+                            clickedWiDViewModel.checkNewWiDOverlap()
+                            clickedWiDViewModel.checkDurationExist()
+
+                            clickedWiDViewModel.setStartModified(modified = true)
+                            clickedWiDViewModel.setShowStartPicker(show = false)
+                        }) {
                         Text(
-                            modifier = Modifier
-                                .padding(16.dp),
-                            text = "WiD를\n삭제하시겠습니까?",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
+                            text = "확인",
+                            style = Typography.bodyMedium
                         )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                text = "취소",
-                                style = Typography.bodyMedium,
-                                color = DeepSkyBlue
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        clickedWiDViewModel.deleteCLickedWiD() {
-                                            onBackButtonPressed()
-                                        }
-                                    },
-                                text = "삭제",
-                                style = Typography.bodyMedium,
-                                color = OrangeRed
-                            )
-                        }
                     }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            clickedWiDViewModel.setShowStartPicker(show = false)
+                        }
+                    ) {
+                        Text(
+                            text = "취소",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "시작 시간 선택",
+                        style = Typography.titleLarge
+                    )
+
+                    TimePicker(state = startTimePickerState)
+                }
+            }
+        }
+
+        if (showFinishPicker) {
+            DatePickerDialog(
+                onDismissRequest = {
+                    clickedWiDViewModel.setShowFinishPicker(show = false)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val date = updatedWiD.date
+                            val title = updatedWiD.title
+                            val start = updatedWiD.start
+                            val newFinish = LocalTime.of(
+                                finishTimePickerState.hour,
+                                finishTimePickerState.minute
+                            )
+                            val duration = Duration.between(start, newFinish)
+
+                            val updatedWiD = WiD(
+                                id = "",
+                                date = date,
+                                title = title,
+                                start = start,
+                                finish = newFinish,
+                                duration = duration
+                            )
+
+                            clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
+                            clickedWiDViewModel.checkNewFinishOverlap()
+                            clickedWiDViewModel.checkNewWiDOverlap()
+                            clickedWiDViewModel.checkDurationExist()
+
+                            clickedWiDViewModel.setFinishModified(modified = true)
+                            clickedWiDViewModel.setShowFinishPicker(show = false)
+                        }) {
+                        Text(
+                            text = "확인",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            clickedWiDViewModel.setShowFinishPicker(show = false)
+                        }
+                    ) {
+                        Text(
+                            text = "취소",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "종료 시간 선택",
+                        style = Typography.titleLarge
+                    )
+
+                    TimePicker(state = finishTimePickerState)
+                }
+            }
+        }
+
+        if (showDeleteClickedWiDDialog) {
+            DatePickerDialog(
+                onDismissRequest = {
+                    clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            clickedWiDViewModel.deleteWiD() { deleteWiDSuccess: Boolean ->
+                                if (deleteWiDSuccess) {
+                                    onBackButtonPressed()
+                                }
+                            }
+
+                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
+                        }
+                    ) {
+                        Text(
+                            text = "삭제",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
+                        }
+                    ) {
+                        Text(
+                            text = "취소",
+                            style = Typography.bodyMedium
+                        )
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        text = "WiD를 삭제하시겠습니까?",
+                        style = Typography.bodyMedium
+                    )
                 }
             }
         }

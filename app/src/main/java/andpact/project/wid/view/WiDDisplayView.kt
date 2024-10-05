@@ -24,22 +24,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun WiDDisplayView() {
+fun WiDDisplayView(
+    onEmptyWiDClicked: () -> Unit,
+    onWiDClicked: () -> Unit,
+) {
     val TAG = "WiDDisplayView"
 
     // 화면
 //    val pages = listOf("일별 조회", "주별 조회", "월별 조회", "제목별 조회")
-    val pages = listOf("일별 조회")
+    val pages = listOf("일별 조회", "주별 조회")
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val coroutineScope = rememberCoroutineScope()
 
     // 제목
-    var titleMenuExpanded by remember { mutableStateOf(false) }
+//    var titleMenuExpanded by remember { mutableStateOf(false) }
 
     // 기간
-    var periodMenuExpanded by remember { mutableStateOf(false) }
+//    var periodMenuExpanded by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -49,132 +52,150 @@ fun WiDDisplayView() {
         }
     }
 
-    Column(
+    Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary)
-    ) {
-        /**
-         * 상단 바
-         */
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .background(MaterialTheme.colorScheme.tertiary)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "WiD",
-                style = Typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "조회",
+                        style = Typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
             )
-
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-//            if (pagerState.currentPage == 3) {
-//                Row(
-//                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Box {
-////                        Icon(
-////                            modifier = Modifier
-////                                .clickable(
-////                                    interactionSource = remember { MutableInteractionSource() },
-////                                    indication = null
-////                                ) {
-////                                    titleMenuExpanded = true
-////                                }
-////                                .size(24.dp),
-////                            painter = painterResource(
-////                                titleIconMap[titleWiDViewModel.selectedTitle.value]
-////                                    ?: R.drawable.baseline_title_24
-////                            ),
-////                            contentDescription = "제목 선택",
-////                            tint = MaterialTheme.colorScheme.primary
-////                        )
-//
-//                        DropdownMenu(
-//                            modifier = Modifier
-//                                .background(MaterialTheme.colorScheme.tertiary),
-//                            expanded = titleMenuExpanded,
-//                            onDismissRequest = { titleMenuExpanded = false }
-//                        ) {
-//                            titles.forEach { itemTitle ->
-//                                DropdownMenuItem(
-//                                    text = {
-//                                        Text(
-////                                            text = titleMap[itemTitle] ?: "",
-//                                            text = itemTitle,
-//                                            style = Typography.bodyMedium,
-//                                            color = MaterialTheme.colorScheme.primary
-//                                        )
-//                                    },
-//                                    onClick = {
-//                                        titleWiDViewModel.setTitle(itemTitle)
-//                                        titleMenuExpanded = false
-//                                    }
-//                                )
-//                            }
-//                        }
-//                    }
-//
-//                    Box {
-//                        Icon(
-//                            modifier = Modifier
-//                                .clickable(
-//                                    interactionSource = remember { MutableInteractionSource() },
-//                                    indication = null
-//                                ) {
-//                                    periodMenuExpanded = true
-//                                }
-//                                .size(24.dp),
-//                            painter = painterResource(R.drawable.baseline_calendar_month_24),
-//                            contentDescription = "기간 선택",
-//                            tint = MaterialTheme.colorScheme.primary
-//                        )
-//
-//                        DropdownMenu(
-//                            modifier = Modifier
-//                                .background(MaterialTheme.colorScheme.tertiary),
-//                            expanded = periodMenuExpanded,
-//                            onDismissRequest = { periodMenuExpanded = false }
-//                        ) {
-//                            periods.forEach { itemPeriod ->
-//                                DropdownMenuItem(
-//                                    text = {
-//                                        Text(
-//                                            text = periodMap[itemPeriod] ?: "",
-//                                            style = Typography.bodyMedium,
-//                                            color = MaterialTheme.colorScheme.primary
-//                                        )
-//                                    },
-//                                    onClick = {
-//                                        titleWiDViewModel.setPeriod(itemPeriod)
-//                                        periodMenuExpanded = false
-//                                    }
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
+    ) { contentPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+//                .background(MaterialTheme.colorScheme.secondary)
+        ) {
+            /**
+             * 상단 바
+             */
+    //        Row(
+    //            modifier = Modifier
+    //                .fillMaxWidth()
+    //                .height(56.dp)
+    //                .background(MaterialTheme.colorScheme.tertiary)
+    //                .padding(horizontal = 16.dp),
+    //            verticalAlignment = Alignment.CenterVertically
+    //        ) {
+    //            Text(
+    //                text = "WiD",
+    //                style = Typography.titleLarge,
+    //                color = MaterialTheme.colorScheme.primary
+    //            )
+    //
+    //            Spacer(
+    //                modifier = Modifier
+    //                    .weight(1f)
+    //            )
+    //
+    ////            if (pagerState.currentPage == 3) {
+    ////                Row(
+    ////                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ////                    verticalAlignment = Alignment.CenterVertically
+    ////                ) {
+    ////                    Box {
+    //////                        Icon(
+    //////                            modifier = Modifier
+    //////                                .clickable(
+    //////                                    interactionSource = remember { MutableInteractionSource() },
+    //////                                    indication = null
+    //////                                ) {
+    //////                                    titleMenuExpanded = true
+    //////                                }
+    //////                                .size(24.dp),
+    //////                            painter = painterResource(
+    //////                                titleIconMap[titleWiDViewModel.selectedTitle.value]
+    //////                                    ?: R.drawable.baseline_title_24
+    //////                            ),
+    //////                            contentDescription = "제목 선택",
+    //////                            tint = MaterialTheme.colorScheme.primary
+    //////                        )
+    ////
+    ////                        DropdownMenu(
+    ////                            modifier = Modifier
+    ////                                .background(MaterialTheme.colorScheme.tertiary),
+    ////                            expanded = titleMenuExpanded,
+    ////                            onDismissRequest = { titleMenuExpanded = false }
+    ////                        ) {
+    ////                            titles.forEach { itemTitle ->
+    ////                                DropdownMenuItem(
+    ////                                    text = {
+    ////                                        Text(
+    //////                                            text = titleMap[itemTitle] ?: "",
+    ////                                            text = itemTitle,
+    ////                                            style = Typography.bodyMedium,
+    ////                                            color = MaterialTheme.colorScheme.primary
+    ////                                        )
+    ////                                    },
+    ////                                    onClick = {
+    ////                                        titleWiDViewModel.setTitle(itemTitle)
+    ////                                        titleMenuExpanded = false
+    ////                                    }
+    ////                                )
+    ////                            }
+    ////                        }
+    ////                    }
+    ////
+    ////                    Box {
+    ////                        Icon(
+    ////                            modifier = Modifier
+    ////                                .clickable(
+    ////                                    interactionSource = remember { MutableInteractionSource() },
+    ////                                    indication = null
+    ////                                ) {
+    ////                                    periodMenuExpanded = true
+    ////                                }
+    ////                                .size(24.dp),
+    ////                            painter = painterResource(R.drawable.baseline_calendar_month_24),
+    ////                            contentDescription = "기간 선택",
+    ////                            tint = MaterialTheme.colorScheme.primary
+    ////                        )
+    ////
+    ////                        DropdownMenu(
+    ////                            modifier = Modifier
+    ////                                .background(MaterialTheme.colorScheme.tertiary),
+    ////                            expanded = periodMenuExpanded,
+    ////                            onDismissRequest = { periodMenuExpanded = false }
+    ////                        ) {
+    ////                            periods.forEach { itemPeriod ->
+    ////                                DropdownMenuItem(
+    ////                                    text = {
+    ////                                        Text(
+    ////                                            text = periodMap[itemPeriod] ?: "",
+    ////                                            style = Typography.bodyMedium,
+    ////                                            color = MaterialTheme.colorScheme.primary
+    ////                                        )
+    ////                                    },
+    ////                                    onClick = {
+    ////                                        titleWiDViewModel.setPeriod(itemPeriod)
+    ////                                        periodMenuExpanded = false
+    ////                                    }
+    ////                                )
+    ////                            }
+    ////                        }
+    ////                    }
+    ////                }
+    ////            }
+    //        }
 
-        /**
-         * 상단 탭
-         */
-        CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
+            /**
+             * 상단 탭
+             */
             ScrollableTabRow(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.tertiary)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
                     .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
-                containerColor = MaterialTheme.colorScheme.secondary,
+                containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
                 selectedTabIndex = pagerState.currentPage,
                 divider = {},
                 edgePadding = 0.dp
@@ -185,7 +206,6 @@ fun WiDDisplayView() {
                             Text(
                                 text = pages[index],
                                 style = Typography.bodyMedium,
-                                color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else DarkGray
                             )
                         },
                         selected = pagerState.currentPage == index,
@@ -197,17 +217,24 @@ fun WiDDisplayView() {
                     )
                 }
             }
-        }
 
-        /**
-         * 컨텐츠
-         */
-        HorizontalPager(state = pagerState) { page ->
-            when (page) {
-                0 -> DayWiDView()
-//                1 -> WeekWiDView()
-//                2 -> MonthWiDView()
-//                3 -> TitleWiDView()
+            /**
+             * 컨텐츠
+             */
+            HorizontalPager(state = pagerState) { page ->
+                when (page) {
+                    0 -> DayWiDView(
+                        onEmptyWiDClicked = {
+                            onEmptyWiDClicked()
+                        },
+                        onWiDClicked = {
+                            onWiDClicked()
+                        }
+                    )
+                    1 -> WeekWiDView()
+    //                2 -> MonthWiDView()
+    //                3 -> TitleWiDView()
+                }
             }
         }
     }

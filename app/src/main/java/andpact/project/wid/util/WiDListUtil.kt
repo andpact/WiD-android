@@ -143,6 +143,19 @@ fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: 
     }
 }
 
+fun getTitlePercentageOfDay(duration: Duration): Float {
+    // 하루의 총 초
+    val totalSecondsInDay = 24 * 60 * 60
+
+    // 주어진 Duration의 초
+    val durationInSeconds = duration.seconds
+
+    // 퍼센트 계산 (백분율)
+    val percentage = (durationInSeconds.toFloat() / totalSecondsInDay) * 100
+
+    return percentage
+}
+
 fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
     Log.d("WiDListUtil", "getTotalDurationFromWiDList executed")
 

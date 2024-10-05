@@ -26,9 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -40,39 +38,34 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StopwatchView(
-    onStopwatchStateChanged: (PlayerState) -> Unit,
-    onHideStopwatchViewBarChanged: (Boolean) -> Unit,
+//    onStopwatchStateChanged: (ToolState) -> Unit,
+    onStopwatchViewBarVisibleChanged: (Boolean) -> Unit,
     stopwatchViewModel: StopwatchViewModel = hiltViewModel(),
 ) {
     val TAG = "StopwatchView"
 
-    // 화면
-    val hideStopwatchViewBar = stopwatchViewModel.hideStopwatchViewBar.value
+    val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
 
-    // 제목
     val title = stopwatchViewModel.title.value
-
-    val titleColorMap = stopwatchViewModel.titleColorMap.value
-//    val titleColorMap = defaultTitleColorMapWithColors
+    val titleColorMap = stopwatchViewModel.titleColorMap
 
     val pagerState = rememberPagerState(pageCount = { titleColorMap.size })
     val coroutineScope = rememberCoroutineScope()
 
-    // 스톱 워치
-    val stopwatchState = stopwatchViewModel.stopwatchState.value
-    val duration = stopwatchViewModel.duration.value
+    val stopwatchToolState = stopwatchViewModel.user.value?.currentToolState ?: CurrentToolState.STOPPED
+    val totalDuration = stopwatchViewModel.totalDuration.value
 
     LaunchedEffect(pagerState.currentPage) {
         // 페이저 안에 선언하니까, 아래 메서드가 반복적으로 실행됨.
         stopwatchViewModel.setTitle(newTitle = titleColorMap.keys.elementAt(pagerState.currentPage))
     }
 
-    LaunchedEffect(stopwatchState) {
-        onStopwatchStateChanged(stopwatchState)
-    }
+//    LaunchedEffect(toolState) {
+//        onStopwatchStateChanged(toolState)
+//    }
 
-    LaunchedEffect(hideStopwatchViewBar) {
-        onHideStopwatchViewBarChanged(hideStopwatchViewBar)
+    LaunchedEffect(stopwatchViewBarVisible) {
+        onStopwatchViewBarVisibleChanged(stopwatchViewBarVisible)
     }
 
     DisposableEffect(Unit) {
@@ -83,61 +76,80 @@ fun StopwatchView(
         }
     }
 
-    BackHandler(enabled = hideStopwatchViewBar) {
-        stopwatchViewModel.setHideStopwatchViewBar(!hideStopwatchViewBar)
+    BackHandler(enabled = stopwatchViewBarVisible) {
+        stopwatchViewModel.setStopwatchViewBarVisible(!stopwatchViewBarVisible)
     }
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(vertical = 16.dp)
-            .clickable(
-                enabled = stopwatchState == PlayerState.Started,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) { // 스톱 워치가 시작된 상태에서만 상, 하단 바 숨길 수 있도록
-                stopwatchViewModel.setHideStopwatchViewBar(!hideStopwatchViewBar)
-            }
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (stopwatchState == PlayerState.Stopped) { // 스톱 워치 정지 상태
-            HorizontalPager(
+        if (stopwatchToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 16.dp),
+                text = "제목 선택",
+                style = Typography.titleLarge,
+            )
+
+            HorizontalPager( // 페이저 안에 기본적으로 박스가 있음.
                 modifier = Modifier
                     .weight(1f),
                 state = pagerState,
-                pageSpacing = (-48).dp
+                pageSpacing = (-48).dp,
+                verticalAlignment = Alignment.CenterVertically
             ) { page ->
                 val menuTitle = titleColorMap.keys.elementAt(page)
-                val color = titleColorMap[menuTitle] ?: Transparent // 기본 배경색은 투명으로 설정
+                val color = titleColorMap[menuTitle] ?: Transparent
+//                val color = lightTitleColorMap[menuTitle] ?: Transparent // 기본 배경색은 투명으로 설정
 
-                Box(
+                Column(
                     modifier = Modifier
-                        .fillMaxSize()
-//                        .fillMaxWidth()
-//                        .aspectRatio(1f)
-                        .padding(horizontal = 32.dp, vertical = 16.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(color)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
+                        .fillMaxWidth()
+                ) {
+                    FilledIconButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.1f)
+                            .padding(horizontal = 32.dp, vertical = 16.dp),
+                        onClick = {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(page)
                             }
                         },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = menuTitle,
-                        style = Typography.bodyMedium,
-                        color = titleColorMap[menuTitle]?.let { textColor ->
-                            if (0.5f < textColor.luminance()) {
-                                Black
-                            } else {
-                                White
-                            }
-                        } ?: MaterialTheme.colorScheme.primary
-                    )
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = color
+                        )
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(100.dp),
+                            painter = painterResource(id = titleNumberStringToTitleIconMap[menuTitle] ?: 0),
+                            contentDescription = "현재 제목",
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = titleNumberStringToTitleKRStringMap[menuTitle] ?: "",
+                            style = Typography.titleLarge,
+                        )
+
+                        Text(
+                            text = titleNumberStringToTitleExampleKRStringMap[menuTitle] ?: "제목",
+                            style = Typography.bodyMedium,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
+                        )
+                    }
                 }
             }
         } else {
@@ -148,203 +160,192 @@ fun StopwatchView(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = getStopWatchTimeString(duration),
-                    style = TextStyle(
-                        textAlign = TextAlign.End,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    text = getStopWatchTimeString(totalDuration),
+                    style = TextStyle(textAlign = TextAlign.End)
                 )
             }
         }
 
         /** 하단 바 */
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(horizontal = 16.dp)
-                .alpha(if (hideStopwatchViewBar) 0f else 1f),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (stopwatchState == PlayerState.Stopped) { // 스톱 워치 정지 상태
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(
-                            enabled = 0 < pagerState.currentPage,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(0)
-                            }
+        if (stopwatchToolState == CurrentToolState.STOPPED) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilledTonalIconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(0)
                         }
-                        .size(32.dp),
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "첫 제목",
-                    tint = if (0 < pagerState.currentPage)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        DarkGray
-                )
+                    },
+                    enabled = 0 < pagerState.currentPage
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_keyboard_double_arrow_left_24),
+                        contentDescription = "첫 제목"
+                    )
+                }
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(
-                            enabled = 0 < pagerState.currentPage,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                            }
+                FilledTonalIconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
                         }
-                        .size(32.dp),
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "이전 제목",
-                    tint = if (0 < pagerState.currentPage)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        DarkGray
-                )
+                    },
+                    enabled = 0 < pagerState.currentPage
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "이전 제목"
+                    )
+                }
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(CircleShape)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
+                FilledIconButton(
+                    onClick = {
+                        coroutineScope.launch {
                             stopwatchViewModel.startStopwatch()
                         }
-                        .background(color = LimeGreen)
-                        .padding(16.dp)
-                        .size(32.dp),
-                    painter = painterResource(R.drawable.baseline_play_arrow_24),
-                    contentDescription = "스톱 워치 시작",
-                    tint = White
-                )
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_play_arrow_24),
+                        contentDescription = "스톱 워치 시작",
+                    )
+                }
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(
-                            enabled = pagerState.currentPage < pagerState.pageCount - 1,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                            }
+                FilledTonalIconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
-                        .size(32.dp),
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "다음 제목",
-                    tint = if (pagerState.currentPage < pagerState.pageCount - 1)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        DarkGray
-                )
+                    },
+                    enabled = pagerState.currentPage < pagerState.pageCount - 1
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "다음 제목",
+                    )
+                }
 
-                Icon(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(
-                            enabled = pagerState.currentPage < pagerState.pageCount - 1,
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.pageCount - 1)
-                            }
+                FilledTonalIconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.pageCount - 1)
                         }
-                        .size(32.dp),
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = "마지막 제목",
-                    tint = if (pagerState.currentPage < pagerState.pageCount - 1)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        DarkGray
-                )
-            } else { // 스톰 워치 시작 및 정지 상태
-                Text(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(titleColorMap[title] ?: MaterialTheme.colorScheme.primary)
-                        .padding(16.dp),
-                    text = title,
-                    style = Typography.titleLarge,
-                    color = titleColorMap[title]?.let { textColor ->
-                        if (textColor.luminance() > 0.5f)
-                            Black
-                        else
-                            White
-                    } ?: MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
+                    },
+                    enabled = pagerState.currentPage < pagerState.pageCount - 1
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_keyboard_double_arrow_right_24),
+                        contentDescription = "마지막 제목",
+                    )
+                }
+            }
+        } else if (stopwatchViewBarVisible) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilledTonalIconButton(
+                    onClick = {
 
+                    },
+                    enabled = false
+                ) {
+                    Icon(
+                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        contentDescription = "현재 제목",
+                    )
+                }
+
+                FilledTonalIconButton(
+                    modifier = Modifier
+                        .alpha(0f),
+                    onClick = {
+
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        contentDescription = "현재 제목",
+                    )
+                }
+
+                FilledTonalIconButton(
+                    onClick = {
+                        stopwatchViewModel.setStopwatchViewBarVisible(false)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_unfold_more_24),
+                        contentDescription = "탑 바텀 바 숨기기",
+                    )
+                }
+
+                FilledIconButton(
+                    onClick = {
+                        stopwatchViewModel.stopStopwatch()
+                    },
+                    enabled = stopwatchToolState == CurrentToolState.PAUSED
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_stop_24),
+                        contentDescription = "스톱워치 정지",
+                    )
+                }
+
+                FilledIconButton(
+                    onClick = {
+                        if (stopwatchToolState == CurrentToolState.STARTED) { // 스톱 워치 시작 상태
+                            stopwatchViewModel.pauseStopwatch()
+                        } else { // 스톱 워치 중지, 정지 상태
+                            stopwatchViewModel.startStopwatch()
+                        }
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (stopwatchToolState == CurrentToolState.STARTED)
+                                R.drawable.baseline_pause_24
+                            else
+                                R.drawable.baseline_play_arrow_24
+                        ),
+                        contentDescription = "스톱 워치 중지 및 시작",
+                    )
+                }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Spacer(
                     modifier = Modifier
                         .weight(1f)
                 )
 
-                if (stopwatchState == PlayerState.Paused) {
+                FilledTonalIconButton(
+                    onClick = {
+                        stopwatchViewModel.setStopwatchViewBarVisible(true)
+                    }
+                ) {
                     Icon(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable(
-//                                enabled = stopwatchState == PlayerState.Paused,
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                stopwatchViewModel.stopStopwatch()
-                            }
-                            .background(color = DeepSkyBlue)
-                            .padding(16.dp)
-                            .size(32.dp),
-                        painter = painterResource(id = R.drawable.baseline_stop_24),
-                        contentDescription = "스톱워치 정지",
-                        tint = White
+                        painter = painterResource(id = R.drawable.baseline_unfold_less_24),
+                        contentDescription = "탑 바텀 바 보이기",
                     )
                 }
 
-                Icon(
+                Spacer(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { // 스톱 워치 모든 상태일 때 클릭 가능
-                            if (hideStopwatchViewBar) {
-                                stopwatchViewModel.setHideStopwatchViewBar(hideStopwatchViewBar = false)
-                            } else if (stopwatchState == PlayerState.Started) { // 스톱 워치 시작 상태
-                                stopwatchViewModel.pauseStopwatch()
-                            } else { // 스톱 워치 중지, 정지 상태
-                                stopwatchViewModel.startStopwatch()
-                            }
-                        }
-                        .background(
-                            color = if (stopwatchState == PlayerState.Started)
-                                OrangeRed
-                            else
-                                LimeGreen
-                        )
-                        .padding(16.dp)
-                        .size(32.dp),
-                    painter = painterResource(
-                        id = if (stopwatchState == PlayerState.Started)
-                            R.drawable.baseline_pause_24
-                        else
-                            R.drawable.baseline_play_arrow_24
-                    ),
-                    contentDescription = "스톱 워치 중지 및 시작",
-                    tint = White
+                        .weight(1f)
                 )
             }
         }

@@ -1,7 +1,8 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.model.Diary
+import andpact.project.wid.destinations.MainViewDestinations
+//import andpact.project.wid.model.Diary
 import andpact.project.wid.model.WiD
 import android.util.Log
 import androidx.compose.foundation.background
@@ -33,10 +34,18 @@ fun MainView(
     onSettingButtonPressed: () -> Unit,
     onEmptyWiDClicked: () -> Unit,
     onWiDClicked: () -> Unit,
-    onDiaryClicked: (List<WiD>, Diary) -> Unit,
-    onHideMainViewBarChanged: (Boolean) -> Unit // Main Activity View의 시스템 상태바, 네비게이션 바 색상 변경 용 콜백
+//    onDiaryClicked: (List<WiD>, Diary) -> Unit,
+    onMainViewBarVisibleChanged: (Boolean) -> Unit // Main Activity View의 시스템 상태바, 네비게이션 바 색상 변경 용 콜백
 ) {
     val TAG = "MainView"
+
+    // 화면
+    val mainViewNavController: NavHostController = rememberNavController()
+    val navBackStackEntry by mainViewNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // MainViewBottomBar에 전달하기 위한 변수(실제 값)
+    var mainViewBarVisible by remember { mutableStateOf(true) }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -46,22 +55,14 @@ fun MainView(
         }
     }
 
-    // 화면
-    val mainViewNavController: NavHostController = rememberNavController()
-    val navBackStackEntry by mainViewNavController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    // MainViewBottomBar에 전달하기 위한 변수(실제 값)
-    var hideMainViewBar by remember { mutableStateOf(false) }
-
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondary),
+            .fillMaxSize(),
+//            .background(MaterialTheme.colorScheme.secondary),
         bottomBar = {
             MainBottomBarView(
                 currentRoute = currentRoute,
-                hideMainViewBar = hideMainViewBar,
+                mainViewBarVisible = mainViewBarVisible,
                 onDestinationChanged = { route ->
                     mainViewNavController.navigate(route) {
                         popUpTo(mainViewNavController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
@@ -82,66 +83,52 @@ fun MainView(
         ) {
             // 홈
             composable(MainViewDestinations.HomeViewDestination.route) {
-                HomeView(onSettingButtonPressed = {
-                    onSettingButtonPressed()
-                })
+                HomeView(
+                    onSettingButtonPressed = {
+                        onSettingButtonPressed()
+                    }
+                )
             }
 
             // WiD 도구
             composable(MainViewDestinations.WiDToolViewDestination.route) {
                 WiDToolView(
-                    onEmptyWiDClicked = {
-                        onEmptyWiDClicked()
-                    },
-                    onWiDClicked = {
-                        onWiDClicked()
-                    },
-                    onHideWiDToolViewBarChanged =  { hide ->
-                        hideMainViewBar = hide
-                        onHideMainViewBarChanged(hide)
+                    onWiDToolViewBarVisibleChanged =  { visible ->
+                        mainViewBarVisible = visible
+                        onMainViewBarVisibleChanged(visible)
                     },
                 )
             }
 
             // WiD 조회
-            composable(MainViewDestinations.WiDDisplayViewDestination.route) { WiDDisplayView() }
+            composable(MainViewDestinations.WiDDisplayViewDestination.route) {
+                WiDDisplayView(
+                    onEmptyWiDClicked = {
+                        onEmptyWiDClicked()
+                    },
+                    onWiDClicked = {
+                        onWiDClicked()
+                    }
+                )
+            }
 
             // 다이어리 조회
-            composable(MainViewDestinations.DiaryDisplayViewDestination.route) { DiaryDisplayView(onDiaryClicked = { wiDList, diary -> onDiaryClicked(wiDList, diary) }) }
+//            composable(MainViewDestinations.DiaryDisplayViewDestination.route) {
+//                DiaryDisplayView(onDiaryClicked = { wiDList, diary ->
+//                    onDiaryClicked(wiDList, diary) }
+//                )
+//            }
         }
     }
 }
 
-sealed class MainViewDestinations(
-    val route: String,
-    val title: String? = null,
-    val icon: Int
-) {
-    object HomeViewDestination : MainViewDestinations(
-        route = "home_view",
-        icon = R.drawable.baseline_home_24
-    )
-    object WiDToolViewDestination : MainViewDestinations(
-        route = "wid_tool_view",
-        icon = R.drawable.outline_add_box_24
-    )
-    object WiDDisplayViewDestination : MainViewDestinations(
-        route = "wid_display_view",
-        icon = R.drawable.baseline_alarm_24
-    )
-    object DiaryDisplayViewDestination : MainViewDestinations(
-        route = "diary_display_view",
-        icon = R.drawable.baseline_calendar_month_24
-    )
-}
-
-object NoRippleTheme : RippleTheme {
-    @Composable
-    override fun defaultColor() = Color.Unspecified
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
-}
+//object NoRippleTheme : RippleTheme {
+//    @Composable
+//    override fun defaultColor() = Color.Unspecified
+//
+//    @Composable
+//    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
+//}
 
 //@Preview(showBackground = true)
 //@Composable
