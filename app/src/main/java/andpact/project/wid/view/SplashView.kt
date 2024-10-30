@@ -59,9 +59,7 @@ fun SplashView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     SplashTheme {
@@ -79,7 +77,7 @@ fun SplashView(
                 Image(
     //                    modifier = Modifier
     //                        .size(96.dp),
-                    painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
+                    painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main, ic_main_rounded는 안되네?
                     contentDescription = "앱 아이콘"
                 )
 

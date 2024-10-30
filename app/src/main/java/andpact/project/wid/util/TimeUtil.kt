@@ -22,7 +22,7 @@ import java.util.*
 //}
 
 fun getTimeString(time: LocalTime, patten: String): String {
-    Log.d("TimeUtil", "getTimeString executed")
+//    Log.d("TimeUtil", "getTimeString executed")
 
     return time.format(DateTimeFormatter.ofPattern(patten))
 }
@@ -47,22 +47,22 @@ fun getTimeString(time: LocalTime, patten: String): String {
 //    }
 //}
 
-fun getHorizontalTimeString(time: Long): String {
-    Log.d("TimeUtil", "getHorizontalTimeString executed")
-
-    val hours = (time / 3_600_000).toInt()
-    val minutes = ((time % 3_600_000) / 60_000).toInt()
-    val seconds = ((time % 60_000) / 1_000).toInt()
-
-    val hoursText = hours.toString()
-    val minutesText = minutes.toString().padStart(2, '0')
-    val secondsText = seconds.toString().padStart(2, '0')
-
-    return "$hoursText:$minutesText:$secondsText"
-}
+//fun getHorizontalTimeString(time: Long): String {
+//    Log.d("TimeUtil", "getHorizontalTimeString executed")
+//
+//    val hours = (time / 3_600_000).toInt()
+//    val minutes = ((time % 3_600_000) / 60_000).toInt()
+//    val seconds = ((time % 60_000) / 1_000).toInt()
+//
+//    val hoursText = hours.toString()
+//    val minutesText = minutes.toString().padStart(2, '0')
+//    val secondsText = seconds.toString().padStart(2, '0')
+//
+//    return "$hoursText:$minutesText:$secondsText"
+//}
 
 fun getTimerTimeString(duration: Duration): AnnotatedString {
-    Log.d("TimeUtil", "getTimerTimeString executed")
+//    Log.d("TimeUtil", "getTimerTimeString executed")
 
     val hours = duration.toHours()
     val minutes = (duration.toMinutes() % 60).toInt()
@@ -120,7 +120,7 @@ fun getTimerTimeString(duration: Duration): AnnotatedString {
 //}
 
 fun getStopWatchTimeString(duration: Duration): AnnotatedString {
-    Log.d("TimeUtil", "getStopWatchTimeString executed")
+//    Log.d("TimeUtil", "getStopWatchTimeString executed")
 
     val hours = duration.toHours()
     val minutes = (duration.toMinutes() % 60).toInt()

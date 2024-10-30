@@ -64,29 +64,17 @@ import java.time.temporal.ChronoUnit
 //    }
 //}
 
-fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: List<WiD>): List<WiD> {
+fun getFullWiDListFromWiDList(
+    date: LocalDate, // 조회 날짜
+    wiDList: List<WiD>,
+    today: LocalDate, // date가 today면 다르게 동작하도록 함.
+    currentTime: LocalTime? // currentTime이 Null이면 다르게 동작함.
+): List<WiD> {
     Log.d("WiDListUtil", "getFullWiDListFromWiDList executed")
 
+    if (wiDList.isEmpty()) { return emptyList() }
+
     val fullWiDList = mutableListOf<WiD>()
-
-    if (wiDList.isEmpty()) {
-        val start = LocalTime.MIN
-        val finish = LocalTime.MAX
-
-        val emptyWiD = WiD(
-            id = "",
-            date = date,
-            title = "",
-            start = LocalTime.MIN,
-            finish = LocalTime.MAX,
-            duration = Duration.between(start, finish)
-        )
-
-        fullWiDList.add(emptyWiD)
-
-        return fullWiDList
-    }
-
 
     var emptyWiDStart = LocalTime.MIN
 
@@ -98,17 +86,17 @@ fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: 
             emptyWiDStart = currentWiD.finish
 
             fullWiDList.add(currentWiD)
-
             continue
         }
 
         val emptyWiD = WiD(
-            id = "",
+            id = "newWiD",
             date = date,
-            title = "",
+            title = "기록 없음",
             start = emptyWiDStart,
             finish = emptyWiDFinish,
-            duration = Duration.between(emptyWiDStart, emptyWiDFinish)
+            duration = Duration.between(emptyWiDStart, emptyWiDFinish),
+            createdBy = CurrentTool.LIST
         )
 
         fullWiDList.add(emptyWiD)
@@ -117,33 +105,46 @@ fun getFullWiDListFromWiDList(date: LocalDate, currentTime: LocalTime, wiDList: 
         emptyWiDStart = currentWiD.finish
     }
 
-    // 빈 WiD가 오늘 날짜의 현재 시간을 넘어가지 않도록함.
-    val today = LocalDate.now()
-    val endOfDay = if (date == today) {
-        currentTime
-    } else {
-        LocalTime.MAX
-    }
+    if (date == today) { // 오늘 날짜 조회
+        if (currentTime == null) { // 도구 시작 상태
+            return fullWiDList
+        } else { // 도구 정지 및 중지 상태
+            val lastWiD = WiD(
+                id = "lastNewWiD",
+                date = today,
+                title = "기록 없음",
+                start = emptyWiDStart,
+                finish = currentTime,
+                duration = Duration.between(emptyWiDStart, currentTime),
+                createdBy = CurrentTool.LIST
+            )
+            fullWiDList.add(lastWiD)
 
-    // equals()에 의해서 나노 세컨드 값까지 비교가되므로, 나노세컨드 단위를 버리고 비교함.
-    return if (emptyWiDStart.truncatedTo(ChronoUnit.SECONDS).equals(endOfDay.truncatedTo(ChronoUnit.SECONDS))) {
-        fullWiDList
-    } else { // 마지막 빈 WiD 추가
-        val lastEmptyWiD = WiD(
-            id = "",
-            date = date,
-            title = "",
-            start = emptyWiDStart,
-            finish = endOfDay,
-            duration = Duration.between(emptyWiDStart, endOfDay)
-        )
-        fullWiDList.add(lastEmptyWiD)
+            return fullWiDList
+        }
+    } else { // 오늘 아닌 날짜 조회
+        val maxTime = LocalTime.MAX.withNano(0)
+        val emptyWiDDuration = Duration.between(emptyWiDStart, maxTime)
+        if (Duration.ZERO < emptyWiDDuration) { // 마지막 WiD의 소요 시간이 있으면 추가
+            val emptyWiD = WiD(
+                id = "newWiD",
+                date = date,
+                title = "기록 없음",
+                start = emptyWiDStart,
+                finish = maxTime,
+                duration = emptyWiDDuration,
+                createdBy = CurrentTool.LIST
+            )
+            fullWiDList.add(emptyWiD)
+        }
 
-        fullWiDList
+        return fullWiDList
     }
 }
 
 fun getTitlePercentageOfDay(duration: Duration): Float {
+//    Log.d("WiDListUtil", "getTitlePercentageOfDay executed")
+
     // 하루의 총 초
     val totalSecondsInDay = 24 * 60 * 60
 
@@ -156,23 +157,23 @@ fun getTitlePercentageOfDay(duration: Duration): Float {
     return percentage
 }
 
-fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
-    Log.d("WiDListUtil", "getTotalDurationFromWiDList executed")
-
-    return wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO
-}
-
-fun getTotalDurationPercentageFromWiDList(wiDList: List<WiD>): Int {
-    Log.d("WiDListUtil", "getTotalDurationPercentageFromWiDList executed")
-
-    val totalMinutes = 24 * 60 // 1440분 (24시간)
-    val totalDuration = (wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO).toMinutes().toInt()
-
-    return (totalDuration * 100) / totalMinutes
-}
+//fun getTotalDurationFromWiDList(wiDList: List<WiD>): Duration {
+//    Log.d("WiDListUtil", "getTotalDurationFromWiDList executed")
+//
+//    return wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO
+//}
+//
+//fun getTotalDurationPercentageFromWiDList(wiDList: List<WiD>): Int {
+//    Log.d("WiDListUtil", "getTotalDurationPercentageFromWiDList executed")
+//
+//    val totalMinutes = 24 * 60 // 1440분 (24시간)
+//    val totalDuration = (wiDList.map { it.duration }.reduceOrNull(Duration::plus) ?: Duration.ZERO).toMinutes().toInt()
+//
+//    return (totalDuration * 100) / totalMinutes
+//}
 
 fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
-    Log.d("WiDListUtil", "getTotalDurationMapByTitle executed")
+//    Log.d("WiDListUtil", "getTotalDurationMapByTitle executed")
 
     val result = mutableMapOf<String, Duration>()
 
@@ -196,29 +197,29 @@ fun getTotalDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
     return sortedResult.associate { it.toPair() }
 }
 
-fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
-    Log.d("WiDListUtil", "getTotalDurationMapByDate executed")
-
-    val result = mutableMapOf<LocalDate, Duration>()
-
-    for (wiD in wiDList) {
-        val date = wiD.date
-        val duration = wiD.duration
-
-        // 날짜 별로 소요 시간을 누적
-        val totalDuration = result[date]
-        if (totalDuration != null) {
-            result[date] = totalDuration.plus(duration)
-        } else {
-            result[date] = duration
-        }
-    }
-
-    return result
-}
+//fun getTotalDurationMapByDate(wiDList: List<WiD>): Map<LocalDate, Duration> {
+//    Log.d("WiDListUtil", "getTotalDurationMapByDate executed")
+//
+//    val result = mutableMapOf<LocalDate, Duration>()
+//
+//    for (wiD in wiDList) {
+//        val date = wiD.date
+//        val duration = wiD.duration
+//
+//        // 날짜 별로 소요 시간을 누적
+//        val totalDuration = result[date]
+//        if (totalDuration != null) {
+//            result[date] = totalDuration.plus(duration)
+//        } else {
+//            result[date] = duration
+//        }
+//    }
+//
+//    return result
+//}
 
 fun getAverageDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
-    Log.d("WiDListUtil", "getAverageDurationMapByTitle executed")
+//    Log.d("WiDListUtil", "getAverageDurationMapByTitle executed")
 
     val result = mutableMapOf<String, Duration>()
 
@@ -249,7 +250,7 @@ fun getAverageDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
 }
 
 fun getMinDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
-    Log.d("WiDListUtil", "getMinDurationMapByTitle executed")
+//    Log.d("WiDListUtil", "getMinDurationMapByTitle executed")
 
     val result = mutableMapOf<String, Duration>()
 
@@ -279,7 +280,7 @@ fun getMinDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
 }
 
 fun getMaxDurationMapByTitle(wiDList: List<WiD>): Map<String, Duration> {
-    Log.d("WiDListUtil", "getMaxDurationMapByTitle executed")
+//    Log.d("WiDListUtil", "getMaxDurationMapByTitle executed")
 
     val result = mutableMapOf<String, Duration>()
 

@@ -13,34 +13,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 
 /**
- * 라이트 모드, 다크 모드에서 변경되어야 하는 색상을 아래에 작성함. 변경 없는 색은 직접 가져가서 사용함.
- * 이름은 의미 없고, 색상만 보면 됨.
- *
- * primary           -> Black-White
- * secondary         -> White-Black
- * tertiary          -> LightGray-Gray
- * surface           -> AppIndigo-AppYellow
- * inverseSurface    -> AppYellow-AppIndigo
- *
  * 안드로이드 및 iOS 모두 다크 모드일 때 배경, 텍스트, 아이콘의 색을 자동으로 변경해줌.
- * 하지만 안드로이드는 라이트 모드, 다크 모드에 적용되는 기본 색이 흰 색, 검은 색이 아니기 때문에 명시적으로 흰 색과 검은 색을 지정해줌.
  */
-//private val LightColorScheme = lightColorScheme(
-//    primary = Black,
-//    secondary = White,
-//    tertiary = LightGray,
-//    surface = AppIndigo,
-//    inverseSurface = AppYellow
-//)
-//
-//private val DarkColorScheme = darkColorScheme(
-//    primary = White,
-//    secondary = Black,
-//    tertiary = Gray,
-//    surface = AppYellow,
-//    inverseSurface = AppIndigo
-//)
-
 private val LightColorScheme = lightColorScheme(
     primary = light_primary,                             // 1
     onPrimary = light_on_primary,                        // 2
@@ -49,7 +23,7 @@ private val LightColorScheme = lightColorScheme(
     inversePrimary = light_inverse_primary,              // 5
     secondary = light_secondary,                         // 6
     onSecondary = light_on_secondary,                    // 7
-    secondaryContainer = light_secondary_container,      // 8
+    secondaryContainer = light_secondary_container,      // 8 ("기록 없음" 색상)
     onSecondaryContainer = light_on_secondary_container, // 9
     tertiary = light_tertiary,                           // 10
     onTertiary = light_on_tertiary,                      // 11

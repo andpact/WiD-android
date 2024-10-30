@@ -12,6 +12,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -33,22 +34,23 @@ class UserRepository @Inject constructor(
     private val EMAIL = "email"
     private val SIGNED_UP_ON = "signedUpOn"
 
-    private val CURRENT_TITLE = "currentTitle"
-    private val CURRENT_TOOL = "currentTool"
-    private val CURRENT_TOOL_STATE = "currentToolState"
-    private val STOPWATCH_START_TIME = "stopwatchStartTime"
-    private val STOPWATCH_PREV_DURATION = "stopwatchPrevDuration"
-    private val TIMER_START_TIME = "timerStartTime"
-    private val TIMER_NEXT_SELECTED_TIME = "timerNextSelectedTime"
+//    private val CURRENT_TITLE = "currentTitle"
+//    private val CURRENT_TOOL = "currentTool"
+//    private val CURRENT_TOOL_STATE = "currentToolState"
+//    private val STOPWATCH_START_TIME = "stopwatchStartTime"
+//    private val STOPWATCH_PREV_DURATION = "stopwatchPrevDuration"
+//    private val TIMER_START_TIME = "timerStartTime"
+//    private val TIMER_NEXT_SELECTED_TIME = "timerNextSelectedTime"
 
     private val LEVEL = "level"
     private val LEVEL_UP_HISTORY_MAP = "levelUpHistoryMap"
     private val CURRENT_EXP = "currentExp"
-    private val TOTAL_EXP = "totalExp"
     private val WID_TOTAL_EXP = "wiDTotalExp"
 
-    private val TITLE_COUNT_MAP = "titleCountMap"
-    private val TITLE_DURATION_MAP = "titleDurationMap"
+    private val WID_TITLE_COUNT_MAP = "wiDTitleCountMap"
+    private val WID_TITLE_DURATION_MAP = "wiDTitleDurationMap"
+    private val WID_TOOL_COUNT_MAP = "wiDToolCountMap"
+    private val WID_TOOL_DURATION_MAP = "wiDToolDurationMap"
 
     init { Log.d(TAG, "created") }
     protected fun finalize() { Log.d(TAG, "destroyed") }
@@ -69,7 +71,7 @@ class UserRepository @Inject constructor(
 
     fun sendAuthenticationLinkToEmail(
         email: String,
-        onAuthenticationLinkSentToEmail: (Boolean) -> Unit
+        onAuthenticationLinkSentToEmail: (authenticationLinkSentToEmail: Boolean) -> Unit
     ) {
         Log.d(TAG, "sendAuthenticationLinkToEmail executed")
 
@@ -97,7 +99,7 @@ class UserRepository @Inject constructor(
     fun verifyAuthenticationLink(
         email: String,
         dynamicLink: String?,
-        onAuthenticationLinkVerified: (Boolean) -> Unit
+        onAuthenticationLinkVerified: (authenticationLinkVerified: Boolean) -> Unit
     ) {
         Log.d(TAG, "verifyAuthenticationLink executed")
 
@@ -119,7 +121,7 @@ class UserRepository @Inject constructor(
     private fun signInWithEmailLink(
         email: String,
         dynamicLink: String,
-        onSignedInWithEmailLink: (Boolean) -> Unit
+        onSignedInWithEmailLink: (signedInWithEmailLink: Boolean) -> Unit
     ) {
         auth.signInWithEmailLink(email, dynamicLink)
             .addOnCompleteListener { task ->
@@ -151,16 +153,16 @@ class UserRepository @Inject constructor(
      */
     fun getUser(
         email: String,
-        onUserFetched: (User?) -> Unit
+        onUserFetched: (user: User?) -> Unit
     ) {
         Log.d(TAG, "getUser executed")
 
         firestore.collection(USER_COLLECTION)
             .whereEqualTo(EMAIL, email)
             .get()
-            .addOnSuccessListener { documents ->
+            .addOnSuccessListener { querySnapshot: QuerySnapshot ->
                 // 회원 가입 시 새로운 문서를 생성함.
-                if (documents.isEmpty) {
+                if (querySnapshot.isEmpty) {
                     createUser(
                         email = email,
                         onUserCreated = { user: User? ->
@@ -169,7 +171,7 @@ class UserRepository @Inject constructor(
                     )
                 } else { // 문서가 존재할 때만 변환 작업을 수행합니다.
                     getExistingUser(
-                        documentSnapshot = documents.documents[0],
+                        documentSnapshot = querySnapshot.documents[0],
                         onUserFetched = { user: User? ->
                             onUserFetched(user)
                         }
@@ -183,74 +185,33 @@ class UserRepository @Inject constructor(
             }
     }
 
-//    fun addSnapshotListenerToUserDocument(
-//        email: String,
-//        onUserDocumentChanged: (User?) -> Unit
-//    ) {
-//        Log.d(TAG, "addSnapshotListenerToUserDocument executed")
-//
-//        firestore.collection(USER_COLLECTION)
-//            .document(email)
-//            .addSnapshotListener { documentSnapshot, e ->
-//                if (e != null) {
-//                    Log.w(TAG, "Listen failed.", e)
-//                    return@addSnapshotListener
-//                }
-//
-//                if (documentSnapshot != null && documentSnapshot.exists()) {
-//                    getExistingUser(
-//                        documentSnapshot = documentSnapshot,
-//                        onUserFetched = { user: User? ->
-//                            onUserDocumentChanged(user)
-//                        }
-//                    )
-//                } else {
-//                    onUserDocumentChanged(null)
-//                }
-//            }
-//    }
-
     private fun createUser(
         email: String,
-        onUserCreated: (User?) -> Unit
+        onUserCreated: (user: User?) -> Unit
     ) {
         Log.d(TAG, "createUser executed")
 
         val today = LocalDate.now()
         val todayAsString = today.toString()
 
-        val defaultCurrentTitle = titleNumberStringList[0]
-        val defaultCurrentToolAsString = CurrentTool.NONE.name
-        val defaultCurrentToolStateAsString = CurrentToolState.STOPPED.name
-
-        val defaultStopwatchStartTimeAsTimestamp = Timestamp(Date.from(LocalTime.MIN.atDate(LocalDate.MIN).atZone(ZoneId.systemDefault()).toInstant()))
-        val defaultStopwatchPrevDurationAsInt = 0
-        val defaultTimerStartTimeAsTimestamp = Timestamp(Date.from(LocalTime.MIN.atDate(LocalDate.MIN).atZone(ZoneId.systemDefault()).toInstant()))
-        val defaultTimerSelectedTimesAsInt = 0
-
-        val defaultLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(defaultLevelUpHistoryMap)
-        val defaultTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(defaultTitleNumberStringToTitleDurationMap)
+        val defaultLevelToDateMapForServer = convertLevelToDateMapForServer(defaultLevelToDateMap)
+        val defaultTitleDurationMapAsInt = convertTitleToDurationMapForServer(defaultTitleToDurationMap)
+        val defaultToolCountMapAsString = convertToolToCountMapForServer(defaultToolToCountMap)
+        val defaultToolDurationMapAsString = convertToolToDurationMapForServer(defaultToolToDurationMap)
 
         val newUserDocument = hashMapOf(
             EMAIL to email,
             SIGNED_UP_ON to todayAsString,
 
-            CURRENT_TITLE to defaultCurrentTitle,
-            CURRENT_TOOL to defaultCurrentToolAsString,
-            CURRENT_TOOL_STATE to defaultCurrentToolStateAsString,
-            STOPWATCH_START_TIME to defaultStopwatchStartTimeAsTimestamp,
-            STOPWATCH_PREV_DURATION to defaultStopwatchPrevDurationAsInt,
-            TIMER_START_TIME to defaultTimerStartTimeAsTimestamp,
-            TIMER_NEXT_SELECTED_TIME to defaultTimerSelectedTimesAsInt,
-
             LEVEL to 1,
-            LEVEL_UP_HISTORY_MAP to defaultLevelUpHistoryMapAsString,
+            LEVEL_UP_HISTORY_MAP to defaultLevelToDateMapForServer,
             CURRENT_EXP to 0,
-            TOTAL_EXP to 0,
             WID_TOTAL_EXP to 0,
 
-            TITLE_COUNT_MAP to defaultTitleNumberStringToTitleCountMap,
-            TITLE_DURATION_MAP to defaultTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to defaultTitleToCountMap,
+            WID_TITLE_DURATION_MAP to defaultTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to defaultToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to defaultToolDurationMapAsString,
         )
 
         firestore.collection(USER_COLLECTION)
@@ -261,23 +222,17 @@ class UserRepository @Inject constructor(
                 val newUser = User(
                     email = email,
                     signedUpOn = today,
-
-                    currentTitle = defaultCurrentTitle,
-                    currentTool = CurrentTool.NONE,
-                    currentToolState = CurrentToolState.STOPPED,
-                    stopwatchStartTime = LocalTime.MIN,
-                    stopwatchPrevDuration = Duration.ZERO,
-                    timerStartTime = LocalTime.MIN,
-                    timerNextSelectedTime = Duration.ZERO,
-
+                    // 레벨
                     level = 1,
-                    levelUpHistoryMap = defaultLevelUpHistoryMap,
+                    levelUpHistoryMap = defaultLevelToDateMap,
+                    // 경험치
                     currentExp = 0,
-                    totalExp = 0,
                     wiDTotalExp = 0,
-
-                    titleCountMap = defaultTitleNumberStringToTitleCountMap,
-                    titleDurationMap = defaultTitleNumberStringToTitleDurationMap
+                    // 제목
+                    wiDTitleCountMap = defaultTitleToCountMap,
+                    wiDTitleDurationMap = defaultTitleToDurationMap,
+                    wiDToolCountMap = defaultToolToCountMap,
+                    wiDToolDurationMap = defaultToolToDurationMap
                 )
 
                 onUserCreated(newUser)
@@ -290,63 +245,44 @@ class UserRepository @Inject constructor(
 
     private fun getExistingUser(
         documentSnapshot: DocumentSnapshot,
-        onUserFetched: (User?) -> Unit
+        onUserFetched: (user: User?) -> Unit
     ) {
         Log.d(TAG, "getExistingUser executed")
 
         val userEmail = documentSnapshot.getString(EMAIL) ?: ""
-
         val signedUpOn = LocalDate.parse(documentSnapshot.getString(SIGNED_UP_ON))
 
-        val currentTitle = documentSnapshot.getString(CURRENT_TITLE) ?: "0"
-
-        val currentTool = CurrentTool.valueOf(documentSnapshot.getString(CURRENT_TOOL) ?: "NONE")
-        val currentToolState = CurrentToolState.valueOf(documentSnapshot.getString(CURRENT_TOOL_STATE) ?: "STOPPED")
-
-        val stopwatchStartTimeAsTimestamp = documentSnapshot.getTimestamp(STOPWATCH_START_TIME)
-        val stopwatchStartTimeAsLocalTime = stopwatchStartTimeAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-
-        val stopwatchPrevDurationAsLong = documentSnapshot.getLong(STOPWATCH_PREV_DURATION) ?: 0L
-        val stopwatchPrevDurationAsDuration = Duration.ofSeconds(stopwatchPrevDurationAsLong)
-
-        val timerStartTimeAsTimestamp = documentSnapshot.getTimestamp(TIMER_START_TIME)
-        val timerStartTimeAsLocalTime = timerStartTimeAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-
-        val timerNextSelectedTimeAsLong = documentSnapshot.getLong(TIMER_NEXT_SELECTED_TIME) ?: 0L
-        val timerNextSelectedTimeAsDuration = Duration.ofSeconds(timerNextSelectedTimeAsLong)
-
+        // 레벨
         val level = documentSnapshot.getLong(LEVEL)?.toInt() ?: 1
-        val levelUpHistoryMapAsString = documentSnapshot.get(LEVEL_UP_HISTORY_MAP) as? HashMap<String, String> ?: convertLevelUpHistoryMapToString(defaultLevelUpHistoryMap)
-        val levelUpHistoryMapAsLocalDate = convertLevelUpHistoryMapToLocalDate(levelUpHistoryMapAsString)
+        val levelUpHistoryMapAsString = documentSnapshot.get(LEVEL_UP_HISTORY_MAP) as? HashMap<String, String> ?: convertLevelToDateMapForServer(defaultLevelToDateMap)
+        val levelUpHistoryMapAsLocalDate = convertLevelToDateMapForClient(levelUpHistoryMapAsString)
 
+        // 경험치
         val currentExp = documentSnapshot.getLong(CURRENT_EXP)?.toInt() ?: 0
-        val totalExp = documentSnapshot.getLong(TOTAL_EXP)?.toInt() ?: 0
         val wiDTotalExp = documentSnapshot.getLong(WID_TOTAL_EXP)?.toInt() ?: 0
 
-        val titleCountMap = documentSnapshot.get(TITLE_COUNT_MAP) as? HashMap<String, Int> ?: defaultTitleNumberStringToTitleCountMap
-        val titleDurationMapAsInt = documentSnapshot.get(TITLE_DURATION_MAP) as? HashMap<String, Int> ?: convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(defaultTitleNumberStringToTitleDurationMap)
-        val titleDurationMapAsDuration = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(titleDurationMapAsInt)
+        // 제목
+        val titleCountMap = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: defaultTitleToCountMap
+        val titleDurationMapAsInt = documentSnapshot.get(WID_TITLE_DURATION_MAP) as? HashMap<String, Int> ?: convertTitleToDurationMapForServer(defaultTitleToDurationMap)
+        val titleDurationMapAsDuration = convertTitleToDurationMapForClient(titleDurationMapAsInt)
+        val toolCountMapAsString = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: convertToolToCountMapForServer(defaultToolToCountMap)
+        val toolCountMapAsCurrentTool = convertToolToCountMapForClient(toolCountMapAsString)
+        val toolDurationMapAsString = documentSnapshot.get(WID_TOOL_DURATION_MAP) as? HashMap<String, Int> ?: convertToolToDurationMapForServer(defaultToolToDurationMap)
+        val toolDurationMapAsCurrentTool = convertToolToDurationMapForClient(toolDurationMapAsString)
 
         val user = User(
             email = userEmail,
             signedUpOn = signedUpOn,
 
-            currentTitle = currentTitle,
-            currentTool = currentTool,
-            currentToolState = currentToolState,
-            stopwatchStartTime = stopwatchStartTimeAsLocalTime,
-            stopwatchPrevDuration = stopwatchPrevDurationAsDuration,
-            timerStartTime = timerStartTimeAsLocalTime,
-            timerNextSelectedTime = timerNextSelectedTimeAsDuration,
-
             level = level,
             levelUpHistoryMap = levelUpHistoryMapAsLocalDate,
             currentExp = currentExp,
-            totalExp = totalExp,
             wiDTotalExp = wiDTotalExp,
 
-            titleCountMap = titleCountMap,
-            titleDurationMap = titleDurationMapAsDuration,
+            wiDTitleCountMap = titleCountMap,
+            wiDTitleDurationMap = titleDurationMapAsDuration,
+            wiDToolCountMap = toolCountMapAsCurrentTool,
+            wiDToolDurationMap = toolDurationMapAsCurrentTool
         )
 
         onUserFetched(user)
@@ -362,331 +298,216 @@ class UserRepository @Inject constructor(
 
 //    }
 
-    fun startStopwatch(
-        email: String,
-        newCurrentTitle: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
-        newStopwatchStartDate: LocalDate,
-        newStopwatchStartTime: LocalTime,
-        onStopwatchStarted: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "startStopwatch executed")
-
-        val stopwatchStartTimeAsTimestamp = Timestamp(Date.from(newStopwatchStartTime.atDate(newStopwatchStartDate).atZone(ZoneId.systemDefault()).toInstant()))
-
-        val data = hashMapOf(
-            CURRENT_TITLE to newCurrentTitle,
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            STOPWATCH_START_TIME to stopwatchStartTimeAsTimestamp
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onStopwatchStarted(updateResult)
-            }
-        )
-    }
-
     fun pauseStopwatch(
         email: String,
-        newCurrentToolState: CurrentToolState,
-        newStopwatchPrevDuration: Duration,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        onStopwatchPaused: (Boolean) -> Unit
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
+        onStopwatchPaused: (stopwatchPaused: Boolean) -> Unit
     ) {
         Log.d(TAG, "pauseStopwatch executed")
 
-        val newStopwatchPrevDurationAsInt = newStopwatchPrevDuration.seconds.toInt()
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            STOPWATCH_PREV_DURATION to newStopwatchPrevDurationAsInt,
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
 
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onStopwatchPaused(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onStopwatchPaused(userUpdated)
+//            }
+//        )
     }
 
     fun pauseStopwatchWithLevelUp(
         email: String,
-        newCurrentToolState: CurrentToolState,
-        newStopwatchPrevDuration: Duration,
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onStopwatchPausedWithLevelUp: (Boolean) -> Unit
     ) {
         Log.d(TAG, "pauseStopwatchWithLevelUp executed")
 
-        val newStopwatchPrevDurationAsInt = newStopwatchPrevDuration.seconds.toInt()
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            STOPWATCH_PREV_DURATION to newStopwatchPrevDurationAsInt,
+        val updatedUserDocument = hashMapOf(
             LEVEL to newLevel, // 레벨 업
             LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString, // 레벨 업
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
 
         updateUserDocument(
             email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onStopwatchPausedWithLevelUp(updateResult)
-            }
-        )
-    }
-
-    fun stopStopwatch(
-        email: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
-        onStopwatchStopped: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "stopStopwatch executed")
-
-        val data = hashMapOf(
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            STOPWATCH_PREV_DURATION to 0 // 파라미터로 받을 필요 없이 초기화 해줌.
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onStopwatchStopped(updateResult)
-            }
-        )
-    }
-
-    fun startTimer(
-        email: String,
-        newCurrentTitle: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
-        newTimerStartDate: LocalDate,
-        newTimerStartTime: LocalTime,
-        onTimerStarted: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "startTimer executed")
-
-        val newTimerStartTimeAsTimestamp = Timestamp(Date.from(newTimerStartTime.atDate(newTimerStartDate).atZone(ZoneId.systemDefault()).toInstant()))
-
-        val data = hashMapOf(
-            CURRENT_TITLE to newCurrentTitle,
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_START_TIME to newTimerStartTimeAsTimestamp
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerStarted(updateResult)
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onStopwatchPausedWithLevelUp(userUpdated)
             }
         )
     }
 
     fun pauseTimer(
         email: String,
-        newCurrentToolState: CurrentToolState,
-        newTimerNextSelectedTime: Duration,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onTimerPaused: (Boolean) -> Unit
     ) {
         Log.d(TAG, "pauseTimer executed")
 
-        val newTimerNextSelectedTimeAsInt = newTimerNextSelectedTime.seconds.toInt()
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_NEXT_SELECTED_TIME to newTimerNextSelectedTimeAsInt,
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerPaused(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onTimerPaused(userUpdated)
+//            }
+//        )
     }
 
     fun pauseTimerWithLevelUp(
         email: String,
-        newCurrentToolState: CurrentToolState,
-        newTimerNextSelectedTime: Duration,
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onTimerPausedWithLevelUp: (Boolean) -> Unit
     ) {
         Log.d(TAG, "pauseTimerWithLevelUp executed")
 
-        val newTimerNextSelectedTimeAsInt = newTimerNextSelectedTime.seconds.toInt()
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_NEXT_SELECTED_TIME to newTimerNextSelectedTimeAsInt,
+        val updatedUserDocument = hashMapOf(
             LEVEL to newLevel,
             LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
 
         updateUserDocument(
             email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerPausedWithLevelUp(updateResult)
-            }
-        )
-    }
-
-    fun stopTimer(
-        email: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
-        onTimerStopped: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "stopTimer executed")
-
-        val data = hashMapOf(
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_NEXT_SELECTED_TIME to 0 // 파라미터로 받을 필요 없이 초기화 해줌.
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerStopped(updateResult)
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onTimerPausedWithLevelUp(userUpdated)
             }
         )
     }
 
     fun autoStopTimer(
         email: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onTimerAutoStopped: (Boolean) -> Unit
     ) {
         Log.d(TAG, "autoStopTimer executed")
 
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_NEXT_SELECTED_TIME to 0, // 파라미터로 받을 필요 없이 초기화 해줌.
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerAutoStopped(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onTimerAutoStopped(userUpdated)
+//            }
+//        )
     }
 
     fun autoStopTimerWithLevelUp(
         email: String,
-        newCurrentTool: CurrentTool,
-        newCurrentToolState: CurrentToolState,
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onTimerAutoStoppedWithLevelUp: (Boolean) -> Unit
     ) {
         Log.d(TAG, "autoStopTimerWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
-            CURRENT_TOOL to newCurrentTool.name,
-            CURRENT_TOOL_STATE to newCurrentToolState.name,
-            TIMER_NEXT_SELECTED_TIME to 0, // 파라미터로 받을 필요 없이 초기화 해줌.
+        val updatedUserDocument = hashMapOf(
             LEVEL to newLevel,
             LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
 
         updateUserDocument(
             email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onTimerAutoStoppedWithLevelUp(updateResult)
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onTimerAutoStoppedWithLevelUp(userUpdated)
             }
         )
     }
@@ -694,29 +515,34 @@ class UserRepository @Inject constructor(
     fun createWiD(
         email: String,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
+        newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onCreatedWiD: (Boolean) -> Unit
     ) {
         Log.d(TAG, "createWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onCreatedWiD(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onCreatedWiD(userUpdated)
+//            }
+//        )
     }
 
     fun createdWiDWithLevelUp(
@@ -724,31 +550,35 @@ class UserRepository @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
+        newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onCreatedWiDWithLevelUp: (Boolean) -> Unit
     ) {
         Log.d(TAG, "createdWiDWithLevelUp executed")
 
+        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
-
-        val data = hashMapOf(
+        val updatedUserDocument = hashMapOf(
             LEVEL to newLevel,
             LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
 
         updateUserDocument(
             email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onCreatedWiDWithLevelUp(updateResult)
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onCreatedWiDWithLevelUp(userUpdated)
             }
         )
     }
@@ -756,62 +586,31 @@ class UserRepository @Inject constructor(
     fun updateWiD(
         email: String,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
+        newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onWiDUpdated: (Boolean) -> Unit
     ) {
         Log.d(TAG, "updateWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
 
-        val data = hashMapOf(
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_DURATION_MAP to ,
         )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onWiDUpdated(updateResult)
-            }
-        )
-    }
-
-    fun updateWiDWithLevelDown(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newTotalExp: Int,
-        newWiDTotalExp: Int,
-        newTitleDurationMap: Map<String, Duration>,
-        onWiDUpdatedWithLevelDown: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "updateWiDWithLevelDown executed")
-
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
-
-        val data = hashMapOf(
-            LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
-            CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onWiDUpdatedWithLevelDown(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onWiDUpdated(userUpdated)
+//            }
+//        )
     }
 
     fun updateWiDWithLevelUp(
@@ -819,30 +618,32 @@ class UserRepository @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
+        newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
         onWiDUpdatedWithLevelUp: (Boolean) -> Unit
     ) {
         Log.d(TAG, "updateWiDWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
 
-        val data = hashMapOf(
+        val updatedUserDocument = hashMapOf(
             LEVEL to newLevel,
             LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_DURATION_MAP to ,
         )
 
         updateUserDocument(
             email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onWiDUpdatedWithLevelUp(updateResult)
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onWiDUpdatedWithLevelUp(userUpdated)
             }
         )
     }
@@ -850,83 +651,51 @@ class UserRepository @Inject constructor(
     fun deleteWiD(
         email: String,
         newCurrentExp: Int,
-        newTotalExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        onWiDDeleted: (Boolean) -> Unit
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>,
+        onWiDDeleted: (wiDDeleted: Boolean) -> Unit
     ) {
         Log.d(TAG, "deleteWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
+        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
 
-        val data = hashMapOf(
+        val updatedUserDocument = hashMapOf(
             CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
             WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
+            WID_TITLE_COUNT_MAP to newTitleCountMap,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
+            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
+            WID_TOOL_DURATION_MAP to ,
         )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onWiDDeleted(updateResult)
-            }
-        )
-    }
-
-    fun deleteWiDWithLevelDown(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newTotalExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<String, Int>,
-        newTitleDurationMap: Map<String, Duration>,
-        onWiDDeletedWithLevelDown: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "deleteWiDWithLevelDown executed")
-
-        val newLevelUpHistoryMapAsString = convertLevelUpHistoryMapToString(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleNumberStringToTitleDurationMapToTitleNumberStringToTitleIntMap(newTitleDurationMap)
-
-        val data = hashMapOf(
-            LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
-            CURRENT_EXP to newCurrentExp,
-            TOTAL_EXP to newTotalExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-            TITLE_COUNT_MAP to newTitleCountMap,
-            TITLE_DURATION_MAP to newTitleDurationMapAsInt
-        )
-
-        updateUserDocument(
-            email = email,
-            data = data,
-            onUpdateResult = { updateResult: Boolean ->
-                onWiDDeletedWithLevelDown(updateResult)
-            }
-        )
+        /** 복구!! */
+//        updateUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onUserUpdated = { userUpdated: Boolean ->
+//                onWiDDeleted(userUpdated)
+//            }
+//        )
     }
 
     private fun updateUserDocument(
         email: String,
-        data: Map<String, Any>,
-        onUpdateResult: (Boolean) -> Unit
+        updatedUserDocument: Map<String, Any>,
+        onUserUpdated: (Boolean) -> Unit
     ) {
         firestore.collection(USER_COLLECTION)
             .document(email)
-            .set(data)
+            .set(updatedUserDocument)
             .addOnSuccessListener {
                 Log.d(TAG, "DocumentSnapshot successfully updated!")
-                onUpdateResult(true)
+                onUserUpdated(true)
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error updating document", e)
-                onUpdateResult(false)
+                onUserUpdated(false)
             }
     }
 
@@ -942,40 +711,6 @@ class UserRepository @Inject constructor(
 //            }
 //            .addOnFailureListener {
 //                e -> Log.w(TAG, "Error updating document", e)
-//            }
-//    }
-
-    // 인증 단계에서 사용하는 메서드니까 인증 이후에 사용되는 정보에 대해서는 반환하면 안됨.
-//    private fun isEmailAlreadySignedUp(email: String, isSignedUp: (Boolean) -> Unit) {
-//        Log.d(TAG, "isEmailAlreadySignedUp executed")
-//
-//        // 가입을 확인할 수단이 email 밖에 없음.
-////        firestore.collection(COLLECTION)
-////            .whereEqualTo("email", email)
-////            .get()
-////            .addOnSuccessListener { documents -> // 문서를 여러 개 가져오도록 동작하지만, email이 key이기 때문에, 하나의 문서만 가져올 수 있음.
-////                // 문서가 존재하면 이미 가입된 이메일이고, 그렇지 않으면 가입되지 않은 이메일입니다.
-////                isSignedUp(!documents.isEmpty)
-////            }
-////            .addOnFailureListener { exception ->
-////                Log.w(TAG, "Error getting documents: ", exception)
-////                // 오류가 발생하면 기본적으로 가입되지 않은 상태로 처리합니다.
-////                isSignedUp(false)
-////            }
-//
-//        auth.fetchSignInMethodsForEmail(email)
-//            .addOnSuccessListener { result ->
-//                /**
-//                 * Firebase -> Authentication -> 설정 -> 사용자 작업 -> 이메일 열거 보호(권장) - 체크 해제해야 signInMethods 가져올 수 있음.
-//                 */
-//                val signInMethods = result.signInMethods!!
-//
-//                isSignedUp(signInMethods.isNotEmpty())
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.e(TAG, "Error getting sign in methods for user", exception)
-//
-//                isSignedUp(false) // 실패 시에도 false를 반환하도록 처리
 //            }
 //    }
 

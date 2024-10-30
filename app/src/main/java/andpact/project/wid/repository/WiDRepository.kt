@@ -1,6 +1,7 @@
 package andpact.project.wid.repository
 
 import andpact.project.wid.model.WiD
+import andpact.project.wid.util.CurrentTool
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -26,145 +27,15 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
     private val START = "start"
     private val FINISH = "finish"
     private val DURATION = "duration"
+    private val CREATED_BY = "createdBy"
 
     init { Log.d(TAG, "created") }
     protected fun finalize() { Log.d(TAG, "destroyed") }
 
-//    private var wiDCollectionListenerRegistrationOfDate: ListenerRegistration? = null
-//    private val wiDCollectionListenerRegistrationList = mutableListOf<ListenerRegistration>()
-//    private val wiDCollectionListenerRegistrationMap = mutableMapOf<LocalDate, ListenerRegistration>()
-
-
-//    fun addSnapshotListenerToWiDCollectionByDate(
-//        email: String,
-//        collectionDate: LocalDate,
-//        onWiDCollectionChanged: (List<WiD>) -> Unit
-//    ) {
-//        Log.d(TAG, "addSnapshotListenerToWiDCollectionByDate executed")
-//
-//        wiDCollectionListenerRegistrationOfDate?.remove()
-//
-//        val collectionDateAsString = collectionDate.toString()
-//
-//        wiDCollectionListenerRegistrationOfDate = firestore.collection(WID_COLLECTION)
-////            .document(email)
-//            .document(TMP_EMAIL)
-//            .collection(collectionDateAsString)
-//            .orderBy(START, Query.Direction.ASCENDING)
-//            .addSnapshotListener { querySnapshot, e ->
-//                if (e != null) {
-//                    Log.w(TAG, "Listen failed.", e)
-//                    return@addSnapshotListener
-//                }
-//
-//                if (querySnapshot != null && !querySnapshot.isEmpty) {
-//                    val wiDList = mutableListOf<WiD>()
-//
-//                    for (document in querySnapshot) {
-//                        val iD = document.id
-//                        val dateAsString = document.getString(DATE)
-//                        val date = LocalDate.parse(dateAsString)
-//                        val title = document.getString(TITLE)!!
-//                        val startAsTimestamp = document.getTimestamp(START)
-//                        val start = startAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                        val finishAsTimestamp = document.getTimestamp(FINISH)
-//                        val finish = finishAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                        val durationAsLong = document.getLong(DURATION)!!
-//                        val duration = Duration.ofSeconds(durationAsLong)
-//
-//                        val wiD = WiD(
-//                            id = iD,
-//                            date = date,
-//                            title = title,
-//                            start = start,
-//                            finish = finish,
-//                            duration = duration
-//                        )
-//
-//                        wiDList.add(wiD)
-//                    }
-//
-//                    onWiDCollectionChanged(wiDList)
-//                } else {
-//                    onWiDCollectionChanged(emptyList()) // 결과가 없으면 빈 리스트 반환
-//                }
-//            }
-//    }
-
-//    fun addSnapshotListenerToWiDCollectionFromFirstDateToLastDate(
-//        email: String,
-//        collectionFirstDate: LocalDate,
-//        collectionLastDate: LocalDate,
-//        onWiDCollectionChanged: (List<WiD>) -> Unit
-//    ) {
-//        Log.d(TAG, "addSnapshotListenerToWiDCollectionFromFirstDateToLastDate executed")
-//
-//        // 기존에 등록된 리스너가 있으면 모두 제거
-//        wiDCollectionListenerRegistrationList.forEach { it.remove() }
-//        wiDCollectionListenerRegistrationList.clear()
-//
-//        // 날짜 범위 내 각 날짜에 대한 리스너 등록
-//        var currentDate = collectionFirstDate
-//        val wiDListFromFirstDateToLastDate = mutableListOf<WiD>()
-//
-//        while (!currentDate.isAfter(collectionLastDate)) {
-//            val collectionDateAsString = currentDate.toString()
-//
-//            val listenerRegistration = firestore.collection(WID_COLLECTION)
-////                .document(email)
-//                .document(TMP_EMAIL)
-//                .collection(collectionDateAsString)
-//                .orderBy(START, Query.Direction.ASCENDING)
-//                .addSnapshotListener { querySnapshot, e ->
-//                    if (e != null) {
-//                        Log.w(TAG, "Listen failed for date: $collectionDateAsString", e)
-//                        return@addSnapshotListener
-//                    }
-//
-//                    if (querySnapshot != null && !querySnapshot.isEmpty) {
-//                        val wiDList = mutableListOf<WiD>()
-//
-//                        for (document in querySnapshot) {
-//                            val iD = document.id
-//                            val dateAsString = document.getString(DATE)
-//                            val date = LocalDate.parse(dateAsString)
-//                            val title = document.getString(TITLE)!!
-//                            val startAsTimestamp = document.getTimestamp(START)
-//                            val start = startAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                            val finishAsTimestamp = document.getTimestamp(FINISH)
-//                            val finish = finishAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                            val durationAsLong = document.getLong(DURATION)!!
-//                            val duration = Duration.ofSeconds(durationAsLong)
-//
-//                            val wiD = WiD(
-//                                id = iD,
-//                                date = date,
-//                                title = title,
-//                                start = start,
-//                                finish = finish,
-//                                duration = duration
-//                            )
-//
-//                            wiDList.add(wiD)
-//                        }
-//
-//                        wiDListFromFirstDateToLastDate.addAll(wiDList)
-//                        onWiDCollectionChanged(wiDListFromFirstDateToLastDate)
-//                    } else {
-//                        onWiDCollectionChanged(wiDListFromFirstDateToLastDate)
-//                    }
-//                }
-//
-//            wiDCollectionListenerRegistrationList.add(listenerRegistration)
-//
-//            currentDate = currentDate.plusDays(1)
-//        }
-//    }
-
     fun createWiD(
         email: String,
         wid: WiD?,
-        onWiDCreated: (String, Boolean) -> Unit
+        onWiDCreated: (createdWiDID: String, wiDCreated: Boolean) -> Unit
     ) {
         if (wid == null) return
 
@@ -185,6 +56,8 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
 
         val durationAsInt = wid.duration.seconds.toInt()
 
+        val createdByAsString = wid.createdBy.name
+
         // id 필드는 제거하지말고, WiD 문서를 가져왔을 떄, 해당 문서의 자동 생성 ID를 할당해서 사용하자.
         val newWiDDocument = hashMapOf(
             ID to "0", // 문서의 필드에는 0을 할당함.
@@ -192,7 +65,8 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             TITLE to title,
             START to startAsTimestamp,
             FINISH to finishAsTimestamp,
-            DURATION to durationAsInt
+            DURATION to durationAsInt,
+            CREATED_BY to createdByAsString
         )
 
         firestore.collection(WID_COLLECTION)
@@ -212,101 +86,10 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             }
     }
 
-    // 컬렉션 때문에 날짜를 파라미터로 전달해야 함.
-//    fun readWiDByID(date: LocalDate, documentID: String): WiD? {
-//        var wid: WiD? = null
-//
-//        db.collection(TAG)
-//            .document(auth.uid!!)
-//            .collection(date.toString())
-//            .document(documentID)
-//            .get()
-//            .addOnSuccessListener { document ->
-//                if (document.exists()) {
-//                    wid = document.toObject(WiD::class.java)
-//                } else {
-//                    Log.d(TAG, "No such document")
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.d(TAG, "get failed with ", exception)
-//            }
-//
-//        // 위의 비동기 작업이 완료될 때까지 기다리는 동안 null을 반환합니다.
-//        return wid
-//    }
-
-//    fun readWiDsByDate(date: LocalDate): List<WiD> {
-//        Log.d(TAG, "readWiDsByDate executed")
-//
-//        val uid = auth.uid!!
-//        val collectionDate = date.toString()
-//
-//        val wiDs = mutableListOf<WiD>()
-//
-////        db.collection(TAG)
-//        val result = db.collection("wids")
-//            .document(uid)
-//            .collection(collectionDate)
-//            .orderBy("start", Query.Direction.ASCENDING) // 시작 시간 기준으로 오름차순 정렬
-//            .get()
-//            .addOnSuccessListener { result ->
-//                Log.d(TAG, "Success getting documents")
-//
-//                for (document in result) {
-////                    val wiD = document.toObject(WiD::class.java)
-//
-//                    // 아래와 같이 직접 가져와서 WiD에 맞게 타입 변환하기 ??
-//                    val documentID = document.getLong("id")!!
-//
-//                    val documentDateString = document.getString("date")
-//                    val documentDate = LocalDate.parse(documentDateString)
-//
-//                    val documentTitle = document.getString("title")!!
-//
-//                    val documentStartTimestamp = document.getTimestamp("start")
-//                    val documentStart = documentStartTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//
-//                    val documentFinishTimestamp = document.getTimestamp("finish")
-//                    val documentFinish = documentFinishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//
-//                    val documentDurationLong = document.getLong("duration")!!
-//                    val documentDuration = Duration.ofSeconds(documentDurationLong)
-//
-//                    val wiD = WiD(
-//                        id = documentID,
-//                        date = documentDate,
-//                        title = documentTitle,
-//                        start = documentStart,
-//                        finish = documentFinish,
-//                        duration = documentDuration
-//                    )
-//
-//                    wiDs.add(wiD)
-//                    Log.d(TAG, "${document.id} => ${document.data}")
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                Log.d(TAG, "Error getting documents: ", exception)
-//            }
-//
-////            .await()
-////
-////        for (document in result) {
-////            val wiD = document.toObject(WiD::class.java)
-////            wiDs.add(wiD)
-////            Log.d(TAG, "${document.id} => ${document.data}")
-////        }
-//
-//        Log.d(TAG, "readWiDsByDate return : $wiDs")
-//
-//        return wiDs
-//    }
-
     fun getWiDListByDate(
         email: String,
         collectionDate: LocalDate,
-        onWiDListFetchedByDate: (List<WiD>) -> Unit
+        onWiDListFetchedByDate: (wiDList: List<WiD>) -> Unit
     ) {
         Log.d(TAG, "getWiDListByDate executed")
 
@@ -333,6 +116,8 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
                     val finish = finishAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
                     val durationAsLong = document.getLong(DURATION)!!
                     val duration = Duration.ofSeconds(durationAsLong)
+                    val createdByAsString = document.getString(CREATED_BY)!!
+                    val createdBy = CurrentTool.valueOf(createdByAsString)
 
                     val wiD = WiD(
                         id = iD,
@@ -340,7 +125,8 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
                         title = title,
                         start = start,
                         finish = finish,
-                        duration = duration
+                        duration = duration,
+                        createdBy = createdBy
                     )
 
                     wiDList.add(wiD)
@@ -356,56 +142,6 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
                 onWiDListFetchedByDate(emptyList()) // 실패할 경우 빈 리스트를 콜백으로 반환
             }
     }
-
-    // 날짜(First -> Last)를 사용해서 컬렉션을 조회하고, 해당 컬렉션 내에 WiD 문서를 시작 시간 기준으로 오름차순 정렬한 후에, 리스트로 만들어서 반환함.
-//    fun readWiDListFromFirstDateToLastDate(email: String, firstDate: LocalDate, lastDate: LocalDate, callback: (List<WiD>) -> Unit) {
-//        val wiDs = mutableListOf<WiD>()
-//
-//        var currentDate = firstDate
-//        while (currentDate <= lastDate) {
-//            val collectionDate = currentDate.toString()
-//
-//            firestore.collection(COLLECTION)
-////                .document(email)
-//                .document(TMPEMAIL)
-//                .collection(collectionDate)
-//                .orderBy("start", Query.Direction.ASCENDING)
-//                .get()
-//                .addOnSuccessListener { result ->
-//                    for (document in result) {
-//                        val documentID = document.id
-//                        val documentDateString = document.getString("date")
-//                        val documentDate = LocalDate.parse(documentDateString)
-//                        val documentTitle = document.getString("title")!!
-//                        val documentStartTimestamp = document.getTimestamp("start")
-//                        val documentStart = documentStartTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                        val documentFinishTimestamp = document.getTimestamp("finish")
-//                        val documentFinish = documentFinishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
-//                        val documentDurationLong = document.getLong("duration")!!
-//                        val documentDuration = Duration.ofSeconds(documentDurationLong)
-//
-//                        val wiD = WiD(
-//                            id = documentID,
-//                            date = documentDate,
-//                            title = documentTitle,
-//                            start = documentStart,
-//                            finish = documentFinish,
-//                            duration = documentDuration
-//                        )
-//
-//                        wiDs.add(wiD)
-//                        Log.d(TAG, "${document.id} => ${document.data}")
-//                    }
-//                }
-//                .addOnFailureListener { exception ->
-//                    Log.d(TAG, "Error getting documents: ", exception)
-//                }
-//
-//            currentDate = currentDate.plusDays(1) // 다음 날짜로 이동
-//        }
-//
-//        callback(wiDs)
-//    }
 
     fun updateWiD(
         email: String,

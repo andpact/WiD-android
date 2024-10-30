@@ -5,7 +5,7 @@ import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.levelToRequiredExpMap
-import andpact.project.wid.util.titleNumberStringToTitleColorMap
+import andpact.project.wid.util.titleToColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -14,34 +14,33 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Timer
 import javax.inject.Inject
+import kotlin.concurrent.timer
 
 @HiltViewModel
-class EmptyWiDViewModel @Inject constructor(
+class NewWiDViewModel @Inject constructor(
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource
 ): ViewModel() {
-    private val TAG = "EmptyWiDViewModel"
-
-    init {
-        Log.d(TAG, "created")
-    }
-
+    private val TAG = "NewWiDViewModel"
+    init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "cleared")
     }
 
+    /** 레벨 업 순간에 today 갱신되는지? */
+    private val today: State<LocalDate> = wiDDataSource.today
+    private var now = LocalTime.now()
     private val user: State<User?> = userDataSource.user
+    val titleColorMap = titleToColorMap
 
-    val titleColorMap = titleNumberStringToTitleColorMap
-
-    // 기존 WiD가 없기 때문에, existingWiD, updatedWiD 둘이 아니라, emptyWiD 하나만 사용함.
-    val emptyWiD: State<WiD> = wiDDataSource.emptyWiD
-
+    // 제목
     private val _showTitleMenu = mutableStateOf(false)
     val showTitleMenu: State<Boolean> = _showTitleMenu
 
+    // 시작
     private val _showStartPicker = mutableStateOf(false)
     val showStartPicker: State<Boolean> = _showStartPicker
     private val _startOverlap = mutableStateOf(false)
@@ -49,6 +48,7 @@ class EmptyWiDViewModel @Inject constructor(
     private val _startModified = mutableStateOf(false)
     val startModified: State<Boolean> = _startModified
 
+    // 종료
     private val _showFinishPicker = mutableStateOf(false)
     val showFinishPicker: State<Boolean> = _showFinishPicker
     private val _finishOverlap = mutableStateOf(false)
@@ -56,15 +56,79 @@ class EmptyWiDViewModel @Inject constructor(
     private val _finishModified = mutableStateOf(false)
     val finishModified: State<Boolean> = _finishModified
 
+    // 소요
     private val _durationExist = mutableStateOf(false)
     val durationExist: State<Boolean> = _durationExist
 
+    // WiD List
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
 
-    fun setEmptyWiD(newWiD: WiD) {
-        Log.d(TAG, "setEmptyWiD executed")
+    // New WiD
+    private var lastNewWiDTimer: Timer? = null
+    val newWiD: State<WiD> = wiDDataSource.newWiD // 변경 전
 
-        wiDDataSource.setEmptyWiD(newWiD = newWiD)
+    // Updated New WiD
+    private var lastUpdatedNewWiDTimer: Timer? = null
+    val updatedNewWiD: State<WiD> = wiDDataSource.updatedNewWiD // 변경 후
+    private val _isLastUpdatedNewWiDTimerRunning = mutableStateOf(false) // Updated New WiD의 종료 시간이 실시간인지 파악하려고
+    val isLastUpdatedNewWiDTimerRunning: State<Boolean> = _isLastUpdatedNewWiDTimerRunning
+
+    fun startLastNewWiDTimer() { // 실행되면 뷰가 사라질 때까지 종료 되지 않음.
+        Log.d(TAG, "startLastNewWiDTimer executed")
+
+        lastNewWiDTimer = timer(period = 1_000) {
+            now = LocalTime.now().withNano(0)
+
+            val newWiD = newWiD.value.copy(
+                finish = now,
+                duration = Duration.between(newWiD.value.start, now)
+            )
+
+            setNewWiD(newWiD = newWiD)
+        }
+    }
+
+    fun stopLastNewWiDTimer() {
+        Log.d(TAG, "stopLastNewWiDTimer executed")
+
+        lastNewWiDTimer?.cancel()
+    }
+
+    fun startLastUpdatedNewWiDTimer() {
+        Log.d(TAG, "startLastUpdatedNewWiDTimer executed")
+
+        setIsLastUpdatedNewWiDTimerRunning(running = true)
+
+        lastUpdatedNewWiDTimer = timer(period = 1_000) {
+            now = LocalTime.now().withNano(0)
+
+            val updatedWiD = updatedNewWiD.value.copy(
+                finish = now,
+                duration = Duration.between(updatedNewWiD.value.start, now)
+            )
+
+            setUpdateNewWiD(updatedNewWiD = updatedWiD)
+        }
+    }
+
+    fun stopLastUpdatedNewWiDTimer() {
+        Log.d(TAG, "stopLastUpdatedNewWiDTimer executed")
+
+        setIsLastUpdatedNewWiDTimerRunning(running = false)
+
+        lastUpdatedNewWiDTimer?.cancel()
+    }
+
+    private fun setIsLastUpdatedNewWiDTimerRunning(running: Boolean) {
+        Log.d(TAG, "setIsLastUpdatedNewWiDTimerRunning executed")
+
+        _isLastUpdatedNewWiDTimerRunning.value = running
+    }
+
+    private fun setNewWiD(newWiD: WiD) {
+        Log.d(TAG, "setNewWiD executed")
+
+        wiDDataSource.setNewWiD(newWiD = newWiD)
 
         if (_wiDList.value.isNotEmpty()) {
             checkNewStartOverlap()
@@ -72,7 +136,21 @@ class EmptyWiDViewModel @Inject constructor(
             checkNewWiDOverlap()
         }
 
-        setDurationExist(Duration.ZERO < newWiD.duration)
+        // 소요 시간은 검사할 필요 없음.
+    }
+
+    fun setUpdateNewWiD(updatedNewWiD: WiD) {
+        Log.d(TAG, "setUpdateNewWiD executed")
+
+        wiDDataSource.setUpdatedNewWiD(updatedNewWiD = updatedNewWiD)
+
+        if (_wiDList.value.isNotEmpty()) {
+            checkNewStartOverlap()
+            checkNewFinishOverlap()
+            checkNewWiDOverlap()
+        }
+
+        setDurationExist(Duration.ZERO < updatedNewWiD.duration)
     }
 
     fun setShowTitleMenu(show: Boolean) {
@@ -123,17 +201,16 @@ class EmptyWiDViewModel @Inject constructor(
         _durationExist.value = exist
     }
 
-    private fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
+    private fun checkNewStartOverlap() { // Updated New WiD의 시작 시간이 겹치는지 확인
         Log.d(TAG, "checkNewStartOverlap executed")
 
-        val today = LocalDate.now()
-        val now = LocalTime.now()
+        now = LocalTime.now().withNano(0) // 타이머 멈춰 있을 때도 있기 때문에 갱신해줌.
 
         for (existingWiD in _wiDList.value) {
-            if (existingWiD.start < emptyWiD.value.start && emptyWiD.value.start < existingWiD.finish) {
+            if (existingWiD.start < updatedNewWiD.value.start && updatedNewWiD.value.start < existingWiD.finish) {
                 setStartOverlap(overlap = true)
                 break
-            } else if (emptyWiD.value.date == today && now < emptyWiD.value.start) {
+            } else if (updatedNewWiD.value.date == today.value && now < updatedNewWiD.value.start) {
                 setStartOverlap(overlap = true)
                 break
             } else {
@@ -142,17 +219,16 @@ class EmptyWiDViewModel @Inject constructor(
         }
     }
 
-    private fun checkNewFinishOverlap() { // 생성할 WiD의 종료 시간이 겹치는지 확인
+    private fun checkNewFinishOverlap() { // Updated New WiD의 종료 시간이 겹치는지 확인
         Log.d(TAG, "checkNewFinishOverlap executed")
 
-        val today = LocalDate.now()
-        val now = LocalTime.now()
+        now = LocalTime.now().withNano(0)
 
         for (existingWiD in _wiDList.value) {
-            if (existingWiD.start < emptyWiD.value.finish && emptyWiD.value.finish < existingWiD.finish) {
+            if (existingWiD.start < updatedNewWiD.value.finish && updatedNewWiD.value.finish < existingWiD.finish) {
                 setFinishOverlap(overlap = true)
                 break
-            } else if (emptyWiD.value.date == today && now < emptyWiD.value.finish) {
+            } else if (updatedNewWiD.value.date == today.value && now < updatedNewWiD.value.finish) {
                 setFinishOverlap(overlap = true)
                 break
             } else {
@@ -161,12 +237,12 @@ class EmptyWiDViewModel @Inject constructor(
         }
     }
 
-    private fun checkNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
+    private fun checkNewWiDOverlap() { // Updated New WiD가 기존의 WiD를 덮고 있는지 확인
         Log.d(TAG, "checkNewWiDOverlap executed")
 
         for (existingWiD in _wiDList.value) {
             // 등호를 넣어서 부등호를 사용해야 기존의 WiD를 덮고 있는지를 정확히 확인할 수 있다.
-            if (emptyWiD.value.start <= existingWiD.start && existingWiD.finish <= emptyWiD.value.finish) {
+            if (updatedNewWiD.value.start <= existingWiD.start && existingWiD.finish <= updatedNewWiD.value.finish) {
                 setStartOverlap(overlap = true)
                 setFinishOverlap(overlap = true)
                 break
@@ -177,22 +253,13 @@ class EmptyWiDViewModel @Inject constructor(
     fun getWiDListByDate(collectionDate: LocalDate) {
         Log.d(TAG, "getWiDListByDate executed")
 
-        wiDDataSource.getWiDListByDate(
+        wiDDataSource.getWiDListOfDate(
             email = user.value?.email ?: "",
             collectionDate = collectionDate,
             onWiDListFetchedByDate = { wiDList: List<WiD> ->
                 _wiDList.value = wiDList
             }
         )
-
-        /** 이 뷰에서 리스너를 사용할 일이 있을까? */
-//        wiDDataSource.addSnapshotListenerToWiDCollectionByDate(
-//            email = user.value?.email ?: "",
-//            collectionDate = collectionDate,
-//            onWiDCollectionChanged = { wiDList: List<WiD> ->
-//                _wiDList.value = wiDList
-//            }
-//        )
     }
 
     fun createWiD(onWiDCreated: (Boolean) -> Unit) {
@@ -202,51 +269,60 @@ class EmptyWiDViewModel @Inject constructor(
             email = user.value?.email ?: "",
             onWiDCreated = { wiDCreated: Boolean ->
                 if (wiDCreated) {
+                    // 레벨
                     val currentLevel = user.value?.level ?: 1
-                    val currentExp = user.value?.currentExp ?: 0
-                    val newExp = emptyWiD.value.duration.seconds.toInt()
-                    val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
 
-                    val totalExp = user.value?.totalExp ?: 0
-                    val newTotalExp = totalExp + newExp
-                    val wiDTotalExp = user.value?.totalExp ?: 0
+                    // 경험치
+                    val currentExp = user.value?.currentExp ?: 0
+                    val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
+                    val newExp = updatedNewWiD.value.duration.seconds.toInt()
+                    val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val newWiDTotalExp = wiDTotalExp + newExp
 
-                    val title = emptyWiD.value.title
-                    val titleCountMap = user.value?.titleCountMap?.toMutableMap() ?: mutableMapOf()
-                    val currentCount = titleCountMap[title] ?: 0
-                    titleCountMap[title] = currentCount + 1
-
-                    val titleDurationMap = user.value?.titleDurationMap?.toMutableMap() ?: mutableMapOf()
+                    // 제목
+                    val title = updatedNewWiD.value.title
+                    val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
+                    val currentTitleCount = titleCountMap[title] ?: 0
+                    titleCountMap[title] = currentTitleCount + 1
+                    val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
                     val currentDuration = titleDurationMap[title] ?: Duration.ZERO
                     titleDurationMap[title] = currentDuration.plus(Duration.ofSeconds(newExp.toLong()))
 
+                    // 도구
+                    val createdBy = updatedNewWiD.value.createdBy
+                    val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
+                    val currentToolCount = toolCountMap[createdBy] ?: 0
+                    toolCountMap[createdBy] = currentToolCount + 1
+
                     if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+                        // 레벨
                         val newLevel = currentLevel + 1
                         val newLevelAsString = newLevel.toString()
-
-                        val today = LocalDate.now()
                         val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-                        levelUpHistoryMap[newLevelAsString] = today
+                        levelUpHistoryMap[newLevelAsString] = LocalDate.now()
 
+                        // 경험
                         val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
 
                         userDataSource.createdWiDWithLevelUp(
                             newLevel = newLevel,
                             newLevelUpHistoryMap = levelUpHistoryMap,
                             newCurrentExp = newCurrentExp,
-                            newTotalExp = newTotalExp,
                             newWiDTotalExp = newWiDTotalExp,
+                            newTitleCountMap = titleCountMap,
                             newTitleDurationMap = titleDurationMap,
+                            newToolCountMap = toolCountMap
                         )
                     } else { // 레벨 업 아님
+                        // 경험치
                         val newCurrentExp = currentExp + newExp
 
                         userDataSource.createdWiD(
                             newCurrentExp = newCurrentExp,
-                            newTotalExp = newTotalExp,
                             newWiDTotalExp = newWiDTotalExp,
-                            newTitleDurationMap = titleDurationMap
+                            newTitleCountMap = titleCountMap,
+                            newTitleDurationMap = titleDurationMap,
+                            newToolCountMap = toolCountMap
                         )
                     }
 

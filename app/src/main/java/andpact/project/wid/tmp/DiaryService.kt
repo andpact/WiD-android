@@ -1,4 +1,4 @@
-package andpact.project.wid.service
+package andpact.project.wid.tmp
 
 //import andpact.project.wid.model.Diary
 import andpact.project.wid.model.WiD

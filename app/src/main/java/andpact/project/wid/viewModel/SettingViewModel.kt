@@ -2,6 +2,7 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.model.User
+import andpact.project.wid.util.getRandomNickname
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -26,28 +27,38 @@ class SettingViewModel @Inject constructor(
     val firebaseUser: State<FirebaseUser?> = userDataSource.firebaseUser
     val user: State<User?> = userDataSource.user
 
-    // 대화 상자에서 사용할 변수
-    private val _displayName = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: "")
-    val displayName: State<String> = _displayName
-//    private val _statusMessage = mutableStateOf(userDataSource.user.value?.statusMessage ?: "")
-//    val statusMessage: State<String> = _statusMessage
+    // 이메일(계정 삭제 대화상자)
+    private val _emailForDialog = mutableStateOf(userDataSource.firebaseUser.value?.email ?: "")
+    val emailForDialog: State<String> = _emailForDialog
 
+    // 닉네임(대화상자)
+    private val _displayNameForDialog = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: getRandomNickname())
+    val displayNameForDialog: State<String> = _displayNameForDialog
     private val _showDisplayNameDialog = mutableStateOf(false)
     val showDisplayNameDialog: State<Boolean> = _showDisplayNameDialog
 
-    private val _showStatusMessageDialog = mutableStateOf(false)
-    val showStatusMessageDialog: State<Boolean> = _showStatusMessageDialog
+    // 상태메시지
+//    private val _statusMessage = mutableStateOf(userDataSource.user.value?.statusMessage ?: "")
+//    val statusMessage: State<String> = _statusMessage
+//    private val _showStatusMessageDialog = mutableStateOf(false)
+//    val showStatusMessageDialog: State<Boolean> = _showStatusMessageDialog
 
+    // 계정
     private val _showSignOutDialog = mutableStateOf(false)
     val showSignOutDialog: State<Boolean> = _showSignOutDialog
-
     private val _showDeleteUserDialog = mutableStateOf(false)
     val showDeleteUserDialog: State<Boolean> = _showDeleteUserDialog
 
-    fun setDisplayName(newDisplayName: String) {
-        Log.d(TAG, "setDisplayName executed")
+    fun setEmailForDialog(newEmailForDialog: String) {
+        Log.d(TAG, "setEmailForDialog executed")
 
-        _displayName.value = newDisplayName
+        _emailForDialog.value = newEmailForDialog
+    }
+
+    fun setDisplayNameForDialog(newDisplayNameForDialog: String) {
+        Log.d(TAG, "setDisplayNameForDialog executed")
+
+        _displayNameForDialog.value = newDisplayNameForDialog
     }
 
     fun updateDisplayName(newDisplayName: String) {
@@ -74,11 +85,11 @@ class SettingViewModel @Inject constructor(
 //        userDataSource.updateStatusMessage(email = firebaseUser.value?.email ?: "", newStatusMessage = newStatusMessage)
 //    }
 
-    fun setShowStatusMessageDialog(show: Boolean) {
-        Log.d(TAG, "setShowStatusMessageDialog executed")
-
-        _showStatusMessageDialog.value = show
-    }
+//    fun setShowStatusMessageDialog(show: Boolean) {
+//        Log.d(TAG, "setShowStatusMessageDialog executed")
+//
+//        _showStatusMessageDialog.value = show
+//    }
 
     fun setShowSignOutDialog(show: Boolean) {
         Log.d(TAG, "setShowSignOutDialog executed")

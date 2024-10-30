@@ -1,12 +1,14 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
 import andpact.project.wid.viewModel.WiDToolViewModel
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -31,13 +33,14 @@ fun WiDToolView(
 ) {
     val TAG = "WiDToolView"
 
-    val currentToolState = wiDToolViewModel.user.value?.currentToolState
+    val currentTool = wiDToolViewModel.currentTool.value
+    val currentToolState = wiDToolViewModel.currentToolState.value
     val wiDToolViewBarVisible = wiDToolViewModel.wiDToolViewBarVisible.value
 
     // 화면
     val pages = wiDToolViewModel.pages
     val pagerState = rememberPagerState(
-//        initialPage = if (timerState != PlayerState.Stopped) 1 else 0, // 스톱 워치가 0 페이지니까, 타이머 실행 중일 때만 1페이지로 초기화함.
+        initialPage = if (currentTool == CurrentTool.TIMER && currentToolState != CurrentToolState.STOPPED) 1 else 0, // 스톱 워치가 0 페이지니까, 타이머 실행 중일 때만 1페이지로 초기화함.
         pageCount = { pages.size }
     )
     val coroutineScope = rememberCoroutineScope()
@@ -45,9 +48,7 @@ fun WiDToolView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     Scaffold(
@@ -62,6 +63,7 @@ fun WiDToolView(
                     Text(
                         text = "도구",
                         style = Typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -69,7 +71,7 @@ fun WiDToolView(
                 )
             )
         }
-    ) { contentPadding ->
+    ) { contentPadding: PaddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -91,6 +93,7 @@ fun WiDToolView(
                             Text(
                                 text = pages[index],
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         },
                         selected = pagerState.currentPage == index,
@@ -108,7 +111,7 @@ fun WiDToolView(
             HorizontalPager(
                 state = pagerState,
                 userScrollEnabled = currentToolState == CurrentToolState.STOPPED
-            ) { page ->
+            ) { page: Int ->
                 when (page) {
                     0 -> StopwatchView(
                         onStopwatchViewBarVisibleChanged = { visible ->

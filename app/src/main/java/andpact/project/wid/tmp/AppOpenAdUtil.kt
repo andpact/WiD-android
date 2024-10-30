@@ -1,4 +1,4 @@
-package andpact.project.wid.util
+package andpact.project.wid.tmp
 
 import andpact.project.wid.activity.MainActivity
 import android.app.Activity

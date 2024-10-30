@@ -1,8 +1,7 @@
-package andpact.project.wid.chartView
+package andpact.project.wid.tmp
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.DarkGray
-import andpact.project.wid.util.getTotalDurationMapByDate
 import android.graphics.drawable.GradientDrawable
 import android.view.ViewGroup
 import android.widget.LinearLayout

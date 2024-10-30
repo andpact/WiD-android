@@ -13,11 +13,11 @@ sealed class MainViewDestinations(
     )
     object WiDToolViewDestination : MainViewDestinations(
         route = "wid_tool_view",
-        icon = R.drawable.baseline_category_24
+        icon = R.drawable.baseline_alarm_24
     )
     object WiDDisplayViewDestination : MainViewDestinations(
         route = "wid_display_view",
-        icon = R.drawable.baseline_format_list_bulleted_24
+        icon = R.drawable.baseline_timelapse_24
     )
 //    object DiaryDisplayViewDestination : MainViewDestinations(
 //        route = "diary_display_view",

@@ -6,6 +6,7 @@ import andpact.project.wid.destinations.MainViewDestinations
 import andpact.project.wid.model.WiD
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ripple.RippleAlpha
@@ -50,9 +51,7 @@ fun MainView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     Scaffold(
@@ -74,7 +73,7 @@ fun MainView(
                 }
             )
         },
-    ) { contentPadding -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
+    ) { contentPadding: PaddingValues -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
         NavHost(
             modifier = Modifier
                 .padding(contentPadding),
@@ -121,23 +120,3 @@ fun MainView(
         }
     }
 }
-
-//object NoRippleTheme : RippleTheme {
-//    @Composable
-//    override fun defaultColor() = Color.Unspecified
-//
-//    @Composable
-//    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
-//}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun HomeFragmentPreview() {
-//    val stopwatchViewModel: StopwatchViewModel = viewModel()
-//
-//    val context = LocalContext.current
-//    val application = context.applicationContext as Application
-//    val timerViewModel = TimerViewModel(application)
-//
-//    HomeFragment(NavController(LocalContext.current), stopwatchViewModel, timerViewModel)
-//}

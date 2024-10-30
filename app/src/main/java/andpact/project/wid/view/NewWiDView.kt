@@ -4,83 +4,88 @@ import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import andpact.project.wid.viewModel.ClickedWiDViewModel
+import andpact.project.wid.viewModel.NewWiDViewModel
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.*
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.*
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ClickedWiDView(
+fun NewWiDView(
     onBackButtonPressed: () -> Unit,
-    clickedWiDViewModel: ClickedWiDViewModel = hiltViewModel()
+    newWiDViewModel: NewWiDViewModel = hiltViewModel()
 ) {
-    val TAG = "ClickedWiDView"
+    val TAG = "NewWiDView"
 
-    val updatedWiD = clickedWiDViewModel.updatedWiD.value
+    // WiD
+    val newWiD = newWiDViewModel.newWiD.value // 변경 전
+    val updatedNewWiD = newWiDViewModel.updatedNewWiD.value // 변경 후
+    val isLastUpdatedNewWiDTimerRunning = newWiDViewModel.isLastUpdatedNewWiDTimerRunning.value
 
     // 화면
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
     // 제목
-    val showTitleMenu = clickedWiDViewModel.showTitleMenu.value
-    val titleColorMap = clickedWiDViewModel.titleColorMap
+    val showTitleMenu = newWiDViewModel.showTitleMenu.value
+    val titleColorMap = newWiDViewModel.titleColorMap
 
+    /** 시작 시간을 변경하지 않으면, 기존의 State를 유지하도록 해야 함. */
     // 시작 시간
-    val showStartPicker = clickedWiDViewModel.showStartPicker.value
+    val showStartPicker = newWiDViewModel.showStartPicker.value
     val startTimePickerState = rememberTimePickerState(
-        initialHour = updatedWiD.start.hour,
-        initialMinute = updatedWiD.start.minute,
+        initialHour = updatedNewWiD.start.hour,
+        initialMinute = updatedNewWiD.start.minute,
         is24Hour = false
     )
-    val startOverlap = clickedWiDViewModel.startOverlap.value
-    val startModified = clickedWiDViewModel.startModified.value
+    val startOverlap = newWiDViewModel.startOverlap.value
+    val startModified = newWiDViewModel.startModified.value
 
     // 종료 시간
-    val showFinishPicker = clickedWiDViewModel.showFinishPicker.value
+    val showFinishPicker = newWiDViewModel.showFinishPicker.value
     val finishTimePickerState = rememberTimePickerState(
-        initialHour = updatedWiD.finish.hour,
-        initialMinute = updatedWiD.finish.minute,
+        initialHour = updatedNewWiD.finish.hour,
+        initialMinute = updatedNewWiD.finish.minute,
         is24Hour = false
     )
-    val finishOverlap = clickedWiDViewModel.finishOverlap.value
-    val finishModified = clickedWiDViewModel.finishModified.value
+    val finishOverlap = newWiDViewModel.finishOverlap.value
+    val finishModified = newWiDViewModel.finishModified.value
 
     // 소요 시간
-    val durationExist = clickedWiDViewModel.durationExist.value
-
-    val showDeleteClickedWiDDialog = clickedWiDViewModel.showDeleteClickedWiDDialog.value
+    val durationExist = newWiDViewModel.durationExist.value
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        val clickedWiDDate = updatedWiD.date
-        clickedWiDViewModel.getWiDListByDate(currentDate = clickedWiDDate)
+        val newWiDDate = newWiD.date
+        newWiDViewModel.getWiDListByDate(collectionDate = newWiDDate)
+
+        if (newWiD.id == "lastNewWiD") {
+            newWiDViewModel.startLastNewWiDTimer()
+            newWiDViewModel.startLastUpdatedNewWiDTimer()
+        }
 
         onDispose {
             Log.d(TAG, "disposed")
+
+            newWiDViewModel.stopLastNewWiDTimer()
+            newWiDViewModel.stopLastUpdatedNewWiDTimer()
         }
     }
 
@@ -106,46 +111,34 @@ fun ClickedWiDView(
                 },
                 title = {
                     Text(
-                        text = "WiD",
+                        text = "새로운 WiD",
                         style = Typography.titleLarge,
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(show = true)
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(24.dp),
-                            painter = painterResource(id = R.drawable.outline_delete_16),
-                            contentDescription = "클릭한 위드 삭제",
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
             )
         }
-    ) { contentPadding ->
+    ) { contentPadding -> // Scaffold 내부는 박스로 되어 있음.
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.extraLarge
+                        )
                         .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_calendar_month_24),
                     contentDescription = "날짜",
@@ -153,6 +146,7 @@ fun ClickedWiDView(
 
                 Column(
                     modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -162,25 +156,33 @@ fun ClickedWiDView(
                     )
 
                     Text(
-                        text = getDateString(date = updatedWiD.date),
+                        text = getDateString(date = updatedNewWiD.date),
                         style = Typography.bodyMedium,
                     )
                 }
             }
 
-            HorizontalDivider()
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        clickedWiDViewModel.setShowTitleMenu(show = true)
+                        newWiDViewModel.setShowTitleMenu(show = true)
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.large
+                        )
                         .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_title_24),
                     contentDescription = "제목",
@@ -188,39 +190,53 @@ fun ClickedWiDView(
 
                 Column(
                     modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "제목",
                         style = Typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
-                        text = titleNumberStringToTitleKRStringMap[updatedWiD.title] ?: "",
+                        text = titleToKRMap[updatedNewWiD.title] ?: "기록 없음",
                         style = Typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_edit_24),
                     contentDescription = "제목 수정",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            HorizontalDivider()
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        clickedWiDViewModel.setShowStartPicker(show = true)
+                        newWiDViewModel.setShowStartPicker(show = true)
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.medium
+                        )
                         .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_alarm_24),
                     contentDescription = "시작 시간",
@@ -228,11 +244,13 @@ fun ClickedWiDView(
 
                 Column(
                     modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "시작",
@@ -275,7 +293,7 @@ fun ClickedWiDView(
 
                     Text(
                         text = getTimeString(
-                            time = updatedWiD.start,
+                            time = updatedNewWiD.start,
                             patten = "a hh:mm:ss"
                         ),
                         style = Typography.bodyMedium,
@@ -283,24 +301,34 @@ fun ClickedWiDView(
                 }
 
                 Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_edit_24),
                     contentDescription = "시작 시간 수정",
                 )
             }
 
-            HorizontalDivider()
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        clickedWiDViewModel.setShowFinishPicker(show = true)
+                        newWiDViewModel.setShowFinishPicker(show = true)
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.small
+                        )
                         .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_alarm_on_24),
                     contentDescription = "종료 시간",
@@ -308,11 +336,13 @@ fun ClickedWiDView(
 
                 Column(
                     modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "종료",
@@ -353,31 +383,58 @@ fun ClickedWiDView(
                         )
                     }
 
-                    Text(
-                        text = getTimeString(
-                            time = updatedWiD.finish,
-                            patten = "a hh:mm:ss"
-                        ),
-                        style = Typography.bodyMedium,
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = getTimeString(
+                                time = updatedNewWiD.finish,
+                                patten = "a hh:mm:ss"
+                            ),
+                            style = Typography.bodyMedium,
+                        )
+
+                        if (isLastUpdatedNewWiDTimerRunning) {
+                            Text(
+                                modifier = Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.errorContainer,
+                                        shape = MaterialTheme.shapes.medium
+                                    ),
+                                text = "LIVE",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
                 }
 
                 Icon(
+                    modifier = Modifier
+                        .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_edit_24),
                     contentDescription = "종료 시간 수정",
                 )
             }
 
-            HorizontalDivider()
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.small
+                        )
                         .padding(16.dp),
                     painter = painterResource(R.drawable.baseline_timelapse_24),
                     contentDescription = "소요 시간",
@@ -385,18 +442,20 @@ fun ClickedWiDView(
 
                 Column(
                     modifier = Modifier
+                        .padding(vertical = 16.dp)
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "소요",
                             style = Typography.titleMedium,
                         )
 
-                        if (!durationExist) {
+                        if (startModified && finishModified && !durationExist) {
                             Icon(
                                 modifier = Modifier
                                     .size(12.dp),
@@ -419,7 +478,7 @@ fun ClickedWiDView(
                     }
 
                     Text(
-                        text = getDurationString(updatedWiD.duration, mode = 3),
+                        text = getDurationString(updatedNewWiD.duration, mode = 3),
                         style = Typography.bodyMedium,
                     )
                 }
@@ -434,14 +493,14 @@ fun ClickedWiDView(
                 modifier = Modifier
                     .fillMaxWidth(),
                 onClick = {
-                    clickedWiDViewModel.updateWiD() { updateWiDSuccess: Boolean ->
-                        if (updateWiDSuccess) {
+                    newWiDViewModel.createWiD() { createWiDSuccess: Boolean ->
+                        if (createWiDSuccess) {
                             onBackButtonPressed()
                         }
                     }
                 },
                 enabled = !startOverlap && !finishOverlap && durationExist,
-                shape = MaterialTheme.shapes.medium
+                shape = RectangleShape
             ) {
                 Row(
                     modifier = Modifier
@@ -453,12 +512,12 @@ fun ClickedWiDView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.baseline_done_24),
-                        contentDescription = "수정 완료",
+                        painter = painterResource(R.drawable.outline_add_box_24),
+                        contentDescription = "새로운 WiD 만들기",
                     )
 
                     Text(
-                        text = "수정 완료",
+                        text = "새로운 WiD 만들기",
                         style = Typography.bodyMedium
                     )
                 }
@@ -473,7 +532,7 @@ fun ClickedWiDView(
                         shape = MaterialTheme.shapes.extraLarge
                     ),
                 onDismissRequest = {
-                    clickedWiDViewModel.setShowTitleMenu(show = false)
+                    newWiDViewModel.setShowTitleMenu(show = false)
                 },
             ) {
                 Column(
@@ -500,35 +559,29 @@ fun ClickedWiDView(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        val date = updatedWiD.date
-                                        val title = itemTitle
-                                        val start = updatedWiD.start
-                                        val finish = updatedWiD.finish
-                                        val duration = Duration.between(start, finish)
-
-                                        val updatedWiD = WiD(
-                                            id = "",
-                                            date = date,
-                                            title = title,
-                                            start = start,
-                                            finish = finish,
-                                            duration = duration
+                                    .clickable {
+                                        val updatedNewWiD = WiD(
+                                            id = updatedNewWiD.id,
+                                            date = updatedNewWiD.date,
+                                            title = itemTitle,
+                                            start = updatedNewWiD.start,
+                                            finish = updatedNewWiD.finish,
+                                            duration = Duration.between(
+                                                updatedNewWiD.start,
+                                                updatedNewWiD.finish
+                                            ),
+                                            createdBy = updatedNewWiD.createdBy
                                         )
 
-                                        clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-
-                                        clickedWiDViewModel.setShowTitleMenu(show = false)
+                                        newWiDViewModel.setUpdateNewWiD(updatedNewWiD = updatedNewWiD)
+                                        newWiDViewModel.setShowTitleMenu(show = false)
                                     },
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    text = itemTitle,
+                                    text = titleToKRMap[itemTitle] ?: "기록 없음",
                                     style = Typography.bodyMedium,
                                 )
 
@@ -538,26 +591,20 @@ fun ClickedWiDView(
                                 )
 
                                 RadioButton(
-                                    selected = updatedWiD.title == itemTitle,
+                                    selected = updatedNewWiD.title == itemTitle,
                                     onClick = {
-                                        val date = updatedWiD.date
-                                        val title = itemTitle
-                                        val start = updatedWiD.start
-                                        val finish = updatedWiD.finish
-                                        val duration = Duration.between(start, finish)
-
-                                        val updatedWiD = WiD(
-                                            id = "",
-                                            date = date,
-                                            title = title,
-                                            start = start,
-                                            finish = finish,
-                                            duration = duration
+                                        val updatedNewWiD = WiD(
+                                            id = updatedNewWiD.id,
+                                            date = updatedNewWiD.date,
+                                            title = itemTitle,
+                                            start = updatedNewWiD.start,
+                                            finish = updatedNewWiD.finish,
+                                            duration = Duration.between(updatedNewWiD.start, updatedNewWiD.finish),
+                                            createdBy = updatedNewWiD.createdBy
                                         )
 
-                                        clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-
-                                        clickedWiDViewModel.setShowTitleMenu(show = false)
+                                        newWiDViewModel.setUpdateNewWiD(updatedNewWiD = updatedNewWiD)
+                                        newWiDViewModel.setShowTitleMenu(show = false)
                                     }
                                 )
                             }
@@ -570,47 +617,41 @@ fun ClickedWiDView(
         if (showStartPicker) {
             DatePickerDialog(
                 onDismissRequest = {
-                    clickedWiDViewModel.setShowStartPicker(show = false)
+                    newWiDViewModel.setShowStartPicker(show = false)
                 },
-                confirmButton = {
-                    TextButton(
+                confirmButton = { // 확인, 취소 버튼은 항상 제일 아래에 위치함.
+                    FilledTonalButton(
                         onClick = {
-                            val date = updatedWiD.date
-                            val title = updatedWiD.title
                             val newStart = LocalTime.of(
                                 startTimePickerState.hour,
                                 startTimePickerState.minute
                             )
-                            val finish = updatedWiD.finish
-                            val duration = Duration.between(newStart, finish)
 
-                            val updatedWiD = WiD(
-                                id = "",
-                                date = date,
-                                title = title,
+                            val updatedNewWiD = WiD(
+                                id = updatedNewWiD.id,
+                                date = updatedNewWiD.date,
+                                title = updatedNewWiD.title,
                                 start = newStart,
-                                finish = finish,
-                                duration = duration
+                                finish = updatedNewWiD.finish,
+                                duration = Duration.between(newStart, updatedNewWiD.finish),
+                                createdBy = updatedNewWiD.createdBy
                             )
 
-                            clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-                            clickedWiDViewModel.checkNewStartOverlap()
-                            clickedWiDViewModel.checkNewWiDOverlap()
-                            clickedWiDViewModel.checkDurationExist()
-
-                            clickedWiDViewModel.setStartModified(modified = true)
-                            clickedWiDViewModel.setShowStartPicker(show = false)
-                        }) {
+                            newWiDViewModel.setUpdateNewWiD(updatedNewWiD = updatedNewWiD)
+                            newWiDViewModel.setStartModified(modified = true)
+                            newWiDViewModel.setShowStartPicker(show = false)
+                        }
+                    ) {
                         Text(
                             text = "확인",
                             style = Typography.bodyMedium
                         )
                     }
                 },
-                dismissButton = {
+                dismissButton = { // 시작 시간을 LIVE로 할 일이 없다.
                     TextButton(
                         onClick = {
-                            clickedWiDViewModel.setShowStartPicker(show = false)
+                            newWiDViewModel.setShowStartPicker(show = false)
                         }
                     ) {
                         Text(
@@ -626,7 +667,6 @@ fun ClickedWiDView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-
                     Text(
                         modifier = Modifier
                             .padding(16.dp),
@@ -635,6 +675,54 @@ fun ClickedWiDView(
                     )
 
                     TimePicker(state = startTimePickerState)
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialTheme.shapes.extraLarge
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "선택 가능 시간",
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
+                        ) {
+                            Text(
+                                text = getTimeString(
+                                    time = newWiD.start,
+                                    patten = "a hh:mm"
+                                ),
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Text(
+                                text = "~",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Text(
+                                text = getTimeString(
+                                    time = updatedNewWiD.finish,
+                                    patten = "a hh:mm"
+                                ),
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -642,37 +730,33 @@ fun ClickedWiDView(
         if (showFinishPicker) {
             DatePickerDialog(
                 onDismissRequest = {
-                    clickedWiDViewModel.setShowFinishPicker(show = false)
+                    newWiDViewModel.setShowFinishPicker(show = false)
                 },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            val date = updatedWiD.date
-                            val title = updatedWiD.title
-                            val start = updatedWiD.start
+                            newWiDViewModel.stopLastUpdatedNewWiDTimer() // 수정하면 타이머 정지
+
                             val newFinish = LocalTime.of(
                                 finishTimePickerState.hour,
                                 finishTimePickerState.minute
                             )
-                            val duration = Duration.between(start, newFinish)
 
-                            val updatedWiD = WiD(
-                                id = "",
-                                date = date,
-                                title = title,
-                                start = start,
+                            val updatedNewWiD = WiD(
+                                id = updatedNewWiD.id,
+                                date = updatedNewWiD.date,
+                                title = updatedNewWiD.title,
+                                start = updatedNewWiD.start,
                                 finish = newFinish,
-                                duration = duration
+                                duration = Duration.between(updatedNewWiD.start, newFinish),
+                                createdBy = updatedNewWiD.createdBy
                             )
 
-                            clickedWiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-                            clickedWiDViewModel.checkNewFinishOverlap()
-                            clickedWiDViewModel.checkNewWiDOverlap()
-                            clickedWiDViewModel.checkDurationExist()
-
-                            clickedWiDViewModel.setFinishModified(modified = true)
-                            clickedWiDViewModel.setShowFinishPicker(show = false)
-                        }) {
+                            newWiDViewModel.setUpdateNewWiD(updatedNewWiD = updatedNewWiD)
+                            newWiDViewModel.setFinishModified(modified = true)
+                            newWiDViewModel.setShowFinishPicker(show = false)
+                        }
+                    ) {
                         Text(
                             text = "확인",
                             style = Typography.bodyMedium
@@ -680,9 +764,25 @@ fun ClickedWiDView(
                     }
                 },
                 dismissButton = {
+                    if (newWiD.id == "lastNewWiD") {
+                        TextButton(
+                            onClick = {
+                                newWiDViewModel.startLastUpdatedNewWiDTimer()
+
+                                newWiDViewModel.setShowFinishPicker(show = false)
+                            },
+                        ) {
+                            Text(
+                                text = "LIVE",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+
                     TextButton(
                         onClick = {
-                            clickedWiDViewModel.setShowFinishPicker(show = false)
+                            newWiDViewModel.setShowFinishPicker(show = false)
                         }
                     ) {
                         Text(
@@ -706,65 +806,56 @@ fun ClickedWiDView(
                     )
 
                     TimePicker(state = finishTimePickerState)
-                }
-            }
-        }
 
-        if (showDeleteClickedWiDDialog) {
-            DatePickerDialog(
-                onDismissRequest = {
-                    clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            clickedWiDViewModel.deleteWiD() { deleteWiDSuccess: Boolean ->
-                                if (deleteWiDSuccess) {
-                                    onBackButtonPressed()
-                                }
-                            }
-
-                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
-                        }
-                    ) {
-                        Text(
-                            text = "삭제",
-                            style = Typography.bodyMedium
-                        )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            clickedWiDViewModel.setShowDeleteClickedWiDDialog(false)
-                        }
-                    ) {
-                        Text(
-                            text = "취소",
-                            style = Typography.bodyMedium
-                        )
-                    }
-                }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
+                    Column(
                         modifier = Modifier
-                            .padding(16.dp),
-                        text = "WiD를 삭제하시겠습니까?",
-                        style = Typography.bodyMedium
-                    )
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = MaterialTheme.shapes.extraLarge
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "선택 가능 시간",
+                            style = Typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
+                        ) {
+                            Text(
+                                text = getTimeString(
+                                    time = updatedNewWiD.start,
+                                    patten = "a hh:mm"
+                                ),
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Text(
+                                text = "~",
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+
+                            Text(
+                                text = getTimeString(
+                                    time = newWiD.finish,
+                                    patten = "a hh:mm"
+                                ),
+                                style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDFragmentPreview() {
-//    WiDView(0, NavController(LocalContext.current))
-//}

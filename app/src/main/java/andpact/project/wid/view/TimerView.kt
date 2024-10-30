@@ -58,7 +58,8 @@ fun TimerView(
     )
     val coroutineScope = rememberCoroutineScope()
 
-    val timerState = timerViewModel.user.value?.currentToolState ?: CurrentToolState.STOPPED
+//    val timerState = timerViewModel.user.value?.currentToolState ?: CurrentToolState.STOPPED
+    val currentToolState = timerViewModel.currentToolState.value
     val remainingTime = timerViewModel.remainingTime.value
     val selectedTime = timerViewModel.selectedTime.value
 
@@ -96,7 +97,7 @@ fun TimerView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (timerState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
+        if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,14 +166,12 @@ fun TimerView(
                                     .padding(vertical = 16.dp)
                                     .clickable(
                                         enabled = !titlePagerState.isScrollInProgress,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
                                     ) {
                                         coroutineScope.launch {
                                             titlePagerState.animateScrollToPage(page)
                                         }
                                     },
-                                text = titleNumberStringToTitleKRStringMap[menuTitle] ?: "",
+                                text = titleToKRMap[menuTitle] ?: "",
                                 style = if (titlePagerState.currentPage == page && !titlePagerState.isScrollInProgress) {
                                     Typography.titleLarge
                                 } else {
@@ -275,8 +274,6 @@ fun TimerView(
                                     .padding(vertical = 16.dp)
                                     .clickable(
                                         enabled = !hourSelectionPagerState.isScrollInProgress,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
                                     ) {
                                         coroutineScope.launch {
                                             hourSelectionPagerState.animateScrollToPage(page)
@@ -374,8 +371,6 @@ fun TimerView(
                                     .padding(vertical = 16.dp)
                                     .clickable(
                                         enabled = !minuteSelectionPagerState.isScrollInProgress,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
                                     ) {
                                         coroutineScope.launch {
                                             minuteSelectionPagerState.animateScrollToPage(page)
@@ -431,7 +426,7 @@ fun TimerView(
         }
 
         /** 하단 바 */
-        if (timerState == CurrentToolState.STOPPED) {
+        if (currentToolState == CurrentToolState.STOPPED) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -486,7 +481,7 @@ fun TimerView(
                     enabled = false
                 ) {
                     Icon(
-                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        painter = painterResource(id = R.drawable.baseline_done_24),
                         contentDescription = "현재 제목",
                     )
                 }
@@ -499,7 +494,7 @@ fun TimerView(
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        painter = painterResource(id = R.drawable.baseline_done_24),
                         contentDescription = "현재 제목",
                     )
                 }
@@ -519,7 +514,7 @@ fun TimerView(
                     onClick = {
                         timerViewModel.stopTimer()
                     },
-                    enabled = timerState == CurrentToolState.PAUSED
+                    enabled = currentToolState == CurrentToolState.PAUSED
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_stop_24),
@@ -529,7 +524,7 @@ fun TimerView(
 
                 FilledIconButton(
                     onClick = {
-                        if (timerState == CurrentToolState.STARTED) {
+                        if (currentToolState == CurrentToolState.STARTED) {
                             timerViewModel.pauseTimer()
                         } else {
                             timerViewModel.startTimer()
@@ -538,7 +533,7 @@ fun TimerView(
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = if (timerState == CurrentToolState.STARTED) {
+                            id = if (currentToolState == CurrentToolState.STARTED) {
                                 R.drawable.baseline_pause_24
                             } else {
                                 R.drawable.baseline_play_arrow_24

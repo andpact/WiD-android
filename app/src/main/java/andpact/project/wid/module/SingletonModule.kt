@@ -41,15 +41,15 @@ object SingletonModule {
         return UserDataSource(userRepository = provideUserRepository())
     }
 
-    @Singleton
-    @Provides
-    fun provideToolDataSource(): ToolDataSource {
-        return ToolDataSource(wiDRepository = provideWiDRepository())
-    }
+//    @Singleton
+//    @Provides
+//    fun provideToolDataSource(): ToolDataSource {
+//        return ToolDataSource(wiDRepository = provideWiDRepository())
+//    }
 
     @Singleton
     @Provides
-    fun provideWiDListDataSource(): WiDDataSource {
+    fun provideWiDDataSource(): WiDDataSource {
         return WiDDataSource(wiDRepository = provideWiDRepository())
     }
 

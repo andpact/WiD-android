@@ -2,14 +2,15 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.PeriodBasedPieChartFragment
+import andpact.project.wid.chartView.StackedVerticalBarChartView
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.WeekWiDViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -24,13 +25,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,42 +39,64 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
     val TAG = "WeekWiDView"
 
     // 날짜
-    val today = weekWiDViewModel.today
-    val startDate = weekWiDViewModel.startDate.value
-    val finishDate = weekWiDViewModel.finishDate.value
+    val today = weekWiDViewModel.today.value
+    val startDate = weekWiDViewModel.startDate.value // 조회 시작 날짜
+    val finishDate = weekWiDViewModel.finishDate.value // 조회 종료 날짜
     val weekPickerExpanded = weekWiDViewModel.weekPickerExpanded.value
 
     // WiD
+    val wiDListFetched = weekWiDViewModel.wiDListFetched.value
     val wiDList = weekWiDViewModel.wiDList.value
 
     val titleColorMap = weekWiDViewModel.titleColorMap
 
     // 합계
-    val totalDurationMap = weekWiDViewModel.totalDurationMap
+    val totalDurationMap = weekWiDViewModel.totalDurationMap.value
 
     // 평균
-    val averageDurationMap = weekWiDViewModel.averageDurationMap
+    val averageDurationMap = weekWiDViewModel.averageDurationMap.value
 
     // 최고
-    val minDurationMap = weekWiDViewModel.minDurationMap
+    val minDurationMap = weekWiDViewModel.minDurationMap.value
 
     // 최고
-    val maxDurationMap = weekWiDViewModel.maxDurationMap
+    val maxDurationMap = weekWiDViewModel.maxDurationMap.value
 
-//    // 맵
-//    val selectedMapText = weekWiDViewModel.selectedMapText.value
-//    val selectedMap = weekWiDViewModel.selectedMap.value
+    // WiD List 갱신용
+    val date = weekWiDViewModel.date.value
+    val start = weekWiDViewModel.start.value
+    val finish = weekWiDViewModel.finish.value
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
+
+        weekWiDViewModel.setToday(newDate = today)
 
         weekWiDViewModel.setStartDateAndFinishDate(
             startDate = weekWiDViewModel.startDate.value,
             finishDate = weekWiDViewModel.finishDate.value
         )
 
-        onDispose {
-            Log.d(TAG, "disposed")
+        onDispose { Log.d(TAG, "disposed") }
+    }
+
+    LaunchedEffect(finish) {
+        Log.d(TAG, "wid list update")
+
+        if (start.isBefore(finish)) { // date 날짜를 조회할 때만 리스트 갱신
+            if ((startDate.isBefore(date) && finishDate.isAfter(date)) || startDate.isEqual(date) || finishDate.isEqual(date)) {
+                weekWiDViewModel.setStartDateAndFinishDate(
+                    startDate = startDate,
+                    finishDate = finishDate
+                )
+            }
+        } else if (start.isAfter(finish)) { // date + 1 날짜 조회할 때 리스트 갱신
+            if ((startDate.isBefore(date.plusDays(1)) && finishDate.isAfter(date.plusDays(1))) || startDate.isEqual(date.plusDays(1)) || finishDate.isEqual(date.plusDays(1))) {
+                weekWiDViewModel.setStartDateAndFinishDate(
+                    startDate = startDate,
+                    finishDate = finishDate
+                )
+            }
         }
     }
 
@@ -95,33 +117,38 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .height(56.dp),
-//                horizontalArrangement = Arrangement.spacedBy(32.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(
+                    modifier = Modifier
+                        .weight(1f),
                     onClick = {
                         weekWiDViewModel.setWeekPickerExpanded(true)
                     }
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "날짜",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
 
                         Text(
-                            text = getPeriodStringOfWeek(firstDayOfWeek = startDate, lastDayOfWeek = finishDate),
+                            text = getPeriodStringOfWeek(
+                                firstDayOfWeek = startDate,
+                                lastDayOfWeek = finishDate
+                            ),
                             style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
                         )
                     }
                 }
-
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
 
                 FilledTonalIconButton(
                     onClick = {
@@ -130,7 +157,6 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
 
                         weekWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     },
-//                    enabled = 0 < pagerState.currentPage
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
@@ -154,13 +180,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                 }
             }
         }
-    ) { contentPadding ->
+    ) { contentPadding: PaddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            if (wiDList.isEmpty()) {
+            if (wiDListFetched && wiDList.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -180,168 +206,62 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         style = Typography.bodyMedium,
                     )
                 }
-            } else {
+            } else if (wiDListFetched) {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .fillMaxWidth(),
+//                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 요일
+                    // 수직 막대 차트
                     item {
-                        Row(
+                        StackedVerticalBarChartView(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp)
-                        ) {
-                            val daysOfWeek = daysOfWeekFromMonday
+                                .padding(horizontal = 16.dp),
+                            startDate = startDate,
+                            finishDate = finishDate,
+                            wiDList = wiDList
+                        )
+                    }
 
-                            daysOfWeek.forEachIndexed { index, day ->
-                                val textColor = when (index) {
-                                    5 -> DeepSkyBlue
-                                    6 -> OrangeRed
-                                    else -> MaterialTheme.colorScheme.onSurface
-                                }
-
-                                Text(
-                                    modifier = Modifier
-                                        .weight(1f),
-                                    text = day,
-                                    style = Typography.bodyMedium,
-                                    textAlign = TextAlign.Center,
-                                    color = textColor
-                                )
-                            }
-                        }
+                    item {
+                        HorizontalDivider(
+                            thickness = 8.dp,
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     }
 
                     // 파이차트
-                    item {
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-                            columns = GridCells.Fixed(7)
-                        ) {
-                            items(
-                                count = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
-                            ) { index: Int ->
-                                val indexDate = startDate.plusDays(index.toLong())
-                                val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
-
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    PeriodBasedPieChartFragment(
-                                        date = indexDate,
-                                        wiDList = filteredWiDListByDate
-                                    )
-
-//                                    Text(
-//                                        text = "${getTotalDurationPercentageFromWiDList(wiDList = filteredWiDListByDate)}%",
-//                                        style = Typography.labelSmall,
-//                                        color = MaterialTheme.colorScheme.primary
-//                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // 탭
 //                    item {
-//                        Row(
+//                        LazyVerticalGrid(
 //                            modifier = Modifier
 //                                .fillMaxWidth()
+//                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
+//                            columns = GridCells.Fixed(7)
 //                        ) {
-//                            FilterChip(
-//                                modifier = Modifier
-//                                    .weight(1f),
-//                                selected = selectedMapText == "합계",
-//                                onClick = {
-//                                    weekWiDViewModel.updateSelectedMap(newText = "합계", newMap = totalDurationMap)
-//                                },
-//                                label = {
-//                                    Text( // 텍스트 색상은 아래에 지정함.
-//                                        modifier = Modifier
-//                                            .weight(1f),
-//                                        text = "합계",
-//                                        style = Typography.bodyMedium,
-//                                        textAlign = TextAlign.Center
-//                                    )
-//                                },
-//                                shape = RoundedCornerShape(8.dp, 0.dp, 0.dp, 8.dp),
-//                                border = FilterChipDefaults.filterChipBorder(
-//                                    borderColor = Transparent
-//                                )
-//                            )
+//                            items(
+//                                count = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
+//                            ) { index: Int ->
+//                                val indexDate = startDate.plusDays(index.toLong())
+//                                val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
 //
-//                            FilterChip(
-//                                modifier = Modifier
-//                                    .weight(1f),
-//                                selected = selectedMapText == "평균",
-//                                onClick = {
-//                                    weekWiDViewModel.updateSelectedMap(newText = "평균", newMap = averageDurationMap)
-//                                },
-//                                label = {
-//                                    Text(
-//                                        modifier = Modifier
-//                                            .weight(1f),
-//                                        text = "평균",
-//                                        style = Typography.bodyMedium,
-//                                        textAlign = TextAlign.Center
+//                                Column(
+//                                    modifier = Modifier
+//                                        .weight(1f),
+//                                    horizontalAlignment = Alignment.CenterHorizontally,
+//                                ) {
+//                                    PeriodBasedPieChartFragment(
+//                                        date = indexDate,
+//                                        wiDList = filteredWiDListByDate
 //                                    )
-//                                },
-//                                shape = RectangleShape,
-//                                border = FilterChipDefaults.filterChipBorder(
-//                                    borderColor = Transparent
-//                                )
-//                            )
 //
-//                            FilterChip(
-//                                modifier = Modifier
-//                                    .weight(1f),
-//                                selected = selectedMapText == "최저",
-//                                onClick = {
-//                                    weekWiDViewModel.updateSelectedMap(newText = "최저", newMap = minDurationMap)
-//                                },
-//                                label = {
-//                                    Text(
-//                                        modifier = Modifier
-//                                            .weight(1f),
-//                                        text = "최저",
-//                                        style = Typography.bodyMedium,
-//                                        textAlign = TextAlign.Center
-//                                    )
-//                                },
-//                                shape = RectangleShape,
-//                                border = FilterChipDefaults.filterChipBorder(
-//                                    borderColor = Transparent
-//                                )
-//                            )
-//
-//                            FilterChip(
-//                                modifier = Modifier
-//                                    .weight(1f),
-//                                selected = selectedMapText == "최고",
-//                                onClick = {
-//                                    weekWiDViewModel.updateSelectedMap(newText = "최고", newMap = maxDurationMap)
-//                                },
-//                                label = {
-//                                    Text(
-//                                        modifier = Modifier
-//                                            .weight(1f),
-//                                        text = "최고",
-//                                        style = Typography.bodyMedium,
-//                                        textAlign = TextAlign.Center
-//                                    )
-//                                },
-//                                shape = RoundedCornerShape(0.dp, 8.dp, 8.dp, 0.dp),
-//                                border = FilterChipDefaults.filterChipBorder(
-//                                    borderColor = Transparent
-//                                )
-//                            )
+////                                    Text(
+////                                        text = "${getTotalDurationPercentageFromWiDList(wiDList = filteredWiDListByDate)}%",
+////                                        style = Typography.labelSmall,
+////                                        color = MaterialTheme.colorScheme.primary
+////                                    )
+//                                }
+//                            }
 //                        }
 //                    }
 
@@ -349,10 +269,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "합계 기록",
-                                style = Typography.bodyLarge,
+                                style = Typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(
@@ -363,37 +286,46 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Text(
                                 text = "각 제목 합계",
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
 
-//                    selectedMap.forEach { (title, duration) ->
-                    totalDurationMap.forEach { (title, duration) ->
+                    totalDurationMap.onEachIndexed { index: Int, (title: String, totalDuration: Duration) ->
                         item {
                             Row(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8))
-                                    .background(
-                                        titleColorMap[title]
-                                            ?: MaterialTheme.colorScheme.secondaryContainer
-                                    ),
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                    .height(intrinsicSize = IntrinsicSize.Min),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
+                                Box(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .size(24.dp),
-                                    painter = painterResource(
-                                        id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                                    ),
-                                    contentDescription = "제목",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f / 1f)
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = Typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .width(8.dp)
                                 )
 
                                 Text(
-                                    text = titleNumberStringToTitleKRStringMap[title] ?: "",
+                                    text = titleToKRMap[title] ?: "기록 없음",
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(
@@ -402,11 +334,15 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = getDurationString(duration, mode = 3),
+                                    text = getDurationString(duration = totalDuration, mode = 3),
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(totalDuration))}%)",
+                                    style = Typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -416,10 +352,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "평균 기록",
-                                style = Typography.bodyLarge,
+                                style = Typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(
@@ -430,36 +369,46 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Text(
                                 text = "하루 단위 평균",
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
 
-                    averageDurationMap.forEach { (title, duration) ->
+                    averageDurationMap.onEachIndexed { index: Int, (title: String, averageDuration: Duration) ->
                         item {
                             Row(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8))
-                                    .background(
-                                        titleColorMap[title]
-                                            ?: MaterialTheme.colorScheme.secondaryContainer
-                                    ),
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                    .height(intrinsicSize = IntrinsicSize.Min),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
+                                Box(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .size(24.dp),
-                                    painter = painterResource(
-                                        id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                                    ),
-                                    contentDescription = "제목",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f / 1f)
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = Typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .width(8.dp)
                                 )
 
                                 Text(
-                                    text = titleNumberStringToTitleKRStringMap[title] ?: "",
+                                    text = titleToKRMap[title] ?: "기록 없음",
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(
@@ -468,11 +417,15 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = getDurationString(duration, mode = 3),
+                                    text = getDurationString(duration = averageDuration, mode = 3),
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(averageDuration))}%)",
+                                    style = Typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -482,10 +435,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "최고 기록",
-                                style = Typography.bodyLarge,
+                                style = Typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(
@@ -496,36 +452,46 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Text(
                                 text = "하루 단위 최고",
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
 
-                    maxDurationMap.forEach { (title, duration) ->
+                    maxDurationMap.onEachIndexed { index: Int, (title: String, maxDuration: Duration) ->
                         item {
                             Row(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8))
-                                    .background(
-                                        titleColorMap[title]
-                                            ?: MaterialTheme.colorScheme.secondaryContainer
-                                    ),
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                    .height(intrinsicSize = IntrinsicSize.Min),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
+                                Box(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .size(24.dp),
-                                    painter = painterResource(
-                                        id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                                    ),
-                                    contentDescription = "제목",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f / 1f)
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = Typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .width(8.dp)
                                 )
 
                                 Text(
-                                    text = titleNumberStringToTitleKRStringMap[title] ?: "",
+                                    text = titleToKRMap[title] ?: "기록 없음",
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(
@@ -534,11 +500,15 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = getDurationString(duration, mode = 3),
+                                    text = getDurationString(duration = maxDuration, mode = 3),
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    text = "(${"%.1f".format(getTitlePercentageOfDay(maxDuration))}%)",
+                                    style = Typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -548,10 +518,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "최저 기록",
-                                style = Typography.bodyLarge,
+                                style = Typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(
@@ -562,36 +535,46 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Text(
                                 text = "하루 단위 최저",
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
 
-                    minDurationMap.forEach { (title, duration) ->
+                    minDurationMap.onEachIndexed { index: Int, (title: String, minDuration: Duration) ->
                         item {
                             Row(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8))
-                                    .background(
-                                        titleColorMap[title]
-                                            ?: MaterialTheme.colorScheme.secondaryContainer
-                                    ),
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    )
+                                    .height(intrinsicSize = IntrinsicSize.Min),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
+                                Box(
                                     modifier = Modifier
-                                        .padding(16.dp)
-                                        .size(24.dp),
-                                    painter = painterResource(
-                                        id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                                    ),
-                                    contentDescription = "제목",
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        .fillMaxHeight()
+                                        .aspectRatio(1f / 1f)
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = Typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(
+                                    modifier = Modifier
+                                        .width(8.dp)
                                 )
 
                                 Text(
-                                    text = titleNumberStringToTitleKRStringMap[title] ?: "",
+                                    text = titleToKRMap[title] ?: "기록 없음",
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(
@@ -600,22 +583,25 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = getDurationString(duration, mode = 3),
+                                    text = getDurationString(duration = minDuration, mode = 3),
                                     style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(minDuration))}%)",
+                                    style = Typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
                     }
                 }
+            } else {
+                CircularProgressIndicator()
             }
         }
 
-        /**
-         * 주 선택 대화상자
-         */
         if (weekPickerExpanded) {
             AlertDialog(
                 modifier = Modifier
@@ -645,7 +631,6 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         repeat(5) { index -> // 0부터 시작
-
                             val reverseIndex = 4 - index // 역순 인덱스 계산
 
                             val firstDayOfWeek = getFirstDateOfWeek(today).minusWeeks(reverseIndex.toLong())
@@ -654,10 +639,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
+                                    .clickable {
                                         weekWiDViewModel.setStartDateAndFinishDate(
                                             startDate = firstDayOfWeek,
                                             finishDate = lastDayOfWeek
@@ -680,8 +662,15 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 RadioButton(
-                                    selected = startDate == firstDayOfWeek && finishDate == lastDayOfWeek, // Set this according to your logic
-                                    onClick = { },
+                                    selected = startDate == firstDayOfWeek && finishDate == lastDayOfWeek,
+                                    onClick = {
+                                        weekWiDViewModel.setStartDateAndFinishDate(
+                                            startDate = firstDayOfWeek,
+                                            finishDate = lastDayOfWeek
+                                        )
+
+                                        weekWiDViewModel.setWeekPickerExpanded(false)
+                                    },
                                 )
                             }
                         }

@@ -5,6 +5,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 val acmeRegular = FontFamily(
@@ -43,38 +44,47 @@ val chivoMonoBlackItalic = FontFamily(
  */
 val Typography = Typography(
     titleLarge = TextStyle(
+//        fontWeight = FontWeight.ExtraBold,
         fontFamily = pretendardExtraBold,
         fontSize = 18.sp
     ),
     titleMedium = TextStyle(
+//        fontWeight = FontWeight.ExtraBold,
         fontFamily = pretendardExtraBold,
         fontSize = 16.sp
     ),
     titleSmall = TextStyle(
+//        fontWeight = FontWeight.ExtraBold,
         fontFamily = pretendardExtraBold,
         fontSize = 14.sp
     ),
     bodyLarge = TextStyle(
+//        fontWeight = FontWeight.SemiBold,
         fontFamily = pretendardSemiBold,
         fontSize = 18.sp
     ),
     bodyMedium = TextStyle(
+//        fontWeight = FontWeight.SemiBold,
         fontFamily = pretendardSemiBold,
         fontSize = 16.sp
     ),
     bodySmall = TextStyle(
+//        fontWeight = FontWeight.SemiBold,
         fontFamily = pretendardSemiBold,
         fontSize = 14.sp
     ),
     labelLarge = TextStyle(
+//        fontWeight = FontWeight.Normal,
         fontFamily = pretendardRegular,
         fontSize = 18.sp
     ),
     labelMedium = TextStyle(
+//        fontWeight = FontWeight.Normal,
         fontFamily = pretendardRegular,
         fontSize = 16.sp
     ),
     labelSmall = TextStyle(
+//        fontWeight = FontWeight.Normal,
         fontFamily = pretendardRegular,
         fontSize = 14.sp
     ),

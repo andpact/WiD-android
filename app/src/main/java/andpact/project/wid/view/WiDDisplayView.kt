@@ -47,9 +47,7 @@ fun WiDDisplayView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     Scaffold(
@@ -62,6 +60,7 @@ fun WiDDisplayView(
                     Text(
                         text = "조회",
                         style = Typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -69,7 +68,7 @@ fun WiDDisplayView(
                 )
             )
         }
-    ) { contentPadding ->
+    ) { contentPadding: PaddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,10 +105,7 @@ fun WiDDisplayView(
     ////                    Box {
     //////                        Icon(
     //////                            modifier = Modifier
-    //////                                .clickable(
-    //////                                    interactionSource = remember { MutableInteractionSource() },
-    //////                                    indication = null
-    //////                                ) {
+    //////                                .clickable {
     //////                                    titleMenuExpanded = true
     //////                                }
     //////                                .size(24.dp),
@@ -149,10 +145,7 @@ fun WiDDisplayView(
     ////                    Box {
     ////                        Icon(
     ////                            modifier = Modifier
-    ////                                .clickable(
-    ////                                    interactionSource = remember { MutableInteractionSource() },
-    ////                                    indication = null
-    ////                                ) {
+    ////                                .clickable {
     ////                                    periodMenuExpanded = true
     ////                                }
     ////                                .size(24.dp),
@@ -206,6 +199,7 @@ fun WiDDisplayView(
                             Text(
                                 text = pages[index],
                                 style = Typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         },
                         selected = pagerState.currentPage == index,

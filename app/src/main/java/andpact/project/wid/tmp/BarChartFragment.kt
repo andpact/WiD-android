@@ -1,14 +1,43 @@
 package andpact.project.wid.tmp
 
+import andpact.project.wid.model.WiD
+import andpact.project.wid.ui.theme.DeepSkyBlue
+import andpact.project.wid.ui.theme.OrangeRed
+import andpact.project.wid.ui.theme.Transparent
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.util.CurrentTool
+import andpact.project.wid.util.daysOfWeekFromMonday
+import andpact.project.wid.util.titleToColorMap
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
+
 //@Composable
-//fun StackedHorizontalBarChartFragment(wiDList: List<WiD>) {
+//fun StackedHorizontalBarChartView(wiDList: List<WiD>) {
 //    val barChartData = mutableListOf<BarChartData>()
 //
 //    val totalMinutes = 24 * 60 // 1440분(24시간) 분 단위로
 //    var currentMinute = 0 // 채워진 공간의 종료 시간(지점), 채워질 공간의 시작 시간(지점)을 의미함
 //
 //    if (wiDList.isEmpty()) {
-//        val noBarChartData = BarChartData(1f, LightGray)
+//        val noBarChartData = BarChartData(1f, MaterialTheme.colorScheme.secondaryContainer)
 //        barChartData.add(noBarChartData)
 //    } else {
 //        for (wiD in wiDList) {
@@ -17,14 +46,14 @@ package andpact.project.wid.tmp
 //            // 비어 있는 시간대의 엔트리 추가
 //            if (startMinutes > currentMinute) {
 //                val emptyMinutes = startMinutes - currentMinute
-//                val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, LightGray)
+//                val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, MaterialTheme.colorScheme.secondaryContainer)
 //                barChartData.add(emptyBarChartData)
 //            }
 //
 //            // 엔트리 셋에 해당 WiD 객체의 시간대를 추가
 //            val durationMinutes = wiD.duration.toMinutes().toInt()
 //            if (1 <= durationMinutes) { // 1분 이상의 기록만 막대차트로 보여줌.(막대 차트의 weight에 0.1 미만의 작은 값이 사용될 수도 없고 막대 차트에 표시도 안되기 때문)
-//                val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, colorMap[wiD.title] ?: LightGray)
+//                val widBarChartData = BarChartData(durationMinutes.toFloat() / totalMinutes, titleNumberStringToTitleColorMap[wiD.title] ?: MaterialTheme.colorScheme.secondaryContainer)
 //                barChartData.add(widBarChartData)
 //            }
 //
@@ -35,7 +64,7 @@ package andpact.project.wid.tmp
 //        // 마지막 WiD 객체 이후의 비어 있는 시간대의 엔트리 추가
 //        if (currentMinute < totalMinutes) {
 //            val emptyMinutes = totalMinutes - currentMinute
-//            val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, LightGray)
+//            val emptyBarChartData = BarChartData(emptyMinutes.toFloat() / totalMinutes, MaterialTheme.colorScheme.secondaryContainer)
 //            barChartData.add(emptyBarChartData)
 //        }
 //    }
@@ -73,7 +102,8 @@ package andpact.project.wid.tmp
 //            modifier = Modifier
 //                .fillMaxWidth(0.97f)
 //                .border(
-//                    BorderStroke(1.dp, Black),
+//                    width = 1.dp,
+//                    color = MaterialTheme.colorScheme.onSurface
 //                ),
 //            horizontalArrangement = Arrangement.spacedBy(0.dp),
 //        ) {
@@ -99,7 +129,7 @@ package andpact.project.wid.tmp
 //                    modifier = Modifier
 //                        .width(14.dp),
 //                    text = if (adjustedHour == 0 && hour != 0) "12" else adjustedHour.toString(),
-//                    style = Typography.bodySmall,
+//                    style = Typography.bodyMedium,
 //                    fontSize = 10.sp,
 //                    textAlign = TextAlign.Center
 //                )
@@ -107,8 +137,6 @@ package andpact.project.wid.tmp
 //        }
 //    }
 //}
-
-//data class BarChartData (val value: Float, val color: Color)
 
 //@Composable
 //fun VerticalBarChartFragment(wiDList: List<WiD>, startDate: LocalDate, finishDate: LocalDate) {
@@ -198,33 +226,4 @@ package andpact.project.wid.tmp
 //            })
 //        }
 //    }
-//}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun BarChartFragmentPreview() {
-//    val days: Long = 7
-//    val tmpStartDate = LocalDate.now()
-//    val tmpFinishDate = tmpStartDate.minusDays(days - 1)
-//
-//    val tmpWiDList = mutableListOf<WiD>()
-//
-//    for (index in 0 until days) {
-//        val indexDate = tmpStartDate.plusDays(index)
-//
-//        tmpWiDList.add(
-//            WiD(
-//                id = 0,
-//                date = indexDate,
-//                title = "STUDY",
-//                start = LocalTime.of(0, 0),
-//                finish = LocalTime.of(2, 0),
-//                duration = Duration.ofHours(2)
-//            )
-//        )
-//    }
-
-//    StackedHorizontalBarChartFragment(tmpWiDList)
-
-//    VerticalBarChartFragment(tmpWiDList, tmpStartDate, tmpFinishDate)
 //}

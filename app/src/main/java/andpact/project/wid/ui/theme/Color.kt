@@ -107,9 +107,6 @@ val LimeGreen = Color(0xFF32CD32)       // 라임 녹색(초록 버튼용)
 val AppYellow = Color(0xFFFAEF5D)
 val AppIndigo = Color(0xFF1D2B53)
 
-val light_study = Color(0xFFFF0000)    // 빨강 (Red)
-val dark_study = Color(0xFFFF0000)    // 빨강 (Red)
-
 val Study = Color(0xFFFF0000)    // 빨강 (Red)
 val Work = Color(0xFFFF7F00)     // 주황 (Orange)
 val Exercise = Color(0xFFFFFF00) // 노랑 (Yellow)
@@ -122,27 +119,27 @@ val Hygiene = Color(0xFF7F00FF) // 보라 (Purple)
 val Sleep = Color(0xFF7F007F)    // 자주색 (Dark Magenta)
 
 // Light / Dark Mode Colors
-val LightStudy = Color(0xFFFF6666)           // 밝은 빨강
-val LightWork = Color(0xFFFFB266)            // 밝은 주황
-val LightExercise = Color(0xFFFFFF66)        // 밝은 노랑
-val LightHobby = Color(0xFF99FF99)           // 밝은 연두
-val LightRelaxation = Color(0xFF66CC66)      // 밝은 녹색
-val LightMeal = Color(0xFF66FFFF)            // 밝은 청록
-val LightTravel = Color(0xFF66B2FF)          // 밝은 파랑
-val LightCleaning = Color(0xFFB3B3FF) // 밝은 남색
-val LightHygiene = Color(0xFFCC99FF) // 밝은 보라
-val LightSleep = Color(0xFFFF80FF)           // 밝은 자주색
+//val LightStudy = Color(0xFFFF6666)           // 밝은 빨강
+//val LightWork = Color(0xFFFFB266)            // 밝은 주황
+//val LightExercise = Color(0xFFFFFF66)        // 밝은 노랑
+//val LightHobby = Color(0xFF99FF99)           // 밝은 연두
+//val LightRelaxation = Color(0xFF66CC66)      // 밝은 녹색
+//val LightMeal = Color(0xFF66FFFF)            // 밝은 청록
+//val LightTravel = Color(0xFF66B2FF)          // 밝은 파랑
+//val LightCleaning = Color(0xFFB3B3FF)        // 밝은 남색
+//val LightHygiene = Color(0xFFCC99FF)         // 밝은 보라
+//val LightSleep = Color(0xFFFF80FF)           // 밝은 자주색
 
-val DarkStudy = Color(0xFF660000)            // 어두운 빨강
-val DarkWork = Color(0xFF662900)             // 어두운 주황
-val DarkExercise = Color(0xFF333300)         // 어두운 노랑
-val DarkHobby = Color(0xFF004C00)            // 어두운 연두
-val DarkRelaxation = Color(0xFF004D00)       // 어두운 녹색
-val DarkMeal = Color(0xFF004C4C)             // 어두운 청록
-val DarkTravel = Color(0xFF000099)           // 어두운 파랑
-val DarkCleaning = Color(0xFF00004D) // 어두운 남색
-val DarkHygiene = Color(0xFF4D0099)  // 어두운 보라
-val DarkSleep = Color(0xFF660066)            // 어두운 자주색
+//val DarkStudy = Color(0xFF660000)            // 어두운 빨강
+//val DarkWork = Color(0xFF662900)             // 어두운 주황
+//val DarkExercise = Color(0xFF333300)         // 어두운 노랑
+//val DarkHobby = Color(0xFF004C00)            // 어두운 연두
+//val DarkRelaxation = Color(0xFF004D00)       // 어두운 녹색
+//val DarkMeal = Color(0xFF004C4C)             // 어두운 청록
+//val DarkTravel = Color(0xFF000099)           // 어두운 파랑
+//val DarkCleaning = Color(0xFF00004D)         // 어두운 남색
+//val DarkHygiene = Color(0xFF4D0099)          // 어두운 보라
+//val DarkSleep = Color(0xFF660066)            // 어두운 자주색
 
 // For 7 titles
 //val studyColor = Color(0xFFFF0000)      // 빨강

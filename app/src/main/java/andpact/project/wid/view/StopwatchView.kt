@@ -7,17 +7,11 @@ import andpact.project.wid.viewModel.StopwatchViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -25,12 +19,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
@@ -38,7 +32,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StopwatchView(
-//    onStopwatchStateChanged: (ToolState) -> Unit,
     onStopwatchViewBarVisibleChanged: (Boolean) -> Unit,
     stopwatchViewModel: StopwatchViewModel = hiltViewModel(),
 ) {
@@ -52,17 +45,13 @@ fun StopwatchView(
     val pagerState = rememberPagerState(pageCount = { titleColorMap.size })
     val coroutineScope = rememberCoroutineScope()
 
-    val stopwatchToolState = stopwatchViewModel.user.value?.currentToolState ?: CurrentToolState.STOPPED
+    val currentToolState = stopwatchViewModel.currentToolState.value
     val totalDuration = stopwatchViewModel.totalDuration.value
 
     LaunchedEffect(pagerState.currentPage) {
         // 페이저 안에 선언하니까, 아래 메서드가 반복적으로 실행됨.
         stopwatchViewModel.setTitle(newTitle = titleColorMap.keys.elementAt(pagerState.currentPage))
     }
-
-//    LaunchedEffect(toolState) {
-//        onStopwatchStateChanged(toolState)
-//    }
 
     LaunchedEffect(stopwatchViewBarVisible) {
         onStopwatchViewBarVisibleChanged(stopwatchViewBarVisible)
@@ -71,9 +60,7 @@ fun StopwatchView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     BackHandler(enabled = stopwatchViewBarVisible) {
@@ -85,7 +72,7 @@ fun StopwatchView(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (stopwatchToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
+        if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
             Text(
                 modifier = Modifier
                     .padding(vertical = 16.dp),
@@ -102,57 +89,51 @@ fun StopwatchView(
             ) { page ->
                 val menuTitle = titleColorMap.keys.elementAt(page)
                 val color = titleColorMap[menuTitle] ?: Transparent
-//                val color = lightTitleColorMap[menuTitle] ?: Transparent // 기본 배경색은 투명으로 설정
 
-                Column(
+                FilledIconButton(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 32.dp, vertical = 16.dp)
+                        .aspectRatio(1f / 1f),
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page)
+                        }
+                    },
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = color
+                    )
                 ) {
-                    FilledIconButton(
+                    Image(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1.1f)
-                            .padding(horizontal = 32.dp, vertical = 16.dp),
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(page)
-                            }
-                        },
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = color
-                        )
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(100.dp),
-                            painter = painterResource(id = titleNumberStringToTitleIconMap[menuTitle] ?: 0),
-                            contentDescription = "현재 제목",
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 48.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = titleNumberStringToTitleKRStringMap[menuTitle] ?: "",
-                            style = Typography.titleLarge,
-                        )
-
-                        Text(
-                            text = titleNumberStringToTitleExampleKRStringMap[menuTitle] ?: "제목",
-                            style = Typography.bodyMedium,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    }
+                            .fillMaxSize(),
+                        painter = painterResource(id = R.drawable.ic_launcher_background),
+                        contentDescription = "앱 아이콘"
+                    )
                 }
             }
-        } else {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = titleToKRMap["${pagerState.currentPage}"] ?: "",
+                    style = Typography.titleLarge,
+                )
+
+//                Text(
+//                    text = titleNumberStringToTitleExampleKRStringMap["${pagerState.currentPage}"] ?: "",
+//                    style = Typography.bodyMedium,
+//                    overflow = TextOverflow.Ellipsis,
+//                    maxLines = 1
+//                )
+            }
+        } else { // 스톱 워치 시작, 중지 상태
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -167,7 +148,7 @@ fun StopwatchView(
         }
 
         /** 하단 바 */
-        if (stopwatchToolState == CurrentToolState.STOPPED) {
+        if (currentToolState == CurrentToolState.STOPPED) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -259,7 +240,7 @@ fun StopwatchView(
                     enabled = false
                 ) {
                     Icon(
-                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        painter = painterResource(id = R.drawable.baseline_done_24),
                         contentDescription = "현재 제목",
                     )
                 }
@@ -272,7 +253,7 @@ fun StopwatchView(
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = titleNumberStringToTitleIconMap[title] ?: 0),
+                        painter = painterResource(id = R.drawable.baseline_done_24),
                         contentDescription = "현재 제목",
                     )
                 }
@@ -292,7 +273,7 @@ fun StopwatchView(
                     onClick = {
                         stopwatchViewModel.stopStopwatch()
                     },
-                    enabled = stopwatchToolState == CurrentToolState.PAUSED
+                    enabled = currentToolState == CurrentToolState.PAUSED
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_stop_24),
@@ -302,7 +283,7 @@ fun StopwatchView(
 
                 FilledIconButton(
                     onClick = {
-                        if (stopwatchToolState == CurrentToolState.STARTED) { // 스톱 워치 시작 상태
+                        if (currentToolState == CurrentToolState.STARTED) { // 스톱 워치 시작 상태
                             stopwatchViewModel.pauseStopwatch()
                         } else { // 스톱 워치 중지, 정지 상태
                             stopwatchViewModel.startStopwatch()
@@ -311,7 +292,7 @@ fun StopwatchView(
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = if (stopwatchToolState == CurrentToolState.STARTED)
+                            id = if (currentToolState == CurrentToolState.STARTED)
                                 R.drawable.baseline_pause_24
                             else
                                 R.drawable.baseline_play_arrow_24
@@ -351,3 +332,8 @@ fun StopwatchView(
         }
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun StopwatchPreview() {
+//}

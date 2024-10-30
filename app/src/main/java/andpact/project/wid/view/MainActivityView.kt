@@ -34,8 +34,8 @@ fun MainActivityView(dynamicLink: String?) {
         changeNavigationBarColor(color = MaterialTheme.colorScheme.surface)
     }
 
-    val navBackStackEntry by mainActivityViewNavController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+//    val navBackStackEntry by mainActivityViewNavController.currentBackStackEntryAsState()
+//    val currentRoute = navBackStackEntry?.destination?.route
 
     NavHost(
         modifier = Modifier
@@ -50,7 +50,7 @@ fun MainActivityView(dynamicLink: String?) {
         ) {
             SplashView(
                 dynamicLink = dynamicLink,
-                onEmailLinkVerified = { emailLinkVerified ->
+                onEmailLinkVerified = { emailLinkVerified: Boolean ->
                     if (emailLinkVerified) { // 이메일 링크 인증 완료 -> 메인 뷰로 전환
                         mainActivityViewNavController.navigate(MainActivityViewDestinations.MainViewDestination.route)
                     } else { // 이메일 링크 인증 실패 -> 인증 뷰로 전환
@@ -70,18 +70,6 @@ fun MainActivityView(dynamicLink: String?) {
         // 메인 뷰
         composable(
             route = MainActivityViewDestinations.MainViewDestination.route,
-//            enterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Left,
-//                    animationSpec = tween(500)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Right,
-//                    animationSpec = tween(500)
-//                )
-//            }
         ) {
             MainView(
                 onSettingButtonPressed = {
@@ -93,22 +81,13 @@ fun MainActivityView(dynamicLink: String?) {
                 onWiDClicked = {
                     mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
                 },
-//                onDiaryClicked = {
-//                    wiDList, diary -> mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route + "/${wiDList}" + "/${diary}")
-//                },
                 onMainViewBarVisibleChanged = { visible ->
                     mainActivityBarVisible = visible
                 },
-//                onStopwatchTopBottomBarVisible = {
-//                    visible -> stopwatchTopBottomBarVisible = visible
-//                },
-//                onTimerTopBottomBarVisibleChanged = {
-//                    visible -> timerTopBottomBarVisible = visible
-//                }
             )
         }
 
-        // 새로운 WiD 뷰
+        // NewWiDView
         composable(
             route = MainActivityViewDestinations.NewWiDViewDestination.route,
             enterTransition = {
@@ -124,7 +103,7 @@ fun MainActivityView(dynamicLink: String?) {
                 )
             }
         ) {
-            EmptyWiDView(
+            NewWiDView(
                 onBackButtonPressed = {
                     mainActivityViewNavController.popBackStack()
                 },
@@ -147,7 +126,7 @@ fun MainActivityView(dynamicLink: String?) {
                 )
             }
         ) {
-            ClickedWiDView(
+            WiDView(
                 onBackButtonPressed = {
                     mainActivityViewNavController.popBackStack()
                 }

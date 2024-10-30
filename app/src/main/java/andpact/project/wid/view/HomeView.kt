@@ -1,34 +1,35 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.ui.theme.Black
+import andpact.project.wid.chartView.HomeViewHorizontalBarChartView
+import andpact.project.wid.chartView.HomeViewPieChartView
+import andpact.project.wid.chartView.VerticalBarChartView
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.ui.theme.White
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.HomeViewModel
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import kotlin.text.Typography
+import java.text.NumberFormat
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.YearMonth
+import java.util.*
 
 // 익명 가입 시 uid를 제외하고는 null이 할당됨.
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,17 +41,27 @@ fun HomeView(
     val TAG = "HomeView"
 
     val displayName = homeViewModel.firebaseUser.value?.displayName ?: ""
-//    val statusMessage = homeViewModel.user.value?.statusMessage ?: ""
     val level = homeViewModel.user.value?.level
     val currentExp = homeViewModel.user.value?.currentExp ?: 0
+    val requiredExp = levelToRequiredExpMap[level] ?: 0
+    val expRatio = currentExp.toFloat() / requiredExp.toFloat()
 
-    val numberToDurationMap = homeViewModel.numberToDurationMap
+    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+    val formattedCurrentExp = numberFormat.format(currentExp)
+    val formattedRequiredExp = numberFormat.format(requiredExp)
+
+    // 날짜
+    val today = homeViewModel.today.value
+
+    // 시간
+    val now = homeViewModel.now.value
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
-
+//        homeViewModel.startTimer() // 화면이 나타날 때 타이머 시작
         onDispose {
             Log.d(TAG, "disposed")
+//            homeViewModel.stopTimer() // 화면이 사라질 때 타이머 중지
         }
     }
 
@@ -107,15 +118,6 @@ fun HomeView(
                 )
             }
 
-//            item {
-//                Text(
-//                    modifier = Modifier
-//                        .padding(horizontal = 16.dp),
-//                    text = statusMessage,
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-
             item {
                 Column(
                     modifier = Modifier
@@ -125,22 +127,15 @@ fun HomeView(
                             shape = MaterialTheme.shapes.medium
                         )
                         .padding(16.dp), // 안쪽 패딩
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
                     Text(
-                        text = "$level",
+                        text = "LEVEL $level",
                         style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
 
-//                    val requiredExp = levelRequiredExpMap[user?.level] ?: 0
-                    val requiredExp = 86400
-//                    val currentExp = user?.currentExp ?: 0
-//                    val currentExp = 40000 // tmp
-//                    val expRatio = if (requiredExp > 0) currentExp.toFloat() / requiredExp else 0f
-                    val expRatio = currentExp.toFloat() / requiredExp.toFloat()
-
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(16.dp)
@@ -150,14 +145,17 @@ fun HomeView(
                                 shape = MaterialTheme.shapes.medium
                             )
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(fraction = expRatio) // 1% 미만은 표시 안되고 오류날거임.
-                                .background(
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                        )
+                        if (0.01f <= expRatio) { // 1% 미만은 표시 안되고 오류날거임.
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = expRatio)
+                                    .height(16.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                            )
+                        }
                     }
 
                     Row(
@@ -170,106 +168,141 @@ fun HomeView(
                         )
 
                         Text(
-                            text = "$currentExp / $requiredExp",
+                            text = "$formattedCurrentExp / $formattedRequiredExp",
                             style = Typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    text = "제목 별 소요 시간 순위",
-                    style = Typography.titleLarge
-                )
-            }
-
-            numberToDurationMap?.entries?.forEachIndexed { index, (title, duration) ->
-                item {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .size(24.dp),
-                            painter = painterResource(
-                                id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                            ),
-                            contentDescription = "제목",
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = titleNumberStringToTitleKRStringMap[title] ?: "",
-                                style = Typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-
-                            Text(
-                                text = getDurationString(duration = duration, mode = 3),
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
 
                         Spacer(
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .width(8.dp)
                         )
 
                         Text(
                             modifier = Modifier
-                                .padding(horizontal = 16.dp),
-                            text = (index + 1).toString(), // index는 0부터 시작하므로 +1
-                            style = Typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(horizontal = 4.dp),
+                            text = "${(expRatio * 100).toInt()}%",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
             }
 
             item {
-                Spacer(
+                Row(
                     modifier = Modifier
-                        .height(0.dp)
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    HomeViewPieChartView(
+                        today = today,
+                        now = now
+                    )
+                }
             }
 
 //            item {
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 16.dp),
-//                    verticalArrangement = Arrangement.spacedBy(16.dp)
-//                ) {
-//                    numberToDurationMap?.forEach { (title, duration) ->
-//                        Row(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(vertical = 4.dp) // 항목 간의 간격 추가
-//                        ) {
-//                            Text(
-//                                text = title, // title을 표시
-//                                modifier = Modifier.weight(1f) // Text가 나란히 정렬되도록 가중치를 설정
-//                            )
-//                            Text(
-//                                text = duration.toString(), // Duration을 표시
-//                                modifier = Modifier.weight(1f)
-//                            )
-//                        }
-//                    }
-//                }
+//                HomeViewHorizontalBarChartView(now = now)
 //            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomePreview() {
+    val level = 30
+    val currentExp = 453_829
+    val requiredExp = 1_000_000
+    val expRatio = currentExp.toFloat() / requiredExp.toFloat()
+
+    // Number formatter for adding commas
+    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+    val formattedCurrentExp = numberFormat.format(currentExp)
+    val formattedRequiredExp = numberFormat.format(requiredExp)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp) // 바깥 패딩
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.medium
+                )
+                .padding(16.dp), // 안쪽 패딩
+            verticalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+            Text(
+                text = "LEVEL $level",
+                style = Typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        shape = MaterialTheme.shapes.medium
+                    )
+            ) {
+                if (0.01f <= expRatio) { // 1% 미만은 표시 안되고 오류날거임.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(fraction = expRatio)
+                            .height(16.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                shape = MaterialTheme.shapes.medium
+                            )
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                Text(
+                    text = "$formattedCurrentExp / $formattedRequiredExp",
+                    style = Typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .width(8.dp)
+                )
+
+                Text(
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(horizontal = 4.dp),
+                    text = "${(expRatio * 100).toInt()}%",
+                    style = Typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
         }
     }
 }

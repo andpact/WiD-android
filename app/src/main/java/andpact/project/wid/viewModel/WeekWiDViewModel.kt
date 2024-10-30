@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,19 +30,21 @@ class WeekWiDViewModel @Inject constructor(
     private val user: State<User?> = userDataSource.user
 
     // 날짜
-    val today: LocalDate = LocalDate.now()
-    private val _startDate = mutableStateOf(getFirstDateOfWeek(today))
+    val today: State<LocalDate> = wiDDataSource.today
+    private val _startDate = mutableStateOf(getFirstDateOfWeek(today.value))
     val startDate: State<LocalDate> = _startDate
-    private val _finishDate = mutableStateOf(getLastDateOfWeek(today))
+    private val _finishDate = mutableStateOf(getLastDateOfWeek(today.value))
     val finishDate: State<LocalDate> = _finishDate
     private val _weekPickerExpanded = mutableStateOf(false)
     val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
 
     // WiD
+    private val _wiDListFetched = mutableStateOf(false)
+    val wiDListFetched: State<Boolean> = _wiDListFetched
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
 
-    val titleColorMap = titleNumberStringToTitleColorMap
+    val titleColorMap = titleToColorMap
 
     // 합계 selectedMap만 화면에 표시하니 state로 선언할 필요 없음.
     private val _totalDurationMap = mutableStateOf(getTotalDurationMapByTitle(wiDList = _wiDList.value))
@@ -59,8 +62,20 @@ class WeekWiDViewModel @Inject constructor(
     private val _maxDurationMap = mutableStateOf(getMaxDurationMapByTitle(wiDList = _wiDList.value))
     val maxDurationMap: State<Map<String, Duration>> = _maxDurationMap
 
+    // WiD List 갱신용
+    val date: State<LocalDate> = wiDDataSource.date
+    val start: State<LocalTime> = wiDDataSource.start
+    val finish: State<LocalTime> = wiDDataSource.finish
+
+    fun setToday(newDate: LocalDate) {
+        Log.d(TAG, "setToday executed")
+
+        wiDDataSource.setToday(newDate = newDate)
+    }
+
     fun setWeekPickerExpanded(expand: Boolean) {
-        Log.d("WeekWiDViewModel", "setWeekPickerExpanded executed")
+        Log.d(TAG, "setWeekPickerExpanded executed")
+
         _weekPickerExpanded.value = expand
     }
 
@@ -73,6 +88,20 @@ class WeekWiDViewModel @Inject constructor(
         _startDate.value = startDate
         _finishDate.value = finishDate
 
+        setWiDListFetched(wiDListFetched = false)
+
+        getWiDListFromStartDateToFinishDate(
+            startDate = startDate,
+            finishDate = finishDate
+        )
+    }
+
+    private fun getWiDListFromStartDateToFinishDate(
+        startDate: LocalDate,
+        finishDate: LocalDate
+    ) {
+        Log.d(TAG, "getWiDListFromStartDateToFinishDate executed")
+
         wiDDataSource.getWiDListFromFirstDateToLastDate(
             email = user.value?.email ?: "",
             firstDate = startDate,
@@ -82,26 +111,24 @@ class WeekWiDViewModel @Inject constructor(
 
                 _wiDList.value = wiDList
 
-                _totalDurationMap.value = getTotalDurationMapByTitle(wiDList = _wiDList.value)
-                _averageDurationMap.value = getAverageDurationMapByTitle(wiDList = _wiDList.value)
-                _minDurationMap.value = getMinDurationMapByTitle(wiDList = _wiDList.value)
-                _maxDurationMap.value = getMaxDurationMapByTitle(wiDList = _wiDList.value)
+                setDurationMaps(wiDList = wiDList)
+                setWiDListFetched(wiDListFetched = true)
             }
         )
+    }
 
-        // 리스너 부착
-//        wiDDataSource.addSnapshotListenerToWiDCollectionFromFirstDateToLastDate(
-//            email = user.value?.email ?: "",
-//            collectionFirstDate = startDate,
-//            collectionLastDate = finishDate,
-//            onWiDCollectionChanged = { wiDList: List<WiD> ->
-//                _wiDList.value = wiDList
-//
-//                _totalDurationMap.value = getTotalDurationMapByTitle(wiDList = _wiDList.value)
-//                _averageDurationMap.value = getAverageDurationMapByTitle(wiDList = _wiDList.value)
-//                _minDurationMap.value = getMinDurationMapByTitle(wiDList = _wiDList.value)
-//                _maxDurationMap.value = getMaxDurationMapByTitle(wiDList = _wiDList.value)
-//            }
-//        )
+    private fun setDurationMaps(wiDList: List<WiD>) {
+        Log.d(TAG, "setDurationMaps executed")
+
+        _totalDurationMap.value = getTotalDurationMapByTitle(wiDList = wiDList)
+        _averageDurationMap.value = getAverageDurationMapByTitle(wiDList = wiDList)
+        _minDurationMap.value = getMinDurationMapByTitle(wiDList = wiDList)
+        _maxDurationMap.value = getMaxDurationMapByTitle(wiDList = wiDList)
+    }
+
+    private fun setWiDListFetched(wiDListFetched: Boolean) {
+        Log.d(TAG, "setWiDListFetched executed")
+
+        _wiDListFetched.value = wiDListFetched
     }
 }

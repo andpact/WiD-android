@@ -5,7 +5,7 @@ import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.levelToRequiredExpMap
-import andpact.project.wid.util.titleNumberStringToTitleColorMap
+import andpact.project.wid.util.titleToColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -14,31 +14,45 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.*
 import javax.inject.Inject
+import kotlin.concurrent.timer
 
 @HiltViewModel
-class ClickedWiDViewModel @Inject constructor(
+class WiDViewModel @Inject constructor(
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource
 ): ViewModel() {
-    private val TAG = "ClickedWiDViewModel"
+    private val TAG = "WiDViewModel"
     init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "cleared")
     }
 
+    private val today = wiDDataSource.today.value
+    private var now = LocalTime.now()
     private val user: State<User?> = userDataSource.user
+    val titleColorMap = titleToColorMap
 
-    val titleColorMap = titleNumberStringToTitleColorMap
+    private val _expandMenu = mutableStateOf(false)
+    val expandMenu: State<Boolean> = _expandMenu
 
     /** 기존 WiD와 수정된 WiD의 차이를 파악하기 위해 필요함, 화면에 차이를 표시할 수도 있겠는데? */
-    private val existingWiD: State<WiD> = wiDDataSource.existingWiD
-    val updatedWiD: State<WiD> = wiDDataSource.updatedWiD
+    // WiD
+    val wiD: State<WiD> = wiDDataSource.wiD // 수정 전
+    private val _showDeleteWiDDialog = mutableStateOf(false)
+    val showDeleteWiDDialog: State<Boolean> = _showDeleteWiDDialog
 
+    // Updated WiD
+    val updatedWiD: State<WiD> = wiDDataSource.updatedWiD // 수정 후
+    private var updatedWiDTimer: Timer? = null
+
+    // 제목
     private val _showTitleMenu = mutableStateOf(false)
     val showTitleMenu: State<Boolean> = _showTitleMenu
 
+    // 시작
     private val _showStartPicker = mutableStateOf(false)
     val showStartPicker: State<Boolean> = _showStartPicker
     private val _startOverlap = mutableStateOf(false)
@@ -46,6 +60,7 @@ class ClickedWiDViewModel @Inject constructor(
     private val _startModified = mutableStateOf(false)
     val startModified: State<Boolean> = _startModified
 
+    // 종료
     private val _showFinishPicker = mutableStateOf(false)
     val showFinishPicker: State<Boolean> = _showFinishPicker
     private val _finishOverlap = mutableStateOf(false)
@@ -53,18 +68,49 @@ class ClickedWiDViewModel @Inject constructor(
     private val _finishModified = mutableStateOf(false)
     val finishModified: State<Boolean> = _finishModified
 
+    // 소요
     private val _durationExist = mutableStateOf(true)
     val durationExist: State<Boolean> = _durationExist
 
-    private val _showDeleteClickedWiDDialog = mutableStateOf(false)
-    val showDeleteClickedWiDDialog: State<Boolean> = _showDeleteClickedWiDDialog
-
+    // WiD List
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
+
+    fun setExpandMenu(expand: Boolean) {
+        Log.d(TAG, "setExpandMenu executed")
+
+        _expandMenu.value = expand
+    }
 
     fun setUpdatedWiD(updatedWiD: WiD) {
         Log.d(TAG, "setUpdatedWiD executed")
 
         wiDDataSource.setUpdatedWiD(updatedWiD = updatedWiD)
+
+        checkNewStartOverlap()
+        checkNewFinishOverlap()
+        checkNewWiDOverlap()
+        checkDurationExist()
+    }
+
+    fun startUpdatedWiDTimer() {
+        Log.d(TAG, "startUpdatedWiDTimer executed")
+
+        updatedWiDTimer = timer(period = 1_000) {
+            now = LocalTime.now().withNano(0)
+
+            val updatedWiD = updatedWiD.value.copy(
+                finish = now,
+                duration = Duration.between(updatedWiD.value.start, now)
+            )
+
+            setUpdatedWiD(updatedWiD = updatedWiD)
+        }
+    }
+
+    fun stopUpdatedWiDTimer() {
+        Log.d(TAG, "stopUpdatedWiDTimer executed")
+
+        updatedWiDTimer?.cancel()
     }
 
     fun setShowTitleMenu(show: Boolean) {
@@ -115,26 +161,19 @@ class ClickedWiDViewModel @Inject constructor(
         _durationExist.value = exist
     }
 
-    fun setShowDeleteClickedWiDDialog(show: Boolean) {
-        Log.d(TAG, "setShowDeleteClickedWiDDialog executed")
+    fun setShowDeleteWiDDialog(show: Boolean) {
+        Log.d(TAG, "setShowDeleteWiDDialog executed")
 
-        _showDeleteClickedWiDDialog.value = show
+        _showDeleteWiDDialog.value = show
     }
 
-    fun checkDurationExist() {
-        Log.d(TAG, "checkDurationExist executed")
-
-        setDurationExist(Duration.ZERO < updatedWiD.value.duration)
-    }
-
-    fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
+    private fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
         Log.d(TAG, "checkNewStartOverlap executed")
 
-        val today = LocalDate.now()
-        val now = LocalTime.now()
+        now = LocalTime.now().withNano(0)
 
         for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value == existingWiD) {
+            if (updatedWiD.value.id == existingWiD.id) {
                 continue
             }
 
@@ -150,14 +189,13 @@ class ClickedWiDViewModel @Inject constructor(
         }
     }
 
-    fun checkNewFinishOverlap() { // 생성할 WiD의 종료 시간이 겹치는지 확인
+    private fun checkNewFinishOverlap() { // 생성할 WiD의 종료 시간이 겹치는지 확인
         Log.d(TAG, "checkNewFinishOverlap executed")
 
-        val today = LocalDate.now()
-        val now = LocalTime.now()
+        now = LocalTime.now().withNano(0)
 
         for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value == existingWiD) {
+            if (updatedWiD.value.id == existingWiD.id) {
                 continue
             }
 
@@ -173,11 +211,11 @@ class ClickedWiDViewModel @Inject constructor(
         }
     }
 
-    fun checkNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
+    private fun checkNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
         Log.d(TAG, "checkNewWiDOverlap executed")
 
         for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value == existingWiD) {
+            if (updatedWiD.value.id == existingWiD.id) {
                 continue
             }
 
@@ -193,25 +231,22 @@ class ClickedWiDViewModel @Inject constructor(
         }
     }
 
+    private fun checkDurationExist() {
+        Log.d(TAG, "checkDurationExist executed")
+
+        setDurationExist(exist = Duration.ZERO < updatedWiD.value.duration)
+    }
+
     fun getWiDListByDate(currentDate: LocalDate) {
         Log.d(TAG, "getWiDListByDate executed")
 
-        wiDDataSource.getWiDListByDate(
+        wiDDataSource.getWiDListOfDate(
             email = user.value?.email ?: "",
             collectionDate = currentDate,
             onWiDListFetchedByDate = { wiDList: List<WiD> ->
                 _wiDList.value = wiDList
             }
         )
-
-        /** 이 뷰에서 리스너를 사용할 일이 있을까? */
-//        wiDDataSource.addSnapshotListenerToWiDCollectionByDate(
-//            email = user.value?.email ?: "",
-//            collectionDate = currentDate,
-//            onWiDCollectionChanged = { wiDList: List<WiD> ->
-//                _wiDList.value = wiDList
-//            }
-//        )
     }
 
     fun updateWiD(onWiDUpdated: (Boolean) -> Unit) {
@@ -220,126 +255,121 @@ class ClickedWiDViewModel @Inject constructor(
         wiDDataSource.updateWiD(
             email = user.value?.email ?: "",
             onWiDUpdated = { wiDUpdated: Boolean ->
-                if (wiDUpdated) {
+                if (wiDUpdated) { // 업데이트 성공
+                    // 레벨
+                    val currentLevel = user.value?.level ?: 1
+                    val currentLevelAsString = currentLevel.toString()
+
+                    // 경험치
                     val currentExp = user.value?.currentExp ?: 0
-
-                    val existingExp = existingWiD.value.duration.seconds.toInt()
+                    val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
+                    val exp = wiD.value.duration.seconds.toInt()
+                    val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val updatedExp = updatedWiD.value.duration.seconds.toInt()
+                    val updatedWiDTotalExp = wiDTotalExp - exp + updatedExp
 
-                    val currentTotalExp = user.value?.totalExp ?: 0
-                    val updatedTotalExp = currentTotalExp - existingExp + updatedExp
-                    val currentWiDTotalExp = user.value?.totalExp ?: 0
-                    val updatedWiDTotalExp = currentWiDTotalExp - existingExp + updatedExp
-
-                    val title = updatedWiD.value.title
-                    val existingDuration = existingWiD.value.duration
+                    // 제목
+                    val title = wiD.value.title
+                    val updatedTitle = updatedWiD.value.title
+                    val duration = wiD.value.duration
                     val updatedDuration = updatedWiD.value.duration
-                    val titleDurationMap = user.value?.titleDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentDuration = titleDurationMap[title] ?: Duration.ZERO
-                    titleDurationMap[title] = currentDuration - existingDuration + updatedDuration
+                    val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
+                    val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
 
-                    if (currentExp - existingExp + updatedExp < 0) { // 레벨 다운
-                        val currentLevel = user.value?.level ?: 1
-                        val currentLevelAsString = currentLevel.toString()
-                        val updatedLevel = currentLevel - 1
+                    if (title == updatedTitle) { // 제목 변경 안함.
+                        val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
+                        titleDurationMap[title] = currentTitleDuration - duration + updatedDuration
+                    } else { // 제목 변경
+                        val currentTitleCount = titleCountMap[title] ?: 0
+                        titleCountMap[title] = currentTitleCount - 1
+                        val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
+                        titleDurationMap[title] = currentTitleDuration - duration
 
+                        val currentUpdatedTitleCount = titleCountMap[updatedTitle] ?: 0
+                        titleCountMap[updatedTitle] = currentUpdatedTitleCount + 1
+                        val currentUpdatedTitleDuration = titleDurationMap[updatedTitle] ?: Duration.ZERO
+                        titleDurationMap[updatedTitle] = currentUpdatedTitleDuration + updatedDuration
+                    }
+
+                    if (currentLevelRequiredExp <= currentExp - exp + updatedExp) { // 레벨 업
+                        // 레벨
+                        val updatedLevel = currentLevel + 1
+                        val newLevelAsString = updatedLevel.toString()
                         val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-                        levelUpHistoryMap.remove(currentLevelAsString)
+                        levelUpHistoryMap[newLevelAsString] = LocalDate.now()
 
-                        val updatedLevelRequiredExp = levelToRequiredExpMap[updatedLevel] ?: 0
-                        val updatedCurrentExp = updatedLevelRequiredExp - existingExp + updatedExp
+                        // 경험치
+                        val updatedCurrentExp = currentExp - exp + updatedExp - currentLevelRequiredExp
 
-                        userDataSource.updateWiDWithLevelDown(
+                        userDataSource.updateWiDWithLevelUp(
                             newLevel = updatedLevel,
                             newLevelUpHistoryMap = levelUpHistoryMap,
                             newCurrentExp = updatedCurrentExp,
-                            newTotalExp = updatedTotalExp,
                             newWiDTotalExp = updatedWiDTotalExp,
+                            newTitleCountMap = titleCountMap,
                             newTitleDurationMap = titleDurationMap,
                         )
                     } else {
-                        val updatedCurrentExp = currentExp - existingExp + updatedExp
+                        val updatedCurrentExp = currentExp - exp + updatedExp // 마이너스 값 나올 수 있음.
 
                         userDataSource.updateWiD(
                             newCurrentExp = updatedCurrentExp,
-                            newTotalExp = updatedTotalExp,
                             newWiDTotalExp = updatedWiDTotalExp,
+                            newTitleCountMap = titleCountMap,
                             newTitleDurationMap = titleDurationMap,
                         )
                     }
 
                     onWiDUpdated(true)
-                } else {
+                } else { // 업데이트 실패
                     onWiDUpdated(false)
                 }
             }
         )
     }
 
-    // 삭제할 때는 existingWiD를 사용해야 함.
+    // 삭제할 때는 wiD를 사용해야 함.
     fun deleteWiD(onWiDDeleted: (Boolean) -> Unit) {
         Log.d(TAG, "deleteWiD executed")
 
         wiDDataSource.deleteWiD(
             email = user.value?.email ?: "",
             onWiDDeleted = { wiDDeleted: Boolean ->
-                if (wiDDeleted) {
+                if (wiDDeleted) { // 삭제 성공
+                    // 경험치
                     val currentExp = user.value?.currentExp ?: 0
-                    val usedExp = existingWiD.value.duration.seconds.toInt()
+                    val exp = wiD.value.duration.seconds.toInt()
+                    val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                    val prevWiDTotalExp = wiDTotalExp - exp
 
-                    val currentTotalExp = user.value?.totalExp ?: 0
-                    val prevTotalExp = currentTotalExp - usedExp
-                    val currentWiDTotalExp = user.value?.totalExp ?: 0
-                    val prevWiDTotalExp = currentWiDTotalExp - usedExp
+                    // 제목
+                    val title = wiD.value.title
+                    val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
+                    val currentTitleCount = titleCountMap[title] ?: 0
+                    titleCountMap[title] = currentTitleCount - 1
+                    val duration = wiD.value.duration
+                    val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
+                    val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
+                    titleDurationMap[title] = currentTitleDuration.minus(duration)
 
-                    val title = existingWiD.value.title
-                    val titleCountMap = user.value?.titleCountMap?.toMutableMap() ?: mutableMapOf()
-                    val currentCount = titleCountMap[title] ?: 0
-                    titleCountMap[title] = currentCount - 1
+                    // 도구
+                    val createdBy = wiD.value.createdBy
+                    val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
+                    val currentToolCount = toolCountMap[createdBy] ?: 0
+                    toolCountMap[createdBy] = currentToolCount - 1
 
-                    val usedDuration = existingWiD.value.duration
-                    val titleDurationMap = user.value?.titleDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentDuration = titleDurationMap[title] ?: Duration.ZERO
-                    titleDurationMap[title] = currentDuration - usedDuration
+                    val prevCurrentExp = currentExp - exp // 마이너스 나올 수 있음.
 
-                    if (currentExp - usedExp < 0) { // 레벨 다운
-                        val currentLevel = user.value?.level ?: 1
-                        val currentLevelAsString = currentLevel.toString()
-                        val prevLevel = currentLevel - 1
+                    userDataSource.deleteWiD(
+                        newCurrentExp = prevCurrentExp,
+                        newWiDTotalExp = prevWiDTotalExp,
+                        newTitleCountMap = titleCountMap,
+                        newTitleDurationMap = titleDurationMap,
+                        newToolCountMap = toolCountMap
+                    )
 
-                        val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-                        levelUpHistoryMap.remove(currentLevelAsString)
-
-                        val prevLevelRequiredExp = levelToRequiredExpMap[prevLevel] ?: 0
-                        val prevCurrentExp = prevLevelRequiredExp + currentExp - usedExp
-
-                        userDataSource.deleteWiDWithLevelDown(
-                            newLevel = prevLevel,
-                            newLevelUpHistoryMap = levelUpHistoryMap,
-                            newCurrentExp = prevCurrentExp,
-                            newTotalExp = prevTotalExp,
-                            newWiDTotalExp = prevWiDTotalExp,
-                            newTitleCountMap = titleCountMap,
-                            newTitleDurationMap = titleDurationMap
-                        )
-                    } else {
-                        val prevCurrentExp = currentExp - usedExp
-
-                        userDataSource.deleteWiD(
-                            newCurrentExp = prevCurrentExp,
-                            newTotalExp = prevTotalExp,
-                            newWiDTotalExp = prevWiDTotalExp,
-                            newTitleCountMap = titleCountMap,
-                            newTitleDurationMap = titleDurationMap
-                        )
-                    }
-
-                    /**
-                     * 위드 삭제 후 콜백 반환이 아니라,
-                     * 위드 삭제 후 -> 유저 문서 갱신 후 콜백 반환 해야 하지 않을까?
-                     */
                     onWiDDeleted(true)
-                } else {
+                } else { // 삭제 실패
                     onWiDDeleted(false)
                 }
             }

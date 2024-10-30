@@ -1,7 +1,7 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.chartView.DayPieChartView
+import andpact.project.wid.chartView.DailyWiDListPieChartView
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
@@ -9,9 +9,10 @@ import andpact.project.wid.viewModel.DayWiDViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -25,15 +26,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import java.time.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,8 +48,8 @@ fun DayWiDView(
     val titleColorMap = dayWiDViewModel.titleColorMap
 
     // 날짜
-    val today = LocalDate.now()
-    val currentDate = dayWiDViewModel.currentDate.value
+    val today = LocalDate.now() // DayWiDView가 화면에 나타난 시점의 날, "오늘"의 기준
+    val currentDate = dayWiDViewModel.currentDate.value // 조회하려는 날짜
     val showDatePicker = dayWiDViewModel.showDatePicker.value
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis() + (9 * 60 * 60 * 1000),
@@ -67,21 +67,50 @@ fun DayWiDView(
         }
     )
 
-    // WiD
-    val wiDListLoaded = dayWiDViewModel.wiDListLoaded.value
+    // 도구
+    val currentTool = dayWiDViewModel.currentTool.value
+
+    // WiD List
+    val fullWiDListLoaded = dayWiDViewModel.fullWiDListLoaded.value
     val fullWiDList = dayWiDViewModel.fullWiDList.value
 
     // 합계
     val totalDurationMap = dayWiDViewModel.totalDurationMap.value
 
+    // Current WiD
+    val date = dayWiDViewModel.date.value
+    val start = dayWiDViewModel.start.value
+    val finish = dayWiDViewModel.finish.value
+
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        // WiD를 삭제하거나 생성한 후 돌아 왔을 때, 리스트가 동기화되도록.
-        dayWiDViewModel.setCurrentDate(currentDate)
+        //  Day WiD View의 Today를 기준으로 today를 통일함.
+        dayWiDViewModel.setToday(newDate = today)
+
+        // 리스트 수정 후, 돌아 왔을 때, 갱신된 리스트를 반영하기 위함.
+        dayWiDViewModel.setCurrentDate(
+            today = today,
+            newDate = currentDate
+        )
 
         onDispose {
             Log.d(TAG, "disposed")
+
+            dayWiDViewModel.stopLastNewWiDTimer()
+        }
+    }
+
+    /** 위드가 실시간 갱신되는 화면만 갱신하면 됨(단일 위드 생성 -> date, 다중 위드 생성 -> date + 1) */
+    LaunchedEffect(finish) { // Current WiD, finish가 갱신되고 있다는 것은 도구가 시작 상태라는 것임.
+        Log.d(TAG, "LaunchedEffect: finish update")
+
+        if ((currentDate == date && start.isBefore(finish)) || (currentDate == date.plusDays(1) && start.isAfter(finish))) {
+            // currentDate가 date이거나, currentDate가 date + 1일이고, 각 조건에서 start와 finish의 관계에 맞을 때
+            dayWiDViewModel.setCurrentDate(
+                today = today,
+                newDate = currentDate
+            )
         }
     }
 
@@ -105,34 +134,40 @@ fun DayWiDView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(
+                    modifier = Modifier
+                        .weight(1f),
                     onClick = {
                         dayWiDViewModel.setShowDatePicker(show = true)
                     }
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                             contentDescription = "날짜",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
 
                         Text(
                             text = getDateString(currentDate),
                             style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
                         )
                     }
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 FilledTonalIconButton(
                     onClick = {
                         val newDate = currentDate.minusDays(1)
-                        dayWiDViewModel.setCurrentDate(newDate)
+                        dayWiDViewModel.setCurrentDate(
+                            today = today,
+                            newDate = newDate
+                        )
                     },
                 ) {
                     Icon(
@@ -144,7 +179,10 @@ fun DayWiDView(
                 FilledTonalIconButton(
                     onClick = {
                         val newDate = currentDate.plusDays(1)
-                        dayWiDViewModel.setCurrentDate(newDate)
+                        dayWiDViewModel.setCurrentDate(
+                            today = today,
+                            newDate = newDate
+                        )
                     },
                     enabled = currentDate != today
                 ) {
@@ -156,19 +194,21 @@ fun DayWiDView(
             }
         },
         floatingActionButton = {
-            if (fullWiDList.size == 1) {
+            if (fullWiDListLoaded && fullWiDList.isEmpty()) {
                 FloatingActionButton(
                     onClick = {
-                        val emptyWiD = WiD(
-                            id = "",
+                        val newWiD = WiD(
+                            id = "newWiD",
                             date = dayWiDViewModel.currentDate.value,
-                            title = "무엇을 하셨나요?",
+                            title = "기록 없음",
                             start = LocalTime.MIN,
                             finish = LocalTime.MIN,
-                            duration = Duration.ZERO
+                            duration = Duration.ZERO,
+                            createdBy = CurrentTool.LIST
                         )
 
-                        dayWiDViewModel.setEmptyWiD(emptyWiD)
+                        dayWiDViewModel.setNewWiD(newWiD = newWiD)
+                        dayWiDViewModel.setUpdatedNewWiD(updatedNewWiD = newWiD)
 
                         onEmptyWiDClicked()
                     }
@@ -179,21 +219,7 @@ fun DayWiDView(
                     )
                 }
             }
-//            else {
-//                FloatingActionButton(
-//                    onClick = {
-//                        // 다이어리 이동 버튼
-//                        // 레이지 컬러을 다이어리까지 내림
-//                    }
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Add,
-//                        contentDescription = "다이어리로 이동",
-//                    )
-//                }
-//            }
         },
-//        floatingActionButtonPosition = if (fullWiDList.size == 1) { FabPosition.End } else { FabPosition.Center },
         content = { contentPadding: PaddingValues ->
             Column(
                 modifier = Modifier
@@ -202,8 +228,7 @@ fun DayWiDView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
             ) {
-//                if (wiDListLoaded && fullWiDList.isEmpty()) {
-                if (wiDListLoaded && fullWiDList.size == 1) {
+                if (fullWiDListLoaded && fullWiDList.isEmpty()) {
                     Icon(
                         modifier = Modifier
                             .size(48.dp),
@@ -221,22 +246,35 @@ fun DayWiDView(
                         style = Typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )
-                } else if (wiDListLoaded) {
+                } else if (fullWiDListLoaded) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // 파이 차트
                         item {
-                            DayPieChartView(
-                                wiDList = fullWiDList,
-                                titleColorMap = titleColorMap
+                            DailyWiDListPieChartView(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp),
+                                fullWiDList = fullWiDList,
+                                onNewWiDClicked = { newWiD: WiD ->
+                                    dayWiDViewModel.setNewWiD(newWiD = newWiD)
+                                    dayWiDViewModel.setUpdatedNewWiD(updatedNewWiD = newWiD)
+
+                                    onEmptyWiDClicked()
+                                },
+                                onWiDClicked = { wiD: WiD ->
+                                    dayWiDViewModel.setExistingWiD(existingWiD = wiD)
+                                    dayWiDViewModel.setUpdatedWiD(updatedWiD = wiD)
+
+                                    onWiDClicked()
+                                }
                             )
                         }
 
+                        // 리스트
                         item {
                             Row(
                                 modifier = Modifier
@@ -247,70 +285,61 @@ fun DayWiDView(
                                 Text(
                                     text = getTimeString(LocalTime.MIN, "a hh:mm:ss"),
                                     style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 HorizontalDivider()
                             }
 
-                            fullWiDList.forEach { wiD ->
-                                if (wiD.id.isBlank()) { // 빈 WiD
+                            fullWiDList.forEach { wiD: WiD ->
+                                /** 빈 위드, 아닌 위드 하나의 코드로 표시하기 */
+                                if (wiD.id == "newWiD" || wiD.id == "lastNewWiD") { // 빈 WiD
                                     Column(
                                         modifier = Modifier
-                                            .padding(horizontal = 16.dp)
+                                            .fillMaxWidth()
                                     ) {
                                         Row(
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(8))
-                                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                            modifier = Modifier // 폭을 가득 채우지 말기.
+                                                .padding(horizontal = 16.dp)
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    shape = MaterialTheme.shapes.medium
+                                                )
+                                                .clip(shape = MaterialTheme.shapes.medium) // 클릭 반응 자르기용
                                                 .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
-                                                    val emptyWiD = WiD(
-                                                        id = "",
-                                                        date = dayWiDViewModel.currentDate.value,
-                                                        title = "무엇을 하셨나요?",
-                                                        start = wiD.start,
-                                                        finish = wiD.finish,
-                                                        duration = Duration.between(
-                                                            wiD.start,
-                                                            wiD.finish
-                                                        )
-                                                    )
+                                                    onClick = {
+                                                        dayWiDViewModel.setNewWiD(newWiD = wiD)
+                                                        dayWiDViewModel.setUpdatedNewWiD(updatedNewWiD = wiD)
 
-                                                    dayWiDViewModel.setEmptyWiD(emptyWiD = emptyWiD)
-
-                                                    onEmptyWiDClicked()
-
-                                                },
+                                                        onEmptyWiDClicked()
+                                                    }
+                                                ),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
+                                            Box(
                                                 modifier = Modifier
                                                     .padding(16.dp)
-                                                    .size(24.dp),
-                                                painter = painterResource(
-                                                    id = titleNumberStringToTitleIconMap[wiD.title] ?: R.drawable.baseline_title_24
-                                                ),
-                                                contentDescription = "제목",
-                                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    .size(40.dp)
+                                                    .background(
+                                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                                        shape = MaterialTheme.shapes.medium
+                                                    )
                                             )
 
                                             Column(
-                                                modifier = Modifier
-                                                    .padding(16.dp),
                                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 Text(
-                                                    text = "무엇을 하셨나요?",
+                                                    text = wiD.title,
                                                     style = Typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
 
                                                 Text(
                                                     text = getDurationString(wiD.duration, mode = 3),
                                                     style = Typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
 
@@ -321,43 +350,58 @@ fun DayWiDView(
 
                                             Icon(
                                                 modifier = Modifier
-                                                    .padding(16.dp)
+                                                    .padding(horizontal = 16.dp)
                                                     .size(24.dp),
                                                 imageVector = Icons.Default.KeyboardArrowRight,
                                                 contentDescription = "이 WiD로 전환하기",
-                                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                tint = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
 
                                         Row(
+                                            modifier = Modifier
+                                                .padding(horizontal = 16.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                                         ) {
                                             Text(
                                                 text = getTimeString(wiD.finish, "a hh:mm:ss"),
                                                 style = Typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
+
+                                            if (wiD.id == "lastNewWiD") {
+                                                Text(
+                                                    modifier = Modifier
+                                                        .background(
+                                                            color = MaterialTheme.colorScheme.errorContainer,
+                                                            shape = MaterialTheme.shapes.medium
+                                                        )
+                                                        .padding(horizontal = 8.dp),
+                                                    text = "LIVE",
+                                                    style = Typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                                )
+                                            }
 
                                             HorizontalDivider()
                                         }
                                     }
-                                } else {
+                                } else { // 기존에 있는 위드
                                     Column(
                                         modifier = Modifier
-                                            .padding(horizontal = 16.dp)
+                                            .fillMaxWidth()
                                     ) {
                                         Row(
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(8))
-                                                .background(
-                                                    titleColorMap[wiD.title]
-                                                        ?: MaterialTheme.colorScheme.secondaryContainer
+                                                .padding(horizontal = 16.dp)
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    shape = MaterialTheme.shapes.medium
                                                 )
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clip(shape = MaterialTheme.shapes.medium)
+                                                .clickable(wiD.id != "currentWiD") {
                                                     dayWiDViewModel.setExistingWiD(existingWiD = wiD)
                                                     dayWiDViewModel.setUpdatedWiD(updatedWiD = wiD)
 
@@ -365,44 +409,37 @@ fun DayWiDView(
                                                 },
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
+//                                            Image(
+//                                                modifier = Modifier
+//                                                    .fillMaxHeight()
+//                                                    .aspectRatio(1f / 1f),
+//                                                painter = painterResource(id = R.drawable.ic_launcher_background),
+//                                                contentDescription = "앱 아이콘"
+//                                            )
+
+                                            Box(
                                                 modifier = Modifier
                                                     .padding(16.dp)
-                                                    .size(24.dp),
-                                                painter = painterResource(
-                                                    id = titleNumberStringToTitleIconMap[wiD.title] ?: R.drawable.baseline_title_24
-                                                ),
-                                                contentDescription = "제목",
-                                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    .size(40.dp)
+                                                    .background(
+                                                        color = titleColorMap[wiD.title] ?: MaterialTheme.colorScheme.secondaryContainer,
+                                                        shape = MaterialTheme.shapes.medium
+                                                    )
                                             )
 
                                             Column(
-                                                modifier = Modifier
-                                                    .padding(16.dp),
                                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 Text(
-                                                    text = titleNumberStringToTitleKRStringMap[wiD.title] ?: "",
+                                                    text = titleToKRMap[wiD.title] ?: "",
                                                     style = Typography.bodyMedium,
-                                                    color = titleColorMap[wiD.title]?.let { textColor ->
-                                                        if (0.5f < textColor.luminance()) {
-                                                            Black
-                                                        } else {
-                                                            White
-                                                        }
-                                                    } ?: MaterialTheme.colorScheme.primary
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
 
                                                 Text(
                                                     text = getDurationString(wiD.duration, mode = 3),
                                                     style = Typography.bodyMedium,
-                                                    color = titleColorMap[wiD.title]?.let { textColor ->
-                                                        if (0.5f < textColor.luminance()) {
-                                                            Black
-                                                        } else {
-                                                            White
-                                                        }
-                                                    } ?: MaterialTheme.colorScheme.primary
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
 
@@ -411,31 +448,56 @@ fun DayWiDView(
                                                     .weight(1f)
                                             )
 
-                                            Icon(
-                                                modifier = Modifier
-                                                    .padding(16.dp)
-                                                    .size(24.dp),
-                                                imageVector = Icons.Default.KeyboardArrowRight,
-                                                contentDescription = "이 WiD로 전환하기",
-                                                tint = titleColorMap[wiD.title]?.let { textColor ->
-                                                    if (0.5f < textColor.luminance()) {
-                                                        Black
-                                                    } else {
-                                                        White
-                                                    }
-                                                } ?: MaterialTheme.colorScheme.primary
-                                            )
+                                            if (wiD.id == "currentWiD") {
+                                                Text(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 16.dp)
+                                                        .background(
+                                                            color = MaterialTheme.colorScheme.error,
+                                                            shape = CircleShape
+                                                        )
+                                                        .padding(8.dp),
+                                                    text = currentTool.name,
+                                                    style = Typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onError
+                                                )
+                                            } else {
+                                                Icon(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 16.dp)
+                                                        .size(24.dp),
+                                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                                    contentDescription = "이 WiD로 전환하기",
+                                                    tint = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
                                         }
 
                                         Row(
+                                            modifier = Modifier
+                                                .padding(horizontal = 16.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                                         ) {
                                             Text(
                                                 text = getTimeString(wiD.finish, "a hh:mm:ss"),
                                                 style = Typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
+
+                                            if (wiD.id == "currentWiD") {
+                                                Text(
+                                                    modifier = Modifier
+                                                        .background(
+                                                            color = MaterialTheme.colorScheme.errorContainer,
+                                                            shape = MaterialTheme.shapes.medium
+                                                        )
+                                                        .padding(horizontal = 8.dp),
+                                                    text = "LIVE",
+                                                    style = Typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                                )
+                                            }
 
                                             HorizontalDivider()
                                         }
@@ -444,15 +506,25 @@ fun DayWiDView(
                             }
                         }
 
-                        // 함계 기록
+                        item {
+                            HorizontalDivider(
+                                thickness = 8.dp,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        }
+
+                        // 합계 기록
                         item {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     text = "합계 기록",
-                                    style = Typography.bodyLarge,
+                                    style = Typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
 
                                 Spacer(
@@ -463,66 +535,48 @@ fun DayWiDView(
                                 Text(
                                     text = "각 제목 합계 소요 시간",
                                     style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
 
                         // 합계 기록
-                        totalDurationMap.forEach { (title, totalDuration) ->
+                        totalDurationMap.onEachIndexed { index: Int, (title: String, totalDuration: Duration) ->
                             item {
                                 Row(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(8))
-                                        .background(
-                                            titleColorMap[title]
-                                                ?: MaterialTheme.colorScheme.secondaryContainer
-                                        ),
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        )
+                                        .height(intrinsicSize = IntrinsicSize.Min),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
+                                    Box(
                                         modifier = Modifier
-                                            .padding(16.dp)
-                                            .size(24.dp),
-                                        painter = painterResource(
-                                            id = titleNumberStringToTitleIconMap[title] ?: R.drawable.baseline_title_24
-                                        ),
-                                        contentDescription = "제목",
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            .fillMaxHeight()
+                                            .aspectRatio(1f / 1f)
+                                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            modifier = Modifier
-                                                .padding(16.dp),
-                                            text = titleNumberStringToTitleKRStringMap[title] ?: "",
-                                            style = Typography.bodyLarge,
-                                            color = titleColorMap[title]?.let { textColor ->
-                                                if (0.5f < textColor.luminance()) {
-                                                    Black
-                                                } else {
-                                                    White
-                                                }
-                                            } ?: MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(16.dp),
-                                            text = getDurationString(duration = totalDuration, mode = 3),
-                                            style = Typography.bodyLarge,
-                                            color = titleColorMap[title]?.let { textColor ->
-                                                if (0.5f < textColor.luminance()) {
-                                                    Black
-                                                } else {
-                                                    White
-                                                }
-                                            } ?: MaterialTheme.colorScheme.onSecondaryContainer
+                                            text = "${index + 1}",
+                                            style = Typography.titleLarge,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     }
+
+                                    Spacer(
+                                        modifier = Modifier
+                                            .width(8.dp)
+                                    )
+
+                                    Text(
+                                        text = titleToKRMap[title] ?: "기록 없음",
+                                        style = Typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
 
                                     Spacer(
                                         modifier = Modifier
@@ -530,10 +584,15 @@ fun DayWiDView(
                                     )
 
                                     Text(
-                                        modifier = Modifier
-                                            .padding(16.dp),
-                                        text = "${"%.1f".format(getTitlePercentageOfDay(totalDuration))}%",
-                                        style = Typography.titleLarge
+                                        text = getDurationString(duration = totalDuration, mode = 3),
+                                        style = Typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Text(
+                                        text = "(${ "%.1f".format(getTitlePercentageOfDay(totalDuration))}%)",
+                                        style = Typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }
@@ -558,7 +617,10 @@ fun DayWiDView(
                                     .atZone(ZoneId.systemDefault())
                                     .toLocalDate()
 
-                                dayWiDViewModel.setCurrentDate(newDate)
+                                dayWiDViewModel.setCurrentDate(
+                                    today = today,
+                                    newDate = newDate
+                                )
                                 dayWiDViewModel.setShowDatePicker(show = false)
                             }) {
                             Text(
@@ -601,8 +663,126 @@ fun DayWiDView(
                         )
                     }
                 }
-
             }
         }
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DayWiDPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 8.dp
+                )
+                .height(intrinsicSize = IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f / 1f)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.medium
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "1",
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .width(8.dp)
+            )
+
+            Text(
+                text = "공부",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            Text(
+                text = "3시간 30분 30초",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = "(20%)",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .height(intrinsicSize = IntrinsicSize.Min),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f / 1f)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = MaterialTheme.shapes.medium
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "1",
+                    style = Typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .width(8.dp)
+            )
+
+            Text(
+                text = "공부",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            Text(
+                text = "3시간 30분 30초",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = "(20%)",
+                style = Typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
 }

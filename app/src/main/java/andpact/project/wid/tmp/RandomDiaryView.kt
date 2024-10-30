@@ -6,8 +6,6 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.getDateStringWith3Lines
-import andpact.project.wid.util.getNoBackgroundEmptyViewWithMultipleLines
 //import andpact.project.wid.viewModel.RandomDiaryViewModel
 import android.util.Log
 import androidx.compose.foundation.background

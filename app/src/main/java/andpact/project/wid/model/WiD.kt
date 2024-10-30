@@ -10,31 +10,32 @@ data class WiD (
 //    val email: String,
     val date: LocalDate, // 클라이언트 : LocalDate <-> 서버 : String("yyyy-MM-dd")
     val title: String,
+//    val location: String,
     val start: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
     val finish: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
     val duration: Duration, // 클라이언트 : Duration <-> 서버 : Int
-//    val location: String,
-//    val detail: String,
-//    val createdBy: CurrentTool,
-//    val modified: Boolean // 수정 여부
+//    val detail: String, // WiDView에서 수정하도록.
 //    val version: Int,
+    val createdBy: CurrentTool, // 클라이언트 : CurrentTool <-> 서버 : String
+//    val createdOn: LocalDate, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
+//    val modified: Boolean // 수정 여부
 //    val lastModifiedOn: LocalDate // 최종 수정 날짜
 ) {
-    constructor(
-        id: String,
-        date: LocalDate,
-        title: String,
-        start: LocalTime,
-        finish: LocalTime,
-        durationMillis: Long,
-    ) : this(
-        id,
-        date,
-        title,
-        start,
-        finish,
-        Duration.ofMillis(durationMillis),
-    )
+//    constructor(
+//        id: String,
+//        date: LocalDate,
+//        title: String,
+//        start: LocalTime,
+//        finish: LocalTime,
+//        durationMillis: Long,
+//    ) : this(
+//        id,
+//        date,
+//        title,
+//        start,
+//        finish,
+//        Duration.ofMillis(durationMillis),
+//    )
 
 //    companion object {
 //        fun fromString(string: String): WiD {

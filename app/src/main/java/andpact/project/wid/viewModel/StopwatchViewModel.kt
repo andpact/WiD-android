@@ -1,6 +1,5 @@
 package andpact.project.wid.viewModel
 
-import andpact.project.wid.dataSource.ToolDataSource
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
@@ -8,7 +7,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
 import andpact.project.wid.util.levelToRequiredExpMap
-import andpact.project.wid.util.titleNumberStringToTitleColorMap
+import andpact.project.wid.util.titleToColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +29,6 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class StopwatchViewModel @Inject constructor(
-    private val toolDataSource: ToolDataSource,
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource
 ) : ViewModel() {
@@ -41,20 +39,23 @@ class StopwatchViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
+    // 유저
     val user: State<User?> = userDataSource.user
 
-    val title: State<String> = toolDataSource.title
-    val titleColorMap: Map<String, Color> = titleNumberStringToTitleColorMap
+    // 제목
+    val title: State<String> = wiDDataSource.title
+    val titleColorMap: Map<String, Color> = titleToColorMap
 
-    val totalDuration: State<Duration> = toolDataSource.totalDuration
-
+    // 도구
+    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val totalDuration: State<Duration> = wiDDataSource.totalDuration
     private val _stopwatchViewBarVisible = mutableStateOf(true)
     val stopwatchViewBarVisible: State<Boolean> = _stopwatchViewBarVisible
 
     fun setTitle(newTitle: String) {
         Log.d(TAG, "setTitle executed")
 
-        toolDataSource.setTitle(newTitle)
+        wiDDataSource.setTitle(newTitle)
     }
 
     fun setStopwatchViewBarVisible(stopwatchViewBarVisible: Boolean) {
@@ -66,100 +67,78 @@ class StopwatchViewModel @Inject constructor(
     fun startStopwatch() {
         Log.d(TAG, "startStopwatch executed")
 
-        toolDataSource.startStopwatch(
-            onStopwatchStarted = { newCurrentTitle: String, newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState, newStopwatchStartDate: LocalDate, newStopwatchStartTime: LocalTime ->
-                userDataSource.startStopwatch(
-                    newCurrentTitle = newCurrentTitle,
-                    newCurrentTool = newCurrentTool,
-                    newCurrentToolState = newCurrentToolState,
-                    newStopwatchStartDate = newStopwatchStartDate,
-                    newStopwatchStartTime = newStopwatchStartTime
-                )
-            }
-        )
+        wiDDataSource.startStopwatch()
     }
 
+    // 위드가 2개 생성되면 위드, 유저 컬렉션을 2번씩 호출함.
     fun pauseStopwatch() {
         Log.d(TAG, "pauseStopwatch executed")
 
-        toolDataSource.pauseStopwatch(
+        wiDDataSource.pauseStopwatch(
             email = user.value?.email ?: "",
-            onStopwatchPaused = { currentTitle: String, newCurrentToolState: CurrentToolState, newStopwatchAccumulatedPrevDuration: Duration, newStopwatchCurrentDuration: Duration ->
+            onStopwatchPaused = { newWiD: WiD ->
+                // 레벨
                 val currentLevel = user.value?.level ?: 1
-                val currentExp = user.value?.currentExp ?: 0
-                val newExp = newStopwatchCurrentDuration.seconds.toInt()
-                val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
 
-                val totalExp = user.value?.totalExp ?: 0
-                val newTotalExp = totalExp + newExp
-                val wiDTotalExp = user.value?.totalExp ?: 0
+                // 경험치
+                val currentExp = user.value?.currentExp ?: 0
+                val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
+                val newExp = newWiD.duration.seconds.toInt()
+                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
-                val titleCountMap = user.value?.titleCountMap?.toMutableMap() ?: mutableMapOf()
-                val currentCount = titleCountMap[currentTitle] ?: 0
-                titleCountMap[currentTitle] = currentCount + 1
+                // 제목
+                val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
+                val currentTitleCount = titleCountMap[title.value] ?: 0
+                titleCountMap[title.value] = currentTitleCount + 1
+                val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
+                val currentTitleDuration = titleDurationMap[title.value] ?: Duration.ZERO
+                titleDurationMap[title.value] = currentTitleDuration.plus(newWiD.duration)
 
-                val titleDurationMap = user.value?.titleDurationMap?.toMutableMap() ?: mutableMapOf()
-                val currentDuration = titleDurationMap[currentTitle] ?: Duration.ZERO
-                titleDurationMap[currentTitle] = currentDuration.plus(newStopwatchCurrentDuration)
+                // 도구
+                val createdBy = CurrentTool.STOPWATCH
+                val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
+                val currentToolCount = toolCountMap[createdBy] ?: 0
+                toolCountMap[createdBy] = currentToolCount + 1
 
                 if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+                    // 레벨
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-
-                    val today = LocalDate.now()
                     val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-                    levelUpHistoryMap[newLevelAsString] = today
+                    levelUpHistoryMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
 
+                    // 경험치
                     val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
 
                     userDataSource.pauseStopwatchWithLevelUp(
-                        newCurrentToolState = newCurrentToolState,
-                        newStopwatchPrevDuration = newStopwatchAccumulatedPrevDuration,
                         newLevel = newLevel,
                         newLevelUpHistoryMap = levelUpHistoryMap,
                         newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newTotalExp = newTotalExp,
                         newWiDTotalExp = newWiDTotalExp,
                         newTitleCountMap = titleCountMap,
-                        newTitleDurationMap = titleDurationMap
+                        newTitleDurationMap = titleDurationMap,
+                        newToolCountMap = toolCountMap
                     )
                 } else { // 레벨업 아님.
+                    // 경험치
                     val newCurrentExp = currentExp + newExp
 
                     userDataSource.pauseStopwatch(
-                        newCurrentToolState = newCurrentToolState,
-                        newStopwatchPrevDuration = newStopwatchAccumulatedPrevDuration,
                         newCurrentExp = newCurrentExp,
-                        newTotalExp = newTotalExp,
                         newWiDTotalExp = newWiDTotalExp,
                         newTitleCountMap = titleCountMap,
-                        newTitleDurationMap = titleDurationMap
+                        newTitleDurationMap = titleDurationMap,
+                        newToolCountMap = toolCountMap
                     )
                 }
             },
-            onWiDCreated = { createdWiD: WiD ->
-                addWiDToMap(createdWiD = createdWiD)
-            }
         )
     }
 
     fun stopStopwatch() {
         Log.d(TAG, "stopStopwatch executed")
 
-        toolDataSource.stopStopwatch(
-            onStopwatchStopped = { newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState ->
-                userDataSource.stopStopwatch(
-                    newCurrentTool = newCurrentTool,
-                    newCurrentToolState = newCurrentToolState
-                )
-            }
-        )
-    }
-
-    private fun addWiDToMap(createdWiD: WiD) {
-        Log.d(TAG, "addWiDToMap executed")
-
-        wiDDataSource.addWiDToMap(createdWiD = createdWiD)
+        wiDDataSource.stopStopwatch()
     }
 }

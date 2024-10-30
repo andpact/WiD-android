@@ -22,7 +22,7 @@ import java.util.*
  */
 @Composable
 fun getDateString(date: LocalDate): AnnotatedString {
-    Log.d("DateUtil", "getDateString executed")
+//    Log.d("DateUtil", "getDateString executed")
 
     val formattedString = buildAnnotatedString {
         if (date.year == LocalDate.now().year) {
@@ -70,37 +70,37 @@ fun getDateString(date: LocalDate): AnnotatedString {
 //    }
 //}
 
-@Composable
-fun getDateStringWith3Lines(date: LocalDate): AnnotatedString {
-    Log.d("DateUtil", "getDateStringWith3Lines executed")
-
-    return buildAnnotatedString {
-//        withStyle(style = ParagraphStyle(lineHeight = 30.sp)) { // @Composable + 문단 스타일 적용하니 에러 발생함.
-            if (date.year == LocalDate.now().year) {
-                append(date.format(DateTimeFormatter.ofPattern("M월 d일\n")))
-            } else {
-                append(date.format(DateTimeFormatter.ofPattern("yyyy년\nM월 d일\n")))
-            }
-
-            withStyle(
-                style = SpanStyle(
-                    color = when (date.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> DeepSkyBlue
-                        DayOfWeek.SUNDAY -> OrangeRed
-                        else -> MaterialTheme.colorScheme.primary
-                    }
-                )
-            ) {
-                append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-            }
-            append("요일")
-//        }
-    }
-}
+//@Composable
+//fun getDateStringWith3Lines(date: LocalDate): AnnotatedString {
+//    Log.d("DateUtil", "getDateStringWith3Lines executed")
+//
+//    return buildAnnotatedString {
+////        withStyle(style = ParagraphStyle(lineHeight = 30.sp)) { // @Composable + 문단 스타일 적용하니 에러 발생함.
+//            if (date.year == LocalDate.now().year) {
+//                append(date.format(DateTimeFormatter.ofPattern("M월 d일\n")))
+//            } else {
+//                append(date.format(DateTimeFormatter.ofPattern("yyyy년\nM월 d일\n")))
+//            }
+//
+//            withStyle(
+//                style = SpanStyle(
+//                    color = when (date.dayOfWeek) {
+//                        DayOfWeek.SATURDAY -> DeepSkyBlue
+//                        DayOfWeek.SUNDAY -> OrangeRed
+//                        else -> MaterialTheme.colorScheme.primary
+//                    }
+//                )
+//            ) {
+//                append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
+//            }
+//            append("요일")
+////        }
+//    }
+//}
 
 @Composable
 fun getPeriodStringOfWeek(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
-    Log.d("DateUtil", "getPeriodStringOfWeek executed")
+//    Log.d("DateUtil", "getPeriodStringOfWeek executed")
 
     return buildAnnotatedString {
         if (firstDayOfWeek.year == LocalDate.now().year) {
@@ -147,28 +147,28 @@ fun getPeriodStringOfWeek(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): 
     }
 }
 
-fun getPeriodStringOfMonth(date: LocalDate): AnnotatedString {
-    Log.d("DateUtil", "getPeriodStringOfMonth executed")
-
-    val formattedString = if (date.year == LocalDate.now().year) {
-        date.format(DateTimeFormatter.ofPattern("M월"))
-    } else {
-        date.format(DateTimeFormatter.ofPattern("yyyy년 M월"))
-    }
-
-    return buildAnnotatedString {
-        append(formattedString)
-    }
-}
+//fun getPeriodStringOfMonth(date: LocalDate): AnnotatedString {
+//    Log.d("DateUtil", "getPeriodStringOfMonth executed")
+//
+//    val formattedString = if (date.year == LocalDate.now().year) {
+//        date.format(DateTimeFormatter.ofPattern("M월"))
+//    } else {
+//        date.format(DateTimeFormatter.ofPattern("yyyy년 M월"))
+//    }
+//
+//    return buildAnnotatedString {
+//        append(formattedString)
+//    }
+//}
 
 fun getFirstDateOfWeek(date: LocalDate): LocalDate {
-    Log.d("DateUtil", "getFirstDateOfWeek executed")
+//    Log.d("DateUtil", "getFirstDateOfWeek executed")
 
     return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 }
 
 fun getLastDateOfWeek(date: LocalDate): LocalDate {
-    Log.d("DateUtil", "getLastDateOfWeek executed")
+//    Log.d("DateUtil", "getLastDateOfWeek executed")
 
     return date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
 }
@@ -219,27 +219,27 @@ fun getLastDateOfWeek(date: LocalDate): LocalDate {
 //    }
 //}
 
-fun getFirstDateOfMonth(date: LocalDate): LocalDate {
-    Log.d("DateUtil", "getFirstDateOfMonth executed")
-
-    val yearMonth = YearMonth.from(date)
-    return yearMonth.atDay(1)
-
-//    return date.withDayOfMonth(1)
+//fun getFirstDateOfMonth(date: LocalDate): LocalDate {
+//    Log.d("DateUtil", "getFirstDateOfMonth executed")
 //
-//    return date.minusMonths(1).withDayOfMonth(1)
-}
-
-fun getLastDateOfMonth(date: LocalDate): LocalDate {
-    Log.d("DateUtil", "getLastDateOfMonth executed")
-
-    val yearMonth = YearMonth.from(date)
-    return yearMonth.atEndOfMonth()
-
-//    return date.withDayOfMonth(date.lengthOfMonth())
+//    val yearMonth = YearMonth.from(date)
+//    return yearMonth.atDay(1)
 //
-//    return date.minusMonths(1).withDayOfMonth(date.minusMonths(1).lengthOfMonth())
-}
+////    return date.withDayOfMonth(1)
+////
+////    return date.minusMonths(1).withDayOfMonth(1)
+//}
+
+//fun getLastDateOfMonth(date: LocalDate): LocalDate {
+//    Log.d("DateUtil", "getLastDateOfMonth executed")
+//
+//    val yearMonth = YearMonth.from(date)
+//    return yearMonth.atEndOfMonth()
+//
+////    return date.withDayOfMonth(date.lengthOfMonth())
+////
+////    return date.minusMonths(1).withDayOfMonth(date.minusMonths(1).lengthOfMonth())
+//}
 
 //fun getDate1yearAgo(date: LocalDate): LocalDate {
 //    val oneYearAgo = date.minusDays(364)
