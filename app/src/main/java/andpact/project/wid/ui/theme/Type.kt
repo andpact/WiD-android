@@ -8,9 +8,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val acmeRegular = FontFamily(
-    Font(R.font.acme_regular)
-)
+//val acmeRegular = FontFamily(
+//    Font(R.font.acme_regular)
+//)
 
 val pretendardRegular = FontFamily(
     Font(R.font.pretendard_regular)

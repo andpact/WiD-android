@@ -16,11 +16,11 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
-class WeekWiDViewModel @Inject constructor(
+class WeeklyWiDListViewModel @Inject constructor(
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource,
 ) : ViewModel() {
-    private val TAG = "WeekWiDViewModel"
+    private val TAG = "WeeklyWiDListViewModel"
     init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
@@ -43,8 +43,6 @@ class WeekWiDViewModel @Inject constructor(
     val wiDListFetched: State<Boolean> = _wiDListFetched
     private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
     val wiDList: State<List<WiD>> = _wiDList
-
-    val titleColorMap = titleToColorMap
 
     // 합계 selectedMap만 화면에 표시하니 state로 선언할 필요 없음.
     private val _totalDurationMap = mutableStateOf(getTotalDurationMapByTitle(wiDList = _wiDList.value))

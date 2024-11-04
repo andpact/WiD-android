@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.*
@@ -44,7 +45,6 @@ fun NewWiDView(
 
     // 제목
     val showTitleMenu = newWiDViewModel.showTitleMenu.value
-    val titleColorMap = newWiDViewModel.titleColorMap
 
     /** 시작 시간을 변경하지 않으면, 기존의 State를 유지하도록 해야 함. */
     // 시작 시간
@@ -201,7 +201,7 @@ fun NewWiDView(
                     )
 
                     Text(
-                        text = titleToKRMap[updatedNewWiD.title] ?: "기록 없음",
+                        text = titleKRMap[updatedNewWiD.title] ?: "기록 없음",
                         style = Typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -238,7 +238,7 @@ fun NewWiDView(
                             shape = MaterialTheme.shapes.medium
                         )
                         .padding(16.dp),
-                    painter = painterResource(R.drawable.baseline_alarm_24),
+                    painter = painterResource(R.drawable.baseline_play_arrow_24),
                     contentDescription = "시작 시간",
                 )
 
@@ -330,7 +330,7 @@ fun NewWiDView(
                             shape = MaterialTheme.shapes.small
                         )
                         .padding(16.dp),
-                    painter = painterResource(R.drawable.baseline_alarm_on_24),
+                    painter = painterResource(R.drawable.baseline_stop_24),
                     contentDescription = "종료 시간",
                 )
 
@@ -478,7 +478,7 @@ fun NewWiDView(
                     }
 
                     Text(
-                        text = getDurationString(updatedNewWiD.duration, mode = 3),
+                        text = getDurationString(updatedNewWiD.duration),
                         style = Typography.bodyMedium,
                     )
                 }
@@ -581,7 +581,7 @@ fun NewWiDView(
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    text = titleToKRMap[itemTitle] ?: "기록 없음",
+                                    text = titleKRMap[itemTitle] ?: "기록 없음",
                                     style = Typography.bodyMedium,
                                 )
 
@@ -856,6 +856,254 @@ fun NewWiDView(
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun NewWiDPreview() {
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "뒤로 가기",
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = "새로운 WiD",
+                        style = Typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
+        }
+    ) { contentPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.extraLarge
+                        )
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_calendar_month_24),
+                    contentDescription = "날짜",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "날짜",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = "2024년 10월 10일(수)",
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.large
+                        )
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_calendar_month_24),
+                    contentDescription = "제목",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "제목",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = "공부",
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_play_arrow_24),
+                    contentDescription = "시작",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "시작",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = "오전 00시 00분 00초",
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.small
+                        )
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_stop_24),
+                    contentDescription = "날짜",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "종료",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = "오전 00시 00분 00초",
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            shape = MaterialTheme.shapes.extraSmall
+                        )
+                        .padding(16.dp),
+                    painter = painterResource(R.drawable.baseline_timelapse_24),
+                    contentDescription = "소요",
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "소요",
+                        style = Typography.titleMedium,
+                    )
+
+                    Text(
+                        text = "1시간 10분 10초",
+                        style = Typography.bodyMedium,
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
         }
     }
 }

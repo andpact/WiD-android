@@ -72,14 +72,19 @@ fun MainActivityView(dynamicLink: String?) {
             route = MainActivityViewDestinations.MainViewDestination.route,
         ) {
             MainView(
-                onSettingButtonPressed = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.SettingViewDestination.route)
-                },
-                onEmptyWiDClicked = {
+                onNewWiDClicked = {
                     mainActivityViewNavController.navigate(MainActivityViewDestinations.NewWiDViewDestination.route)
                 },
                 onWiDClicked = {
                     mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
+                },
+                onUserSignedOut = {
+                    mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
+                },
+                onUserDeleted = { userDeleted: Boolean ->
+                    if (userDeleted) {
+                        mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
+                    }
                 },
                 onMainViewBarVisibleChanged = { visible ->
                     mainActivityBarVisible = visible
@@ -110,7 +115,7 @@ fun MainActivityView(dynamicLink: String?) {
             )
         }
 
-        // 클릭된 WiD 뷰
+        // WiD 뷰
         composable(
             route = MainActivityViewDestinations.WiDViewDestination.route,
             enterTransition = {
@@ -162,36 +167,5 @@ fun MainActivityView(dynamicLink: String?) {
 //                date = date,
 //            )
 //        }
-
-        // 환경설정 뷰
-        composable(
-            route = MainActivityViewDestinations.SettingViewDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            SettingView(
-                onBackButtonPressed = {
-                    mainActivityViewNavController.popBackStack()
-                },
-                onUserSignedOut = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                },
-                onUserDeleted = { userDeleted: Boolean ->
-                    if (userDeleted) {
-                        mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                    }
-                }
-            )
-        }
     }
 }

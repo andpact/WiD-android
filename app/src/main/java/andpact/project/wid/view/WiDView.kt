@@ -45,7 +45,6 @@ fun WiDView(
 
     // 제목
     val showTitleMenu = wiDViewModel.showTitleMenu.value
-    val titleColorMap = wiDViewModel.titleColorMap
 
     // 시작 시간
     val showStartPicker = wiDViewModel.showStartPicker.value
@@ -109,11 +108,7 @@ fun WiDView(
                     )
                 },
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .wrapContentSize(Alignment.TopStart)
-                    ) {
+                    Box {
                         IconButton(
                             onClick = {
                                 wiDViewModel.setExpandMenu(expand = true)
@@ -124,10 +119,13 @@ fun WiDView(
                                     .size(24.dp),
                                 painter = painterResource(id = R.drawable.baseline_more_vert_24),
                                 contentDescription = "더보기",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
 
                         DropdownMenu(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surface),
                             expanded = expandMenu,
                             onDismissRequest = {
                                 wiDViewModel.setExpandMenu(expand = false)
@@ -137,7 +135,8 @@ fun WiDView(
                                 text = {
                                     Text(
                                         text = "WiD 삭제",
-                                        style = Typography.bodyMedium
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 },
                                 onClick = {
@@ -241,7 +240,7 @@ fun WiDView(
                         )
 
                         Text(
-                            text = titleToKRMap[updatedWiD.title] ?: "기록 없음",
+                            text = titleKRMap[updatedWiD.title] ?: "기록 없음",
                             style = Typography.bodyMedium,
                         )
                     }
@@ -276,7 +275,7 @@ fun WiDView(
                                 shape = MaterialTheme.shapes.medium
                             )
                             .padding(16.dp),
-                        painter = painterResource(R.drawable.baseline_alarm_24),
+                        painter = painterResource(R.drawable.baseline_play_arrow_24),
                         contentDescription = "시작 시간",
                     )
 
@@ -368,7 +367,7 @@ fun WiDView(
                                 shape = MaterialTheme.shapes.small
                             )
                             .padding(16.dp),
-                        painter = painterResource(R.drawable.baseline_alarm_on_24),
+                        painter = painterResource(R.drawable.baseline_stop_24),
                         contentDescription = "종료 시간",
                     )
 
@@ -501,7 +500,7 @@ fun WiDView(
                         }
 
                         Text(
-                            text = getDurationString(updatedWiD.duration, mode = 3),
+                            text = getDurationString(updatedWiD.duration),
                             style = Typography.bodyMedium,
                         )
                     }
@@ -517,18 +516,18 @@ fun WiDView(
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-//                    Icon(
-//                        modifier = Modifier
-//                            .padding(horizontal = 16.dp)
-//                            .border(
-//                                width = 1.dp,
-//                                color = MaterialTheme.colorScheme.onSurface,
-//                                shape = MaterialTheme.shapes.small
-//                            )
-//                            .padding(16.dp),
-//                        painter = painterResource(R.drawable.baseline_timelapse_24),
-//                        contentDescription = "소요 시간",
-//                    )
+                    Icon(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                shape = MaterialTheme.shapes.small
+                            )
+                            .padding(16.dp),
+                        painter = painterResource(R.drawable.baseline_category_24),
+                        contentDescription = "도구",
+                    )
 
                     Column(
                         modifier = Modifier
@@ -542,7 +541,7 @@ fun WiDView(
                         )
 
                         Text(
-                            text = updatedWiD.createdBy.name,
+                            text = toolKRMap[updatedWiD.createdBy] ?: "",
                             style = Typography.bodyMedium,
                         )
                     }
@@ -557,11 +556,13 @@ fun WiDView(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
-                        wiDViewModel.updateWiD() { updateWiDSuccess: Boolean ->
-                            if (updateWiDSuccess) {
-                                onBackButtonPressed()
+                        wiDViewModel.updateWiD(
+                            onWiDUpdated = { updateWiDSuccess: Boolean ->
+                                if (updateWiDSuccess) {
+                                    onBackButtonPressed()
+                                }
                             }
-                        }
+                        )
                     },
                     enabled = !startOverlap && !finishOverlap && durationExist,
                     shape = RectangleShape
@@ -642,7 +643,7 @@ fun WiDView(
                                     Text(
                                         modifier = Modifier
                                             .padding(16.dp),
-                                        text = titleToKRMap[itemTitle] ?: "기록 없음",
+                                        text = titleKRMap[itemTitle] ?: "기록 없음",
                                         style = Typography.bodyMedium,
                                     )
 

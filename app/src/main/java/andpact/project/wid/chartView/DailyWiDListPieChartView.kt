@@ -5,30 +5,21 @@ import andpact.project.wid.model.ChartData
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.getFullWiDListFromWiDList
-import andpact.project.wid.util.titleToColorMap
+import andpact.project.wid.util.titleColorMap
+import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.*
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import java.time.Duration
 import java.time.LocalDate
@@ -42,8 +33,16 @@ fun DailyWiDListPieChartView(
     onWiDClicked: (wiD: WiD) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val TAG = "DailyWiDListPieChartView"
+
+    DisposableEffect(Unit) {
+        Log.d(TAG, "composed")
+        onDispose { Log.d(TAG, "disposed") }
+    }
+
     val localContext = LocalContext.current // 폰트 불러오기 위해 선언함.
     val colorScheme = MaterialTheme.colorScheme // 캔버스 밖에 선언해야함.
+
     val totalDuration = Duration.ofHours(24).seconds
     val chartDataList = fullWiDList.map { ChartData(it.title, it.duration) }
 
@@ -100,6 +99,7 @@ fun DailyWiDListPieChartView(
         val gapAngle = 1f // 각 아크 사이의 간격을 나타내는 각도
         val halfGapAngle = gapAngle / 2 // 각 아크 앞뒤로 반씩 빈 공간을 할당
 
+        // 파이 차트
         chartDataList.forEach { data ->
             val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
             if (sweepAngle <= 0) return@forEach
@@ -107,7 +107,7 @@ fun DailyWiDListPieChartView(
             startAngle += halfGapAngle
 
             drawArc(
-                color = titleToColorMap[data.title] ?: colorScheme.secondaryContainer,
+                color = titleColorMap[data.title] ?: colorScheme.secondaryContainer,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle - gapAngle,
                 useCenter = true,
@@ -117,6 +117,7 @@ fun DailyWiDListPieChartView(
             startAngle += sweepAngle - gapAngle + halfGapAngle
         }
 
+        // 가운데 원
         drawCircle(
             color = colorScheme.surface,
             radius = size.width * 0.4f,
@@ -138,11 +139,9 @@ fun DailyWiDListPieChartView(
             val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
             val angleInRadian = Math.toRadians(angleInDegree)
 
-            // 시간 텍스트 좌표 계산
             val x = centerX + radius * cos(angleInRadian)
             val y = centerY + radius * sin(angleInRadian)
 
-            // 시간 텍스트 그리기
             val timeText = when (i) {
                 0 -> "자정"
                 6 -> "오전 6시"
@@ -167,7 +166,12 @@ fun DailyWiDListPieChartView(
                 else -> textPaint
             }
 
-            drawContext.canvas.nativeCanvas.drawText(timeText, x.toFloat(), y.toFloat(), paint)
+            drawContext.canvas.nativeCanvas.drawText(
+                timeText,
+                x.toFloat(),
+                y.toFloat(),
+                paint
+            )
         }
     }
 }

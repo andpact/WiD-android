@@ -7,7 +7,7 @@ import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.daysOfWeekFromMonday
-import andpact.project.wid.util.titleToColorMap
+import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

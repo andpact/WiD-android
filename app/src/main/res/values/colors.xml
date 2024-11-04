@@ -5,38 +5,4 @@
 <!--    <color name="purple_700">#FF3700B3</color>-->
 <!--    <color name="teal_200">#FF03DAC5</color>-->
 <!--    <color name="teal_700">#FF018786</color>-->
-
-<!--    <color name="black">#FF000000</color>-->
-<!--    <color name="white">#FFFFFFFF</color>-->
-<!--    <color name="transparent">#00FFFFFF</color>-->
-
-<!--    <color name="gray">#808080</color>-->
-<!--    <color name="light_gray">#C0C0C0</color>-->
-<!--    <color name="ghost_white">#F8F8FF</color>-->
-
-<!--    타이틀을 7가지로 분류했을 경우의 색상-->
-    <!--    <color name="study">#FF0000</color> &lt;!&ndash; 빨강 &ndash;&gt;-->
-<!--    <color name="work">#FF7F00</color> &lt;!&ndash; 주황 &ndash;&gt;-->
-<!--    <color name="reading">#FFFF00</color> &lt;!&ndash; 노랑 &ndash;&gt;-->
-<!--    <color name="exercise">#007F00</color> &lt;!&ndash; 연두 &ndash;&gt;-->
-<!--    <color name="hobby">#0000FF</color> &lt;!&ndash; 녹색 &ndash;&gt;-->
-<!--    <color name="travel">#00007F</color> &lt;!&ndash; 남색 &ndash;&gt;-->
-<!--    <color name="sleep">#7F00FF</color> &lt;!&ndash; 보라 &ndash;&gt;-->
-
-<!--    타이틀을 10가지로 분류했을 경우의 색상-->
-<!--    <color name="study_color">#FF0000</color> &lt;!&ndash; 빨강 &ndash;&gt;-->
-<!--    <color name="work_color">#FF7F00</color> &lt;!&ndash; 주황 &ndash;&gt;-->
-<!--    <color name="exercise_color">#FFFF00</color> &lt;!&ndash; 노랑 &ndash;&gt;-->
-<!--    <color name="hobby_color">#00FF00</color> &lt;!&ndash; 연두 &ndash;&gt;-->
-<!--    <color name="play_color">#007F00</color> &lt;!&ndash; 녹색 &ndash;&gt;-->
-<!--    <color name="meal_color">#00FFFF</color> &lt;!&ndash; 청록 &ndash;&gt;-->
-<!--    <color name="shower_color">#0000FF</color> &lt;!&ndash; 파랑 &ndash;&gt;-->
-<!--    <color name="travel_color">#00007F</color> &lt;!&ndash; 남색 &ndash;&gt;-->
-<!--    <color name="sleep_color">#7F00FF</color> &lt;!&ndash; 보라 &ndash;&gt;-->
-<!--    <color name="etc_color">#7F007F</color> &lt;!&ndash; 자주색 &ndash;&gt;-->
-
-<!--    버튼용 색상-->
-<!--    <color name="deep_sky_blue">#00bfff</color> &lt;!&ndash; 진한 하늘색(파란색 버튼용) &ndash;&gt;-->
-<!--    <color name="orange_red">#ff4500</color> &lt;!&ndash; 붉은 색(빨간 버튼용) &ndash;&gt;-->
-<!--    <color name="lime_green">#32cd32</color> &lt;!&ndash; 라임 녹색(초록 버튼용) &ndash;&gt;-->
 </resources>

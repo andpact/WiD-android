@@ -37,21 +37,17 @@ fun StopwatchView(
 ) {
     val TAG = "StopwatchView"
 
-    val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
-
+    // 제목
     val title = stopwatchViewModel.title.value
-    val titleColorMap = stopwatchViewModel.titleColorMap
 
+    // 화면
+    val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
     val pagerState = rememberPagerState(pageCount = { titleColorMap.size })
     val coroutineScope = rememberCoroutineScope()
 
+    // 도구
     val currentToolState = stopwatchViewModel.currentToolState.value
     val totalDuration = stopwatchViewModel.totalDuration.value
-
-    LaunchedEffect(pagerState.currentPage) {
-        // 페이저 안에 선언하니까, 아래 메서드가 반복적으로 실행됨.
-        stopwatchViewModel.setTitle(newTitle = titleColorMap.keys.elementAt(pagerState.currentPage))
-    }
 
     LaunchedEffect(stopwatchViewBarVisible) {
         onStopwatchViewBarVisibleChanged(stopwatchViewBarVisible)
@@ -59,7 +55,6 @@ fun StopwatchView(
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
-
         onDispose { Log.d(TAG, "disposed") }
     }
 
@@ -86,9 +81,11 @@ fun StopwatchView(
                 state = pagerState,
                 pageSpacing = (-48).dp,
                 verticalAlignment = Alignment.CenterVertically
-            ) { page ->
-                val menuTitle = titleColorMap.keys.elementAt(page)
-                val color = titleColorMap[menuTitle] ?: Transparent
+            ) { page: Int ->
+                // titleDurationMap를 가져와서 내림차순으로 정렬, page를 인덱스로 제목을 표시함.
+                // titleCountMap을 가져와서 titleDurationMap의 키를 사용해서 개수를 가져옴.
+                // 가장 많은 시간, 가장 많은 개수 표시하기
+                // 최근 사용 제목도 표시하기
 
                 FilledIconButton(
                     modifier = Modifier
@@ -99,16 +96,15 @@ fun StopwatchView(
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page)
                         }
+
+                        stopwatchViewModel.setTitle(newTitle = "$page")
                     },
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = color
-                    )
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Image(
                         modifier = Modifier
                             .fillMaxSize(),
-                        painter = painterResource(id = R.drawable.ic_launcher_background),
+                        painter = painterResource(id = titleImageMap["$page"] ?: R.drawable.ic_launcher_background),
                         contentDescription = "앱 아이콘"
                     )
                 }
@@ -122,7 +118,8 @@ fun StopwatchView(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = titleToKRMap["${pagerState.currentPage}"] ?: "",
+//                    text = titleKRMap["${pagerState.currentPage}"] ?: "기록 없음",
+                    text = titleKRMap[title] ?: "기록 없음",
                     style = Typography.titleLarge,
                 )
 
@@ -158,9 +155,11 @@ fun StopwatchView(
             ) {
                 FilledTonalIconButton(
                     onClick = {
+                        val firstPage = pagerState.initialPage
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(0)
+                            pagerState.animateScrollToPage(firstPage)
                         }
+                        stopwatchViewModel.setTitle(newTitle = "$firstPage")
                     },
                     enabled = 0 < pagerState.currentPage
                 ) {
@@ -172,9 +171,11 @@ fun StopwatchView(
 
                 FilledTonalIconButton(
                     onClick = {
+                        val prevPage = pagerState.currentPage - 1
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            pagerState.animateScrollToPage(prevPage)
                         }
+                        stopwatchViewModel.setTitle(newTitle = "$prevPage")
                     },
                     enabled = 0 < pagerState.currentPage
                 ) {
@@ -199,9 +200,11 @@ fun StopwatchView(
 
                 FilledTonalIconButton(
                     onClick = {
+                        val nextPage = pagerState.currentPage + 1
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            pagerState.animateScrollToPage(nextPage)
                         }
+                        stopwatchViewModel.setTitle(newTitle = "$nextPage")
                     },
                     enabled = pagerState.currentPage < pagerState.pageCount - 1
                 ) {
@@ -213,9 +216,11 @@ fun StopwatchView(
 
                 FilledTonalIconButton(
                     onClick = {
+                        val lastPage = pagerState.pageCount - 1
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.pageCount - 1)
+                            pagerState.animateScrollToPage(lastPage)
                         }
+                        stopwatchViewModel.setTitle(newTitle = "$lastPage")
                     },
                     enabled = pagerState.currentPage < pagerState.pageCount - 1
                 ) {
@@ -239,9 +244,9 @@ fun StopwatchView(
                     },
                     enabled = false
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_done_24),
-                        contentDescription = "현재 제목",
+                    Image(
+                        painter = painterResource(id = titleImageMap[title] ?: R.drawable.ic_launcher_background),
+                        contentDescription = "앱 아이콘"
                     )
                 }
 
@@ -273,7 +278,6 @@ fun StopwatchView(
                     onClick = {
                         stopwatchViewModel.stopStopwatch()
                     },
-                    enabled = currentToolState == CurrentToolState.PAUSED
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_stop_24),

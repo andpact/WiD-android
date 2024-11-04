@@ -3,6 +3,7 @@ package andpact.project.wid.util
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import java.time.Duration
@@ -21,7 +22,7 @@ import kotlin.random.Random
  *
  * 동시에 2레벨 업 안되도록!!
  */
-val levelToRequiredExpMap: Map<Int, Int> = mapOf(
+val levelRequiredExpMap: Map<Int, Int> = mapOf(
     1 to 86_400,
     2 to 172_800,
     3 to 259_200,
@@ -94,7 +95,7 @@ val levelToRequiredExpMap: Map<Int, Int> = mapOf(
  *
  * 기존 계정의 경우 서버에서 map<Int, String>을 가져와서 map<Int, LocalDate>로 변경 후 사용하면 된다.
  */
-val defaultLevelToDateMap: Map<String, LocalDate> = mapOf(
+val defaultLevelDateMap: Map<String, LocalDate> = mapOf(
     "1" to LocalDate.now()
 )
 
@@ -130,7 +131,7 @@ val titleList: List<String> = listOf(
  * (문자열 형태로 저장해야 하는 이유는 Map(TitleDurationMap, TitleCountMap)을 서버에 저장할 때, 키 값이 문자열 밖에 안되니까)
  * 불러올 때 Map을 통해서 공부 or Study로 변환해서 표시.
  */
-val titleToKRMap: Map<String, String> = mapOf(
+val titleKRMap: Map<String, String> = mapOf(
     "0" to "공부",        // STUDY
     "1" to "노동",        // WORK
     "2" to "운동",        // EXERCISE
@@ -156,17 +157,40 @@ val titleToKRMap: Map<String, String> = mapOf(
 //    "9" to "밤잠, 낮잠 등 수면과 관련된 모든 활동"                // SLEEP
 //)
 
-val titleToColorMap: Map<String, Color> = mapOf(
-    "0" to Study,           // 빨강 (Red) - STUDY
-    "1" to Work,            // 주황 (Orange) - WORK
-    "2" to Exercise,        // 노랑 (Yellow) - EXERCISE
-    "3" to Hobby,           // 연두 (Lime Green) - HOBBY
-    "4" to Relaxation,      // 녹색 (Dark Green) - RELAXATION
-    "5" to Meal,            // 청록 (Aqua) - MEAL
-    "6" to Travel,          // 파랑 (Blue) - TRAVEL
-    "7" to Cleaning,        // 남색 (Navy Blue) - CLEANING
-    "8" to Hygiene,         // 보라 (Purple) - HYGIENE
-    "9" to Sleep            // 자주색 (Dark Magenta) - SLEEP
+val titleColorMap: Map<String, Color> = mapOf(
+//    "0" to Study,           // 빨강 (Red) - STUDY
+//    "1" to Work,            // 주황 (Orange) - WORK
+//    "2" to Exercise,        // 노랑 (Yellow) - EXERCISE
+//    "3" to Hobby,           // 연두 (Lime Green) - HOBBY
+//    "4" to Relaxation,      // 녹색 (Dark Green) - RELAXATION
+//    "5" to Meal,            // 청록 (Aqua) - MEAL
+//    "6" to Travel,          // 파랑 (Blue) - TRAVEL
+//    "7" to Cleaning,        // 남색 (Navy Blue) - CLEANING
+//    "8" to Hygiene,         // 보라 (Purple) - HYGIENE
+//    "9" to Sleep            // 자주색 (Dark Magenta) - SLEEP
+    "0" to LightStudy,
+    "1" to LightWork,
+    "2" to LightExercise,
+    "3" to LightHobby,
+    "4" to LightRelaxation,
+    "5" to LightMeal,
+    "6" to LightTravel,
+    "7" to LightCleaning,
+    "8" to LightHygiene,
+    "9" to LightSleep
+)
+
+val titleImageMap: Map<String, Int> = mapOf(
+    "0" to R.drawable.image_study,
+    "1" to R.drawable.image_work,
+    "2" to R.drawable.image_exercise,
+    "3" to R.drawable.image_hobby,
+    "4" to R.drawable.image_relaxation,
+    "5" to R.drawable.image_meal,
+    "6" to R.drawable.image_travel,
+    "7" to R.drawable.image_cleaning,
+    "8" to R.drawable.image_hygiene,
+    "9" to R.drawable.image_sleep,
 )
 
 /**
@@ -208,7 +232,7 @@ val titleToColorMap: Map<String, Color> = mapOf(
 //    return colorMap.mapValues { (_, hex) -> hexToColor(hex) }
 //}
 
-val defaultTitleToCountMap: Map<String, Int> = mapOf(
+val defaultTitleCountMap: Map<String, Int> = mapOf(
     "0" to 0, // 공부 (Studying) - STUDY
     "1" to 0, // 일 (Working) - WORK
     "2" to 0, // 운동 (Exercising) - EXERCISE
@@ -221,7 +245,7 @@ val defaultTitleToCountMap: Map<String, Int> = mapOf(
     "9" to 0  // 수면 (Sleeping) - SLEEP
 )
 
-val defaultTitleToDurationMap: Map<String, Duration> = mapOf(
+val defaultTitleDurationMap: Map<String, Duration> = mapOf(
     "0" to Duration.ZERO, // 공부 (Studying) - STUDY
     "1" to Duration.ZERO, // 일 (Working) - WORK
     "2" to Duration.ZERO, // 운동 (Exercising) - EXERCISE
@@ -234,13 +258,13 @@ val defaultTitleToDurationMap: Map<String, Duration> = mapOf(
     "9" to Duration.ZERO  // 수면 (Sleeping) - SLEEP
 )
 
-val defaultToolToCountMap: Map<CurrentTool, Int> = mapOf(
+val defaultToolCountMap: Map<CurrentTool, Int> = mapOf(
     CurrentTool.STOPWATCH to 0,
     CurrentTool.TIMER to 0,
     CurrentTool.LIST to 0,
 )
 
-val defaultToolToDurationMap: Map<CurrentTool, Duration> = mapOf(
+val defaultToolDurationMap: Map<CurrentTool, Duration> = mapOf(
     CurrentTool.STOPWATCH to Duration.ZERO,
     CurrentTool.TIMER to Duration.ZERO,
     CurrentTool.LIST to Duration.ZERO,
@@ -305,19 +329,6 @@ fun getRandomNickname(): String {
     return tmpNicknameList[Random.nextInt(tmpNicknameList.size)]
 }
 
-//val tmpStatusMessages: List<String> = listOf(
-//    "오늘도 멋진 하루를 만들어봐요!",
-//    "새로운 시작, 설레는 마음으로!",
-//    "매일 조금씩 성장하는 중입니다.",
-//    "당신의 하루를 응원합니다!",
-//    "작은 행복을 찾아 떠나는 중!",
-//    "할 수 있는 것부터 차근차근!",
-//    "긍정적인 생각이 긍정적인 변화를!",
-//    "오늘도 웃음 가득한 하루 되세요!",
-//    "하루하루가 새로운 기회입니다.",
-//    "지금 이 순간이 가장 소중해요!"
-//)
-
 val daysOfWeekFromMonday = listOf(
     "월",
     "화",
@@ -335,6 +346,12 @@ enum class CurrentTool {
 //    POMODORO,
     LIST
 }
+
+val toolKRMap :Map<CurrentTool, String> = mapOf(
+    CurrentTool.STOPWATCH to "스톱워치",
+    CurrentTool.TIMER to "타이머",
+    CurrentTool.LIST to "리스트",
+)
 
 enum class CurrentToolState {
     STOPPED,

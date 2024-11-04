@@ -9,14 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingViewModel @Inject constructor(
+class MyAccountViewModel @Inject constructor(
     private val userDataSource: UserDataSource
 ) : ViewModel() {
-    private val TAG = "SettingViewModel"
+    private val TAG = "MyAccountViewModel"
     init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
@@ -27,7 +26,7 @@ class SettingViewModel @Inject constructor(
     val firebaseUser: State<FirebaseUser?> = userDataSource.firebaseUser
     val user: State<User?> = userDataSource.user
 
-    // 이메일(계정 삭제 대화상자)
+    // 이메일(계정 삭제 대화상자 속)
     private val _emailForDialog = mutableStateOf(userDataSource.firebaseUser.value?.email ?: "")
     val emailForDialog: State<String> = _emailForDialog
 
@@ -37,13 +36,9 @@ class SettingViewModel @Inject constructor(
     private val _showDisplayNameDialog = mutableStateOf(false)
     val showDisplayNameDialog: State<Boolean> = _showDisplayNameDialog
 
-    // 상태메시지
-//    private val _statusMessage = mutableStateOf(userDataSource.user.value?.statusMessage ?: "")
-//    val statusMessage: State<String> = _statusMessage
-//    private val _showStatusMessageDialog = mutableStateOf(false)
-//    val showStatusMessageDialog: State<Boolean> = _showStatusMessageDialog
-
     // 계정
+    private val _showLevelDateMapDialog = mutableStateOf(false)
+    val showLevelDateMapDialog: State<Boolean> = _showLevelDateMapDialog
     private val _showSignOutDialog = mutableStateOf(false)
     val showSignOutDialog: State<Boolean> = _showSignOutDialog
     private val _showDeleteUserDialog = mutableStateOf(false)
@@ -64,7 +59,7 @@ class SettingViewModel @Inject constructor(
     fun updateDisplayName(newDisplayName: String) {
         Log.d(TAG, "updateDisplayName executed")
 
-
+        /** 파이어베이스 유저 갱신하는 코드 작성. */
     }
 
     fun setShowDisplayNameDialog(show: Boolean) {
@@ -73,23 +68,11 @@ class SettingViewModel @Inject constructor(
         _showDisplayNameDialog.value = show
     }
 
-//    fun setStatusMessage(newStatusMessage: String) {
-//        Log.d(TAG, "setUserStatusMessage executed")
-//
-//        _statusMessage.value = newStatusMessage
-//    }
-//
-//    fun updateStatusMessage(newStatusMessage: String) {
-//        Log.d(TAG, "updateStatusMessage executed")
-//
-//        userDataSource.updateStatusMessage(email = firebaseUser.value?.email ?: "", newStatusMessage = newStatusMessage)
-//    }
+    fun setShowLevelDateMapDialog(show: Boolean) {
+        Log.d(TAG, "setShowLevelDateMapDialog executed")
 
-//    fun setShowStatusMessageDialog(show: Boolean) {
-//        Log.d(TAG, "setShowStatusMessageDialog executed")
-//
-//        _showStatusMessageDialog.value = show
-//    }
+        _showLevelDateMapDialog.value = show
+    }
 
     fun setShowSignOutDialog(show: Boolean) {
         Log.d(TAG, "setShowSignOutDialog executed")
@@ -97,16 +80,16 @@ class SettingViewModel @Inject constructor(
         _showSignOutDialog.value = show
     }
 
-    fun setShowDeleteUserDialog(show: Boolean) {
-        Log.d(TAG, "setShowDeleteUserDialog executed")
-
-        _showDeleteUserDialog.value = show
-    }
-
     fun signOut() {
         Log.d(TAG, "signOut executed")
 
         userDataSource.signOut()
+    }
+
+    fun setShowDeleteUserDialog(show: Boolean) {
+        Log.d(TAG, "setShowDeleteUserDialog executed")
+
+        _showDeleteUserDialog.value = show
     }
 
     fun deleteUser(onUserDeleted: (Boolean) -> Unit) {

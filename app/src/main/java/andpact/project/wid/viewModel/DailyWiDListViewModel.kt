@@ -6,14 +6,10 @@ import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.*
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,11 +18,11 @@ import javax.inject.Inject
 import kotlin.concurrent.timer
 
 @HiltViewModel
-class DayWiDViewModel @Inject constructor(
+class DailyWiDListViewModel @Inject constructor(
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource,
 ) : ViewModel() {
-    private val TAG = "DayWiDViewModel"
+    private val TAG = "DailyWiDListViewModel"
     init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
@@ -34,8 +30,6 @@ class DayWiDViewModel @Inject constructor(
     }
 
     private val user: State<User?> = userDataSource.user
-
-    val titleColorMap = titleToColorMap
 
     // 날짜
     private val _currentDate = mutableStateOf(LocalDate.now())

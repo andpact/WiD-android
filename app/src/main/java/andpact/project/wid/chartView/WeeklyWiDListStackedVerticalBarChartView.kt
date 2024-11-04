@@ -8,7 +8,7 @@ import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.daysOfWeekFromMonday
-import andpact.project.wid.util.titleToColorMap
+import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,13 +27,13 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun StackedVerticalBarChartView(
+fun WeeklyWiDListStackedVerticalBarChartView(
     startDate: LocalDate,
     finishDate: LocalDate,
     wiDList: List<WiD>,
     modifier: Modifier = Modifier
 ) {
-    val TAG = "StackedVerticalBarChartView"
+    val TAG = "WeeklyWiDListStackedVerticalBarChartView"
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -169,7 +169,7 @@ fun StackedVerticalBarChartView(
                                     .padding(horizontal = 10.dp, vertical = 1.dp)
                                     .weight(barHeight) // 계산된 높이를 weight로 설정
                                     .background(
-                                        color = titleToColorMap[barData.title] ?: MaterialTheme.colorScheme.secondaryContainer,
+                                        color = titleColorMap[barData.title] ?: MaterialTheme.colorScheme.secondaryContainer,
                                         shape = MaterialTheme.shapes.extraSmall
                                     )
                             )
@@ -183,7 +183,7 @@ fun StackedVerticalBarChartView(
 
 @Preview(showBackground = true)
 @Composable
-fun StackedVerticalBarChartPreview() {
+fun WeeklyWiDListStackedVerticalBarChartPreview() {
     val days: Long = 7
     val tmpStartDate = LocalDate.now()
     val tmpFinishDate = tmpStartDate.plusDays(days - 1)
@@ -218,7 +218,7 @@ fun StackedVerticalBarChartPreview() {
         )
     }
 
-    StackedVerticalBarChartView(
+    WeeklyWiDListStackedVerticalBarChartView(
         startDate = tmpStartDate,
         finishDate = tmpFinishDate,
         wiDList = tmpWiDList

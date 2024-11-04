@@ -31,24 +31,19 @@ class UserRepository @Inject constructor(
     private val USER_COLLECTION = "UserCollection"
     private val WID_COLLECTION = "WiDCollection"
 
+    // 계정
     private val EMAIL = "email"
     private val SIGNED_UP_ON = "signedUpOn"
-
-//    private val CURRENT_TITLE = "currentTitle"
-//    private val CURRENT_TOOL = "currentTool"
-//    private val CURRENT_TOOL_STATE = "currentToolState"
-//    private val STOPWATCH_START_TIME = "stopwatchStartTime"
-//    private val STOPWATCH_PREV_DURATION = "stopwatchPrevDuration"
-//    private val TIMER_START_TIME = "timerStartTime"
-//    private val TIMER_NEXT_SELECTED_TIME = "timerNextSelectedTime"
-
+    // 레벨
     private val LEVEL = "level"
-    private val LEVEL_UP_HISTORY_MAP = "levelUpHistoryMap"
+    private val LEVEL_DATE_MAP = "levelDateMap"
+    // 경험치
     private val CURRENT_EXP = "currentExp"
     private val WID_TOTAL_EXP = "wiDTotalExp"
-
+    // 제목
     private val WID_TITLE_COUNT_MAP = "wiDTitleCountMap"
     private val WID_TITLE_DURATION_MAP = "wiDTitleDurationMap"
+    // 도구
     private val WID_TOOL_COUNT_MAP = "wiDToolCountMap"
     private val WID_TOOL_DURATION_MAP = "wiDToolDurationMap"
 
@@ -194,24 +189,30 @@ class UserRepository @Inject constructor(
         val today = LocalDate.now()
         val todayAsString = today.toString()
 
-        val defaultLevelToDateMapForServer = convertLevelToDateMapForServer(defaultLevelToDateMap)
-        val defaultTitleDurationMapAsInt = convertTitleToDurationMapForServer(defaultTitleToDurationMap)
-        val defaultToolCountMapAsString = convertToolToCountMapForServer(defaultToolToCountMap)
-        val defaultToolDurationMapAsString = convertToolToDurationMapForServer(defaultToolToDurationMap)
+        // 레벨
+        val defaultLevelDateMapForServer = convertLevelToDateMapForServer(defaultLevelDateMap)
+        // 제목
+        val defaultTitleDurationMapForServer = convertTitleToDurationMapForServer(defaultTitleDurationMap)
+        // 도구
+        val defaultToolCountMapForServer = convertToolToCountMapForServer(defaultToolCountMap)
+        val defaultToolDurationMapForServer = convertToolToDurationMapForServer(defaultToolDurationMap)
 
         val newUserDocument = hashMapOf(
+            // 계정
             EMAIL to email,
             SIGNED_UP_ON to todayAsString,
-
+            // 레벨
             LEVEL to 1,
-            LEVEL_UP_HISTORY_MAP to defaultLevelToDateMapForServer,
+            LEVEL_DATE_MAP to defaultLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to 0,
             WID_TOTAL_EXP to 0,
-
-            WID_TITLE_COUNT_MAP to defaultTitleToCountMap,
-            WID_TITLE_DURATION_MAP to defaultTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to defaultToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to defaultToolDurationMapAsString,
+            // 제목
+            WID_TITLE_COUNT_MAP to defaultTitleCountMap,
+            WID_TITLE_DURATION_MAP to defaultTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to defaultToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to defaultToolDurationMapForServer,
         )
 
         firestore.collection(USER_COLLECTION)
@@ -220,19 +221,21 @@ class UserRepository @Inject constructor(
                 Log.d(TAG, "DocumentSnapshot added with ID : ${documentReference.id}")
 
                 val newUser = User(
+                    // 계정
                     email = email,
                     signedUpOn = today,
                     // 레벨
                     level = 1,
-                    levelUpHistoryMap = defaultLevelToDateMap,
+                    levelUpHistoryMap = defaultLevelDateMap,
                     // 경험치
                     currentExp = 0,
                     wiDTotalExp = 0,
                     // 제목
-                    wiDTitleCountMap = defaultTitleToCountMap,
-                    wiDTitleDurationMap = defaultTitleToDurationMap,
-                    wiDToolCountMap = defaultToolToCountMap,
-                    wiDToolDurationMap = defaultToolToDurationMap
+                    wiDTitleCountMap = defaultTitleCountMap,
+                    wiDTitleDurationMap = defaultTitleDurationMap,
+                    // 도구
+                    wiDToolCountMap = defaultToolCountMap,
+                    wiDToolDurationMap = defaultToolDurationMap
                 )
 
                 onUserCreated(newUser)
@@ -249,40 +252,42 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "getExistingUser executed")
 
+        // 계정
         val userEmail = documentSnapshot.getString(EMAIL) ?: ""
         val signedUpOn = LocalDate.parse(documentSnapshot.getString(SIGNED_UP_ON))
-
         // 레벨
         val level = documentSnapshot.getLong(LEVEL)?.toInt() ?: 1
-        val levelUpHistoryMapAsString = documentSnapshot.get(LEVEL_UP_HISTORY_MAP) as? HashMap<String, String> ?: convertLevelToDateMapForServer(defaultLevelToDateMap)
-        val levelUpHistoryMapAsLocalDate = convertLevelToDateMapForClient(levelUpHistoryMapAsString)
-
+        val levelDateMapFromServer = documentSnapshot.get(LEVEL_DATE_MAP) as? HashMap<String, String> ?: convertLevelToDateMapForServer(defaultLevelDateMap)
+        val levelDateMap = convertLevelToDateMapForClient(levelDateMapFromServer)
         // 경험치
         val currentExp = documentSnapshot.getLong(CURRENT_EXP)?.toInt() ?: 0
         val wiDTotalExp = documentSnapshot.getLong(WID_TOTAL_EXP)?.toInt() ?: 0
-
         // 제목
-        val titleCountMap = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: defaultTitleToCountMap
-        val titleDurationMapAsInt = documentSnapshot.get(WID_TITLE_DURATION_MAP) as? HashMap<String, Int> ?: convertTitleToDurationMapForServer(defaultTitleToDurationMap)
-        val titleDurationMapAsDuration = convertTitleToDurationMapForClient(titleDurationMapAsInt)
-        val toolCountMapAsString = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: convertToolToCountMapForServer(defaultToolToCountMap)
-        val toolCountMapAsCurrentTool = convertToolToCountMapForClient(toolCountMapAsString)
-        val toolDurationMapAsString = documentSnapshot.get(WID_TOOL_DURATION_MAP) as? HashMap<String, Int> ?: convertToolToDurationMapForServer(defaultToolToDurationMap)
-        val toolDurationMapAsCurrentTool = convertToolToDurationMapForClient(toolDurationMapAsString)
+        val titleCountMap = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: defaultTitleCountMap
+        val titleDurationMapFromServer = documentSnapshot.get(WID_TITLE_DURATION_MAP) as? HashMap<String, Int> ?: convertTitleToDurationMapForServer(defaultTitleDurationMap)
+        val titleDurationMap = convertTitleToDurationMapForClient(titleDurationMapFromServer)
+        // 도구
+        val toolCountMapFromServer = documentSnapshot.get(WID_TITLE_COUNT_MAP) as? HashMap<String, Int> ?: convertToolToCountMapForServer(defaultToolCountMap)
+        val toolCountMap = convertToolToCountMapForClient(toolCountMapFromServer)
+        val toolDurationMapFromServer = documentSnapshot.get(WID_TOOL_DURATION_MAP) as? HashMap<String, Int> ?: convertToolToDurationMapForServer(defaultToolDurationMap)
+        val toolDurationMap = convertToolToDurationMapForClient(toolDurationMapFromServer)
 
         val user = User(
+            // 계정
             email = userEmail,
             signedUpOn = signedUpOn,
-
+            // 레벨
             level = level,
-            levelUpHistoryMap = levelUpHistoryMapAsLocalDate,
+            levelUpHistoryMap = levelDateMap,
+            // 경험치
             currentExp = currentExp,
             wiDTotalExp = wiDTotalExp,
-
+            // 제목
             wiDTitleCountMap = titleCountMap,
-            wiDTitleDurationMap = titleDurationMapAsDuration,
-            wiDToolCountMap = toolCountMapAsCurrentTool,
-            wiDToolDurationMap = toolDurationMapAsCurrentTool
+            wiDTitleDurationMap = titleDurationMap,
+            // 도구
+            wiDToolCountMap = toolCountMap,
+            wiDToolDurationMap = toolDurationMap
         )
 
         onUserFetched(user)
@@ -310,26 +315,31 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "pauseStopwatch executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 제목
+        val newTitleDurationMapForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer,
         )
 
-        /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onStopwatchPaused(userUpdated)
-//            }
-//        )
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onStopwatchPaused(userUpdated)
+            }
+        )
     }
 
     fun pauseStopwatchWithLevelUp(
@@ -346,19 +356,27 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "pauseStopwatchWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 레벨
+        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        // 제목
+        val newTitleDurationMapForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
-            LEVEL to newLevel, // 레벨 업
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString, // 레벨 업
+            // 레벨
+            LEVEL to newLevel,
+            LEVEL_DATE_MAP to newLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
 
         updateUserDocument(
@@ -382,25 +400,31 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "pauseTimer executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 제목
+        val newTitleDurationMapForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
-        /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onTimerPaused(userUpdated)
-//            }
-//        )
+
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onTimerPaused(userUpdated)
+            }
+        )
     }
 
     fun pauseTimerWithLevelUp(
@@ -417,19 +441,27 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "pauseTimerWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 레벨
+        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        // 제목
+        val newTitleDurationMapForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 레벨
             LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
+            LEVEL_DATE_MAP to newLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
 
         updateUserDocument(
@@ -453,25 +485,31 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "autoStopTimer executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 제목
+        val newTitleDurationMapForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationMapForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
-        /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onTimerAutoStopped(userUpdated)
-//            }
-//        )
+
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onTimerAutoStopped(userUpdated)
+            }
+        )
     }
 
     fun autoStopTimerWithLevelUp(
@@ -488,19 +526,27 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "autoStopTimerWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 경험치
+        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 레벨
             LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
+            LEVEL_DATE_MAP to newLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
 
         updateUserDocument(
@@ -524,25 +570,31 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "createWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
-        /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onCreatedWiD(userUpdated)
-//            }
-//        )
+
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onCreatedWiD(userUpdated)
+            }
+        )
     }
 
     fun createdWiDWithLevelUp(
@@ -559,19 +611,27 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "createdWiDWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 경험치
+        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 레벨
             LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
+            LEVEL_DATE_MAP to newLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
 
         updateUserDocument(
@@ -594,23 +654,29 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "updateWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
-        /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onWiDUpdated(userUpdated)
-//            }
-//        )
+
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onWiDUpdated(userUpdated)
+            }
+        )
     }
 
     fun updateWiDWithLevelUp(
@@ -626,17 +692,25 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "updateWiDWithLevelUp executed")
 
-        val newLevelUpHistoryMapAsString = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 경험치
+        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 레벨
             LEVEL to newLevel,
-            LEVEL_UP_HISTORY_MAP to newLevelUpHistoryMapAsString,
+            LEVEL_DATE_MAP to newLevelDateMapForServer,
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
 
         updateUserDocument(
@@ -660,25 +734,31 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "deleteWiD executed")
 
-        val newTitleDurationMapAsInt = convertTitleToDurationMapForServer(newTitleDurationMap)
-        val newToolCountMapAsString = convertToolToCountMapForServer(newToolCountMap)
+        // 제목
+        val newTitleDurationForServer = convertTitleToDurationMapForServer(newTitleDurationMap)
+        // 도구
+        val newToolCountMapForServer = convertToolToCountMapForServer(newToolCountMap)
+        val newToolDurationMapForServer = convertToolToDurationMapForServer(newToolDurationMap)
 
         val updatedUserDocument = hashMapOf(
+            // 경험치
             CURRENT_EXP to newCurrentExp,
             WID_TOTAL_EXP to newWiDTotalExp,
+            // 제목
             WID_TITLE_COUNT_MAP to newTitleCountMap,
-            WID_TITLE_DURATION_MAP to newTitleDurationMapAsInt,
-            WID_TOOL_COUNT_MAP to newToolCountMapAsString,
-            WID_TOOL_DURATION_MAP to ,
+            WID_TITLE_DURATION_MAP to newTitleDurationForServer,
+            // 도구
+            WID_TOOL_COUNT_MAP to newToolCountMapForServer,
+            WID_TOOL_DURATION_MAP to newToolDurationMapForServer
         )
         /** 복구!! */
-//        updateUserDocument(
-//            email = email,
-//            updatedUserDocument = updatedUserDocument,
-//            onUserUpdated = { userUpdated: Boolean ->
-//                onWiDDeleted(userUpdated)
-//            }
-//        )
+        updateUserDocument(
+            email = email,
+            updatedUserDocument = updatedUserDocument,
+            onUserUpdated = { userUpdated: Boolean ->
+                onWiDDeleted(userUpdated)
+            }
+        )
     }
 
     private fun updateUserDocument(

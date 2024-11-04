@@ -1,9 +1,7 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.chartView.HomeViewHorizontalBarChartView
-import andpact.project.wid.chartView.HomeViewPieChartView
-import andpact.project.wid.chartView.VerticalBarChartView
+import andpact.project.wid.chartView.HomePieChartView
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.HomeViewModel
@@ -16,34 +14,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.NumberFormat
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.YearMonth
 import java.util.*
 
 // 익명 가입 시 uid를 제외하고는 null이 할당됨.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeView(
-    onSettingButtonPressed: () -> Unit,
-    homeViewModel: HomeViewModel = hiltViewModel()
-) {
+fun HomeView(homeViewModel: HomeViewModel = hiltViewModel()) {
     val TAG = "HomeView"
 
     val displayName = homeViewModel.firebaseUser.value?.displayName ?: ""
     val level = homeViewModel.user.value?.level
     val currentExp = homeViewModel.user.value?.currentExp ?: 0
-    val requiredExp = levelToRequiredExpMap[level] ?: 0
+    val requiredExp = levelRequiredExpMap[level] ?: 0
     val expRatio = currentExp.toFloat() / requiredExp.toFloat()
 
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
@@ -78,18 +66,6 @@ fun HomeView(
                         painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
                         contentDescription = "앱 아이콘"
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            onSettingButtonPressed()
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_settings_24),
-                            contentDescription = "환경 설정"
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -199,7 +175,7 @@ fun HomeView(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 ) {
-                    HomeViewPieChartView(
+                    HomePieChartView(
                         today = today,
                         now = now
                     )

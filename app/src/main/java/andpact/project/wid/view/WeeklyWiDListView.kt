@@ -1,22 +1,16 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.chartView.PeriodBasedPieChartFragment
-import andpact.project.wid.chartView.StackedVerticalBarChartView
+import andpact.project.wid.chartView.WeeklyWiDListStackedVerticalBarChartView
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import andpact.project.wid.viewModel.WeekWiDViewModel
+import andpact.project.wid.viewModel.WeeklyWiDListViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -24,57 +18,52 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.Duration
-import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
-    val TAG = "WeekWiDView"
+fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewModel()) {
+    val TAG = "WeeklyWiDListView"
 
     // 날짜
-    val today = weekWiDViewModel.today.value
-    val startDate = weekWiDViewModel.startDate.value // 조회 시작 날짜
-    val finishDate = weekWiDViewModel.finishDate.value // 조회 종료 날짜
-    val weekPickerExpanded = weekWiDViewModel.weekPickerExpanded.value
+    val today = weeklyWiDListViewModel.today.value
+    val startDate = weeklyWiDListViewModel.startDate.value // 조회 시작 날짜
+    val finishDate = weeklyWiDListViewModel.finishDate.value // 조회 종료 날짜
+    val weekPickerExpanded = weeklyWiDListViewModel.weekPickerExpanded.value
 
     // WiD
-    val wiDListFetched = weekWiDViewModel.wiDListFetched.value
-    val wiDList = weekWiDViewModel.wiDList.value
-
-    val titleColorMap = weekWiDViewModel.titleColorMap
+    val wiDListFetched = weeklyWiDListViewModel.wiDListFetched.value
+    val wiDList = weeklyWiDListViewModel.wiDList.value
 
     // 합계
-    val totalDurationMap = weekWiDViewModel.totalDurationMap.value
+    val totalDurationMap = weeklyWiDListViewModel.totalDurationMap.value
 
     // 평균
-    val averageDurationMap = weekWiDViewModel.averageDurationMap.value
+    val averageDurationMap = weeklyWiDListViewModel.averageDurationMap.value
 
     // 최고
-    val minDurationMap = weekWiDViewModel.minDurationMap.value
+    val minDurationMap = weeklyWiDListViewModel.minDurationMap.value
 
     // 최고
-    val maxDurationMap = weekWiDViewModel.maxDurationMap.value
+    val maxDurationMap = weeklyWiDListViewModel.maxDurationMap.value
 
     // WiD List 갱신용
-    val date = weekWiDViewModel.date.value
-    val start = weekWiDViewModel.start.value
-    val finish = weekWiDViewModel.finish.value
+    val date = weeklyWiDListViewModel.date.value
+    val start = weeklyWiDListViewModel.start.value
+    val finish = weeklyWiDListViewModel.finish.value
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        weekWiDViewModel.setToday(newDate = today)
+        weeklyWiDListViewModel.setToday(newDate = today)
 
-        weekWiDViewModel.setStartDateAndFinishDate(
-            startDate = weekWiDViewModel.startDate.value,
-            finishDate = weekWiDViewModel.finishDate.value
+        weeklyWiDListViewModel.setStartDateAndFinishDate(
+            startDate = weeklyWiDListViewModel.startDate.value,
+            finishDate = weeklyWiDListViewModel.finishDate.value
         )
 
         onDispose { Log.d(TAG, "disposed") }
@@ -85,14 +74,14 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
 
         if (start.isBefore(finish)) { // date 날짜를 조회할 때만 리스트 갱신
             if ((startDate.isBefore(date) && finishDate.isAfter(date)) || startDate.isEqual(date) || finishDate.isEqual(date)) {
-                weekWiDViewModel.setStartDateAndFinishDate(
+                weeklyWiDListViewModel.setStartDateAndFinishDate(
                     startDate = startDate,
                     finishDate = finishDate
                 )
             }
         } else if (start.isAfter(finish)) { // date + 1 날짜 조회할 때 리스트 갱신
             if ((startDate.isBefore(date.plusDays(1)) && finishDate.isAfter(date.plusDays(1))) || startDate.isEqual(date.plusDays(1)) || finishDate.isEqual(date.plusDays(1))) {
-                weekWiDViewModel.setStartDateAndFinishDate(
+                weeklyWiDListViewModel.setStartDateAndFinishDate(
                     startDate = startDate,
                     finishDate = finishDate
                 )
@@ -103,7 +92,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
     BackHandler(
         enabled = weekPickerExpanded,
         onBack = {
-            weekWiDViewModel.setWeekPickerExpanded(false)
+            weeklyWiDListViewModel.setWeekPickerExpanded(false)
         }
     )
 
@@ -123,7 +112,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                     modifier = Modifier
                         .weight(1f),
                     onClick = {
-                        weekWiDViewModel.setWeekPickerExpanded(true)
+                        weeklyWiDListViewModel.setWeekPickerExpanded(true)
                     }
                 ) {
                     Row(
@@ -155,7 +144,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         val newStartDate = startDate.minusWeeks(1)
                         val newFinishDate = finishDate.minusWeeks(1)
 
-                        weekWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
+                        weeklyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     },
                 ) {
                     Icon(
@@ -169,7 +158,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         val newStartDate = startDate.plusWeeks(1)
                         val newFinishDate = finishDate.plusWeeks(1)
 
-                        weekWiDViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
+                        weeklyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     },
                     enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
                 ) {
@@ -215,7 +204,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                 ) {
                     // 수직 막대 차트
                     item {
-                        StackedVerticalBarChartView(
+                        WeeklyWiDListStackedVerticalBarChartView(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp),
                             startDate = startDate,
@@ -230,40 +219,6 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             color = MaterialTheme.colorScheme.secondaryContainer
                         )
                     }
-
-                    // 파이차트
-//                    item {
-//                        LazyVerticalGrid(
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .heightIn(max = 700.dp), // lazy 뷰 안에 lazy 뷰를 넣기 위해서 높이를 지정해줘야 함. 최대 높이까지는 그리드 아이템을 감싸도록 함.
-//                            columns = GridCells.Fixed(7)
-//                        ) {
-//                            items(
-//                                count = ChronoUnit.DAYS.between(startDate, finishDate).toInt() + 1
-//                            ) { index: Int ->
-//                                val indexDate = startDate.plusDays(index.toLong())
-//                                val filteredWiDListByDate = wiDList.filter { it.date == indexDate }
-//
-//                                Column(
-//                                    modifier = Modifier
-//                                        .weight(1f),
-//                                    horizontalAlignment = Alignment.CenterHorizontally,
-//                                ) {
-//                                    PeriodBasedPieChartFragment(
-//                                        date = indexDate,
-//                                        wiDList = filteredWiDListByDate
-//                                    )
-//
-////                                    Text(
-////                                        text = "${getTotalDurationPercentageFromWiDList(wiDList = filteredWiDListByDate)}%",
-////                                        style = Typography.labelSmall,
-////                                        color = MaterialTheme.colorScheme.primary
-////                                    )
-//                                }
-//                            }
-//                        }
-//                    }
 
                     item {
                         Row(
@@ -296,18 +251,17 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                    .height(intrinsicSize = IntrinsicSize.Min),
+                                    .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxHeight()
+                                        .width(40.dp)
                                         .aspectRatio(1f / 1f)
-                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
@@ -322,11 +276,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                         .width(8.dp)
                                 )
 
-                                Text(
-                                    text = titleToKRMap[title] ?: "기록 없음",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Column {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 8.dp, bottom = 4.dp),
+                                        text = titleKRMap[title] ?: "기록 없음",
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, bottom = 8.dp),
+                                        text = getDurationString(duration = totalDuration),
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
 
                                 Spacer(
                                     modifier = Modifier
@@ -334,13 +300,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    text = getDurationString(duration = totalDuration, mode = 3),
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                Text(
-                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(totalDuration))}%)",
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(totalDuration))}%",
                                     style = Typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -379,24 +345,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                    .height(intrinsicSize = IntrinsicSize.Min),
+                                    .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxHeight()
+                                        .width(40.dp)
                                         .aspectRatio(1f / 1f)
-                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${index + 1}",
                                         style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
 
@@ -405,11 +370,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                         .width(8.dp)
                                 )
 
-                                Text(
-                                    text = titleToKRMap[title] ?: "기록 없음",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Column {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 8.dp, bottom = 4.dp),
+                                        text = titleKRMap[title] ?: "기록 없음",
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, bottom = 8.dp),
+                                        text = getDurationString(duration = averageDuration),
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
 
                                 Spacer(
                                     modifier = Modifier
@@ -417,13 +394,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    text = getDurationString(duration = averageDuration, mode = 3),
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                Text(
-                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(averageDuration))}%)",
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(averageDuration))}%",
                                     style = Typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -462,24 +439,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                    .height(intrinsicSize = IntrinsicSize.Min),
+                                    .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxHeight()
+                                        .width(40.dp)
                                         .aspectRatio(1f / 1f)
-                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${index + 1}",
                                         style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
 
@@ -488,11 +464,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                         .width(8.dp)
                                 )
 
-                                Text(
-                                    text = titleToKRMap[title] ?: "기록 없음",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Column {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 8.dp, bottom = 4.dp),
+                                        text = titleKRMap[title] ?: "기록 없음",
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, bottom = 8.dp),
+                                        text = getDurationString(duration = maxDuration),
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
 
                                 Spacer(
                                     modifier = Modifier
@@ -500,13 +488,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    text = getDurationString(duration = maxDuration, mode = 3),
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                Text(
-                                    text = "(${"%.1f".format(getTitlePercentageOfDay(maxDuration))}%)",
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(maxDuration))}%",
                                     style = Typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -545,24 +533,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        horizontal = 16.dp,
-                                        vertical = 8.dp
-                                    )
-                                    .height(intrinsicSize = IntrinsicSize.Min),
+                                    .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxHeight()
+                                        .width(40.dp)
                                         .aspectRatio(1f / 1f)
-                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${index + 1}",
                                         style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
 
@@ -571,11 +558,23 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                         .width(8.dp)
                                 )
 
-                                Text(
-                                    text = titleToKRMap[title] ?: "기록 없음",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Column {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 8.dp, bottom = 4.dp),
+                                        text = titleKRMap[title] ?: "기록 없음",
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, bottom = 8.dp),
+                                        text = getDurationString(duration = minDuration),
+                                        style = Typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
 
                                 Spacer(
                                     modifier = Modifier
@@ -583,13 +582,13 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 )
 
                                 Text(
-                                    text = getDurationString(duration = minDuration, mode = 3),
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                Text(
-                                    text = "(${ "%.1f".format(getTitlePercentageOfDay(minDuration))}%)",
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(minDuration))}%",
                                     style = Typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -610,7 +609,7 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                         shape = MaterialTheme.shapes.extraLarge
                     ),
                 onDismissRequest = {
-                    weekWiDViewModel.setWeekPickerExpanded(false)
+                    weeklyWiDListViewModel.setWeekPickerExpanded(false)
                 },
             ) {
                 Column(
@@ -640,12 +639,12 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        weekWiDViewModel.setStartDateAndFinishDate(
+                                        weeklyWiDListViewModel.setStartDateAndFinishDate(
                                             startDate = firstDayOfWeek,
                                             finishDate = lastDayOfWeek
                                         )
 
-                                        weekWiDViewModel.setWeekPickerExpanded(false)
+                                        weeklyWiDListViewModel.setWeekPickerExpanded(false)
                                     },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -664,12 +663,12 @@ fun WeekWiDView(weekWiDViewModel: WeekWiDViewModel = hiltViewModel()) {
                                 RadioButton(
                                     selected = startDate == firstDayOfWeek && finishDate == lastDayOfWeek,
                                     onClick = {
-                                        weekWiDViewModel.setStartDateAndFinishDate(
+                                        weeklyWiDListViewModel.setStartDateAndFinishDate(
                                             startDate = firstDayOfWeek,
                                             finishDate = lastDayOfWeek
                                         )
 
-                                        weekWiDViewModel.setWeekPickerExpanded(false)
+                                        weeklyWiDListViewModel.setWeekPickerExpanded(false)
                                     },
                                 )
                             }

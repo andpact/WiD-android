@@ -1,16 +1,11 @@
 package andpact.project.wid.view
 
+import andpact.project.wid.R
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.CurrentToolState
-import andpact.project.wid.viewModel.WiDToolViewModel
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,36 +14,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun WiDToolView(
-    onWiDToolViewBarVisibleChanged: (Boolean) -> Unit,
-    wiDToolViewModel: WiDToolViewModel = hiltViewModel()
+fun MyPageView(
+    onUserSignedOut: () -> Unit,
+    onUserDeleted: (Boolean) -> Unit,
 ) {
-    val TAG = "WiDToolView"
-
-    val currentTool = wiDToolViewModel.currentTool.value
-    val currentToolState = wiDToolViewModel.currentToolState.value
-    val wiDToolViewBarVisible = wiDToolViewModel.wiDToolViewBarVisible.value
-
-    // 화면
-    val pages = wiDToolViewModel.pages
-    val pagerState = rememberPagerState(
-        initialPage = if (currentTool == CurrentTool.TIMER && currentToolState != CurrentToolState.STOPPED) 1 else 0, // 스톱 워치가 0 페이지니까, 타이머 실행 중일 때만 1페이지로 초기화함.
-        pageCount = { pages.size }
-    )
-    val coroutineScope = rememberCoroutineScope()
+    val TAG = "MyPageView"
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
     }
+
+    val pageList = listOf("계정", "제목", "도구")
+    val pagerState = rememberPagerState(pageCount = { pageList.size })
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier
@@ -56,18 +42,16 @@ fun WiDToolView(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
-                modifier = Modifier
-                    .alpha(if (wiDToolViewBarVisible) 1f else 0f),
                 title = {
                     Text(
-                        text = "도구",
+                        text = "마이페이지",
                         style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+                ),
             )
         }
     ) { contentPadding: PaddingValues ->
@@ -78,7 +62,6 @@ fun WiDToolView(
         ) {
             ScrollableTabRow(
                 modifier = Modifier
-                    .alpha(if (currentToolState == CurrentToolState.STOPPED) 1f else 0f)
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
                 containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
@@ -86,11 +69,11 @@ fun WiDToolView(
                 divider = {},
                 edgePadding = 0.dp
             ) {
-                pages.forEachIndexed { index: Int, _: String ->
+                pageList.forEachIndexed { index: Int, _: String ->
                     Tab(
                         text = {
                             Text(
-                                text = pages[index],
+                                text = pageList[index],
                                 style = Typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -100,32 +83,33 @@ fun WiDToolView(
                             coroutineScope.launch {
                                 pagerState.scrollToPage(index)
                             }
-                        },
-                        enabled = currentToolState == CurrentToolState.STOPPED
+                        }
                     )
                 }
             }
 
-            /** 컨텐츠 */
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = currentToolState == CurrentToolState.STOPPED
-            ) { page: Int ->
+            HorizontalPager(state = pagerState) { page ->
                 when (page) {
-                    0 -> StopwatchView(
-                        onStopwatchViewBarVisibleChanged = { visible ->
-                            wiDToolViewModel.setWiDToolViewBarVisible(visible = visible)
-                            onWiDToolViewBarVisibleChanged(visible) // Main View의 바텀 네비게이션 바 제거 용 콜백
+                    0 -> MyAccountView(
+                        onUserSignedOut = {
+                            onUserSignedOut()
+                        },
+                        onUserDeleted = { userDeleted: Boolean ->
+                            if (userDeleted) {
+                                onUserDeleted(true)
+                            }
                         }
                     )
-                    1 -> TimerView(
-                        onTimerViewBarVisibleChanged = { visible ->
-                            wiDToolViewModel.setWiDToolViewBarVisible(visible = visible)
-                            onWiDToolViewBarVisibleChanged(visible) // Main View의 바텀 네비게이션 바 제거 용 콜백
-                        }
-                    )
+                    1 -> MyTitleView()
+                    2 -> MyToolView()
                 }
             }
         }
     }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun MyPagePreview() {
+//
+//}

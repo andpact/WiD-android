@@ -102,7 +102,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "pauseStopwatch executed")
 
@@ -113,6 +114,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onStopwatchPaused = { stopwatchPaused: Boolean ->
                 if (stopwatchPaused) {
                     _user.value = _user.value?.copy(
@@ -120,7 +122,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -134,7 +137,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "pauseStopwatchWithLevelUp executed")
 
@@ -147,6 +151,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onStopwatchPausedWithLevelUp = { stopwatchPausedWithLevelUp: Boolean ->
                 if (stopwatchPausedWithLevelUp) {
                     _user.value = _user.value?.copy(
@@ -156,7 +161,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -168,7 +174,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "pauseTimer executed")
 
@@ -179,6 +186,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onTimerPaused = { timerPaused: Boolean ->
                 if (timerPaused) {
                     _user.value = _user.value?.copy(
@@ -186,7 +194,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -200,7 +209,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "pauseTimerWithLevelUp executed")
 
@@ -213,6 +223,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onTimerPausedWithLevelUp = { timerPausedWithLevelUp: Boolean ->
                 if (timerPausedWithLevelUp) {
                     _user.value = _user.value?.copy(
@@ -222,7 +233,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -234,7 +246,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "autoStopTimer executed")
 
@@ -245,6 +258,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onTimerAutoStopped = { timerAutoStopped: Boolean ->
                 if (timerAutoStopped) {
                     _user.value = _user.value?.copy(
@@ -252,7 +266,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -266,7 +281,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "autoStopTimerWithLevelUp executed")
 
@@ -279,6 +295,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onTimerAutoStoppedWithLevelUp = { timerAutoStoppedWithLevelUp: Boolean ->
                 if (timerAutoStoppedWithLevelUp) {
                     _user.value = _user.value?.copy(
@@ -288,7 +305,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -300,7 +318,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "createdWiD executed")
 
@@ -311,6 +330,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onCreatedWiD = { createdWiD: Boolean ->
                 if (createdWiD) {
                     _user.value = _user.value?.copy(
@@ -318,7 +338,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -332,7 +353,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "createdWiDWithLevelUp executed")
 
@@ -345,6 +367,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onCreatedWiDWithLevelUp = { createdWiDWithLevelUp: Boolean ->
                 if (createdWiDWithLevelUp) {
                     _user.value = _user.value?.copy(
@@ -354,7 +377,8 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -365,7 +389,8 @@ class UserDataSource @Inject constructor(
         newCurrentExp: Int,
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
-        newTitleDurationMap: Map<String, Duration>
+        newTitleDurationMap: Map<String, Duration>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "updateWiD executed")
 
@@ -375,13 +400,15 @@ class UserDataSource @Inject constructor(
             newWiDTotalExp = newWiDTotalExp,
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
+            newToolDurationMap = newToolDurationMap,
             onWiDUpdated = { wiDUpdated: Boolean ->
                 if (wiDUpdated) {
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
-                        wiDTitleDurationMap = newTitleDurationMap
+                        wiDTitleDurationMap = newTitleDurationMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -395,6 +422,7 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "updateWiDWithLevelUp executed")
 
@@ -406,6 +434,7 @@ class UserDataSource @Inject constructor(
             newWiDTotalExp = newWiDTotalExp,
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
+            newToolDurationMap = newToolDurationMap,
             onWiDUpdatedWithLevelUp = { wiDUpdatedWithLevelUp: Boolean ->
                 if (wiDUpdatedWithLevelUp) {
                     _user.value = _user.value?.copy(
@@ -414,7 +443,8 @@ class UserDataSource @Inject constructor(
                         currentExp = newCurrentExp,
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
-                        wiDTitleDurationMap = newTitleDurationMap
+                        wiDTitleDurationMap = newTitleDurationMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
@@ -426,7 +456,8 @@ class UserDataSource @Inject constructor(
         newWiDTotalExp: Int,
         newTitleCountMap: Map<String, Int>,
         newTitleDurationMap: Map<String, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>
+        newToolCountMap: Map<CurrentTool, Int>,
+        newToolDurationMap: Map<CurrentTool, Duration>
     ) {
         Log.d(TAG, "deleteWiD executed")
 
@@ -437,6 +468,7 @@ class UserDataSource @Inject constructor(
             newTitleCountMap = newTitleCountMap,
             newTitleDurationMap = newTitleDurationMap,
             newToolCountMap = newToolCountMap,
+            newToolDurationMap = newToolDurationMap,
             onWiDDeleted = { wiDDeleted: Boolean ->
                 if (wiDDeleted) {
                     _user.value = _user.value?.copy(
@@ -444,48 +476,13 @@ class UserDataSource @Inject constructor(
                         wiDTotalExp = newWiDTotalExp,
                         wiDTitleCountMap = newTitleCountMap,
                         wiDTitleDurationMap = newTitleDurationMap,
-                        wiDToolCountMap = newToolCountMap
+                        wiDToolCountMap = newToolCountMap,
+                        wiDToolDurationMap = newToolDurationMap
                     )
                 }
             }
         )
     }
-
-//    fun deleteWiDWithLevelDown(
-//        newLevel: Int,
-//        newLevelUpHistoryMap: Map<String, LocalDate>,
-//        newCurrentExp: Int,
-//        newWiDTotalExp: Int,
-//        newTitleCountMap: Map<String, Int>,
-//        newTitleDurationMap: Map<String, Duration>,
-//        newToolCountMap: Map<CurrentTool, Int>
-//    ) {
-//        Log.d(TAG, "deleteWiDWithLevelDown executed")
-//
-//        userRepository.deleteWiDWithLevelDown(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel,
-//            newLevelUpHistoryMap = newLevelUpHistoryMap,
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            newTitleCountMap = newTitleCountMap,
-//            newTitleDurationMap = newTitleDurationMap,
-//            newToolCountMap = newToolCountMap,
-//            onWiDDeletedWithLevelDown = { wiDDeletedWithLevelDown: Boolean ->
-//                if (wiDDeletedWithLevelDown) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel,
-//                        levelUpHistoryMap = newLevelUpHistoryMap,
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp,
-//                        wiDTitleCountMap = newTitleCountMap,
-//                        wiDTitleDurationMap = newTitleDurationMap,
-//                        wiDToolCountMap = newToolCountMap
-//                    )
-//                }
-//            }
-//        )
-//    }
 
 //    fun updateDisplayName(newDisplayName: String) {
 //

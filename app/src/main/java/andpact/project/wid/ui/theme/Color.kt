@@ -20,7 +20,6 @@ val light_on_primary_container = Color(0xFF00174b)
 val dark_on_primary_container = Color(0xFFdbe1ff)
 val light_inverse_primary = Color(0xFFb4c5ff)
 val dark_inverse_primary = Color(0xFF4b5c92)
-
 // Secondary
 val light_secondary = Color(0xFF595e72)
 val dark_secondary = Color(0xFFc1c5dd)
@@ -30,7 +29,6 @@ val light_secondary_container = Color(0xFFdde1f9)
 val dark_secondary_container = Color(0xFF414659)
 val light_on_secondary_container = Color(0xFF161b2c)
 val dark_on_secondary_container = Color(0xFFdde1f9)
-
 // Tertiary
 val light_tertiary = Color(0xFF745470)
 val dark_tertiary = Color(0xFFe2bbdb)
@@ -40,7 +38,6 @@ val light_tertiary_container = Color(0xFFffd6f8)
 val dark_tertiary_container = Color(0xFF5a3d58)
 val light_on_tertiary_container = Color(0xFF2b122b)
 val dark_on_tertiary_container = Color(0xFFffd6f8)
-
 // Error
 val light_error = Color(0xFFba1a1a)
 val dark_error = Color(0xFFffb4ab)
@@ -50,7 +47,6 @@ val light_error_container = Color(0xFFffdad6)
 val dark_error_container = Color(0xFF93000a)
 val light_on_error_container = Color(0xFF410002)
 val dark_on_error_container = Color(0xFFffdad6)
-
 // Surface
 val light_surface_dim = Color(0xFFdad9e0)
 val dark_surface_dim = Color(0xFF121318)
@@ -76,13 +72,11 @@ val light_on_surface = Color(0xFF1a1b21)
 val dark_on_surface = Color(0xFFe3e2e9)
 val light_on_surface_variant = Color(0xFF45464f)
 val dark_on_surface_variant = Color(0xFFc5c6d0)
-
 // Outline
 val light_outline = Color(0xFF757680)
 val dark_outline = Color(0xFF8f909a)
 val light_outline_variant = Color(0xFFc5c6d0)
 val dark_outline_variant = Color(0xFF45464f)
-
 // Etc
 val light_scrim = Color(0xFF000000)
 val dark_scrim = Color(0xFF000000)
@@ -119,67 +113,13 @@ val Hygiene = Color(0xFF7F00FF) // 보라 (Purple)
 val Sleep = Color(0xFF7F007F)    // 자주색 (Dark Magenta)
 
 // Light / Dark Mode Colors
-//val LightStudy = Color(0xFFFF6666)           // 밝은 빨강
-//val LightWork = Color(0xFFFFB266)            // 밝은 주황
-//val LightExercise = Color(0xFFFFFF66)        // 밝은 노랑
-//val LightHobby = Color(0xFF99FF99)           // 밝은 연두
-//val LightRelaxation = Color(0xFF66CC66)      // 밝은 녹색
-//val LightMeal = Color(0xFF66FFFF)            // 밝은 청록
-//val LightTravel = Color(0xFF66B2FF)          // 밝은 파랑
-//val LightCleaning = Color(0xFFB3B3FF)        // 밝은 남색
-//val LightHygiene = Color(0xFFCC99FF)         // 밝은 보라
-//val LightSleep = Color(0xFFFF80FF)           // 밝은 자주색
-
-//val DarkStudy = Color(0xFF660000)            // 어두운 빨강
-//val DarkWork = Color(0xFF662900)             // 어두운 주황
-//val DarkExercise = Color(0xFF333300)         // 어두운 노랑
-//val DarkHobby = Color(0xFF004C00)            // 어두운 연두
-//val DarkRelaxation = Color(0xFF004D00)       // 어두운 녹색
-//val DarkMeal = Color(0xFF004C4C)             // 어두운 청록
-//val DarkTravel = Color(0xFF000099)           // 어두운 파랑
-//val DarkCleaning = Color(0xFF00004D)         // 어두운 남색
-//val DarkHygiene = Color(0xFF4D0099)          // 어두운 보라
-//val DarkSleep = Color(0xFF660066)            // 어두운 자주색
-
-// For 7 titles
-//val studyColor = Color(0xFFFF0000)      // 빨강
-//val workColor = Color(0xFFFF7F00)       // 주황
-//val readingColor = Color(0xFFFFFF00)    // 노랑
-//val exerciseColor = Color(0xFF007F00)   // 연두
-//val hobbyColor = Color(0xFF0000FF)      // 녹색
-//val travelColor = Color(0xFF00007F)     // 남색
-//val sleepColor = Color(0xFF7F00FF)      // 보라
-
-// For 10 titles
-//val Study = Color(0xFFFF0000).copy(alpha = 0.5f)     // 빨강
-//val Work = Color(0xFFFF7F00).copy(alpha = 0.5f)      // 주황
-//val Exercise = Color(0xFFFFFF00).copy(alpha = 0.5f)  // 노랑
-//val Hobby = Color(0xFF00FF00).copy(alpha = 0.5f)     // 연두
-//val Play = Color(0xFF007F00).copy(alpha = 0.5f)      // 녹색
-//val Meal = Color(0xFF00FFFF).copy(alpha = 0.5f)      // 청록
-//val Shower = Color(0xFF0000FF).copy(alpha = 0.5f)    // 파랑
-//val Travel = Color(0xFF00007F).copy(alpha = 0.5f)    // 남색
-//val Sleep = Color(0xFF7F00FF).copy(alpha = 0.5f)     // 보라
-//val Etc = Color(0xFF7F007F).copy(alpha = 0.5f)       // 자주색
-
-//val Study = Color(0xFFFF0000)     // 빨강
-//val Work = Color(0xFFFF7F00)      // 주황
-//val Exercise = Color(0xFFFFFF00)  // 노랑
-//val Hobby = Color(0xFF00FF00)     // 연두
-//val Play = Color(0xFF007F00)      // 녹색
-//val Meal = Color(0xFF00FFFF)      // 청록
-//val Shower = Color(0xFF0000FF)    // 파랑
-//val Travel = Color(0xFF00007F)    // 남색
-//val Sleep = Color(0xFF7F00FF)     // 보라
-//val Etc = Color(0xFF7F007F)       // 자주색
-
-//val Study = Color(0xFFFF0000).copy(alpha = 0.75f)     // 빨강
-//val Work = Color(0xFFFF7F00).copy(alpha = 0.75f)      // 주황
-//val Exercise = Color(0xFFFFFF00).copy(alpha = 0.75f)  // 노랑
-//val Hobby = Color(0xFF00FF00).copy(alpha = 0.75f)     // 연두
-//val Play = Color(0xFF007F00).copy(alpha = 0.75f)      // 녹색
-//val Meal = Color(0xFF00FFFF).copy(alpha = 0.75f)      // 청록
-//val Shower = Color(0xFF0000FF).copy(alpha = 0.75f)    // 파랑
-//val Travel = Color(0xFF00007F).copy(alpha = 0.75f)    // 남색
-//val Sleep = Color(0xFF7F00FF).copy(alpha = 0.75f)     // 보라
-//val Etc = Color(0xFF7F007F).copy(alpha = 0.75f)       // 자주색
+val LightStudy = Color(0xFFFF6666)           // 밝은 빨강
+val LightWork = Color(0xFFFFB266)            // 밝은 주황
+val LightExercise = Color(0xFFFFFF66)        // 밝은 노랑
+val LightHobby = Color(0xFF99FF99)           // 밝은 연두
+val LightRelaxation = Color(0xFF66CC66)      // 밝은 녹색
+val LightMeal = Color(0xFF66FFFF)            // 밝은 청록
+val LightTravel = Color(0xFF66B2FF)          // 밝은 파랑
+val LightCleaning = Color(0xFFB3B3FF)        // 밝은 남색
+val LightHygiene = Color(0xFFCC99FF)         // 밝은 보라
+val LightSleep = Color(0xFFFF80FF)           // 밝은 자주색

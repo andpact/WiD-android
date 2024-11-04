@@ -1,34 +1,23 @@
 package andpact.project.wid.chartView
 
-import andpact.project.wid.R
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
-import android.graphics.Paint
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.res.ResourcesCompat
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import java.time.LocalDate
-import java.time.LocalTime
-import kotlin.math.cos
-import kotlin.math.sin
 
 /**
  * Day에 들어가는 가장 큰 파이 차트
@@ -462,7 +451,7 @@ fun PeriodBasedPieChartFragment(
                     val dataSet = PieDataSet(pieEntries, "")
                     val colors = pieEntries.map { entry ->
                         val label = entry.label ?: ""
-                        (titleToColorMap[label] ?: colorScheme.secondaryContainer).toArgb()
+                        (titleColorMap[label] ?: colorScheme.secondaryContainer).toArgb()
                     }
                     dataSet.colors = colors
                     val data = PieData(dataSet)

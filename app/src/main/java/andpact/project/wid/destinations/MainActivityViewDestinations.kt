@@ -13,5 +13,4 @@ sealed class MainActivityViewDestinations(
     object NewWiDViewDestination : MainActivityViewDestinations(route = "newWiD_view")
     object WiDViewDestination : MainActivityViewDestinations(route = "wid_view")
 //    object DiaryViewDestination : MainActivityViewDestinations(route = "diary_view")
-    object SettingViewDestination : MainActivityViewDestinations(route = "setting_view")
 }

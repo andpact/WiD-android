@@ -41,7 +41,6 @@ fun MainBottomBarView(
 //    )
 
     val title = mainBottomBarViewModel.title.value
-    val titleColorMap = mainBottomBarViewModel.titleColorMap
 
     val badgeColor by infiniteTransition.animateColor(
         initialValue = titleColorMap[title] ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
@@ -161,7 +160,7 @@ fun MainBottomBarView(
         ) {
             destinationList.forEach { destination: MainViewDestinations ->
                 NavigationBarItem(
-                    alwaysShowLabel = false,
+                    alwaysShowLabel = true,
                     icon = {
                         BadgedBox(
                             badge = {
@@ -189,6 +188,12 @@ fun MainBottomBarView(
                                     contentDescription = "네비게이션 이동"
                                 )
                             }
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = destination.title ?: "",
+                            style = Typography.bodySmall
                         )
                     },
                     selected = currentRoute == destination.route,

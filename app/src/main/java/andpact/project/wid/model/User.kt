@@ -30,6 +30,9 @@ data class User (
     val wiDToolCountMap: Map<CurrentTool, Int>, // 클라이언트 : Map<CurrentTool, Int> <-> 서버 : Map<String, Int>
     val wiDToolDurationMap: Map<CurrentTool, Duration>, // 클라이언트 : Map<CurrentTool, Duration> <-> 서버 : Map<String, Int>
 
+//    val wiDMinimumTimeLimit: Int, // (분단위) 클라이언트 : Int <-> 서버 : Int
+//    val wiDMaximumTimeLimit: Int // (분단위) 클라이언트 : Int <-> 서버 : Int
+
 //    val wilDTitleCountMap: Map<String, Int>, // 클라이언트 : Map<String, Int> <-> 서버 : Map<String, Int>
 //    val wilDTitleDurationMap: Map<String, Duration>, // 클라이언트 : Map<String, Duration> <-> 서버 : Map<String, Int>
 
@@ -50,8 +53,6 @@ data class User (
 //    val titleOnOffMap: Map<String, Boolean>,
 //    val titleColorMap: Map<String, Color>, // 제목 별 색상 관리용
 
-//    val wiDMinimumTimeLimit: Int, // (분단위)
-//    val wiDMaximumTimeLimit: Int // (분단위)
 //    val language: LANGUAGE,
 )
 

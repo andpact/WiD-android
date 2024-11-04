@@ -41,12 +41,6 @@ object SingletonModule {
         return UserDataSource(userRepository = provideUserRepository())
     }
 
-//    @Singleton
-//    @Provides
-//    fun provideToolDataSource(): ToolDataSource {
-//        return ToolDataSource(wiDRepository = provideWiDRepository())
-//    }
-
     @Singleton
     @Provides
     fun provideWiDDataSource(): WiDDataSource {

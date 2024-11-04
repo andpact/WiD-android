@@ -160,7 +160,7 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
         val updatedFinish = updatedWiD.finish
         val updatedDuration = updatedWiD.duration.seconds.toInt()
 
-        val updatedWiD = hashMapOf(
+        val updatedWiDDocument = hashMapOf(
             TITLE to updatedTitle,
             START to updatedStart,
             FINISH to updatedFinish,
@@ -172,7 +172,7 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             .document(TMP_EMAIL)
             .collection(collectionDateAsString)
             .document(iD)
-            .set(updatedWiD)
+            .set(updatedWiDDocument)
             .addOnSuccessListener {
                 Log.d(TAG, "Document successfully updated")
 

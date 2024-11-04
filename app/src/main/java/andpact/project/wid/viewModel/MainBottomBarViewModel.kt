@@ -7,8 +7,8 @@ import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
-import andpact.project.wid.util.levelToRequiredExpMap
-import andpact.project.wid.util.titleToColorMap
+import andpact.project.wid.util.levelRequiredExpMap
+import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
@@ -37,7 +37,6 @@ class MainBottomBarViewModel @Inject constructor(
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
     val title: State<String> = wiDDataSource.title
-    val titleColorMap: Map<String, Color> = titleToColorMap
 
 //    val totalDuration: State<Duration> = toolDataSource.totalDuration
 //    val remainingTime: State<Duration> = toolDataSource.remainingTime
@@ -46,6 +45,7 @@ class MainBottomBarViewModel @Inject constructor(
         MainViewDestinations.HomeViewDestination,
         MainViewDestinations.WiDToolViewDestination,
         MainViewDestinations.WiDDisplayViewDestination,
+        MainViewDestinations.MyPageViewDestination
     )
 //
 //    fun startStopwatch() {

@@ -9,18 +9,22 @@ sealed class MainViewDestinations(
 ) {
     object HomeViewDestination : MainViewDestinations(
         route = "home_view",
+        title = "홈",
         icon = R.drawable.baseline_home_24
     )
     object WiDToolViewDestination : MainViewDestinations(
         route = "wid_tool_view",
-        icon = R.drawable.baseline_alarm_24
+        title = "도구",
+        icon = R.drawable.baseline_add_box_24
     )
     object WiDDisplayViewDestination : MainViewDestinations(
         route = "wid_display_view",
-        icon = R.drawable.baseline_timelapse_24
+        title = "리스트",
+        icon = R.drawable.baseline_table_rows_24
     )
-//    object DiaryDisplayViewDestination : MainViewDestinations(
-//        route = "diary_display_view",
-//        icon = R.drawable.baseline_calendar_month_24
-//    )
+    object MyPageViewDestination : MainViewDestinations(
+        route = "my_page_view",
+        title = "마이 페이지",
+        icon = R.drawable.baseline_account_circle_24
+    )
 }

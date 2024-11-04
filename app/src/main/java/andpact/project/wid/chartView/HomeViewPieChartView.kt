@@ -1,11 +1,13 @@
 package andpact.project.wid.chartView
 
 import andpact.project.wid.R
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -24,11 +26,18 @@ import java.time.LocalTime
 import java.time.YearMonth
 
 @Composable
-fun HomeViewPieChartView(
+fun HomePieChartView(
     today: LocalDate,
     now: LocalTime,
     modifier: Modifier = Modifier
 ) {
+    val TAG = "HomePieChartView"
+
+    DisposableEffect(Unit) {
+        Log.d(TAG, "composed")
+        onDispose { Log.d(TAG, "disposed") }
+    }
+
     val localContext = LocalContext.current // 폰트 불러오기 위해 선언함.
     val colorScheme = MaterialTheme.colorScheme // 캔버스 밖에 선언해야함.
 
@@ -211,14 +220,14 @@ fun HomeViewPieChartView(
 
 @Preview(showBackground = true)
 @Composable
-fun HomeViewPieChartPreview() {
+fun HomePieChartPreview() {
     Column(
         modifier = Modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        HomeViewPieChartView(
+        HomePieChartView(
             today = LocalDate.now(),
             now = LocalTime.now(),
         )

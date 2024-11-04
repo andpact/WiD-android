@@ -4,8 +4,8 @@ import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.levelToRequiredExpMap
-import andpact.project.wid.util.titleToColorMap
+import andpact.project.wid.util.levelRequiredExpMap
+import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +34,6 @@ class NewWiDViewModel @Inject constructor(
     private val today: State<LocalDate> = wiDDataSource.today
     private var now = LocalTime.now()
     private val user: State<User?> = userDataSource.user
-    val titleColorMap = titleToColorMap
 
     // 제목
     private val _showTitleMenu = mutableStateOf(false)
@@ -271,47 +270,48 @@ class NewWiDViewModel @Inject constructor(
                 if (wiDCreated) {
                     // 레벨
                     val currentLevel = user.value?.level ?: 1
-
                     // 경험치
                     val currentExp = user.value?.currentExp ?: 0
-                    val currentLevelRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
+                    val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
                     val newExp = updatedNewWiD.value.duration.seconds.toInt()
                     val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val newWiDTotalExp = wiDTotalExp + newExp
-
                     // 제목
                     val title = updatedNewWiD.value.title
                     val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
                     val currentTitleCount = titleCountMap[title] ?: 0
                     titleCountMap[title] = currentTitleCount + 1
                     val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentDuration = titleDurationMap[title] ?: Duration.ZERO
-                    titleDurationMap[title] = currentDuration.plus(Duration.ofSeconds(newExp.toLong()))
-
+                    val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
+                    titleDurationMap[title] = currentTitleDuration.plus(Duration.ofSeconds(newExp.toLong()))
                     // 도구
                     val createdBy = updatedNewWiD.value.createdBy
                     val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
                     val currentToolCount = toolCountMap[createdBy] ?: 0
                     toolCountMap[createdBy] = currentToolCount + 1
+                    val toolDurationMap = user.value?.wiDToolDurationMap?.toMutableMap() ?: mutableMapOf()
+                    val currentToolDuration = toolDurationMap[createdBy] ?: Duration.ZERO
+                    toolDurationMap[createdBy] = currentToolDuration.plus(Duration.ofSeconds(newExp.toLong()))
 
                     if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
                         // 레벨
                         val newLevel = currentLevel + 1
                         val newLevelAsString = newLevel.toString()
-                        val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-                        levelUpHistoryMap[newLevelAsString] = LocalDate.now()
+                        val levelDateMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
+                        levelDateMap[newLevelAsString] = LocalDate.now()
 
                         // 경험
                         val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
 
                         userDataSource.createdWiDWithLevelUp(
                             newLevel = newLevel,
-                            newLevelUpHistoryMap = levelUpHistoryMap,
+                            newLevelUpHistoryMap = levelDateMap,
                             newCurrentExp = newCurrentExp,
                             newWiDTotalExp = newWiDTotalExp,
                             newTitleCountMap = titleCountMap,
                             newTitleDurationMap = titleDurationMap,
-                            newToolCountMap = toolCountMap
+                            newToolCountMap = toolCountMap,
+                            newToolDurationMap = toolDurationMap
                         )
                     } else { // 레벨 업 아님
                         // 경험치
@@ -322,7 +322,8 @@ class NewWiDViewModel @Inject constructor(
                             newWiDTotalExp = newWiDTotalExp,
                             newTitleCountMap = titleCountMap,
                             newTitleDurationMap = titleDurationMap,
-                            newToolCountMap = toolCountMap
+                            newToolCountMap = toolCountMap,
+                            newToolDurationMap = toolDurationMap
                         )
                     }
 

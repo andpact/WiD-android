@@ -32,9 +32,10 @@ import androidx.navigation.compose.rememberNavController
  */
 @Composable
 fun MainView(
-    onSettingButtonPressed: () -> Unit,
-    onEmptyWiDClicked: () -> Unit,
+    onNewWiDClicked: () -> Unit,
     onWiDClicked: () -> Unit,
+    onUserSignedOut: () -> Unit,
+    onUserDeleted: (Boolean) -> Unit,
 //    onDiaryClicked: (List<WiD>, Diary) -> Unit,
     onMainViewBarVisibleChanged: (Boolean) -> Unit // Main Activity View의 시스템 상태바, 네비게이션 바 색상 변경 용 콜백
 ) {
@@ -82,11 +83,7 @@ fun MainView(
         ) {
             // 홈
             composable(MainViewDestinations.HomeViewDestination.route) {
-                HomeView(
-                    onSettingButtonPressed = {
-                        onSettingButtonPressed()
-                    }
-                )
+                HomeView()
             }
 
             // WiD 도구
@@ -101,9 +98,9 @@ fun MainView(
 
             // WiD 조회
             composable(MainViewDestinations.WiDDisplayViewDestination.route) {
-                WiDDisplayView(
+                WiDListView(
                     onEmptyWiDClicked = {
-                        onEmptyWiDClicked()
+                        onNewWiDClicked()
                     },
                     onWiDClicked = {
                         onWiDClicked()
@@ -111,12 +108,17 @@ fun MainView(
                 )
             }
 
-            // 다이어리 조회
-//            composable(MainViewDestinations.DiaryDisplayViewDestination.route) {
-//                DiaryDisplayView(onDiaryClicked = { wiDList, diary ->
-//                    onDiaryClicked(wiDList, diary) }
-//                )
-//            }
+            // 마이페이지
+            composable(MainViewDestinations.MyPageViewDestination.route) {
+                MyPageView(
+                    onUserSignedOut = {
+                        onUserSignedOut()
+                    },
+                    onUserDeleted = { userDeleted: Boolean ->
+                        onUserDeleted(userDeleted)
+                    }
+                )
+            }
         }
     }
 }

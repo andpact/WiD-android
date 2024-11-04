@@ -759,28 +759,28 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                 onWiDListFetchedByDate = { wiDList: List<WiD> ->
                     Log.d(TAG, "getWiDListOfDate executed FROM SERVER")
 
-//                    _dateToWiDListMap.value += (collectionDate to wiDList)
-//                    onWiDListFetchedByDate(wiDList)
+                    _dateToWiDListMap.value += (collectionDate to wiDList)
+                    onWiDListFetchedByDate(wiDList)
 
                     /** 임시(한 번 밖에 실행 안됨 결국에) */
-                    val tmpWiD = WiD(
-                        id = "tmpWiD",
-                        date = collectionDate,
-                        title = "1",
-                        start = LocalTime.of(2, 30),
-                        finish = LocalTime.of(3, 30),
-                        duration = Duration.ofHours(1),
-                        createdBy = CurrentTool.LIST
-                    )
-
-                    val updatedWiDList = if (collectionDate == LocalDate.now()) {
-                        wiDList + tmpWiD
-                    } else {
-                        wiDList
-                    }
-
-                    _dateToWiDListMap.value += (collectionDate to updatedWiDList)
-                    onWiDListFetchedByDate(updatedWiDList)
+//                    val tmpWiD = WiD(
+//                        id = "tmpWiD",
+//                        date = collectionDate,
+//                        title = "1",
+//                        start = LocalTime.of(2, 30),
+//                        finish = LocalTime.of(3, 30),
+//                        duration = Duration.ofHours(1),
+//                        createdBy = CurrentTool.LIST
+//                    )
+//
+//                    val updatedWiDList = if (collectionDate == LocalDate.now()) {
+//                        wiDList + tmpWiD
+//                    } else {
+//                        wiDList
+//                    }
+//
+//                    _dateToWiDListMap.value += (collectionDate to updatedWiDList)
+//                    onWiDListFetchedByDate(updatedWiDList)
                 }
             )
         }

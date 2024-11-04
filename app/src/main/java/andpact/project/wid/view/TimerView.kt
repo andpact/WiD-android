@@ -5,10 +5,7 @@ import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
@@ -42,7 +39,6 @@ fun TimerView(
     val timerViewBarVisible = timerViewModel.timerViewBarVisible.value
 
     val title = timerViewModel.title.value
-    val titleColorMap = timerViewModel.titleColorMap
 
     val titlePagerState = rememberPagerState(
         initialPage = titleColorMap.size,
@@ -66,9 +62,7 @@ fun TimerView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        onDispose {
-            Log.d(TAG, "disposed")
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     LaunchedEffect(hourSelectionPagerState.currentPage, minuteSelectionPagerState.currentPage) {
@@ -77,15 +71,6 @@ fun TimerView(
         val newRemainingTime = Duration.ofHours(adjustedHour.toLong()) + Duration.ofMinutes(adjustedMinute.toLong())
         timerViewModel.setSelectedTime(newRemainingTime)
     }
-
-    LaunchedEffect(titlePagerState.currentPage) {
-        // 페이저 안에 선언하니까, 아래 메서드가 반복적으로 실행됨.
-        timerViewModel.setTitle(newTitle = titleColorMap.keys.elementAt(titlePagerState.currentPage % titleColorMap.size))
-    }
-
-//    LaunchedEffect(toolState) {
-//        onTimerStateChanged(toolState)
-//    }
 
     LaunchedEffect(timerViewBarVisible) {
         onTimerViewBarVisibleChanged(timerViewBarVisible)
@@ -120,9 +105,11 @@ fun TimerView(
                         modifier = Modifier
                             .fillMaxWidth(),
                         onClick = {
+                            val prevPage = titlePagerState.currentPage - 1
                             coroutineScope.launch {
-                                titlePagerState.animateScrollToPage(titlePagerState.currentPage - 1)
+                                titlePagerState.animateScrollToPage(prevPage)
                             }
+                            timerViewModel.setTitle(newTitle = "$prevPage")
                         },
                         enabled = 0 < titlePagerState.currentPage,
                         shape = MaterialTheme.shapes.medium
@@ -145,7 +132,8 @@ fun TimerView(
                         state = titlePagerState,
                         pageSpacing = (-200).dp
                     ) { page ->
-                        val menuTitle = titleColorMap.keys.elementAt(page % titleColorMap.size)
+//                        val menuTitle = titleColorMap.keys.elementAt(page % titleColorMap.size)
+                        val menuTitle = "${page % titleColorMap.size}"
                         val color = titleColorMap[menuTitle] ?: Transparent
 
                         Box(
@@ -167,11 +155,13 @@ fun TimerView(
                                     .clickable(
                                         enabled = !titlePagerState.isScrollInProgress,
                                     ) {
+                                        val newPage = page % titleColorMap.size
                                         coroutineScope.launch {
-                                            titlePagerState.animateScrollToPage(page)
+                                            titlePagerState.animateScrollToPage(newPage)
                                         }
+                                        timerViewModel.setTitle(newTitle = "$newPage")
                                     },
-                                text = titleToKRMap[menuTitle] ?: "",
+                                text = titleKRMap[menuTitle] ?: "기록 없음",
                                 style = if (titlePagerState.currentPage == page && !titlePagerState.isScrollInProgress) {
                                     Typography.titleLarge
                                 } else {
@@ -200,9 +190,11 @@ fun TimerView(
                         modifier = Modifier
                             .fillMaxWidth(),
                         onClick = {
+                            val nextPage = titlePagerState.currentPage + 1
                             coroutineScope.launch {
-                                titlePagerState.animateScrollToPage(titlePagerState.currentPage + 1)
+                                titlePagerState.animateScrollToPage(nextPage)
                             }
+                            timerViewModel.setTitle(newTitle = "$nextPage")
                         },
                         enabled = titlePagerState.currentPage < titlePagerState.pageCount - 1,
                         shape = MaterialTheme.shapes.medium
@@ -230,9 +222,7 @@ fun TimerView(
                             .fillMaxWidth(),
                         onClick = {
                             coroutineScope.launch {
-                                hourSelectionPagerState.animateScrollToPage(
-                                    hourSelectionPagerState.currentPage - 1
-                                )
+                                hourSelectionPagerState.animateScrollToPage(hourSelectionPagerState.currentPage - 1)
                             }
                         },
                         enabled = 0 < hourSelectionPagerState.currentPage,
@@ -296,9 +286,7 @@ fun TimerView(
                             .fillMaxWidth(),
                         onClick = {
                             coroutineScope.launch {
-                                hourSelectionPagerState.animateScrollToPage(
-                                    hourSelectionPagerState.currentPage + 1
-                                )
+                                hourSelectionPagerState.animateScrollToPage(hourSelectionPagerState.currentPage + 1)
                             }
                         },
                         enabled = hourSelectionPagerState.currentPage < hourSelectionPagerState.pageCount - 1,
@@ -480,9 +468,9 @@ fun TimerView(
                     },
                     enabled = false
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_done_24),
-                        contentDescription = "현재 제목",
+                    Image(
+                        painter = painterResource(id = titleImageMap[title] ?: R.drawable.ic_launcher_background),
+                        contentDescription = "앱 아이콘"
                     )
                 }
 
@@ -514,7 +502,6 @@ fun TimerView(
                     onClick = {
                         timerViewModel.stopTimer()
                     },
-                    enabled = currentToolState == CurrentToolState.PAUSED
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_stop_24),
