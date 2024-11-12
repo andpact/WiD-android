@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
@@ -70,6 +69,25 @@ fun HomePieChartView(
                 val radius = size.minDimension / 2
 
                 drawArc(
+                    color = colorScheme.error,
+                    startAngle = -90f + (yearProgress / 100) * 360,
+                    sweepAngle = (1 - yearProgress / 100) * 360,
+                    useCenter = false,
+                    topLeft = Offset(
+                        center.x - radius,
+                        center.y - radius
+                    ),
+                    size = Size(
+                        width = radius * 2,
+                        height = radius * 2
+                    ),
+                    style = Stroke(
+                        width = radius * 0.45f,
+                        cap = StrokeCap.Round
+                    )
+                )
+
+                drawArc(
                     color = colorScheme.secondaryContainer,
                     startAngle = -90f,
                     sweepAngle = (yearProgress / 100) * 360,
@@ -125,9 +143,28 @@ fun HomePieChartView(
                 val radius = size.minDimension / 2
 
                 drawArc(
+                    color = colorScheme.error,
+                    startAngle = -90f + (monthProgress / 100) * 360,
+                    sweepAngle = (1 - monthProgress / 100) * 360,
+                    useCenter = false,
+                    topLeft = Offset(
+                        center.x - radius,
+                        center.y - radius
+                    ),
+                    size = Size(
+                        width = radius * 2,
+                        height = radius * 2
+                    ),
+                    style = Stroke(
+                        width = radius * 0.45f,
+                        cap = StrokeCap.Round
+                    )
+                )
+
+                drawArc(
                     color = colorScheme.secondaryContainer,
                     startAngle = -90f,
-                    sweepAngle = (yearProgress / 100) * 360,
+                    sweepAngle = (monthProgress / 100) * 360,
                     useCenter = false,
                     topLeft = Offset(
                         center.x - radius,
@@ -180,9 +217,28 @@ fun HomePieChartView(
                 val radius = size.minDimension / 2
 
                 drawArc(
+                    color = colorScheme.error,
+                    startAngle = -90f + (dayProgress / 100) * 360,
+                    sweepAngle = (1 - dayProgress / 100) * 360,
+                    useCenter = false,
+                    topLeft = Offset(
+                        center.x - radius,
+                        center.y - radius
+                    ),
+                    size = Size(
+                        width = radius * 2,
+                        height = radius * 2
+                    ),
+                    style = Stroke(
+                        width = radius * 0.45f,
+                        cap = StrokeCap.Round
+                    )
+                )
+
+                drawArc(
                     color = colorScheme.secondaryContainer,
                     startAngle = -90f,
-                    sweepAngle = (yearProgress / 100) * 360,
+                    sweepAngle = (dayProgress / 100) * 360,
                     useCenter = false,
                     topLeft = Offset(
                         center.x - radius,

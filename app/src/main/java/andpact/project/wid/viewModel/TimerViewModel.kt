@@ -4,10 +4,7 @@ import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.CurrentToolState
-import andpact.project.wid.util.levelRequiredExpMap
-import andpact.project.wid.util.titleColorMap
+import andpact.project.wid.util.*
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +32,7 @@ class TimerViewModel @Inject constructor(
     val user: State<User?> = userDataSource.user
 
     // 제목
-    val title: State<String> = wiDDataSource.title
+    val title: State<Title> = wiDDataSource.title
 
     // 도구
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
@@ -44,7 +41,7 @@ class TimerViewModel @Inject constructor(
     private val _timerViewBarVisible = mutableStateOf(true)
     val timerViewBarVisible: State<Boolean> = _timerViewBarVisible
 
-    fun setTitle(newTitle: String) {
+    fun setTitle(newTitle: Title) {
         Log.d(TAG, "setTitle executed")
 
         wiDDataSource.setTitle(newTitle)

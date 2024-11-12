@@ -5,7 +5,6 @@ import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.levelRequiredExpMap
-import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf

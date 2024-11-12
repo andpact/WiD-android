@@ -2,6 +2,7 @@ package andpact.project.wid.model
 
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
+import andpact.project.wid.util.Title
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -25,8 +26,8 @@ data class User (
     val currentExp: Int, // 기록 또는 계획으로 얻은 현재(레벨) 경험치
     val wiDTotalExp: Int, // 기록으로 얻은 경험치
     // 15 ~ 16 (위드 생성 시 갱신됨)
-    val wiDTitleCountMap: Map<String, Int>, // 클라이언트 : Map<String, Int> <-> 서버 : Map<String, Int>
-    val wiDTitleDurationMap: Map<String, Duration>, // 클라이언트 : Map<String, Duration> <-> 서버 : Map<String, Int>
+    val wiDTitleCountMap: Map<Title, Int>, // 클라이언트 : Map<Title, Int> <-> 서버 : Map<String, Int>
+    val wiDTitleDurationMap: Map<Title, Duration>, // 클라이언트 : Map<Title, Duration> <-> 서버 : Map<String, Int>
     val wiDToolCountMap: Map<CurrentTool, Int>, // 클라이언트 : Map<CurrentTool, Int> <-> 서버 : Map<String, Int>
     val wiDToolDurationMap: Map<CurrentTool, Duration>, // 클라이언트 : Map<CurrentTool, Duration> <-> 서버 : Map<String, Int>
 

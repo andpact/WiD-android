@@ -26,7 +26,10 @@ import java.time.Duration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewModel()) {
+fun WeeklyWiDListView(
+    mapType: TitleDurationMap,
+    weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewModel()
+) {
     val TAG = "WeeklyWiDListView"
 
     // 날짜
@@ -39,22 +42,22 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
     val wiDListFetched = weeklyWiDListViewModel.wiDListFetched.value
     val wiDList = weeklyWiDListViewModel.wiDList.value
 
-    // 합계
-    val totalDurationMap = weeklyWiDListViewModel.totalDurationMap.value
+    // 맵
+    val currentMapType = weeklyWiDListViewModel.currentMapType.value
+    val currentMap = weeklyWiDListViewModel.currentMap.value
+    val titleDateCountMap = weeklyWiDListViewModel.titleDateCountMap.value
+    val titleMaxDateMap = weeklyWiDListViewModel.titleMaxDateMap.value
+    val titleMinDateMap = weeklyWiDListViewModel.titleMinDateMap.value
 
-    // 평균
-    val averageDurationMap = weeklyWiDListViewModel.averageDurationMap.value
-
-    // 최고
-    val minDurationMap = weeklyWiDListViewModel.minDurationMap.value
-
-    // 최고
-    val maxDurationMap = weeklyWiDListViewModel.maxDurationMap.value
-
-    // WiD List 갱신용
+    // Current WiD
     val date = weeklyWiDListViewModel.date.value
     val start = weeklyWiDListViewModel.start.value
     val finish = weeklyWiDListViewModel.finish.value
+
+    // 조회할 맵 변경
+    LaunchedEffect(mapType) {
+        weeklyWiDListViewModel.setCurrentMapType(mapType)
+    }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -72,7 +75,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
     LaunchedEffect(finish) {
         Log.d(TAG, "wid list update")
 
-        if (start.isBefore(finish)) { // date 날짜를 조회할 때만 리스트 갱신
+        if (start.isBefore(finish)) { // date가 포함된 기간을 조회할 때만 리스트 갱신
             if ((startDate.isBefore(date) && finishDate.isAfter(date)) || startDate.isEqual(date) || finishDate.isEqual(date)) {
                 weeklyWiDListViewModel.setStartDateAndFinishDate(
                     startDate = startDate,
@@ -186,7 +189,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     Icon(
                         modifier = Modifier
                             .size(100.dp),
-                        painter = painterResource(id = R.drawable.baseline_close_24),
+                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
                         contentDescription = "다음 날짜",
                     )
 
@@ -198,9 +201,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
             } else if (wiDListFetched) {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxWidth(),
-//                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .fillMaxWidth()
                 ) {
                     // 수직 막대 차트
                     item {
@@ -214,39 +215,21 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     }
 
                     item {
-                        HorizontalDivider(
-                            thickness = 8.dp,
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            text = when (currentMapType) {
+                                TitleDurationMap.TOTAL -> TitleDurationMap.TOTAL.kr
+                                TitleDurationMap.AVERAGE -> TitleDurationMap.AVERAGE.kr
+                                TitleDurationMap.MAX -> TitleDurationMap.MAX.kr
+                                TitleDurationMap.MIN -> TitleDurationMap.MIN.kr
+                            },
+                            style = Typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
 
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "합계 기록",
-                                style = Typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-
-                            Text(
-                                text = "각 제목 합계",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    totalDurationMap.onEachIndexed { index: Int, (title: String, totalDuration: Duration) ->
+                    currentMap.onEachIndexed { index: Int, (title: Title, duration: Duration) ->
                         item {
                             Row(
                                 modifier = Modifier
@@ -256,8 +239,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .width(40.dp)
-                                        .aspectRatio(1f / 1f)
+                                        .size(40.dp)
                                         .background(
                                             color = MaterialTheme.colorScheme.secondaryContainer,
                                             shape = MaterialTheme.shapes.medium
@@ -280,7 +262,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                     Text(
                                         modifier = Modifier
                                             .padding(top = 8.dp, bottom = 4.dp),
-                                        text = titleKRMap[title] ?: "기록 없음",
+                                        text = title.kr,
                                         style = Typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
@@ -288,7 +270,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                     Text(
                                         modifier = Modifier
                                             .padding(top = 4.dp, bottom = 8.dp),
-                                        text = getDurationString(duration = totalDuration),
+                                        text = getDurationString(duration = duration),
                                         style = Typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
@@ -305,295 +287,33 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                             color = MaterialTheme.colorScheme.secondaryContainer,
                                             shape = MaterialTheme.shapes.medium
                                         )
-                                        .padding(horizontal = 4.dp),
-                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(totalDuration))}%",
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    text = when (currentMapType) {
+                                        TitleDurationMap.TOTAL -> getDurationPercentageStringOfWeek(duration = duration)
+                                        TitleDurationMap.AVERAGE -> "총 ${titleDateCountMap[title]}일 기준"
+                                        TitleDurationMap.MAX -> "${titleMaxDateMap[title]?.dayOfMonth}일"
+                                        TitleDurationMap.MIN -> "${titleMinDateMap[title]?.dayOfMonth}일"
+                                    },
                                     style = Typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            if (index < currentMap.size - 1) {
+                                HorizontalDivider(
+                                    modifier = Modifier
+                                        .padding(start = (16 + 40 + 8).dp, end = 16.dp),
+                                    thickness = 0.5.dp
                                 )
                             }
                         }
                     }
 
                     item {
-                        Row(
+                        Spacer(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "평균 기록",
-                                style = Typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-
-                            Text(
-                                text = "하루 단위 평균",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    averageDurationMap.onEachIndexed { index: Int, (title: String, averageDuration: Duration) ->
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .aspectRatio(1f / 1f)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .width(8.dp)
-                                )
-
-                                Column {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 8.dp, bottom = 4.dp),
-                                        text = titleKRMap[title] ?: "기록 없음",
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 4.dp, bottom = 8.dp),
-                                        text = getDurationString(duration = averageDuration),
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        )
-                                        .padding(horizontal = 4.dp),
-                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(averageDuration))}%",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "최고 기록",
-                                style = Typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-
-                            Text(
-                                text = "하루 단위 최고",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    maxDurationMap.onEachIndexed { index: Int, (title: String, maxDuration: Duration) ->
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .aspectRatio(1f / 1f)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .width(8.dp)
-                                )
-
-                                Column {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 8.dp, bottom = 4.dp),
-                                        text = titleKRMap[title] ?: "기록 없음",
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 4.dp, bottom = 8.dp),
-                                        text = getDurationString(duration = maxDuration),
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        )
-                                        .padding(horizontal = 4.dp),
-                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(maxDuration))}%",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "최저 기록",
-                                style = Typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-
-                            Text(
-                                text = "하루 단위 최저",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    minDurationMap.onEachIndexed { index: Int, (title: String, minDuration: Duration) ->
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .aspectRatio(1f / 1f)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        style = Typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .width(8.dp)
-                                )
-
-                                Column {
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 8.dp, bottom = 4.dp),
-                                        text = titleKRMap[title] ?: "기록 없음",
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    Text(
-                                        modifier = Modifier
-                                            .padding(top = 4.dp, bottom = 8.dp),
-                                        text = getDurationString(duration = minDuration),
-                                        style = Typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
-
-                                Text(
-                                    modifier = Modifier
-                                        .background(
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.medium
-                                        )
-                                        .padding(horizontal = 4.dp),
-                                    text = "${"%.1f".format(getDurationPercentageStringOfDay(minDuration))}%",
-                                    style = Typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
+                                .height(8.dp)
+                        )
                     }
                 }
             } else {

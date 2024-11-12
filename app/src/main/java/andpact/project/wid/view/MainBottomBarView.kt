@@ -43,8 +43,8 @@ fun MainBottomBarView(
     val title = mainBottomBarViewModel.title.value
 
     val badgeColor by infiniteTransition.animateColor(
-        initialValue = titleColorMap[title] ?: MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-        targetValue = titleColorMap[title] ?: MaterialTheme.colorScheme.secondaryContainer,
+        initialValue = title.color.copy(alpha = 0.5f),
+        targetValue = title.color,
         animationSpec = infiniteRepeatable(
             animation = tween(1000),
             repeatMode = RepeatMode.Restart

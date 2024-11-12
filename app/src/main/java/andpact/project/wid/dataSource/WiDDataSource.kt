@@ -4,7 +4,7 @@ import andpact.project.wid.model.WiD
 import andpact.project.wid.repository.WiDRepository
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
-import andpact.project.wid.util.titleList
+import andpact.project.wid.util.Title
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -43,8 +43,8 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     private var currentWiDTimer: Timer? = null
     private val _date: MutableState<LocalDate> = mutableStateOf(LocalDate.now())
     val date: State<LocalDate> = _date
-    private val _title: MutableState<String> = mutableStateOf(titleList[0])
-    val title: State<String> = _title // 스톱워치, 타이머 제목 공유함
+    private val _title: MutableState<Title> = mutableStateOf(Title.STUDY)
+    val title: State<Title> = _title // 스톱워치, 타이머 제목 공유함
     private val _start: MutableState<LocalTime> = mutableStateOf(LocalTime.now())
     val start: State<LocalTime> = _start
     private val _finish: MutableState<LocalTime> = mutableStateOf(LocalTime.now())
@@ -84,9 +84,9 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     /** 기본 위드 생성하지 말고, null 허용으로 변경하기 */
     private fun createDefaultWiD(): WiD {
         return WiD(
-            id = "",
+            id = "currentWiD",
             date = LocalDate.now(),
-            title = "기록 없음",
+            title = Title.UNTITLED,
             start = LocalTime.MIN,
             finish = LocalTime.MIN,
             duration = Duration.ZERO,
@@ -223,7 +223,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         _dateToWiDListMap.value = currentMap
     }
 
-    fun setTitle(newTitle: String) {
+    fun setTitle(newTitle: Title) {
         Log.d(TAG, "setTitle executed")
 
         _title.value = newTitle

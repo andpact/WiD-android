@@ -7,8 +7,8 @@ import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
+import andpact.project.wid.util.Title
 import andpact.project.wid.util.levelRequiredExpMap
-import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.Color
@@ -36,7 +36,7 @@ class MainBottomBarViewModel @Inject constructor(
 //    val currentTool: State<CurrentTool> = toolDataSource.currentTool
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
-    val title: State<String> = wiDDataSource.title
+    val title: State<Title> = wiDDataSource.title
 
 //    val totalDuration: State<Duration> = toolDataSource.totalDuration
 //    val remainingTime: State<Duration> = toolDataSource.remainingTime

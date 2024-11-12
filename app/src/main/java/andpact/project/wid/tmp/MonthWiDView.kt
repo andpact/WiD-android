@@ -1,7 +1,6 @@
 package andpact.project.wid.tmp
 
 import andpact.project.wid.R
-import andpact.project.wid.chartView.PeriodBasedPieChartFragment
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 //import andpact.project.wid.viewModel.MonthWiDViewModel

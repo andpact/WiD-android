@@ -1,6 +1,5 @@
 package andpact.project.wid.tmp
 
-import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.*
 //import andpact.project.wid.viewModel.TitleWiDViewModel

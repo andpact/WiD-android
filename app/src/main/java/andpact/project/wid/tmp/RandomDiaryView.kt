@@ -3,7 +3,6 @@ package andpact.project.wid.tmp
 import andpact.project.wid.R
 //import andpact.project.wid.model.Diary
 import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.DarkGray
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.Typography
 //import andpact.project.wid.viewModel.RandomDiaryViewModel

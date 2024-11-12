@@ -1,14 +1,14 @@
 package andpact.project.wid.chartView
 
-import andpact.project.wid.model.ChartData
+import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.CurrentTool
+import andpact.project.wid.util.Title
 import andpact.project.wid.util.daysOfWeekFromMonday
-import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -28,10 +29,10 @@ import java.time.temporal.ChronoUnit
 
 @Composable
 fun WeeklyWiDListStackedVerticalBarChartView(
+    modifier: Modifier = Modifier,
     startDate: LocalDate,
     finishDate: LocalDate,
-    wiDList: List<WiD>,
-    modifier: Modifier = Modifier
+    wiDList: List<WiD>
 ) {
     val TAG = "WeeklyWiDListStackedVerticalBarChartView"
 
@@ -44,6 +45,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
         modifier = modifier
             .fillMaxWidth()
     ) {
+        // 요일
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,6 +84,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                 .fillMaxWidth()
                 .aspectRatio(1f / 1f)
         ) {
+            // 시간
             Column(
                 modifier = Modifier
                     .fillMaxHeight(),
@@ -106,14 +109,14 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                 val dailyWiDList = wiDList.filter { it.date == currentDate }
 
                 // 막대 차트 데이터 생성
-                val barChartData = mutableListOf<ChartData>()
+                val barChartData = mutableListOf<TitleDurationChartData>()
                 val totalMinutes = 24 * 60
                 var currentMinute = 0
 
                 if (dailyWiDList.isEmpty()) {
-                    val noBarChartData = ChartData(
+                    val noBarChartData = TitleDurationChartData(
                         duration = Duration.ofMinutes(totalMinutes.toLong()), // 수정된 부분
-                        title = ""
+                        title = Title.UNTITLED
                     )
                     barChartData.add(noBarChartData)
                 } else {
@@ -123,9 +126,9 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                         // 비어 있는 시간대의 엔트리 추가
                         if (startMinutes > currentMinute) {
                             val emptyMinutes = startMinutes - currentMinute
-                            val emptyBarChartData = ChartData(
+                            val emptyBarChartData = TitleDurationChartData(
                                 duration = Duration.ofMinutes(emptyMinutes.toLong()), // 수정된 부분
-                                title = ""
+                                title = Title.UNTITLED
                             )
                             barChartData.add(emptyBarChartData)
                         }
@@ -133,11 +136,11 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                         // WiD 데이터 추가
                         val durationMinutes = wiD.duration.toMinutes().toInt()
                         if (durationMinutes >= 1) {
-                            val widBarChartData = ChartData(
+                            val wiDBarChartData = TitleDurationChartData(
                                 duration = wiD.duration, // 수정된 부분
                                 title = wiD.title
                             )
-                            barChartData.add(widBarChartData)
+                            barChartData.add(wiDBarChartData)
                         }
 
                         // 시작 시간 업데이트
@@ -147,14 +150,15 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                     // 남은 시간대 비어 있는 막대 추가
                     if (currentMinute < totalMinutes) {
                         val emptyMinutes = totalMinutes - currentMinute
-                        val emptyBarChartData = ChartData(
+                        val emptyBarChartData = TitleDurationChartData(
                             duration = Duration.ofMinutes(emptyMinutes.toLong()), // 수정된 부분
-                            title = ""
+                            title = Title.UNTITLED
                         )
                         barChartData.add(emptyBarChartData)
                     }
                 }
 
+                // 그래프
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -169,7 +173,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                                     .padding(horizontal = 10.dp, vertical = 1.dp)
                                     .weight(barHeight) // 계산된 높이를 weight로 설정
                                     .background(
-                                        color = titleColorMap[barData.title] ?: MaterialTheme.colorScheme.secondaryContainer,
+                                        color = barData.title.color,
                                         shape = MaterialTheme.shapes.extraSmall
                                     )
                             )
@@ -177,6 +181,44 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                     }
                 }
             }
+        }
+
+        // 날짜
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            // 더미
+            Text(
+                modifier = Modifier,
+                text = "24",
+                style = Typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = Transparent
+            )
+
+            generateSequence(startDate) { it.plusDays(1) }
+                .takeWhile { it <= finishDate }
+                .forEach { currentDate ->
+                    val dayNumber = currentDate.dayOfMonth
+                    val dayOfWeek = currentDate.dayOfWeek // 요일 가져오기
+
+                    // 토요일과 일요일에 대해 색상 설정
+                    val textColor = when (dayOfWeek) {
+                        DayOfWeek.SATURDAY -> DeepSkyBlue
+                        DayOfWeek.SUNDAY -> OrangeRed
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+
+                    Text(
+                        modifier = Modifier
+                            .weight(1f),
+                        text = "${dayNumber}일", // "n일" 형식으로 날짜 표시
+                        style = Typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = textColor // 조건부 색상 적용
+                    )
+                }
         }
     }
 }
@@ -197,7 +239,7 @@ fun WeeklyWiDListStackedVerticalBarChartPreview() {
             WiD(
                 id = "tmpWiD",
                 date = indexDate,
-                title = "1",
+                title = Title.STUDY,
                 start = LocalTime.of(0, 0),
                 finish = LocalTime.of(2, 0),
                 duration = Duration.ofHours(2),
@@ -209,7 +251,7 @@ fun WeeklyWiDListStackedVerticalBarChartPreview() {
             WiD(
                 id = "tmpWiD",
                 date = indexDate,
-                title = "3",
+                title = Title.STUDY,
                 start = LocalTime.of(6, 0),
                 finish = LocalTime.of(9, 0),
                 duration = Duration.ofHours(3),

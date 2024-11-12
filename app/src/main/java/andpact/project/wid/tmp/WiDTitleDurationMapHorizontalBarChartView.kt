@@ -1,10 +1,7 @@
 package andpact.project.wid.tmp
 
-import andpact.project.wid.model.ChartData
 import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.util.getDurationString
-import andpact.project.wid.util.titleColorMap
-import andpact.project.wid.util.titleKRMap
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

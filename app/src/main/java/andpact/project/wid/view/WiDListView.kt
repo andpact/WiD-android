@@ -1,11 +1,12 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.util.Title
+import andpact.project.wid.util.TitleDurationMap
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -27,12 +28,15 @@ fun WiDListView(
     val TAG = "WiDListView"
 
     // 화면
-//    val pages = listOf("일별 조회", "주별 조회", "제목별 조회")
-    val pageList = listOf("일별 조회", "주별 조회")
+    val pageList = listOf("일별 조회", "주별 조회", "제목별 조회")
     val pagerState = rememberPagerState(pageCount = { pageList.size })
     val coroutineScope = rememberCoroutineScope()
 
     var titleDurationMapMenuExpanded by remember { mutableStateOf(false) }
+    var currentMapType by remember { mutableStateOf(TitleDurationMap.TOTAL) }
+
+    var titleMenuExpanded by remember { mutableStateOf(false) }
+    var currentTitle by remember { mutableStateOf(Title.STUDY) }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -56,7 +60,7 @@ fun WiDListView(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
                 actions = {
-                    if (pagerState.currentPage == 1) { // WeeklyWiDListView 일 때
+                    if (pagerState.currentPage == 1) { // WeeklyWiDListView
                         Box {
                             IconButton(
                                 onClick = {
@@ -66,7 +70,7 @@ fun WiDListView(
                                 Icon(
                                     modifier = Modifier
                                         .size(24.dp),
-                                    painter = painterResource(R.drawable.baseline_more_vert_24),
+                                    painter = painterResource(R.drawable.baseline_filter_alt_24),
                                     contentDescription = "맵 선택",
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
@@ -78,57 +82,81 @@ fun WiDListView(
                                 expanded = titleDurationMapMenuExpanded,
                                 onDismissRequest = { titleDurationMapMenuExpanded = false }
                             ) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "총합",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        titleDurationMapMenuExpanded = false
-                                    }
+                                TitleDurationMap.values().forEach { mapType: TitleDurationMap ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = mapType.kr,
+                                                style = Typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            titleDurationMapMenuExpanded = false
+                                            currentMapType = mapType
+                                        },
+                                        trailingIcon = {
+                                            RadioButton(
+                                                selected = currentMapType == mapType,
+                                                onClick = {
+                                                    titleDurationMapMenuExpanded = false
+                                                    currentMapType = mapType
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    } else if (pagerState.currentPage == 2) { // Title WiD List View
+                        Box {
+                            IconButton(
+                                onClick = {
+                                    titleMenuExpanded = true
+                                }
+                            ) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                    painter = painterResource(R.drawable.baseline_filter_alt_24),
+                                    contentDescription = "제목 선택",
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
+                            }
 
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "평균",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        titleDurationMapMenuExpanded = false
-                                    }
-                                )
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "최고",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        titleDurationMapMenuExpanded = false
-                                    }
-                                )
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "최저",
-                                            style = Typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        titleDurationMapMenuExpanded = false
-                                    }
-                                )
+                            DropdownMenu(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.surface),
+                                expanded = titleMenuExpanded,
+                                onDismissRequest = {
+                                    titleMenuExpanded = false
+                                }
+                            ) {
+                                /** "무제" 제거하기 */
+                                Title.values().forEach { title ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = title.kr, // 이넘의 'kr' 속성 사용
+                                                style = Typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            titleMenuExpanded = false
+                                            currentTitle = title
+                                        },
+                                        trailingIcon = {
+                                            RadioButton(
+                                                selected = currentTitle == title,
+                                                onClick = {
+                                                    titleMenuExpanded = false
+                                                    currentTitle = title
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -179,8 +207,8 @@ fun WiDListView(
                             onWiDClicked()
                         }
                     )
-                    1 -> WeeklyWiDListView()
-    //                2 -> TitleWiDView()
+                    1 -> WeeklyWiDListView(mapType = currentMapType)
+                    2 -> TitleWiDListView(title = currentTitle)
                 }
             }
         }

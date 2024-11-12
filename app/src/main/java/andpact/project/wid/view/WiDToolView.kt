@@ -78,9 +78,15 @@ fun WiDToolView(
         ) {
             ScrollableTabRow(
                 modifier = Modifier
-                    .alpha(if (currentToolState == CurrentToolState.STOPPED) 1f else 0f)
+                    .alpha(if (wiDToolViewBarVisible) 1f else 0f)
+//                    .alpha(if (currentToolState == CurrentToolState.STOPPED) 1f else 0f)
                     .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
+                    .clip(RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp)
+                    ),
                 containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
                 selectedTabIndex = pagerState.currentPage,
                 divider = {},
@@ -92,7 +98,13 @@ fun WiDToolView(
                             Text(
                                 text = pages[index],
                                 style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (currentToolState == CurrentToolState.STOPPED) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else if (pagerState.currentPage == index) {
+                                    MaterialTheme.colorScheme.onSurface
+                                } else {
+                                    MaterialTheme.colorScheme.outline
+                                }
                             )
                         },
                         selected = pagerState.currentPage == index,
@@ -113,13 +125,13 @@ fun WiDToolView(
             ) { page: Int ->
                 when (page) {
                     0 -> StopwatchView(
-                        onStopwatchViewBarVisibleChanged = { visible ->
+                        onStopwatchViewBarVisibleChanged = { visible: Boolean ->
                             wiDToolViewModel.setWiDToolViewBarVisible(visible = visible)
                             onWiDToolViewBarVisibleChanged(visible) // Main View의 바텀 네비게이션 바 제거 용 콜백
                         }
                     )
                     1 -> TimerView(
-                        onTimerViewBarVisibleChanged = { visible ->
+                        onTimerViewBarVisibleChanged = { visible: Boolean ->
                             wiDToolViewModel.setWiDToolViewBarVisible(visible = visible)
                             onWiDToolViewBarVisibleChanged(visible) // Main View의 바텀 네비게이션 바 제거 용 콜백
                         }

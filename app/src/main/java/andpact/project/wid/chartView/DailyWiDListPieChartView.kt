@@ -1,11 +1,11 @@
 package andpact.project.wid.chartView
 
 import andpact.project.wid.R
-import andpact.project.wid.model.ChartData
+import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
+import andpact.project.wid.util.Title
 import andpact.project.wid.util.getFullWiDListFromWiDList
-import andpact.project.wid.util.titleColorMap
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
@@ -44,7 +44,7 @@ fun DailyWiDListPieChartView(
     val colorScheme = MaterialTheme.colorScheme // 캔버스 밖에 선언해야함.
 
     val totalDuration = Duration.ofHours(24).seconds
-    val chartDataList = fullWiDList.map { ChartData(it.title, it.duration) }
+    val chartDataList = fullWiDList.map { TitleDurationChartData(it.title, it.duration) }
 
     Canvas(
         modifier = modifier
@@ -107,7 +107,7 @@ fun DailyWiDListPieChartView(
             startAngle += halfGapAngle
 
             drawArc(
-                color = titleColorMap[data.title] ?: colorScheme.secondaryContainer,
+                color = data.title.color,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle - gapAngle,
                 useCenter = true,
@@ -188,7 +188,7 @@ fun DailyWiDListPieChartPreview() {
         WiD(
             id = "tmpWiD",
             date = yesterday,
-            title = "1",
+            title = Title.STUDY,
             start = LocalTime.of(0, 0),
             finish = LocalTime.of(1, 0),
             duration = Duration.ofHours(1),
@@ -199,7 +199,7 @@ fun DailyWiDListPieChartPreview() {
         WiD(
             id = "tmpWiD2",
             date = yesterday,
-            title = "2",
+            title = Title.STUDY,
             start = LocalTime.of(2, 0),
             finish = LocalTime.of(5, 0),
             duration = Duration.ofHours(3),
@@ -210,7 +210,7 @@ fun DailyWiDListPieChartPreview() {
         WiD(
             id = "tmpWiD3",
             date = yesterday,
-            title = "3",
+            title = Title.STUDY,
             start = LocalTime.of(6, 0),
             finish = LocalTime.of(7, 0),
             duration = Duration.ofHours(1),

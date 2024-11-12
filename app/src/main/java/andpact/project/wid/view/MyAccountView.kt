@@ -350,8 +350,12 @@ fun MyAccountView(
                     )
                 }
             }
-        }
 
+            Spacer(
+                modifier = Modifier
+                    .height(8.dp)
+            )
+        }
     }
 
     /** 닉네임 수정 대화상자 */

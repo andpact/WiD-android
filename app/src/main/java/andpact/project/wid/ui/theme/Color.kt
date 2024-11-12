@@ -87,10 +87,10 @@ val dark_shadow = Color(0xFF000000) // 사용 안하네
 
 
 
-val Black = Color(0xFF000000)
-val Gray = Color(0xFF1F1F1F)
-val DarkGray = Color(0xFF7E7E7E)
-val LightGray = Color(0xFFDFDFDF)
+//val Black = Color(0xFF000000)
+//val Gray = Color(0xFF1F1F1F)
+//val DarkGray = Color(0xFF7E7E7E)
+//val LightGray = Color(0xFFDFDFDF)
 val White = Color(0xFFFFFFFF)
 val Transparent = Color(0x00FFFFFF)
 

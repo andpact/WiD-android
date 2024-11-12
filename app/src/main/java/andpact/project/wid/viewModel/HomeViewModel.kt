@@ -30,15 +30,6 @@ class HomeViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-//    init {
-//        viewModelScope.launch {
-//            while (true) {
-//                delay(1000) // 1초 대기
-//                _now.value = LocalTime.now() // 현재 시간 갱신
-//            }
-//        }
-//    }
-
     // 계정
     val firebaseUser: State<FirebaseUser?> = userDateSource.firebaseUser
     val user: State<User?> = userDateSource.user
@@ -51,22 +42,22 @@ class HomeViewModel @Inject constructor(
     private val _now: MutableState<LocalTime> = mutableStateOf(LocalTime.now())
     val now: State<LocalTime> = _now
 
-//    private var timerJob: Job? = null
+    private var timerJob: Job? = null
 
-//    fun startTimer() {
-//        Log.d(TAG, "startTimer executed")
-//
-//        timerJob = viewModelScope.launch {
-//            while (isActive) {
-//                delay(1000) // 1초마다 갱신
-//                _now.value = LocalTime.now().withNano(0)
-//            }
-//        }
-//    }
-//
-//    fun stopTimer() {
-//        Log.d(TAG, "stopTimer executed")
-//
-//        timerJob?.cancel()
-//    }
+    fun startTimer() {
+        Log.d(TAG, "startTimer executed")
+
+        timerJob = viewModelScope.launch {
+            while (isActive) {
+                delay(1000) // 1초마다 갱신
+                _now.value = LocalTime.now().withNano(0)
+            }
+        }
+    }
+
+    fun stopTimer() {
+        Log.d(TAG, "stopTimer executed")
+
+        timerJob?.cancel()
+    }
 }

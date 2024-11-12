@@ -7,6 +7,7 @@ import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.NewWiDViewModel
 import android.util.Log
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,10 +17,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -201,7 +204,7 @@ fun NewWiDView(
                     )
 
                     Text(
-                        text = titleKRMap[updatedNewWiD.title] ?: "기록 없음",
+                        text = updatedNewWiD.title.kr,
                         style = Typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -538,8 +541,7 @@ fun NewWiDView(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         modifier = Modifier
@@ -553,8 +555,8 @@ fun NewWiDView(
                             .fillMaxWidth()
                             .height(screenHeight / 2)
                     ) {
-                        items(titleColorMap.size) { index ->
-                            val itemTitle = titleColorMap.keys.elementAt(index)
+                        items(Title.values().drop(1).size) { index -> // drop(1) 사용하여 첫 번째 요소 제외
+                            val itemTitle = Title.values().drop(1)[index] // Title enum에서 첫 번째 값 제외
 
                             Row(
                                 modifier = Modifier
@@ -563,13 +565,10 @@ fun NewWiDView(
                                         val updatedNewWiD = WiD(
                                             id = updatedNewWiD.id,
                                             date = updatedNewWiD.date,
-                                            title = itemTitle,
+                                            title = itemTitle, // Title enum 타입으로 변경
                                             start = updatedNewWiD.start,
                                             finish = updatedNewWiD.finish,
-                                            duration = Duration.between(
-                                                updatedNewWiD.start,
-                                                updatedNewWiD.finish
-                                            ),
+                                            duration = Duration.between(updatedNewWiD.start, updatedNewWiD.finish),
                                             createdBy = updatedNewWiD.createdBy
                                         )
 
@@ -578,17 +577,44 @@ fun NewWiDView(
                                     },
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(
+                                Spacer(
                                     modifier = Modifier
-                                        .padding(16.dp),
-                                    text = titleKRMap[itemTitle] ?: "기록 없음",
-                                    style = Typography.bodyMedium,
+                                        .width(8.dp)
+                                )
+
+                                Image(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(MaterialTheme.shapes.medium),
+                                    painter = painterResource(id = itemTitle.smallImage),
+                                    contentDescription = "앱 아이콘"
                                 )
 
                                 Spacer(
                                     modifier = Modifier
-                                        .weight(1f)
+                                        .width(8.dp)
                                 )
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 8.dp, bottom = 4.dp),
+                                        text = itemTitle.kr,
+                                        style = Typography.bodyMedium
+                                    )
+
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(top = 4.dp, bottom = 8.dp),
+                                        text = itemTitle.description,
+                                        style = Typography.labelMedium,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1
+                                    )
+                                }
 
                                 RadioButton(
                                     selected = updatedNewWiD.title == itemTitle,
@@ -596,7 +622,7 @@ fun NewWiDView(
                                         val updatedNewWiD = WiD(
                                             id = updatedNewWiD.id,
                                             date = updatedNewWiD.date,
-                                            title = itemTitle,
+                                            title = itemTitle, // Title enum 타입으로 변경
                                             start = updatedNewWiD.start,
                                             finish = updatedNewWiD.finish,
                                             duration = Duration.between(updatedNewWiD.start, updatedNewWiD.finish),
@@ -895,6 +921,18 @@ fun NewWiDPreview() {
             )
         }
     ) { contentPadding ->
+        AlertDialog(
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = MaterialTheme.shapes.extraLarge
+                ),
+            onDismissRequest = {
+            },
+        ) {
+
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()

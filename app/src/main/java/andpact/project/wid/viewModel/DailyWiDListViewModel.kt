@@ -45,14 +45,12 @@ class DailyWiDListViewModel @Inject constructor(
     private val _fullWiDListLoaded = mutableStateOf(false)
     val fullWiDListLoaded: State<Boolean> = _fullWiDListLoaded
     private var wiDList: List<WiD> = emptyList() // State아니면 갱신 안되는듯?
-//    private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
-//    val wiDList: State<List<WiD>> = _wiDList
     private val _fullWiDList = mutableStateOf<List<WiD>>(emptyList())
     val fullWiDList: State<List<WiD>> = _fullWiDList
 
     // 합계
-    private val _totalDurationMap = mutableStateOf(getTotalDurationMapByTitle(wiDList = _fullWiDList.value))
-    val totalDurationMap: State<Map<String, Duration>> = _totalDurationMap
+    private val _totalDurationMap = mutableStateOf(getWiDTitleTotalDurationMap(wiDList = _fullWiDList.value))
+    val totalDurationMap: State<Map<Title, Duration>> = _totalDurationMap
 
     // Current WiD
     val date: State<LocalDate> = wiDDataSource.date
@@ -151,7 +149,10 @@ class DailyWiDListViewModel @Inject constructor(
             email = user.value?.email ?: "",
             collectionDate = collectionDate,
             onWiDListFetchedByDate = { fetchedWiDList: List<WiD> ->
-                wiDList = fetchedWiDList
+                /** 복구 */
+                wiDList = sampleDailyWiDList
+
+//                wiDList = fetchedWiDList
             }
         )
     }
@@ -173,13 +174,13 @@ class DailyWiDListViewModel @Inject constructor(
 
         setFullWiDListLoaded(wiDListLoaded = true)
 
-        setTotalDurationMap(wiDList = _fullWiDList.value)
+        setTotalDurationMap(fullWiDList = _fullWiDList.value)
     }
 
-    private fun setTotalDurationMap(wiDList: List<WiD>) {
+    private fun setTotalDurationMap(fullWiDList: List<WiD>) {
         Log.d(TAG, "setTotalDurationMap executed")
 
-        _totalDurationMap.value = getTotalDurationMapByTitle(wiDList = wiDList)
+        _totalDurationMap.value = getWiDTitleTotalDurationMap(wiDList = fullWiDList)
     }
 
     private fun setFullWiDListLoaded(wiDListLoaded: Boolean) {

@@ -2,6 +2,7 @@ package andpact.project.wid.repository
 
 import andpact.project.wid.model.WiD
 import andpact.project.wid.util.CurrentTool
+import andpact.project.wid.util.Title
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -42,27 +43,17 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
         Log.d(TAG, "createWiD executed")
 
         val dateAsString = wid.date.toString()
-        val title = wid.title
-
-//        val startTimestamp = Timestamp(Date.from(wid.start.atDate(wid.date).atZone(ZoneOffset.UTC).toInstant()))
-//        val finishTimestamp = Timestamp(Date.from(wid.finish.atDate(wid.date).atZone(ZoneOffset.UTC).toInstant()))
-
-        // 아래 둘 중 뭐가 맞음?
-//        val startTimestamp = Timestamp(Date.from(wid.start.atDate(wid.date).atZone(ZoneId.of("Asia/Seoul")).toInstant()))
-//        val finishTimestamp = Timestamp(Date.from(wid.finish.atDate(wid.date).atZone(ZoneId.of("Asia/Seoul")).toInstant()))
-
+        val titleAsString = wid.title.name
         val startAsTimestamp = Timestamp(Date.from(wid.start.atDate(wid.date).atZone(ZoneId.systemDefault()).toInstant()))
         val finishAsTimestamp = Timestamp(Date.from(wid.finish.atDate(wid.date).atZone(ZoneId.systemDefault()).toInstant()))
-
         val durationAsInt = wid.duration.seconds.toInt()
-
         val createdByAsString = wid.createdBy.name
 
         // id 필드는 제거하지말고, WiD 문서를 가져왔을 떄, 해당 문서의 자동 생성 ID를 할당해서 사용하자.
         val newWiDDocument = hashMapOf(
             ID to "0", // 문서의 필드에는 0을 할당함.
             DATE to dateAsString,
-            TITLE to title,
+            TITLE to titleAsString,
             START to startAsTimestamp,
             FINISH to finishAsTimestamp,
             DURATION to durationAsInt,
@@ -110,6 +101,7 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
                     val dateAsString = document.getString(DATE)
                     val date = LocalDate.parse(dateAsString)
                     val title = document.getString(TITLE)!!
+                    val titleAsTitle = Title.valueOf(title)
                     val startAsTimestamp = document.getTimestamp(START)
                     val start = startAsTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime()!!
                     val finishAsTimestamp = document.getTimestamp(FINISH)
@@ -122,7 +114,7 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
                     val wiD = WiD(
                         id = iD,
                         date = date,
-                        title = title,
+                        title = titleAsTitle,
                         start = start,
                         finish = finish,
                         duration = duration,
@@ -155,7 +147,7 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
         val collectionDateAsString = updatedWiD.date.toString()
         val iD = updatedWiD.id
 
-        val updatedTitle = updatedWiD.title
+        val updatedTitle = updatedWiD.title.name
         val updatedStart = updatedWiD.start
         val updatedFinish = updatedWiD.finish
         val updatedDuration = updatedWiD.duration.seconds.toInt()

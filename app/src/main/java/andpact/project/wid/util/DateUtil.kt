@@ -16,6 +16,16 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.*
 
+val daysOfWeekFromMonday = listOf(
+    "월",
+    "화",
+    "수",
+    "목",
+    "금",
+    "토",
+    "일"
+)
+
 /**
  * MaterialTheme.colorScheme이 @Composable을 사용하기 때문에,
  * 아래 메서드는 @Composable 어노테이션을 적용해야함.
