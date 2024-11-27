@@ -68,6 +68,7 @@ fun getTimerDurationString(duration: Duration): AnnotatedString {
 fun getDurationString(duration: Duration): String {
 //    Log.d("DurationUtil", "getDurationString executed")
 //    "H시간 m분 s초"
+
     val hours = duration.toHours()
     val minutes = (duration.toMinutes() % 60).toInt()
     val seconds = (duration.seconds % 60).toInt()
@@ -81,6 +82,21 @@ fun getDurationString(duration: Duration): String {
         minutes > 0 -> String.format("%d분 %d초", minutes, seconds)
         else -> String.format("%d초", seconds)
     }
+}
+
+fun getDurationStringEN(duration: Duration): String {
+//    Log.d("DurationUtil", "getDurationStringEN executed")
+//    "Hh mm ss"
+
+    val hours = duration.toHours()
+    val minutes = (duration.toMinutes() % 60)
+    val seconds = (duration.seconds % 60)
+
+    return buildString {
+        if (hours > 0) append("${hours}h ")
+        if (minutes > 0) append("${minutes}m ")
+        if (seconds > 0) append("${seconds}s")
+    }.trim()
 }
 
 fun getDurationPercentageStringOfDay(duration: Duration): String {

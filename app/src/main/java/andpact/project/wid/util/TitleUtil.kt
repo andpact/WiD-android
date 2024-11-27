@@ -103,29 +103,5 @@ enum class Title(
  * (문자열 형태로 저장해야 하는 이유는 Map(TitleDurationMap, TitleCountMap)을 서버에 저장할 때, 키 값이 문자열 밖에 안되니까)
  * 불러올 때 Map을 통해서 공부 or Study로 변환해서 표시.
  */
-
-//val titleColorMap: Map<String, Color> = mapOf(
-////    "0" to Study,           // 빨강 (Red) - STUDY
-////    "1" to Work,            // 주황 (Orange) - WORK
-////    "2" to Exercise,        // 노랑 (Yellow) - EXERCISE
-////    "3" to Hobby,           // 연두 (Lime Green) - HOBBY
-////    "4" to Relaxation,      // 녹색 (Dark Green) - RELAXATION
-////    "5" to Meal,            // 청록 (Aqua) - MEAL
-////    "6" to Travel,          // 파랑 (Blue) - TRAVEL
-////    "7" to Cleaning,        // 남색 (Navy Blue) - CLEANING
-////    "8" to Hygiene,         // 보라 (Purple) - HYGIENE
-////    "9" to Sleep            // 자주색 (Dark Magenta) - SLEEP
-//    "0" to LightStudy,
-//    "1" to LightWork,
-//    "2" to LightExercise,
-//    "3" to LightHobby,
-//    "4" to LightRelaxation,
-//    "5" to LightMeal,
-//    "6" to LightTravel,
-//    "7" to LightCleaning,
-//    "8" to LightHygiene,
-//    "9" to LightSleep
-//)
-
 val defaultTitleCountMap: Map<Title, Int> = Title.values().associateWith { it.defaultCount }
 val defaultTitleDurationMap: Map<Title, Duration> = Title.values().associateWith { it.defaultDuration }

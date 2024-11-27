@@ -3,6 +3,7 @@ package andpact.project.wid.view
 import andpact.project.wid.R
 import andpact.project.wid.chartView.HomePieChartView
 import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.ui.theme.acmeRegular
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.HomeViewModel
 import android.util.Log
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.NumberFormat
 import java.util.*
@@ -60,11 +62,18 @@ fun HomeView(homeViewModel: HomeViewModel = hiltViewModel()) {
         topBar = {
             TopAppBar(
                 title = {
-                    Image(
-                        modifier = Modifier
-                            .size(36.dp),
-                        painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
-                        contentDescription = "앱 아이콘"
+//                    Image(
+//                        modifier = Modifier
+//                            .size(36.dp),
+//                        painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
+//                        contentDescription = "앱 아이콘"
+//                    )
+
+                    Text(
+                        text = "WIVD",
+                        fontFamily = acmeRegular,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -156,7 +156,8 @@ fun MainBottomBarView(
 
         NavigationBar(
             modifier = Modifier
-                .alpha(if (mainViewBarVisible) 1f else 0f)
+                .alpha(if (mainViewBarVisible) 1f else 0f),
+            containerColor = Color.Transparent, // surface가 적용이 안됨.
         ) {
             destinationList.forEach { destination: MainViewDestinations ->
                 NavigationBarItem(
@@ -184,7 +185,7 @@ fun MainBottomBarView(
                                 Icon(
                                     modifier = Modifier
                                         .size(24.dp),
-                                    painter = painterResource(id = destination.icon),
+                                    painter = painterResource(id = if (currentRoute == destination.route) destination.selectedIcon else destination.unselectedIcon),
                                     contentDescription = "네비게이션 이동"
                                 )
                             }
@@ -200,7 +201,8 @@ fun MainBottomBarView(
                     onClick = {
                         onDestinationChanged(destination.route)
                     },
-                    enabled = mainViewBarVisible
+                    enabled = mainViewBarVisible,
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.surface)
                 )
             }
         }

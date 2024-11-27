@@ -51,7 +51,6 @@ fun MainView(
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
-
         onDispose { Log.d(TAG, "disposed") }
     }
 

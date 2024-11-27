@@ -1,6 +1,7 @@
 package andpact.project.wid.dataSource
 
 import andpact.project.wid.model.WiD
+import andpact.project.wid.model.YearlyWiDList
 import andpact.project.wid.repository.WiDRepository
 import andpact.project.wid.util.CurrentTool
 import andpact.project.wid.util.CurrentToolState
@@ -12,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Year
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.timer
@@ -29,14 +31,8 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     private val _today: MutableState<LocalDate> = mutableStateOf(LocalDate.now())
     val today: State<LocalDate> = _today
 
-    // WiD
-    private val _dateToWiDListMap = mutableStateOf<Map<LocalDate, List<WiD>>>(emptyMap())
-
-    // 도구
-    private val _currentTool: MutableState<CurrentTool> = mutableStateOf(CurrentTool.NONE)
-    val currentTool: State<CurrentTool> = _currentTool
-    private val _currentToolState: MutableState<CurrentToolState> = mutableStateOf(CurrentToolState.STOPPED)
-    val currentToolState: State<CurrentToolState> = _currentToolState
+    // WiD / 년도별 데이터 필요할 때는 startDate ~ finishDate
+    private val _dateWiDListMap = mutableStateOf<Map<LocalDate, List<WiD>>>(emptyMap())
 
     /** 위드 객체로 만들기? */
     // Current WiD(Tool)
@@ -49,6 +45,10 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     val start: State<LocalTime> = _start
     private val _finish: MutableState<LocalTime> = mutableStateOf(LocalTime.now())
     val finish: State<LocalTime> = _finish
+    private val _currentTool: MutableState<CurrentTool> = mutableStateOf(CurrentTool.NONE)
+    val currentTool: State<CurrentTool> = _currentTool
+    private val _currentToolState: MutableState<CurrentToolState> = mutableStateOf(CurrentToolState.STOPPED)
+    val currentToolState: State<CurrentToolState> = _currentToolState
 //    private val _currentWiD = mutableStateOf<WiD?>(null)
 //    val currentWiD: State<WiD?> = _currentWiD
 
@@ -74,6 +74,144 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     val wiD: State<WiD> = _wiD
     private var _updatedWiD = mutableStateOf(createDefaultWiD()) // 수정 후
     val updatedWiD: State<WiD> = _updatedWiD
+
+    fun getYearlyWiDList(
+        email: String,
+        year: Year
+    ) {
+        wiDRepository.getYearlyWiDList(
+            email = email,
+            year = year,
+            onYearlyWiDListFetched = { yearlyWiDList: YearlyWiDList ->
+                val updatedDateWiDListMap = yearlyWiDList.wiDList.groupBy { it.date }
+                _dateWiDListMap.value = _dateWiDListMap.value.toMutableMap().apply {
+                    putAll(updatedDateWiDListMap)
+                }
+
+                Log.d(TAG, "Fetched WiD list for date: $year from cache")
+            }
+        )
+    }
+
+    /** 캐싱 맵에서 밸류가 없으면 키를 생성하지 않도록. */
+    fun getWiDListOfDate2(
+        email: String,
+        date: LocalDate,
+        onWiDListFetchedOfDate: (fetchedWiDList: List<WiD>) -> Unit
+    ) {
+        Log.d(TAG, "getWiDListOfDate2 executed")
+
+        val cachedWiDList = _dateWiDListMap.value[date]
+
+        if (cachedWiDList != null) {
+            Log.d(TAG, "Returning cached WiD list for date: $date")
+
+            onWiDListFetchedOfDate(cachedWiDList)
+        } else {
+            getYearlyWiDList(
+                email = email,
+                year = Year.of(date.year)
+            )
+            /** 서버에서 리스트 가져온 후 캐싱하는 거 아닌가? */
+            val wiDListForDate = _dateWiDListMap.value[date] ?: emptyList()
+
+            Log.d(TAG, "Fetched WiD list for date: $date from cache")
+
+            onWiDListFetchedOfDate(wiDListForDate)
+        }
+    }
+
+    fun addWiD(
+        email: String,
+        wiD: WiD,
+        onWiDAdded: (wiDAdded: Boolean) -> Unit
+    ) {
+        // 현재 캐시에서 해당 날짜의 WiD 리스트를 가져옴
+        val currentList = _dateWiDListMap.value[wiD.date] ?: emptyList()
+
+        // WiD 리스트에 새 WiD 추가
+        val updatedList = currentList + wiD
+
+        // 캐시에 업데이트된 리스트 저장
+        _dateWiDListMap.value = _dateWiDListMap.value.toMutableMap().apply {
+            this[wiD.date] = updatedList
+        }
+
+        // Firestore에 WiD 추가
+        wiDRepository.addWiD(
+            email = email,
+            wiD = wiD,
+            onWiDAdded = { wiDAdded: Boolean ->
+                if (wiDAdded) {
+                    Log.d(TAG, "WiD added to Firestore")
+                } else {
+                    Log.e(TAG, "Failed to add WiD to Firestore")
+                }
+            }
+        )
+    }
+
+    // WiD를 업데이트하는 메서드
+//    fun updateWiD(
+//        email: String,
+//        updatedWiD: WiD,
+//        onWiDUpdated: (wiDUpdated: Boolean) -> Unit
+//
+//    ) {
+//        // 현재 캐시에서 해당 날짜의 WiD 리스트를 가져옴
+//        val currentList = _dateWiDListMap.value[updatedWiD.date]?.toMutableList() ?: mutableListOf()
+//
+//        // WiD 리스트에서 해당 WiD를 찾아 업데이트
+//        val index = currentList.indexOfFirst { it.id == updatedWiD.id }
+//        if (index != -1) {
+//            currentList[index] = updatedWiD // WiD 업데이트
+//        }
+//
+//        // 캐시에서 해당 날짜의 WiD 리스트를 갱신
+//        _dateWiDListMap.value = _dateWiDListMap.value.toMutableMap().apply {
+//            this[updatedWiD.date] = currentList
+//        }
+//
+//        // Firestore에서 WiD 업데이트
+//        wiDRepository.updateWiD(
+//            email = email,
+//            wiD = updatedWiD,
+//            onWiDUpdated = {
+//
+//            }
+//        ) { success ->
+//            if (success) {
+//                Log.d(TAG, "WiD updated in Firestore")
+//            } else {
+//                Log.e(TAG, "Failed to update WiD in Firestore")
+//            }
+//        }
+//    }
+//
+//    fun deleteWiD(wiD: WiD) {
+//        // 현재 캐시에서 해당 날짜의 WiD 리스트를 가져옴
+//        val currentList = _dateWiDListMap.value[wiD.date]?.toMutableList() ?: mutableListOf()
+//
+//        // WiD 리스트에서 해당 WiD를 찾아 삭제
+//        val index = currentList.indexOfFirst { it.id == wiD.id }
+//        if (index != -1) {
+//            currentList.removeAt(index) // WiD 삭제
+//        }
+//
+//        // 캐시에서 해당 날짜의 WiD 리스트를 갱신
+//        _dateWiDListMap.value = _dateWiDListMap.value.toMutableMap().apply {
+//            this[wiD.date] = currentList
+//        }
+//
+//        // Firestore에서 WiD 삭제
+//        wiDRepository.deleteWiD(wiD) { success ->
+//            if (success) {
+//                Log.d(TAG, "WiD deleted from Firestore")
+//            } else {
+//                Log.e(TAG, "Failed to delete WiD from Firestore")
+//            }
+//        }
+//    }
 
     fun setToday(newDate: LocalDate) {
         Log.d(TAG, "setToday executed")
@@ -134,7 +272,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         val wiDDate = newCurrentWiD.date
 
         // 현재 WiD 리스트를 가져옴
-        val currentMap = _dateToWiDListMap.value.toMutableMap()
+        val currentMap = _dateWiDListMap.value.toMutableMap()
         val currentWiDList = currentMap[wiDDate]?.toMutableList() ?: mutableListOf()
 
         // 동일한 ID의 WiD가 이미 있는 경우 기존 WiD를 대체
@@ -148,7 +286,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
         // 갱신된 리스트를 Map에 다시 추가
         currentMap[wiDDate] = currentWiDList
-        _dateToWiDListMap.value = currentMap
+        _dateWiDListMap.value = currentMap
     }
 
     // 도구 중지 했을 때
@@ -159,7 +297,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         val wiDDate = createdWiD.date
 
         // 현재 WiD 리스트를 가져옴
-        val currentMap = _dateToWiDListMap.value.toMutableMap()
+        val currentMap = _dateWiDListMap.value.toMutableMap()
         val currentWiDList = currentMap[wiDDate]?.toMutableList() ?: mutableListOf()
 
         // ID가 "currentWiD"인 WiD를 찾아 대체
@@ -176,8 +314,8 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         // 업데이트된 WiD 리스트를 맵에 다시 삽입
         currentMap[wiDDate] = currentWiDList
 
-        // _dateToWiDListMap을 갱신
-        _dateToWiDListMap.value = currentMap
+        // _dateWiDListMap을 갱신
+        _dateWiDListMap.value = currentMap
     }
 
     // 도구 정지 했을 때
@@ -185,7 +323,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         Log.d(TAG, "removeCurrentWiDFromMapOnCurrentDate executed")
 
         val currentDate = _date.value
-        val currentMap = _dateToWiDListMap.value.toMutableMap()
+        val currentMap = _dateWiDListMap.value.toMutableMap()
 
         // 현재 날짜의 WiD 리스트 가져오기
         val currentWiDList = currentMap[currentDate]?.toMutableList() ?: mutableListOf()
@@ -198,7 +336,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         }
 
         // 갱신된 Map을 업데이트
-        _dateToWiDListMap.value = currentMap
+        _dateWiDListMap.value = currentMap
     }
 
     // 도구 정지 했을 때
@@ -206,7 +344,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         Log.d(TAG, "removeCurrentWiDFromMapOnNextDate executed")
 
         val nextDate = _date.value.plusDays(1)
-        val currentMap = _dateToWiDListMap.value.toMutableMap()
+        val currentMap = _dateWiDListMap.value.toMutableMap()
 
         // 자정 후 WiD 삭제
         val nextWiDList = currentMap[nextDate]?.toMutableList() ?: mutableListOf()
@@ -220,7 +358,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         }
 
         // 갱신된 Map을 업데이트
-        _dateToWiDListMap.value = currentMap
+        _dateWiDListMap.value = currentMap
     }
 
     fun setTitle(newTitle: Title) {
@@ -728,7 +866,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     private fun addCreatedWiDToMap(createdWiD: WiD) {
         Log.d(TAG, "addCreatedWiDtoMap executed")
 
-        val currentMap = _dateToWiDListMap.value.toMutableMap()
+        val currentMap = _dateWiDListMap.value.toMutableMap()
         val currentList = currentMap[createdWiD.date]?.toMutableList() ?: mutableListOf()
 
         currentList.add(createdWiD)
@@ -737,7 +875,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
         currentMap[createdWiD.date] = sortedList
 
-        _dateToWiDListMap.value = currentMap
+        _dateWiDListMap.value = currentMap
     }
 
     fun getWiDListOfDate(
@@ -746,7 +884,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         onWiDListFetchedByDate: (List<WiD>) -> Unit
     ) {
         // 다른 클라이언트에서 위드를 추가한 상태에서, 캐싱 맵의 위드 리스트를 사용하면 동기화가 안될 수 있음
-        val existingWiDList = _dateToWiDListMap.value[collectionDate]
+        val existingWiDList = _dateWiDListMap.value[collectionDate]
 
         if (existingWiDList != null) { // 캐시된 WiDList가 있을 때(key를 확인함)
             Log.d(TAG, "getWiDListOfDate executed FROM CLIENT")
@@ -759,7 +897,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                 onWiDListFetchedByDate = { wiDList: List<WiD> ->
                     Log.d(TAG, "getWiDListOfDate executed FROM SERVER")
 
-                    _dateToWiDListMap.value += (collectionDate to wiDList)
+                    _dateWiDListMap.value += (collectionDate to wiDList)
                     onWiDListFetchedByDate(wiDList)
 
                     /** 임시(한 번 밖에 실행 안됨 결국에) */
@@ -779,7 +917,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 //                        wiDList
 //                    }
 //
-//                    _dateToWiDListMap.value += (collectionDate to updatedWiDList)
+//                    _dateWiDListMap.value += (collectionDate to updatedWiDList)
 //                    onWiDListFetchedByDate(updatedWiDList)
                 }
             )
@@ -798,7 +936,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         var currentDate = firstDate
 
         while (currentDate <= lastDate) {
-            val existingWiDList = _dateToWiDListMap.value[currentDate]
+            val existingWiDList = _dateWiDListMap.value[currentDate]
 
             if (existingWiDList != null) {
                 // 캐시된 WiDList가 있는 경우 결과 리스트에 추가합니다.
@@ -809,7 +947,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                     email = email,
                     collectionDate = currentDate,
                     onWiDListFetchedByDate = { wiDList: List<WiD> ->
-                        _dateToWiDListMap.value += (currentDate to wiDList)
+                        _dateWiDListMap.value += (currentDate to wiDList)
                         resultList.addAll(wiDList)
                     }
                 )
@@ -865,7 +1003,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                 val existingWiDDate = _wiD.value.date
                 val existingWiDID = _wiD.value.id
 
-                val currentMap = _dateToWiDListMap.value.toMutableMap()
+                val currentMap = _dateWiDListMap.value.toMutableMap()
                 val currentList = currentMap[existingWiDDate]?.toMutableList()
 
                 currentList?.let { list ->
@@ -877,7 +1015,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                     }
 
                     currentMap[existingWiDDate] = list
-                    _dateToWiDListMap.value = currentMap
+                    _dateWiDListMap.value = currentMap
                 }
             }
         )
@@ -898,14 +1036,14 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                 val clickedWiDDate = _wiD.value.date
                 val clickedWiDID = _wiD.value.id
 
-                val currentMap = _dateToWiDListMap.value.toMutableMap()
+                val currentMap = _dateWiDListMap.value.toMutableMap()
                 val currentList = currentMap[clickedWiDDate]?.toMutableList()
 
                 currentList?.removeIf { it.id == clickedWiDID }
 
                 currentMap[clickedWiDDate] = currentList.orEmpty()
 
-                _dateToWiDListMap.value = currentMap
+                _dateWiDListMap.value = currentMap
             }
         )
     }

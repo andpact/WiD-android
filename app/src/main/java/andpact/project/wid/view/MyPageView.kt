@@ -44,7 +44,7 @@ fun MyPageView(
             TopAppBar(
                 title = {
                     Text(
-                        text = "마이페이지",
+                        text = "내 페이지",
                         style = Typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )

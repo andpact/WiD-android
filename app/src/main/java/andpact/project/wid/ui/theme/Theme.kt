@@ -109,8 +109,8 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
             (view.context as Activity).window.statusBarColor = colorScheme.secondaryContainer.toArgb() // 상태 표시줄 색상
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태 표시줄 의 컨텐츠를 어둡게 함.
 //
-//            (view.context as Activity).window.navigationBarColor = colorScheme.surface.toArgb() // 탐색 메뉴 색상
-            (view.context as Activity).window.navigationBarColor = colorScheme.surfaceContainer.toArgb() // 탐색 메뉴 색상
+            (view.context as Activity).window.navigationBarColor = colorScheme.surface.toArgb() // 탐색 메뉴 색상
+//            (view.context as Activity).window.navigationBarColor = colorScheme.surfaceContainer.toArgb() // 탐색 메뉴 색상
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 탐색 메뉴의 컨텐츠를 어둡게 함.
         }
     }

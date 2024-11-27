@@ -1,6 +1,7 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
+import andpact.project.wid.chartView.TimeSelectorView
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.TimerViewModel
@@ -23,6 +24,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -43,14 +45,18 @@ fun TimerView(
     val timerViewBarVisible = timerViewModel.timerViewBarVisible.value
 
     val title = timerViewModel.title.value
-    val titlePageIndex = Title.values().indexOf(title).coerceAtLeast(0) - 1
+    val titlePageIndex = Title.values().drop(1).indexOf(title).coerceAtLeast(0)
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     val titlePagerState = rememberPagerState(
         initialPage = titlePageIndex,
-        pageCount = { Title.values().size - 1 }
+        pageCount = { Title.values().drop(1).size }
     )
-    val hourSelectionPagerState = rememberPagerState(pageCount = { 12 })
-    val minuteSelectionPagerState = rememberPagerState(pageCount = { 60 })
+    val hourPagerState = rememberPagerState(pageCount = { 12 })
+    val minutePagerState = rememberPagerState(pageCount = { 60 })
+    val secondPagerState = rememberPagerState(pageCount = { 60 })
     val coroutineScope = rememberCoroutineScope()
 
     val currentToolState = timerViewModel.currentToolState.value
@@ -62,10 +68,19 @@ fun TimerView(
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    LaunchedEffect(hourSelectionPagerState.currentPage, minuteSelectionPagerState.currentPage) {
-        val adjustedHour = hourSelectionPagerState.currentPage % 24
-        val adjustedMinute = minuteSelectionPagerState.currentPage % 60
-        val newRemainingTime = Duration.ofHours(adjustedHour.toLong()) + Duration.ofMinutes(adjustedMinute.toLong())
+    LaunchedEffect(
+        hourPagerState.currentPage,
+        minutePagerState.currentPage,
+        secondPagerState.currentPage
+    ) {
+        val adjustedHour = hourPagerState.currentPage % 24
+        val adjustedMinute = minutePagerState.currentPage % 60
+        val adjustedSecond = secondPagerState.currentPage % 60
+        val newRemainingTime =
+            Duration.ofHours(adjustedHour.toLong()) +
+            Duration.ofMinutes(adjustedMinute.toLong()) +
+            Duration.ofSeconds(adjustedSecond.toLong())
+
         timerViewModel.setSelectedTime(newRemainingTime)
     }
 
@@ -101,7 +116,6 @@ fun TimerView(
                                 textAlign = TextAlign.Center
                             )
 
-                            /** 스톱 워치에서 제목을 수정하고, 타이머를 그냥 시작하면 타이머의 제목이 아닐 텐데? */
                             HorizontalPager(
                                 state = titlePagerState,
                                 pageSpacing = (-48).dp
@@ -143,7 +157,7 @@ fun TimerView(
                                         coroutineScope.launch {
                                             titlePagerState.animateScrollToPage(prevPage)
                                         }
-                                        timerViewModel.setTitle(newTitle = Title.values()[prevPage + 1])
+                                        timerViewModel.setTitle(newTitle = Title.values().drop(1)[prevPage])
                                     },
                                     enabled = 0 < titlePagerState.currentPage
                                 ) {
@@ -167,7 +181,7 @@ fun TimerView(
                                         coroutineScope.launch {
                                             titlePagerState.animateScrollToPage(nextPage)
                                         }
-                                        timerViewModel.setTitle(newTitle = Title.values()[nextPage + 1])
+                                        timerViewModel.setTitle(newTitle = Title.values().drop(1)[nextPage])
                                     },
                                     enabled = titlePagerState.currentPage < titlePagerState.pageCount - 1
                                 ) {
@@ -193,164 +207,14 @@ fun TimerView(
                                 textAlign = TextAlign.Center
                             )
 
-                            HorizontalPager(
-                                pageSpacing = (-288).dp,
-                                state = hourSelectionPagerState,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) { page ->
-                                TextButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 144.dp),
-                                    enabled = !hourSelectionPagerState.isScrollInProgress,
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            hourSelectionPagerState.animateScrollToPage(page)
-                                        }
-                                    }
-                                ) {
-                                    Text(
-                                        text = page.toString(),
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface,
-//                                    textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-
-                            Row(
+                            TimeSelectorView(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            hourSelectionPagerState.animateScrollToPage(hourSelectionPagerState.currentPage - 1)
-                                        }
-                                    },
-                                    enabled = 0 < hourSelectionPagerState.currentPage
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowBack,
-                                        contentDescription = "타이머 -1시간",
-                                    )
-                                }
-
-                                Text(
-                                    modifier = Modifier
-                                        .weight(1f),
-                                    text = "${hourSelectionPagerState.currentPage}시간",
-                                    style = Typography.titleLarge,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            hourSelectionPagerState.animateScrollToPage(hourSelectionPagerState.currentPage + 1)
-                                        }
-                                    },
-                                    enabled = hourSelectionPagerState.currentPage < hourSelectionPagerState.pageCount - 1
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowForward,
-                                        contentDescription = "타이머 +1시간",
-                                    )
-                                }
-                            }
-
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = MaterialTheme.shapes.medium
-                                    )
-                                    .padding(16.dp),
-                                text = "분 선택",
-                                style = Typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                textAlign = TextAlign.Center
-                            )
-
-                            HorizontalPager(
-                                pageSpacing = (-288).dp,
-                                state = minuteSelectionPagerState,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) { page ->
-                                TextButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 144.dp),
-                                    enabled = !minuteSelectionPagerState.isScrollInProgress,
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            minuteSelectionPagerState.animateScrollToPage(page)
-                                        }
-                                    }
-                                ) {
-                                    Text(
-                                        text = page.toString(),
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface,
-//                                    textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            minuteSelectionPagerState.animateScrollToPage(
-                                                minuteSelectionPagerState.currentPage - 1
-                                            )
-                                        }
-                                    },
-                                    enabled = 0 < minuteSelectionPagerState.currentPage
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowBack,
-                                        contentDescription = "타이머 -1분",
-                                    )
-                                }
-
-                                Text(
-                                    modifier = Modifier
-                                        .weight(1f),
-                                    text = "${minuteSelectionPagerState.currentPage}분",
-                                    style = Typography.titleLarge,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                FilledTonalIconButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            minuteSelectionPagerState.animateScrollToPage(
-                                                minuteSelectionPagerState.currentPage + 1
-                                            )
-                                        }
-                                    },
-                                    enabled = minuteSelectionPagerState.currentPage < minuteSelectionPagerState.pageCount - 1
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowForward,
-                                        contentDescription = "타이머 +1분",
-                                    )
-                                }
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .height(60.dp)
+                                    .padding(horizontal = 16.dp)
+                                    .height(screenHeight / 3),
+                                hourPagerState = hourPagerState,
+                                minutePagerState = minutePagerState,
+                                secondPagerState = secondPagerState,
+                                coroutineScope = coroutineScope
                             )
                         }
                     }
@@ -373,7 +237,7 @@ fun TimerView(
             }
         },
         bottomBar = {
-            if (currentToolState == CurrentToolState.STOPPED) {
+            if (currentToolState == CurrentToolState.STOPPED) { // 타이머 정지
                 FilledTonalButton(
                     onClick = {
                         coroutineScope.launch {
@@ -381,6 +245,7 @@ fun TimerView(
                         }
                     },
                     enabled = Duration.ZERO < selectedTime,
+                    shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LimeGreen
                     ),
@@ -411,31 +276,7 @@ fun TimerView(
                         }
                     }
                 )
-
-//                ExtendedFloatingActionButton(
-//                    text = {
-//                        Text(
-//                            text = "타이머 시작",
-//                            style = Typography.bodyMedium
-//                        )
-//                    },
-//                    icon = {
-//                        Icon(
-//                            modifier = Modifier
-//                                .size(24.dp),
-//                            painter = painterResource(R.drawable.baseline_play_arrow_24),
-//                            contentDescription = "타이머 시작",
-//                        )
-//                    },
-//                    onClick = {
-//                        coroutineScope.launch {
-//                            timerViewModel.startTimer()
-//                        }
-//                    },
-//                    containerColor = LimeGreen,
-//                    contentColor = White
-//                )
-            } else if (currentToolState != CurrentToolState.STOPPED && timerViewBarVisible) {
+            } else if (timerViewBarVisible) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -456,7 +297,6 @@ fun TimerView(
                             .size(48.dp)
                             .alpha(0f),
                         onClick = {
-
                         }
                     ) {
                         Icon(
@@ -530,7 +370,7 @@ fun TimerView(
                         )
                     }
                 }
-            } else if (currentToolState != CurrentToolState.STOPPED) {
+            } else {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

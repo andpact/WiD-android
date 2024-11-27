@@ -264,40 +264,12 @@ class WiDViewModel @Inject constructor(
                     val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val updatedExp = updatedWiD.value.duration.seconds.toInt()
                     val updatedWiDTotalExp = wiDTotalExp - exp + updatedExp
-                    // 제목
-                    val title = wiD.value.title
-                    val updatedTitle = updatedWiD.value.title
-                    val duration = wiD.value.duration
-                    val updatedDuration = updatedWiD.value.duration
-                    val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-                    val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-                    // 도구
-                    val createdBy = CurrentTool.LIST
-                    val toolDurationMap = user.value?.wiDToolDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentToolDuration = toolDurationMap[createdBy] ?: Duration.ZERO
-                    toolDurationMap[createdBy] = currentToolDuration.minus(Duration.ofSeconds(exp.toLong())).plus(Duration.ofSeconds(updatedExp.toLong()))
-
-                    if (title == updatedTitle) { // 제목 변경 안함.
-                        val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
-                        titleDurationMap[title] = currentTitleDuration - duration + updatedDuration
-                    } else { // 제목 변경
-                        // 기존 제목
-                        val currentTitleCount = titleCountMap[title] ?: 0
-                        titleCountMap[title] = currentTitleCount - 1
-                        val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
-                        titleDurationMap[title] = currentTitleDuration - duration
-                        // 변경된 제목
-                        val currentUpdatedTitleCount = titleCountMap[updatedTitle] ?: 0
-                        titleCountMap[updatedTitle] = currentUpdatedTitleCount + 1
-                        val currentUpdatedTitleDuration = titleDurationMap[updatedTitle] ?: Duration.ZERO
-                        titleDurationMap[updatedTitle] = currentUpdatedTitleDuration + updatedDuration
-                    }
 
                     if (currentLevelRequiredExp <= currentExp - exp + updatedExp) { // 레벨 업
                         // 레벨
                         val updatedLevel = currentLevel + 1
                         val newLevelAsString = updatedLevel.toString()
-                        val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
+                        val levelUpHistoryMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
                         levelUpHistoryMap[newLevelAsString] = LocalDate.now()
                         // 경험치
                         val updatedCurrentExp = currentExp - exp + updatedExp - currentLevelRequiredExp
@@ -306,20 +278,14 @@ class WiDViewModel @Inject constructor(
                             newLevel = updatedLevel,
                             newLevelUpHistoryMap = levelUpHistoryMap,
                             newCurrentExp = updatedCurrentExp,
-                            newWiDTotalExp = updatedWiDTotalExp,
-                            newTitleCountMap = titleCountMap,
-                            newTitleDurationMap = titleDurationMap,
-                            newToolDurationMap = toolDurationMap
+                            newWiDTotalExp = updatedWiDTotalExp
                         )
                     } else {
                         val updatedCurrentExp = currentExp - exp + updatedExp // 마이너스 값 나올 수 있음.
 
                         userDataSource.updateWiD(
                             newCurrentExp = updatedCurrentExp,
-                            newWiDTotalExp = updatedWiDTotalExp,
-                            newTitleCountMap = titleCountMap,
-                            newTitleDurationMap = titleDurationMap,
-                            newToolDurationMap = toolDurationMap
+                            newWiDTotalExp = updatedWiDTotalExp
                         )
                     }
 
@@ -344,33 +310,11 @@ class WiDViewModel @Inject constructor(
                     val exp = wiD.value.duration.seconds.toInt()
                     val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val prevWiDTotalExp = wiDTotalExp - exp
-                    // 제목
-                    val title = wiD.value.title
-                    val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-                    val currentTitleCount = titleCountMap[title] ?: 0
-                    titleCountMap[title] = currentTitleCount - 1
-                    val duration = wiD.value.duration
-                    val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentTitleDuration = titleDurationMap[title] ?: Duration.ZERO
-                    titleDurationMap[title] = currentTitleDuration.minus(duration)
-                    // 도구
-                    val createdBy = wiD.value.createdBy
-                    val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
-                    val currentToolCount = toolCountMap[createdBy] ?: 0
-                    toolCountMap[createdBy] = currentToolCount - 1
-                    val toolDurationMap = user.value?.wiDToolDurationMap?.toMutableMap() ?: mutableMapOf()
-                    val currentToolDuration = toolDurationMap[createdBy] ?: Duration.ZERO
-                    toolDurationMap[createdBy] = currentToolDuration.minus(Duration.ofSeconds(exp.toLong()))
-
                     val prevCurrentExp = currentExp - exp // 마이너스 나올 수 있음.
 
                     userDataSource.deleteWiD(
                         newCurrentExp = prevCurrentExp,
-                        newWiDTotalExp = prevWiDTotalExp,
-                        newTitleCountMap = titleCountMap,
-                        newTitleDurationMap = titleDurationMap,
-                        newToolCountMap = toolCountMap,
-                        newToolDurationMap = toolDurationMap
+                        newWiDTotalExp = prevWiDTotalExp
                     )
 
                     onWiDDeleted(true)

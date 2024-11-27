@@ -63,9 +63,6 @@ fun DailyWiDListView(
         }
     )
 
-    // 도구
-    val currentTool = dailyWiDListViewModel.currentTool.value
-
     // WiD List
     val fullWiDListLoaded = dailyWiDListViewModel.fullWiDListLoaded.value
     val fullWiDList = dailyWiDListViewModel.fullWiDList.value
@@ -81,7 +78,7 @@ fun DailyWiDListView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        //  Day WiD View의 Today를 기준으로 today를 통일함.
+        // Day WiD View의 Today를 기준으로 today를 통일함.
         dailyWiDListViewModel.setToday(newDate = today)
 
         // 리스트 수정 후, 돌아 왔을 때, 갱신된 리스트를 반영하기 위함.
@@ -251,8 +248,8 @@ fun DailyWiDListView(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = getTimeString(LocalTime.MIN, "a hh:mm:ss"),
-                                    style = Typography.bodyMedium,
+                                    text = getTimeString(time = LocalTime.MIN),
+                                    fontFamily = chivoMonoBlackItalic,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
 
@@ -297,7 +294,7 @@ fun DailyWiDListView(
                                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                                 ) {
                                                     Text(
-                                                        text = wiD.title.kr, // "기록 없음"
+                                                        text = wiD.title.kr, // "무제"
                                                         style = Typography.bodyMedium,
                                                         color = MaterialTheme.colorScheme.onSurface
                                                     )
@@ -332,8 +329,8 @@ fun DailyWiDListView(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Text(
-                                                text = getTimeString(wiD.finish, "a hh:mm:ss"),
-                                                style = Typography.bodyMedium,
+                                                text = getTimeString(time = wiD.finish),
+                                                fontFamily = chivoMonoBlackItalic,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
 
@@ -444,8 +441,8 @@ fun DailyWiDListView(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = getTimeString(wiD.finish, "a hh:mm:ss"),
-                                                style = Typography.bodyMedium,
+                                                text = getTimeString(time = wiD.finish),
+                                                fontFamily = chivoMonoBlackItalic,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
 

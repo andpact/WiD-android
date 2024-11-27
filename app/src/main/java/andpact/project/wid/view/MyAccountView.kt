@@ -39,7 +39,7 @@ fun MyAccountView(
     val email = myAccountViewModel.firebaseUser.value?.email ?: ""
     val emailForDialog = myAccountViewModel.emailForDialog.value
     val level = myAccountViewModel.user.value?.level
-    val levelDateMap = myAccountViewModel.user.value?.levelUpHistoryMap
+    val levelDateMap = myAccountViewModel.user.value?.levelDateMap
     val showLevelDateMapDialog = myAccountViewModel.showLevelDateMapDialog.value
     val signedUpOn = myAccountViewModel.user.value?.signedUpOn ?: LocalDate.now()
     val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: getRandomNickname()

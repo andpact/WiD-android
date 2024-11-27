@@ -111,17 +111,14 @@ fun WeeklyWiDListView(
                     .height(56.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(
+                Box(
                     modifier = Modifier
-                        .weight(1f),
-                    onClick = {
-                        weeklyWiDListViewModel.setWeekPickerExpanded(true)
-                    }
+                        .weight(1f)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
+                    TextButton(
+                        onClick = {
+                            weeklyWiDListViewModel.setWeekPickerExpanded(true)
+                        }
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_calendar_month_24),
@@ -139,6 +136,12 @@ fun WeeklyWiDListView(
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1
                         )
+//                        Row(
+//                            modifier = Modifier
+//                                .weight(1f),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
+//                        ) {
+//                        }
                     }
                 }
 

@@ -101,11 +101,7 @@ class UserDataSource @Inject constructor(
 
     fun pauseStopwatch(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "pauseStopwatch executed")
 
@@ -113,24 +109,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onStopwatchPaused = { stopwatchPaused: Boolean ->
                 if (stopwatchPaused) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -141,11 +124,7 @@ class UserDataSource @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "pauseStopwatchWithLevelUp executed")
 
@@ -155,26 +134,13 @@ class UserDataSource @Inject constructor(
             newLevelUpHistoryMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onStopwatchPausedWithLevelUp = { stopwatchPausedWithLevelUp: Boolean ->
                 if (stopwatchPausedWithLevelUp) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         level = newLevel, // 레벨 업 시 추가 갱신 됨
-                        levelUpHistoryMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
+                        levelDateMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -183,11 +149,7 @@ class UserDataSource @Inject constructor(
 
     fun pauseTimer(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "pauseTimer executed")
 
@@ -195,24 +157,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onTimerPaused = { timerPaused: Boolean ->
                 if (timerPaused) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -223,11 +172,7 @@ class UserDataSource @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "pauseTimerWithLevelUp executed")
 
@@ -237,26 +182,13 @@ class UserDataSource @Inject constructor(
             newLevelUpHistoryMap = newLevelUpHistoryMap,
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onTimerPausedWithLevelUp = { timerPausedWithLevelUp: Boolean ->
                 if (timerPausedWithLevelUp) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         level = newLevel,
-                        levelUpHistoryMap = newLevelUpHistoryMap,
+                        levelDateMap = newLevelUpHistoryMap,
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -265,11 +197,7 @@ class UserDataSource @Inject constructor(
 
     fun autoStopTimer(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "autoStopTimer executed")
 
@@ -277,24 +205,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onTimerAutoStopped = { timerAutoStopped: Boolean ->
                 if (timerAutoStopped) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -305,11 +220,7 @@ class UserDataSource @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "autoStopTimerWithLevelUp executed")
 
@@ -319,26 +230,13 @@ class UserDataSource @Inject constructor(
             newLevelUpHistoryMap = newLevelUpHistoryMap,
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onTimerAutoStoppedWithLevelUp = { timerAutoStoppedWithLevelUp: Boolean ->
                 if (timerAutoStoppedWithLevelUp) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         level = newLevel,
-                        levelUpHistoryMap = newLevelUpHistoryMap,
+                        levelDateMap = newLevelUpHistoryMap,
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -347,11 +245,7 @@ class UserDataSource @Inject constructor(
 
     fun createdWiD(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "createdWiD executed")
 
@@ -359,24 +253,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onCreatedWiD = { createdWiD: Boolean ->
                 if (createdWiD) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -387,11 +268,7 @@ class UserDataSource @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "createdWiDWithLevelUp executed")
 
@@ -401,26 +278,13 @@ class UserDataSource @Inject constructor(
             newLevelUpHistoryMap = newLevelUpHistoryMap,
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onCreatedWiDWithLevelUp = { createdWiDWithLevelUp: Boolean ->
                 if (createdWiDWithLevelUp) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         level = newLevel,
-                        levelUpHistoryMap = newLevelUpHistoryMap,
+                        levelDateMap = newLevelUpHistoryMap,
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -429,10 +293,7 @@ class UserDataSource @Inject constructor(
 
     fun updateWiD(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "updateWiD executed")
 
@@ -440,21 +301,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolDurationMap = newToolDurationMap,
             onWiDUpdated = { wiDUpdated: Boolean ->
                 if (wiDUpdated) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -465,10 +316,7 @@ class UserDataSource @Inject constructor(
         newLevel: Int,
         newLevelUpHistoryMap: Map<String, LocalDate>,
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "updateWiDWithLevelUp executed")
 
@@ -478,23 +326,13 @@ class UserDataSource @Inject constructor(
             newLevelUpHistoryMap = newLevelUpHistoryMap,
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolDurationMap = newToolDurationMap,
             onWiDUpdatedWithLevelUp = { wiDUpdatedWithLevelUp: Boolean ->
                 if (wiDUpdatedWithLevelUp) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         level = newLevel,
-                        levelUpHistoryMap = newLevelUpHistoryMap,
+                        levelDateMap = newLevelUpHistoryMap,
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }
@@ -503,11 +341,7 @@ class UserDataSource @Inject constructor(
 
     fun deleteWiD(
         newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        newTitleCountMap: Map<Title, Int>,
-        newTitleDurationMap: Map<Title, Duration>,
-        newToolCountMap: Map<CurrentTool, Int>,
-        newToolDurationMap: Map<CurrentTool, Duration>
+        newWiDTotalExp: Int
     ) {
         Log.d(TAG, "deleteWiD executed")
 
@@ -515,24 +349,11 @@ class UserDataSource @Inject constructor(
             email = _firebaseUser.value?.email ?: "",
             newCurrentExp = newCurrentExp,
             newWiDTotalExp = newWiDTotalExp,
-            newTitleCountMap = newTitleCountMap,
-            newTitleDurationMap = newTitleDurationMap,
-            newToolCountMap = newToolCountMap,
-            newToolDurationMap = newToolDurationMap,
             onWiDDeleted = { wiDDeleted: Boolean ->
                 if (wiDDeleted) {
-                    val sortedTitleCountMap = sortMapDescending(newTitleCountMap)
-                    val sortedTitleDurationMap = sortMapDescending(newTitleDurationMap)
-                    val sortedToolCountMap = sortMapDescending(newToolCountMap)
-                    val sortedToolDurationMap = sortMapDescending(newToolDurationMap)
-
                     _user.value = _user.value?.copy(
                         currentExp = newCurrentExp,
-                        wiDTotalExp = newWiDTotalExp,
-                        wiDTitleCountMap = sortedTitleCountMap,
-                        wiDTitleDurationMap = sortedTitleDurationMap,
-                        wiDToolCountMap = sortedToolCountMap,
-                        wiDToolDurationMap = sortedToolDurationMap
+                        wiDTotalExp = newWiDTotalExp
                     )
                 }
             }

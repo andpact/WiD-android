@@ -155,7 +155,7 @@ fun TitleWiDListLineChartView(
                         textPaint
                     )
 
-                    val durationText = getDurationString(data.duration)
+                    val durationText = getDurationStringEN(duration = data.duration)
                     val padding = 8.dp.toPx()
                     val textBounds = android.graphics.Rect()
                     durationTextPaint.getTextBounds(durationText, 0, durationText.length, textBounds)
@@ -173,7 +173,7 @@ fun TitleWiDListLineChartView(
 
                     // 소요 시간
                     drawText(
-                        getDurationString(data.duration),
+                        durationText,
                         x,
                         y + 12f,
                         durationTextPaint

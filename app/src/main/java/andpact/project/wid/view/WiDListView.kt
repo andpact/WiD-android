@@ -132,8 +132,7 @@ fun WiDListView(
                                     titleMenuExpanded = false
                                 }
                             ) {
-                                /** "무제" 제거하기 */
-                                Title.values().forEach { title ->
+                                Title.values().drop(1).forEach { title ->
                                     DropdownMenuItem(
                                         text = {
                                             Text(

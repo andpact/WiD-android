@@ -6,19 +6,16 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-data class WiD (
-    val id: String,
-//    val email: String,
-    val date: LocalDate, // 클라이언트 : LocalDate <-> 서버 : String("yyyy-MM-dd")
+/** 하루 생성 제한 12개 */
+data class WiD(
+    val id: String, // 14자리 문자열
+    val date: LocalDate, // <-> 서버 : String("yyyy-MM-dd")
     val title: Title,
-//    val location: String,
-    val start: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
-    val finish: LocalTime, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
-    val duration: Duration, // 클라이언트 : Duration <-> 서버 : Int
-//    val detail: String, // WiDView에서 수정하도록.
-//    val version: Int,
-    val createdBy: CurrentTool, // 클라이언트 : CurrentTool <-> 서버 : String
-//    val createdOn: LocalDate, // 클라이언트 : LocalDate <-> 서버 : TimeStamp
-//    val modified: Boolean // 수정 여부
-//    val lastModifiedOn: LocalDate // 최종 수정 날짜
+    val start: LocalTime, // <-> 서버 : TimeStamp
+    val finish: LocalTime, // <-> 서버 : TimeStamp
+    val duration: Duration, // <-> 서버 : Int
+    val createdBy: CurrentTool, // <-> 서버 : String
+//    val subTitle: Title,
+//    val description: String, // 최대 20자
+//    val location: String
 )

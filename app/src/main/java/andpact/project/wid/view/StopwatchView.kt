@@ -42,13 +42,13 @@ fun StopwatchView(
 
     // 제목
     val title = stopwatchViewModel.title.value
-    val titlePageIndex = Title.values().indexOf(title).coerceAtLeast(0) - 1
+    val titlePageIndex = Title.values().drop(1).indexOf(title).coerceAtLeast(0)
 
     // 화면
     val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
     val pagerState = rememberPagerState(
         initialPage = titlePageIndex,
-        pageCount = { Title.values().size - 1 }
+        pageCount = { Title.values().drop(1).size}
     )
     val coroutineScope = rememberCoroutineScope()
 
@@ -181,7 +181,7 @@ fun StopwatchView(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(firstPage)
                             }
-                            stopwatchViewModel.setTitle(newTitle = Title.values()[firstPage + 1])
+                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[firstPage])
                         },
                         enabled = 0 < pagerState.currentPage
                     ) {
@@ -201,7 +201,7 @@ fun StopwatchView(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(prevPage)
                             }
-                            stopwatchViewModel.setTitle(newTitle = Title.values()[prevPage + 1])
+                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[prevPage])
                         },
                         enabled = 0 < pagerState.currentPage
                     ) {
@@ -240,7 +240,7 @@ fun StopwatchView(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(nextPage)
                             }
-                            stopwatchViewModel.setTitle(newTitle = Title.values()[nextPage + 1])
+                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[nextPage])
                         },
                         enabled = pagerState.currentPage < pagerState.pageCount - 1
                     ) {
@@ -260,7 +260,7 @@ fun StopwatchView(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(lastPage)
                             }
-                            stopwatchViewModel.setTitle(newTitle = Title.values()[lastPage + 1])
+                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[lastPage])
                         },
                         enabled = pagerState.currentPage < pagerState.pageCount - 1
                     ) {

@@ -81,27 +81,12 @@ class StopwatchViewModel @Inject constructor(
                 val newExp = newWiD.duration.seconds.toInt()
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
-                // 제목
-                val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-                val currentTitleCount = titleCountMap[title.value] ?: 0
-                titleCountMap[title.value] = currentTitleCount + 1
-                val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-                val currentTitleDuration = titleDurationMap[title.value] ?: Duration.ZERO
-                titleDurationMap[title.value] = currentTitleDuration.plus(newWiD.duration)
-                // 도구
-                val createdBy = CurrentTool.STOPWATCH
-                val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
-                val currentToolCount = toolCountMap[createdBy] ?: 0
-                toolCountMap[createdBy] = currentToolCount + 1
-                val toolDurationMap = user.value?.wiDToolDurationMap?.toMutableMap() ?: mutableMapOf()
-                val currentToolDuration = toolDurationMap[createdBy] ?: Duration.ZERO
-                toolDurationMap[createdBy] = currentToolDuration.plus(Duration.ofSeconds(newExp.toLong()))
 
                 if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
                     // 레벨
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
+                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
                     levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
 
                     // 경험치
@@ -111,11 +96,7 @@ class StopwatchViewModel @Inject constructor(
                         newLevel = newLevel,
                         newLevelUpHistoryMap = levelDateMap,
                         newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp,
-                        newTitleCountMap = titleCountMap,
-                        newTitleDurationMap = titleDurationMap,
-                        newToolCountMap = toolCountMap,
-                        newToolDurationMap = toolDurationMap
+                        newWiDTotalExp = newWiDTotalExp
                     )
                 } else { // 레벨업 아님.
                     // 경험치
@@ -123,14 +104,10 @@ class StopwatchViewModel @Inject constructor(
 
                     userDataSource.pauseStopwatch(
                         newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp,
-                        newTitleCountMap = titleCountMap,
-                        newTitleDurationMap = titleDurationMap,
-                        newToolCountMap = toolCountMap,
-                        newToolDurationMap = toolDurationMap
+                        newWiDTotalExp = newWiDTotalExp
                     )
                 }
-            },
+            }
         )
     }
 

@@ -1,10 +1,62 @@
 package andpact.project.wid.util
 
 import andpact.project.wid.model.WiD
+import andpact.project.wid.model.YearlyWiDList
 import android.util.Log
+import com.google.firebase.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.random.Random
+
+fun generateUniqueId(): String {
+    Log.d("WiDListUtil", "generateUniqueId executed")
+
+    val timestamp = Instant.now().epochSecond  // 10자리 타임스탬프
+    val random = UUID.randomUUID().toString().substring(0, 4)  // 4자리 랜덤 값
+    return "$timestamp$random"
+}
+
+fun WiD.toDocument(): Map<String, Any> {
+    return mapOf(
+        "id" to id,
+        "date" to date.toString(),
+        "title" to title.name,
+        "start" to Timestamp(Date.from(start.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
+        "finish" to Timestamp(Date.from(finish.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
+        "duration" to duration.seconds.toInt(),
+        "createdBy" to createdBy.name
+    )
+}
+
+fun Map<String, Any>.toWiD(): WiD {
+    val startTimestamp = this["start"] as? Timestamp
+    val finishTimestamp = this["finish"] as? Timestamp
+
+    return WiD(
+        id = this["id"] as String,
+        date = LocalDate.parse(this["date"] as String),
+        title = Title.valueOf(this["title"] as String),
+        start = startTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
+        finish = finishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
+        duration = Duration.ofSeconds(this["duration"] as Long),
+        createdBy = CurrentTool.valueOf(this["createdBy"] as String)
+    )
+}
+
+fun YearlyWiDList.toDocument(): Map<String, Any> {
+    return mapOf(
+        "year" to year.toString(), // 연도는 String으로 저장
+        "wiDList" to wiDList.map { it.toDocument() } // wiDList의 각 WiD 객체를 toDocument()로 변환
+    )
+}
+
+fun Map<String, Any>.toYearlyWiDList(): YearlyWiDList {
+    val year = Year.parse(this["year"] as String) // "year" 필드를 Year 객체로 변환
+    val wiDList = (this["wiDList"] as List<Map<String, Any>>).map { it.toWiD() } // "wiDList"의 각 항목을 WiD로 변환
+
+    return YearlyWiDList(year = year, wiDList = wiDList)
+}
 
 fun getFullWiDListFromWiDList(
     date: LocalDate, // 조회 날짜
@@ -107,7 +159,6 @@ fun getWiDTitleTotalDurationMap(wiDList: List<WiD>): Map<Title, Duration> {
     // 정렬된 결과를 새로운 Map으로 반환
     return sortedResult.associate { it.toPair() }
 }
-
 
 fun getWiDTitleAverageDurationMap(wiDList: List<WiD>): Map<Title, Duration> {
 //    Log.d("WiDListUtil", "getWiDTitleAverageDurationMap executed")

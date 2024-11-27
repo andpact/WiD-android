@@ -28,10 +28,10 @@ fun MainActivityView(dynamicLink: String?) {
 
     if (mainActivityBarVisible) {
         changeStatusBarColor(color = MaterialTheme.colorScheme.secondaryContainer)
-        changeNavigationBarColor(color = MaterialTheme.colorScheme.surfaceContainer)
+//        changeNavigationBarColor(color = MaterialTheme.colorScheme.surfaceContainer)
     } else {
         changeStatusBarColor(color = MaterialTheme.colorScheme.surface)
-        changeNavigationBarColor(color = MaterialTheme.colorScheme.surface)
+//        changeNavigationBarColor(color = MaterialTheme.colorScheme.surface)
     }
 
 //    val navBackStackEntry by mainActivityViewNavController.currentBackStackEntryAsState()
