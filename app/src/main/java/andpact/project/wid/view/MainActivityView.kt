@@ -72,6 +72,12 @@ fun MainActivityView(dynamicLink: String?) {
             route = MainActivityViewDestinations.MainViewDestination.route,
         ) {
             MainView(
+                onStopwatchClicked = {
+                    mainActivityViewNavController.navigate(MainActivityViewDestinations.StopwatchViewDestination.route)
+                },
+                onTimerClicked = {
+                    mainActivityViewNavController.navigate(MainActivityViewDestinations.TimerViewDestination.route)
+                },
                 onNewWiDClicked = {
                     mainActivityViewNavController.navigate(MainActivityViewDestinations.NewWiDViewDestination.route)
                 },
@@ -89,6 +95,52 @@ fun MainActivityView(dynamicLink: String?) {
                 onMainViewBarVisibleChanged = { visible ->
                     mainActivityBarVisible = visible
                 },
+            )
+        }
+
+        // StopwatchView
+        composable(
+            route = MainActivityViewDestinations.StopwatchViewDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            StopwatchView(
+                onBackButtonPressed = {
+                    mainActivityViewNavController.popBackStack()
+                }
+            )
+        }
+
+        // TimerView
+        composable(
+            route = MainActivityViewDestinations.TimerViewDestination.route,
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(500)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(500)
+                )
+            }
+        ) {
+            TimerView(
+                onBackButtonPressed = {
+                    mainActivityViewNavController.popBackStack()
+                }
             )
         }
 
@@ -111,7 +163,7 @@ fun MainActivityView(dynamicLink: String?) {
             NewWiDView(
                 onBackButtonPressed = {
                     mainActivityViewNavController.popBackStack()
-                },
+                }
             )
         }
 

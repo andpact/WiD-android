@@ -224,18 +224,18 @@ fun DailyWiDListView(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp),
                                 fullWiDList = fullWiDList,
-                                onNewWiDClicked = { newWiD: WiD ->
-                                    dailyWiDListViewModel.setNewWiD(newWiD = newWiD)
-                                    dailyWiDListViewModel.setUpdatedNewWiD(updatedNewWiD = newWiD)
-
-                                    onEmptyWiDClicked()
-                                },
-                                onWiDClicked = { wiD: WiD ->
-                                    dailyWiDListViewModel.setExistingWiD(existingWiD = wiD)
-                                    dailyWiDListViewModel.setUpdatedWiD(updatedWiD = wiD)
-
-                                    onWiDClicked()
-                                }
+//                                onNewWiDClicked = { newWiD: WiD ->
+//                                    dailyWiDListViewModel.setNewWiD(newWiD = newWiD)
+//                                    dailyWiDListViewModel.setUpdatedNewWiD(updatedNewWiD = newWiD)
+//
+//                                    onEmptyWiDClicked()
+//                                },
+//                                onWiDClicked = { wiD: WiD ->
+//                                    dailyWiDListViewModel.setExistingWiD(existingWiD = wiD)
+//                                    dailyWiDListViewModel.setUpdatedWiD(updatedWiD = wiD)
+//
+//                                    onWiDClicked()
+//                                }
                             )
                         }
 
@@ -248,9 +248,13 @@ fun DailyWiDListView(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp)
+                                        .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                        .padding(horizontal = 4.dp),
                                     text = getTimeString(time = LocalTime.MIN),
                                     fontFamily = chivoMonoBlackItalic,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
 
                                 HorizontalDivider(thickness = 0.5.dp)
@@ -329,9 +333,13 @@ fun DailyWiDListView(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Text(
+                                                modifier = Modifier
+                                                    .padding(vertical = 4.dp)
+                                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                                    .padding(horizontal = 4.dp),
                                                 text = getTimeString(time = wiD.finish),
                                                 fontFamily = chivoMonoBlackItalic,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
                                             )
 
                                             HorizontalDivider(thickness = 0.5.dp)
@@ -441,9 +449,13 @@ fun DailyWiDListView(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
+                                                modifier = Modifier
+                                                    .padding(vertical = 4.dp)
+                                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                                    .padding(horizontal = 4.dp),
                                                 text = getTimeString(time = wiD.finish),
                                                 fontFamily = chivoMonoBlackItalic,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
                                             )
 
                                             HorizontalDivider(thickness = 0.5.dp)

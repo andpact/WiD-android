@@ -10,7 +10,11 @@ sealed class MainActivityViewDestinations(
 //    object SignUpViewDestination : MainActivityViewDestinations(route = "sign_up_view")
 //    object SignInViewDestination : MainActivityViewDestinations(route = "sign_in_view")
     object MainViewDestination : MainActivityViewDestinations(route = "main_view")
+    object StopwatchViewDestination : MainActivityViewDestinations(route = "stopwatch_view")
+    object TimerViewDestination : MainActivityViewDestinations(route = "timer_view")
+//    object PomodoroViewDestination : MainActivityViewDestinations(route = "pomodoro_view")
     object NewWiDViewDestination : MainActivityViewDestinations(route = "newWiD_view")
     object WiDViewDestination : MainActivityViewDestinations(route = "wid_view")
 //    object DiaryViewDestination : MainActivityViewDestinations(route = "diary_view")
+
 }

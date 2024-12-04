@@ -64,13 +64,12 @@ class TimerViewModel @Inject constructor(
 
         wiDDataSource.startTimer(
             email = user.value?.email ?: "",
-            onTimerAutoStopped = { newWiD: WiD ->
+            onTimerAutoStopped = { newExp: Int ->
                 // 레벨
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
                 val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
-                val newExp = newWiD.duration.seconds.toInt()
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -108,14 +107,13 @@ class TimerViewModel @Inject constructor(
 
         wiDDataSource.pauseTimer(
             email = user.value?.email ?: "",
-            onTimerPaused = { newWiD: WiD ->
+            onTimerPaused = { newExp: Int ->
                 // 레벨
                 val currentLevel = user.value?.level ?: 1
 
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
                 val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
-                val newExp = newWiD.duration.seconds.toInt()
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 

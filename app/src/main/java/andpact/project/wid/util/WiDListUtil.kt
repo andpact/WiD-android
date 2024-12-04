@@ -46,16 +46,14 @@ fun Map<String, Any>.toWiD(): WiD {
 
 fun YearlyWiDList.toDocument(): Map<String, Any> {
     return mapOf(
-        "year" to year.toString(), // 연도는 String으로 저장
         "wiDList" to wiDList.map { it.toDocument() } // wiDList의 각 WiD 객체를 toDocument()로 변환
     )
 }
 
 fun Map<String, Any>.toYearlyWiDList(): YearlyWiDList {
-    val year = Year.parse(this["year"] as String) // "year" 필드를 Year 객체로 변환
     val wiDList = (this["wiDList"] as List<Map<String, Any>>).map { it.toWiD() } // "wiDList"의 각 항목을 WiD로 변환
 
-    return YearlyWiDList(year = year, wiDList = wiDList)
+    return YearlyWiDList(wiDList = wiDList)
 }
 
 fun getFullWiDListFromWiDList(

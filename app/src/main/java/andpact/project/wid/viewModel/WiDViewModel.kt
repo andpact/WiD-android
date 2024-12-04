@@ -241,8 +241,8 @@ class WiDViewModel @Inject constructor(
 
         wiDDataSource.getWiDListOfDate(
             email = user.value?.email ?: "",
-            collectionDate = currentDate,
-            onWiDListFetchedByDate = { wiDList: List<WiD> ->
+            date = currentDate,
+            onWiDListFetchedOfDate = { wiDList: List<WiD> ->
                 _wiDList.value = wiDList
             }
         )
@@ -255,40 +255,6 @@ class WiDViewModel @Inject constructor(
             email = user.value?.email ?: "",
             onWiDUpdated = { wiDUpdated: Boolean ->
                 if (wiDUpdated) { // 업데이트 성공
-                    // 레벨
-                    val currentLevel = user.value?.level ?: 1
-                    // 경험치
-                    val currentExp = user.value?.currentExp ?: 0
-                    val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
-                    val exp = wiD.value.duration.seconds.toInt()
-                    val wiDTotalExp = user.value?.wiDTotalExp ?: 0
-                    val updatedExp = updatedWiD.value.duration.seconds.toInt()
-                    val updatedWiDTotalExp = wiDTotalExp - exp + updatedExp
-
-                    if (currentLevelRequiredExp <= currentExp - exp + updatedExp) { // 레벨 업
-                        // 레벨
-                        val updatedLevel = currentLevel + 1
-                        val newLevelAsString = updatedLevel.toString()
-                        val levelUpHistoryMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                        levelUpHistoryMap[newLevelAsString] = LocalDate.now()
-                        // 경험치
-                        val updatedCurrentExp = currentExp - exp + updatedExp - currentLevelRequiredExp
-
-                        userDataSource.updateWiDWithLevelUp(
-                            newLevel = updatedLevel,
-                            newLevelUpHistoryMap = levelUpHistoryMap,
-                            newCurrentExp = updatedCurrentExp,
-                            newWiDTotalExp = updatedWiDTotalExp
-                        )
-                    } else {
-                        val updatedCurrentExp = currentExp - exp + updatedExp // 마이너스 값 나올 수 있음.
-
-                        userDataSource.updateWiD(
-                            newCurrentExp = updatedCurrentExp,
-                            newWiDTotalExp = updatedWiDTotalExp
-                        )
-                    }
-
                     onWiDUpdated(true)
                 } else { // 업데이트 실패
                     onWiDUpdated(false)

@@ -18,8 +18,8 @@ fun getTimeString(time: LocalTime): String {
 //    Log.d("TimeUtil", "getTimeString executed")
 
     return when (time) {
-        LocalTime.MIDNIGHT -> "Start of the Day" // 00:00:00일 때
-        LocalTime.MAX -> "End of the Day"       // 23:59:59일 때
+        LocalTime.MIDNIGHT -> "Start" // 00:00:00일 때
+        LocalTime.MAX -> "End"       // 23:59:59일 때
         else -> time.format(DateTimeFormatter.ofPattern("HH:mm:ss")) // 다른 경우 일반 시간 형식
     }
 }

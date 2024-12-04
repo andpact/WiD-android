@@ -34,10 +34,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TimerView(
-    onTimerViewBarVisibleChanged: (Boolean) -> Unit,
+    onBackButtonPressed: () -> Unit,
     timerViewModel: TimerViewModel = hiltViewModel()
 ) {
     val TAG = "TimerView"
@@ -84,14 +84,37 @@ fun TimerView(
         timerViewModel.setSelectedTime(newRemainingTime)
     }
 
-    LaunchedEffect(timerViewBarVisible) {
-        onTimerViewBarVisibleChanged(timerViewBarVisible)
-    }
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onBackButtonPressed()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "뒤로 가기",
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = "타이머",
+                        style = Typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
+        },
         content = { contentPadding: PaddingValues ->
             if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
                 LazyColumn(

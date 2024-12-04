@@ -14,17 +14,17 @@ sealed class MainViewDestinations(
         selectedIcon = R.drawable.baseline_home_24,
         unselectedIcon = R.drawable.outline_home_24
     )
-    object WiDToolViewDestination : MainViewDestinations(
-        route = "wid_tool_view",
-        title = "도구",
-        selectedIcon = R.drawable.baseline_add_box_24,
-        unselectedIcon = R.drawable.outline_add_box_24
-    )
-    object WiDDisplayViewDestination : MainViewDestinations(
-        route = "wid_display_view",
+    object WiDListViewDestination : MainViewDestinations(
+        route = "wid_list_view",
         title = "리스트",
-        selectedIcon = R.drawable.baseline_table_rows_24,
-        unselectedIcon = R.drawable.outline_table_rows_24
+        selectedIcon = R.drawable.baseline_article_24,
+        unselectedIcon = R.drawable.outline_article_24
+    )
+    object SearchViewDestination : MainViewDestinations(
+        route = "search_view",
+        title = "검색",
+        selectedIcon = R.drawable.round_screen_search_desktop_24,
+        unselectedIcon = R.drawable.outline_screen_search_desktop_24
     )
     object MyPageViewDestination : MainViewDestinations(
         route = "my_page_view",

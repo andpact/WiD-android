@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.*
 
+/** 이넘 클래스로 만들기? */
 val daysOfWeekFromMonday = listOf(
     "월",
     "화",

@@ -4,10 +4,10 @@ import android.util.Log
 import java.time.Duration
 
 enum class TitleDurationMap(val kr: String) {
-    TOTAL("총합 기록"),
-    AVERAGE("평균 기록"),
-    MAX("최대 기록"),
-    MIN("최소 기록");
+    TOTAL(kr = "총합 기록"),
+    AVERAGE(kr = "평균 기록"),
+    MAX(kr = "최대 기록"),
+    MIN(kr = "최소 기록");
 
     // 한국어로 CurrentTool 찾을 때
 //    companion object {
@@ -17,39 +17,39 @@ enum class TitleDurationMap(val kr: String) {
 //    }
 }
 
-fun <K, V : Comparable<V>> sortMapDescending(map: Map<K, V>): Map<K, V> {
-//    Log.d("MapUtil", "sortMapDescending executed")
-
-    return map.toList()
-        .sortedByDescending { (_, value) -> value }
-        .toMap()
-}
-
-fun convertTitleCountMapForServer(map: Map<Title, Int>): Map<String, Int> {
-//    Log.d("MapUtil", "convertTitleCountMapForServer executed")
-
-    return map.mapKeys { it.key.name }
-}
-
-fun convertTitleCountMapForClient(map: Map<String, Int>): Map<Title, Int> {
-//    Log.d("MapUtil", "convertTitleCountMapForClient executed")
-
-    return map.mapKeys { enumValueOf(it.key) }
-}
-
-fun convertTitleDurationMapForServer(map: Map<Title, Duration>): Map<String, Int> {
-//    Log.d("MapUtil", "convertTitleDurationMapForServer executed")
-
-    return map.mapKeys { entry -> entry.key.kr } // Title을 String(kr)으로 변환
-        .mapValues { entry -> entry.value.seconds.toInt() } // Duration을 Int(초 단위)로 변환
-}
-
-fun convertTitleDurationMapForClient(map: Map<String, Int>): Map<Title, Duration> {
-//    Log.d("MapUtil", "convertTitleDurationMapForClient executed")
-
-    return map.mapKeys { entry -> Title.values().find { it.kr == entry.key } ?: Title.UNTITLED } // String을 Title로 변환
-        .mapValues { entry -> Duration.ofSeconds(entry.value.toLong()) } // Int를 Duration으로 변환
-}
+//fun <K, V : Comparable<V>> sortMapDescending(map: Map<K, V>): Map<K, V> {
+////    Log.d("MapUtil", "sortMapDescending executed")
+//
+//    return map.toList()
+//        .sortedByDescending { (_, value) -> value }
+//        .toMap()
+//}
+//
+//fun convertTitleCountMapForServer(map: Map<Title, Int>): Map<String, Int> {
+////    Log.d("MapUtil", "convertTitleCountMapForServer executed")
+//
+//    return map.mapKeys { it.key.name }
+//}
+//
+//fun convertTitleCountMapForClient(map: Map<String, Int>): Map<Title, Int> {
+////    Log.d("MapUtil", "convertTitleCountMapForClient executed")
+//
+//    return map.mapKeys { enumValueOf(it.key) }
+//}
+//
+//fun convertTitleDurationMapForServer(map: Map<Title, Duration>): Map<String, Int> {
+////    Log.d("MapUtil", "convertTitleDurationMapForServer executed")
+//
+//    return map.mapKeys { entry -> entry.key.kr } // Title을 String(kr)으로 변환
+//        .mapValues { entry -> entry.value.seconds.toInt() } // Duration을 Int(초 단위)로 변환
+//}
+//
+//fun convertTitleDurationMapForClient(map: Map<String, Int>): Map<Title, Duration> {
+////    Log.d("MapUtil", "convertTitleDurationMapForClient executed")
+//
+//    return map.mapKeys { entry -> Title.values().find { it.kr == entry.key } ?: Title.UNTITLED } // String을 Title로 변환
+//        .mapValues { entry -> Duration.ofSeconds(entry.value.toLong()) } // Int를 Duration으로 변환
+//}
 
 
 /**

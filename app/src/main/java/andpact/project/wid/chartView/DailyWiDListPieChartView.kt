@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import java.time.Duration
 import java.time.LocalDate
@@ -29,8 +30,8 @@ import kotlin.math.*
 @Composable
 fun DailyWiDListPieChartView(
     fullWiDList: List<WiD>,
-    onNewWiDClicked: (newWiD: WiD) -> Unit,
-    onWiDClicked: (wiD: WiD) -> Unit,
+//    onNewWiDClicked: (newWiD: WiD) -> Unit,
+//    onWiDClicked: (wiD: WiD) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val TAG = "DailyWiDListPieChartView"
@@ -49,131 +50,130 @@ fun DailyWiDListPieChartView(
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1f / 1f)
-//            .pointerInput(Unit) {
-//                detectTapGestures { tapOffset ->
-//                    // 캔버스 중심 좌표
-//                    val centerX = size.width / 2
-//                    val centerY = size.height / 2
-//                    val tapX = tapOffset.x - centerX
-//                    val tapY = tapOffset.y - centerY
-//                    val tapRadius = hypot(tapX, tapY) // 클릭 반지름
-//                    val tapAngle = (atan2(tapY, tapX) * 180f / PI.toFloat() + 360f) % 360f // 클릭 각도
-//
-//                    val outerRadius = size.width / 2f
-//                    val innerRadius = outerRadius * 0.4f
-//
-//                    // 클릭이 파이 차트의 유효 반지름 내에 있는지 확인
-//                    if (tapRadius !in innerRadius..outerRadius) return@detectTapGestures
-//
-//                    var startAngle = -90f
-//                    val gapAngle = 1f
-//                    val halfGapAngle = gapAngle / 2
-//
-//                    chartDataList.forEachIndexed { index, data ->
-//                        val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
-//                        if (sweepAngle <= 0) return@forEachIndexed
-//
-//                        // 아크 시작 각도와 끝 각도 설정 (간격 적용)
-//                        val arcStartAngle = startAngle + halfGapAngle
-//                        val arcEndAngle = arcStartAngle + sweepAngle - gapAngle
-//
-//                        // 클릭 위치가 해당 아크의 각도 내에 있는지 확인
-//                        if (tapAngle in arcStartAngle..arcEndAngle) {
-//                            val tappedWiD = fullWiDList[index]
-//                            if (tappedWiD.id == "newWiD" || tappedWiD.id == "lastNewWiD") {
-//                                onNewWiDClicked(tappedWiD)
-//                            } else if (tappedWiD.id != "currentWiD") {
-//                                onWiDClicked(tappedWiD)
-//                            }
-//                            return@detectTapGestures
-//                        }
-//
-//                        // 다음 아크의 시작 각도 설정
-//                        startAngle += sweepAngle + halfGapAngle
-//                    }
-//                }
-//            }
-    ) {
-        var startAngle = -90f
-        val gapAngle = 1f // 각 아크 사이의 간격을 나타내는 각도
-        val halfGapAngle = gapAngle / 2 // 각 아크 앞뒤로 반씩 빈 공간을 할당
+            .aspectRatio(1f / 1f),
+        onDraw = {
+            var startAngle = -90f
+            val gapAngle = 1f // 각 아크 사이의 간격을 나타내는 각도
+            val halfGapAngle = gapAngle / 2 // 각 아크 앞뒤로 반씩 빈 공간을 할당
 
-        // 파이 차트
-        chartDataList.forEach { data ->
-            val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
-            if (sweepAngle <= 0) return@forEach
+            // 파이 차트
+            chartDataList.forEach { data ->
+                val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
+                if (sweepAngle <= 0) return@forEach
 
-            startAngle += halfGapAngle
+                startAngle += halfGapAngle
 
-            drawArc(
-                color = data.title.color,
-                startAngle = startAngle,
-                sweepAngle = sweepAngle - gapAngle,
-                useCenter = true,
-                size = Size(size.width, size.height),
-            )
+                drawArc(
+                    color = data.title.color,
+                    startAngle = startAngle,
+                    sweepAngle = sweepAngle - gapAngle,
+                    useCenter = true,
+                    size = Size(size.width, size.height),
+                )
 
-            startAngle += sweepAngle - gapAngle + halfGapAngle
-        }
-
-        // 가운데 원
-        drawCircle(
-            color = colorScheme.surface,
-            radius = size.width * 0.4f,
-            center = Offset(size.width / 2, size.height / 2)
-        )
-
-        val radius: Float = size.minDimension / 2.8f // 원의 반지름
-        val centerX = center.x
-        val centerY = center.y + radius / 25
-
-        val textPaint = android.graphics.Paint().apply {
-            color = colorScheme.onSurface.toArgb()
-            textSize = radius / 10
-            textAlign = android.graphics.Paint.Align.CENTER
-            typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_regular)
-        }
-
-        for (i in 0 until 24) {
-            val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
-            val angleInRadian = Math.toRadians(angleInDegree)
-
-            val x = centerX + radius * cos(angleInRadian)
-            val y = centerY + radius * sin(angleInRadian)
-
-            val timeText = when (i) {
-                0 -> "자정"
-                6 -> "오전 6시"
-                12 -> "정오"
-                18 -> "오후 6시"
-                else -> (i % 12).toString()
+                startAngle += sweepAngle - gapAngle + halfGapAngle
             }
 
-            val paint = when (i) {
-                0, 12 -> textPaint.apply {
-                    textAlign = android.graphics.Paint.Align.CENTER
-                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
-                }
-                6 -> textPaint.apply {
-                    textAlign = android.graphics.Paint.Align.RIGHT
-                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
-                }
-                18 -> textPaint.apply {
-                    textAlign = android.graphics.Paint.Align.LEFT
-                    typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
-                }
-                else -> textPaint
+            // 가운데 원
+            drawCircle(
+                color = colorScheme.surface,
+                radius = size.width * 0.4f,
+                center = Offset(size.width / 2, size.height / 2)
+            )
+
+            val radius: Float = size.minDimension / 2.8f // 원의 반지름
+            val centerX = center.x
+            val centerY = center.y + radius / 25
+
+            val textPaint = android.graphics.Paint().apply {
+                color = colorScheme.onSurface.toArgb()
+                textSize = radius / 10
+                textAlign = android.graphics.Paint.Align.CENTER
+                typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_regular)
             }
 
-            drawContext.canvas.nativeCanvas.drawText(
-                timeText,
-                x.toFloat(),
-                y.toFloat(),
-                paint
-            )
+            for (i in 0 until 24) {
+                val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
+                val angleInRadian = Math.toRadians(angleInDegree)
+
+                val x = centerX + radius * cos(angleInRadian).toFloat()
+                val y = centerY + radius * sin(angleInRadian).toFloat()
+
+                val timeText = when (i) {
+                    0 -> "자정"
+                    6 -> "오전 6시"
+                    12 -> "정오"
+                    18 -> "오후 6시"
+                    else -> (i % 12).toString()
+                }
+
+                val paint = when (i) {
+                    0, 12 -> textPaint.apply {
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
+                    }
+                    6 -> textPaint.apply {
+                        textAlign = android.graphics.Paint.Align.RIGHT
+                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
+                    }
+                    18 -> textPaint.apply {
+                        textAlign = android.graphics.Paint.Align.LEFT
+                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_extra_bold)
+                    }
+                    else -> textPaint
+                }
+
+                val padding = 4.dp.toPx()
+                val textBounds = android.graphics.Rect()
+                paint.getTextBounds(timeText, 0, timeText.length, textBounds) // 얘 넣어 줘야 함.
+
+                val backgroundLeft: Float
+                val backgroundRight: Float
+
+                // 배경 사각형의 좌우 위치 조정
+                when (i) {
+                    6 -> {
+                        // 오른쪽 정렬 (텍스트 기준으로 왼쪽으로 이동)
+                        backgroundLeft = x - textBounds.width() - padding
+                        backgroundRight = x + padding
+                    }
+                    18 -> {
+                        // 왼쪽 정렬 (텍스트 기준으로 오른쪽으로 이동)
+                        backgroundLeft = x - padding
+                        backgroundRight = x + textBounds.width() + padding
+                    }
+                    else -> {
+                        // 가운데 정렬
+                        backgroundLeft = x - textBounds.width() / 2f - padding
+                        backgroundRight = x + textBounds.width() / 2f + padding
+                    }
+                }
+
+                drawContext.canvas.nativeCanvas.apply {
+                    if (i == 0 || i == 6 || i == 12 || i == 18) {
+                        // 배경 사각형 그리기
+                        drawRect(
+                            backgroundLeft,
+                            y - textBounds.height() / 2f - 8.dp.toPx(),
+                            backgroundRight,
+                            y + textBounds.height() / 2f - 2.dp.toPx(),
+                            android.graphics.Paint().apply {
+                                color = colorScheme.secondaryContainer.toArgb()
+                            }
+                        )
+                    }
+
+                    // 시간 표시
+                    drawText(
+                        timeText,
+                        x,
+                        y,
+                        paint
+                    )
+                }
+            }
         }
-    }
+    )
 }
 
 @Preview(showBackground = true)
@@ -227,11 +227,11 @@ fun DailyWiDListPieChartPreview() {
 
     DailyWiDListPieChartView(
         fullWiDList = tmpFullWiDList,
-        onNewWiDClicked = { newWiD: WiD ->
-
-        },
-        onWiDClicked = { wiD: WiD ->
-
-        }
+//        onNewWiDClicked = { newWiD: WiD ->
+//
+//        },
+//        onWiDClicked = { wiD: WiD ->
+//
+//        }
     )
 }

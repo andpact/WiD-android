@@ -256,8 +256,8 @@ class NewWiDViewModel @Inject constructor(
 
         wiDDataSource.getWiDListOfDate(
             email = user.value?.email ?: "",
-            collectionDate = collectionDate,
-            onWiDListFetchedByDate = { wiDList: List<WiD> ->
+            date = collectionDate,
+            onWiDListFetchedOfDate = { wiDList: List<WiD> ->
                 _wiDList.value = wiDList
             }
         )
@@ -266,46 +266,10 @@ class NewWiDViewModel @Inject constructor(
     fun createWiD(onWiDCreated: (Boolean) -> Unit) {
         Log.d(TAG, "createWiD executed")
 
-        wiDDataSource.createWiD(
+        wiDDataSource.addWiD(
             email = user.value?.email ?: "",
-            onWiDCreated = { wiDCreated: Boolean ->
-                if (wiDCreated) {
-                    // 레벨
-                    val currentLevel = user.value?.level ?: 1
-                    // 경험치
-                    val currentExp = user.value?.currentExp ?: 0
-                    val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
-                    val newExp = updatedNewWiD.value.duration.seconds.toInt()
-                    val wiDTotalExp = user.value?.wiDTotalExp ?: 0
-                    val newWiDTotalExp = wiDTotalExp + newExp
-
-                    if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                        // 레벨
-                        val newLevel = currentLevel + 1
-                        val newLevelAsString = newLevel.toString()
-                        val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                        levelDateMap[newLevelAsString] = LocalDate.now()
-
-                        // 경험
-                        val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-
-                        userDataSource.createdWiDWithLevelUp(
-                            newLevel = newLevel,
-                            newLevelUpHistoryMap = levelDateMap,
-                            newCurrentExp = newCurrentExp,
-                            newWiDTotalExp = newWiDTotalExp
-                        )
-                    } else { // 레벨 업 아님
-                        // 경험치
-                        val newCurrentExp = currentExp + newExp
-
-                        userDataSource.createdWiD(
-                            newCurrentExp = newCurrentExp,
-                            newWiDTotalExp = newWiDTotalExp
-                        )
-                    }
-
-                    /** 서버 통신 성공하고, 클라 내의 유저도 수정한 후 콜백 반환해야 하는 거 아닌가? */
+            onWiDAdded = { wiDAdded: Boolean ->
+                if (wiDAdded) {
                     onWiDCreated(true)
                 } else {
                     onWiDCreated(false)

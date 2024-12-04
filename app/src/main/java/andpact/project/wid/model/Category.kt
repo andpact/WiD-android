@@ -1,19 +1,16 @@
-package andpact.project.wid.util
+package andpact.project.wid.model
 
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.*
 import androidx.compose.ui.graphics.Color
-import java.time.Duration
 
-enum class Title(
+enum class Category(
     val kr: String,
     val description: String,
     val color: Color,
     val image: Int,
     val smallImage: Int,
-    val defaultCount: Int = 0,
-    val defaultDuration: Duration = Duration.ZERO
-) {
+){
     UNTITLED(
         kr = "무제",
         description = "특정한 활동을 정의하지 않음",
@@ -90,9 +87,8 @@ enum class Title(
         color = LightSleep,
         image = R.drawable.image_sleep,
         smallImage = R.drawable.image_sleep_small
-    );
+    )
 
-    // kr 값으로 Title 찾기
 //    companion object {
 //        fun fromKr(kr: String): Title? = values().find { it.kr == kr }
 //    }

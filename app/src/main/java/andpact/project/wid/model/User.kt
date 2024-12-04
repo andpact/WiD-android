@@ -14,25 +14,26 @@ import java.time.LocalTime
 data class User(
     // 일반
     val email: String, // email이 Firebase User와 UserCollection의 User를 연결하는 필드임.
+//    val location: String,
     val signedUpOn: LocalDate, // <-> String("yyyy-MM-dd")
     val level: Int,
     val levelDateMap: Map<String, LocalDate>, // <-> Map<String, String("yyyy-MM-dd")>
     val currentExp: Int, // 기록 또는 계획으로 얻은 현재(레벨) 경험치
-    val wiDTotalExp: Int, // 기록으로 얻은 경험치
-
+//    val totalExp: Int, /** 전체 경험치는 안 넣을거? */
+    val wiDTotalExp: Int, // 기록(WiD)으로 얻은 경험치
 //    val wiDTitleFirstDateMap: Map<Title, LocalDate>, /** 제목 별 최초 기록 날짜 */
 //    val wiDTitleLastDateMap: Map<Title, LocalDate>, /** 제목 별 최근 기록 날짜 */
-
-
-
-
-
-
-
-
-
 //    val wiDMinimumTimeLimit: Int, // (분단위) 클라이언트 : Int <-> 서버 : Int
 //    val wiDMaximumTimeLimit: Int // (분단위) 클라이언트 : Int <-> 서버 : Int
+
+
+
+
+
+
+
+
+
 
 //    val clientCount: Int
 //    val statusMessage: String, // 상태 메시지
@@ -53,7 +54,6 @@ data class User(
 
 //    val language: LANGUAGE,
 
-    // 3 ~ 9 (비동기화 : 도구 데이터 소스(클라)에서 관리, 동기화 : 유저 문서 (서버)에서 관리)
 //    val currentTitle: String, // 클라이언트 : String <-> 서버 : String
 //    val currentTool: CurrentTool, // 클라이언트 : CurrentTool <-> 서버 : String
 //    val currentToolState: CurrentToolState, // 클라이언트 : ToolState <-> 서버 : String

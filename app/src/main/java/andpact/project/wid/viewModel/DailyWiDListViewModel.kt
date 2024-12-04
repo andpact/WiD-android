@@ -29,6 +29,7 @@ class DailyWiDListViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
+    // 유저
     private val user: State<User?> = userDataSource.user
 
     // 날짜
@@ -38,18 +39,18 @@ class DailyWiDListViewModel @Inject constructor(
     val showDatePicker: State<Boolean> = _showDatePicker
 
     // 도구
-    val currentTool: State<CurrentTool> = wiDDataSource.currentTool
+//    val currentTool: State<CurrentTool> = wiDDataSource.currentTool
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
     // WiD List
     private val _fullWiDListLoaded = mutableStateOf(false)
     val fullWiDListLoaded: State<Boolean> = _fullWiDListLoaded
-    private var wiDList: List<WiD> = emptyList() // State아니면 갱신 안되는듯?
+    private var wiDList: List<WiD> = emptyList()
     private val _fullWiDList = mutableStateOf<List<WiD>>(emptyList())
     val fullWiDList: State<List<WiD>> = _fullWiDList
 
     // 합계
-    private val _totalDurationMap = mutableStateOf(getWiDTitleTotalDurationMap(wiDList = _fullWiDList.value))
+    private val _totalDurationMap = mutableStateOf(getWiDTitleTotalDurationMap(wiDList = wiDList))
     val totalDurationMap: State<Map<Title, Duration>> = _totalDurationMap
 
     // Current WiD
@@ -89,19 +90,19 @@ class DailyWiDListViewModel @Inject constructor(
         _currentDate.value = newDate
 
         setFullWiDListLoaded(wiDListLoaded = false)
-        getWiDListOfDate(collectionDate = newDate)
+        getWiDListOfDate(date = newDate)
 
         // 위치 여기 맞나?
         lastNewWiDTimer?.cancel()
 
         if (newDate == today) { // 오늘 날짜 조회
             if (currentToolState.value != CurrentToolState.STARTED) { // 도구 중지 및 정지 상태
-//                setFullWiDList(
-//                    today = today,
-//                    collectionDate = newDate,
-//                    wiDList = wiDList,
-//                    currentTime = LocalTime.now().withNano(0)
-//                )
+                setFullWiDList(
+                    today = today,
+                    collectionDate = newDate,
+                    wiDList = wiDList,
+                    currentTime = LocalTime.now().withNano(0)
+                )
 
                 lastNewWiDTimer = timer(period = 1_000) {
                     val currentTime = LocalTime.now().withNano(0)
@@ -142,17 +143,34 @@ class DailyWiDListViewModel @Inject constructor(
         lastNewWiDTimer?.cancel()
     }
 
-    private fun getWiDListOfDate(collectionDate: LocalDate) {
+//    private fun getWiDListOfDate(date: LocalDate) {
+//        Log.d(TAG, "getWiDListOfDate2 executed for date: $date")
+//
+//        wiDDataSource.getWiDListOfDate2(
+//            email = user.value?.email ?: "",
+//            date = date,
+//            onWiDListFetchedOfDate = { fetchedWiDList: List<WiD> ->
+//                /** 복구 */
+//                wiDList = sampleDailyWiDList
+//
+////                wiDList = fetchedWiDList
+//
+//                Log.d(TAG, "Updated _dateWiDListMap with data for date: $date")
+//            }
+//        )
+//    }
+
+    private fun getWiDListOfDate(date: LocalDate) {
         Log.d(TAG, "getWiDListOfDate executed")
 
         wiDDataSource.getWiDListOfDate(
             email = user.value?.email ?: "",
-            collectionDate = collectionDate,
-            onWiDListFetchedByDate = { fetchedWiDList: List<WiD> ->
+            date = date,
+            onWiDListFetchedOfDate = { fetchedWiDList: List<WiD> ->
                 /** 복구 */
-                wiDList = sampleDailyWiDList
+//                wiDList = sampleDailyWiDList
 
-//                wiDList = fetchedWiDList
+                wiDList = fetchedWiDList
             }
         )
     }
@@ -174,13 +192,13 @@ class DailyWiDListViewModel @Inject constructor(
 
         setFullWiDListLoaded(wiDListLoaded = true)
 
-        setTotalDurationMap(fullWiDList = _fullWiDList.value)
+        setTotalDurationMap(wiDList = wiDList)
     }
 
-    private fun setTotalDurationMap(fullWiDList: List<WiD>) {
+    private fun setTotalDurationMap(wiDList: List<WiD>) {
         Log.d(TAG, "setTotalDurationMap executed")
 
-        _totalDurationMap.value = getWiDTitleTotalDurationMap(wiDList = fullWiDList)
+        _totalDurationMap.value = getWiDTitleTotalDurationMap(wiDList = wiDList)
     }
 
     private fun setFullWiDListLoaded(wiDListLoaded: Boolean) {

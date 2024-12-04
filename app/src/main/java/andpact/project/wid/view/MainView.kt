@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
  */
 @Composable
 fun MainView(
+    onStopwatchClicked: () -> Unit,
+    onTimerClicked: () -> Unit,
     onNewWiDClicked: () -> Unit,
     onWiDClicked: () -> Unit,
     onUserSignedOut: () -> Unit,
@@ -46,9 +48,6 @@ fun MainView(
     val navBackStackEntry by mainViewNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // MainViewBottomBar에 전달하기 위한 변수(실제 값)
-    var mainViewBarVisible by remember { mutableStateOf(true) }
-
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
@@ -61,7 +60,6 @@ fun MainView(
         bottomBar = {
             MainBottomBarView(
                 currentRoute = currentRoute,
-                mainViewBarVisible = mainViewBarVisible,
                 onDestinationChanged = { route ->
                     mainViewNavController.navigate(route) {
                         popUpTo(mainViewNavController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
@@ -73,51 +71,57 @@ fun MainView(
                 }
             )
         },
-    ) { contentPadding: PaddingValues -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
-        NavHost(
-            modifier = Modifier
-                .padding(contentPadding),
-            navController = mainViewNavController,
-            startDestination = MainViewDestinations.HomeViewDestination.route
-        ) {
-            // 홈
-            composable(MainViewDestinations.HomeViewDestination.route) {
-                HomeView()
-            }
+        content = { contentPadding: PaddingValues -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
+            NavHost(
+                modifier = Modifier
+                    .padding(contentPadding),
+                navController = mainViewNavController,
+                startDestination = MainViewDestinations.HomeViewDestination.route
+            ) {
+                composable(MainViewDestinations.HomeViewDestination.route) {
+                    HomeView(
+                        onStopwatchClicked = {
+                            onStopwatchClicked()
+                        },
+                        onTimerClicked = {
+                            onTimerClicked()
+                        }
+                    )
+                }
 
-            // WiD 도구
-            composable(MainViewDestinations.WiDToolViewDestination.route) {
-                WiDToolView(
-                    onWiDToolViewBarVisibleChanged =  { visible ->
-                        mainViewBarVisible = visible
-                        onMainViewBarVisibleChanged(visible)
-                    },
-                )
-            }
+                composable(MainViewDestinations.WiDListViewDestination.route) {
+                    WiDListView(
+                        onEmptyWiDClicked = {
+                            onNewWiDClicked()
+                        },
+                        onWiDClicked = {
+                            onWiDClicked()
+                        }
+                    )
+                }
 
-            // WiD 조회
-            composable(MainViewDestinations.WiDDisplayViewDestination.route) {
-                WiDListView(
-                    onEmptyWiDClicked = {
-                        onNewWiDClicked()
-                    },
-                    onWiDClicked = {
-                        onWiDClicked()
-                    }
-                )
-            }
+                composable(MainViewDestinations.SearchViewDestination.route) {
+                    SearchView(
+                        onDiaryClicked = {
 
-            // 마이페이지
-            composable(MainViewDestinations.MyPageViewDestination.route) {
-                MyPageView(
-                    onUserSignedOut = {
-                        onUserSignedOut()
-                    },
-                    onUserDeleted = { userDeleted: Boolean ->
-                        onUserDeleted(userDeleted)
-                    }
-                )
+                        },
+                        onWiDClicked = {
+                            onWiDClicked()
+                        }
+                    )
+                }
+
+                composable(MainViewDestinations.MyPageViewDestination.route) {
+                    MyPageView(
+                        onUserSignedOut = {
+                            onUserSignedOut()
+                        },
+                        onUserDeleted = { userDeleted: Boolean ->
+                            onUserDeleted(userDeleted)
+                        }
+                    )
+                }
             }
         }
-    }
+    )
 }

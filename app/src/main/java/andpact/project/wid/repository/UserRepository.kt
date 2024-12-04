@@ -142,7 +142,7 @@ class UserRepository @Inject constructor(
      */
     fun getUser(
         email: String,
-        onUserFetched: (user: User?) -> Unit
+        onUserFetched: (userFetched: User?) -> Unit
     ) {
         Log.d(TAG, "getUser executed")
 
@@ -176,7 +176,7 @@ class UserRepository @Inject constructor(
 
     private fun createUser(
         email: String,
-        onUserCreated: (user: User?) -> Unit
+        onUserCreated: (userCreated: User?) -> Unit
     ) {
         Log.d(TAG, "createUser executed")
 

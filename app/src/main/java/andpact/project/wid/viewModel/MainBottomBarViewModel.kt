@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel // <- 생성자 주입 할 때 명시해야함.
 class MainBottomBarViewModel @Inject constructor(
-//    private val userDataSource: UserDataSource,
+    private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource
 ) : ViewModel() {
     private val TAG = "MainBottomBarViewModel"
@@ -31,287 +31,168 @@ class MainBottomBarViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-//    val user: State<User?> = userDataSource.user
-//
-//    val currentTool: State<CurrentTool> = toolDataSource.currentTool
+    val user: State<User?> = userDataSource.user
+
+    val currentTool: State<CurrentTool> = wiDDataSource.currentTool
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
     val title: State<Title> = wiDDataSource.title
 
-//    val totalDuration: State<Duration> = toolDataSource.totalDuration
-//    val remainingTime: State<Duration> = toolDataSource.remainingTime
-//
+    val totalDuration: State<Duration> = wiDDataSource.totalDuration
+    val remainingTime: State<Duration> = wiDDataSource.remainingTime
+
     val destinationList = listOf(
         MainViewDestinations.HomeViewDestination,
-        MainViewDestinations.WiDToolViewDestination,
-        MainViewDestinations.WiDDisplayViewDestination,
+        MainViewDestinations.WiDListViewDestination,
+        MainViewDestinations.SearchViewDestination,
         MainViewDestinations.MyPageViewDestination
     )
-//
-//    fun startStopwatch() {
-//        Log.d(TAG, "startStopwatch executed")
-//
-//        toolDataSource.startStopwatch(
-////            onStopwatchStarted = { newCurrentTitle: String, newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState, newStopwatchStartDate: LocalDate, newStopwatchStartTime: LocalTime ->
-////                userDataSource.startStopwatch(
-////                    newCurrentTitle = newCurrentTitle,
-////                    newCurrentTool = newCurrentTool,
-////                    newCurrentToolState = newCurrentToolState,
-////                    newStopwatchStartDate = newStopwatchStartDate,
-////                    newStopwatchStartTime = newStopwatchStartTime
-////                )
-////            }
-//        )
-//    }
-//
-//    fun pauseStopwatch() {
-//        Log.d(TAG, "pauseStopwatch executed")
-//
-//        toolDataSource.pauseStopwatch(
-//            email = user.value?.email ?: "",
-////            onStopwatchPaused = { currentTitle: String, newCurrentToolState: CurrentToolState, newStopwatchAccumulatedPrevDuration: Duration, newStopwatchCurrentDuration: Duration ->
-////            onStopwatchPaused = { newStopwatchCurrentDuration: Duration ->
-//            onStopwatchPaused = { newWiD: WiD ->
-//                val currentLevel = user.value?.level ?: 1
-//                val currentExp = user.value?.currentExp ?: 0
-//                val newExp = newWiD.duration.seconds.toInt()
-//                val currentRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
-//
-//                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
-//                val newWiDTotalExp = wiDTotalExp + newExp
-//
-//                val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentCount = titleCountMap[title.value] ?: 0
-//                titleCountMap[title.value] = currentCount + 1
-//
-//                val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-//                val currentDuration = titleDurationMap[title.value] ?: Duration.ZERO
-//                titleDurationMap[title.value] = currentDuration.plus(newWiD.duration)
-//
-//                val createdBy = CurrentTool.STOPWATCH
-//                val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentToolCount = toolCountMap[createdBy] ?: 0
-//                toolCountMap[createdBy] = currentToolCount + 1
-//
-//                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-//                    val newLevel = currentLevel + 1
-//                    val newLevelAsString = newLevel.toString()
-//
-//                    val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-//                    val today = LocalDate.now()
-//                    levelUpHistoryMap[newLevelAsString] = today
-//
-//                    val newCurrentExp = currentExp + newExp - currentRequiredExp
-//
-//                    userDataSource.pauseStopwatchWithLevelUp(
-////                        newCurrentToolState = newCurrentToolState,
-////                        newStopwatchPrevDuration = newStopwatchAccumulatedPrevDuration,
-//                        newLevel = newLevel,
-//                        newLevelUpHistoryMap = levelUpHistoryMap,
-//                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                } else { // 레벨업 아님.
-//                    val newCurrentExp = currentExp + newExp
-//
-//                    userDataSource.pauseStopwatch(
-////                        newCurrentToolState = newCurrentToolState,
-////                        newStopwatchPrevDuration = newStopwatchAccumulatedPrevDuration,
-//                        newCurrentExp = newCurrentExp,
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                }
-//
-//                addWiDToMap(createdWiD = newWiD)
-//            },
-////            onWiDCreated = { createdWiD: WiD ->
-////                addWiDToMap(createdWiD = createdWiD)
-////            }
-//        )
-//    }
-//
-//    fun stopStopwatch() {
-//        Log.d(TAG, "stopStopwatch executed")
-//
-//        toolDataSource.stopStopwatch(
-////            onStopwatchStopped = { newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState ->
-////                userDataSource.stopStopwatch(
-////                    newCurrentTool = newCurrentTool,
-////                    newCurrentToolState = newCurrentToolState
-////                )
-////            }
-//        )
-//    }
-//
-//    fun startTimer() {
-//        Log.d(TAG, "startTimer executed")
-//
-//        toolDataSource.startTimer(
-//            email = user.value?.email ?: "",
-////            onTimerStarted = { newTitle: String, newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState, newTimerStartDate: LocalDate, newTimerStartTime: LocalTime ->
-////                userDataSource.startTimer(
-////                    newCurrentTitle = newTitle,
-////                    newCurrentTool = newCurrentTool,
-////                    newCurrentToolState = newCurrentToolState,
-////                    newTimerStartDate = newTimerStartDate,
-////                    newTimerStartTime = newTimerStartTime,
-////                )
-////            },
-////            onTimerAutoStopped = { currentTitle: String, newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState, newTimerCurrentDuration: Duration ->
-////            onTimerAutoStopped = { newTimerCurrentDuration: Duration ->
-//            onTimerAutoStopped = { newWiD: WiD ->
-//                val currentLevel = user.value?.level ?: 1
-//                val currentExp = user.value?.currentExp ?: 0
-//                val newExp = newWiD.duration.seconds.toInt()
-//                val currentRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
-//
-//                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
-//                val newWiDTotalExp = wiDTotalExp + newExp
-//
-//                val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentCount = titleCountMap[title.value] ?: 0
-//                titleCountMap[title.value] = currentCount + 1
-//
-//                val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-//                val currentDuration = titleDurationMap[title.value] ?: Duration.ZERO
-//                titleDurationMap[title.value] = currentDuration.plus(newWiD.duration)
-//
-//                val createdBy = CurrentTool.TIMER
-//                val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentToolCount = toolCountMap[createdBy] ?: 0
-//                toolCountMap[createdBy] = currentToolCount + 1
-//
-//                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-//                    val newLevel = currentLevel + 1
-//                    val newLevelAsString = newLevel.toString()
-//
-//                    val today = LocalDate.now()
-//                    val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-//                    levelUpHistoryMap[newLevelAsString] = today
-//
-//                    val newCurrentExp = currentExp + newExp - currentRequiredExp
-//
-//                    userDataSource.autoStopTimerWithLevelUp(
-////                        newCurrentTool = newCurrentTool,
-////                        newCurrentToolState = newCurrentToolState,
-//                        newLevel = newLevel,
-//                        newLevelUpHistoryMap = levelUpHistoryMap,
-//                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                } else {
-//                    val newCurrentExp = currentExp + newExp
-//
-//                    userDataSource.autoStopTimerWithoutLevelUp(
-////                        newCurrentTool = newCurrentTool,
-////                        newCurrentToolState = newCurrentToolState,
-//                        newCurrentExp = newCurrentExp,
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                }
-//
-//                addWiDToMap(createdWiD = newWiD)
-//            },
-////            onWiDCreated = { createdWiD: WiD ->
-////                addWiDToMap(createdWiD = createdWiD)
-////            }
-//        )
-//    }
-//
-//    fun pauseTimer() {
-//        Log.d(TAG, "pauseTimer executed")
-//
-//        toolDataSource.pauseTimer(
-//            email = user.value?.email ?: "",
-////            onTimerPaused = { currentTitle: String, newCurrrentToolState: CurrentToolState, newTimerCurrentDuration: Duration, newTimerNextSelectedTime: Duration ->
-////            onTimerPaused = { newTimerCurrentDuration: Duration ->
-//            onTimerPaused = { newWiD: WiD ->
-//                val currentLevel = user.value?.level ?: 1
-//                val currentExp = user.value?.currentExp ?: 0
-//                val newExp = newWiD.duration.seconds.toInt()
-//                val currentRequiredExp = levelToRequiredExpMap[currentLevel] ?: 0
-//
-//                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
-//                val newWiDTotalExp = wiDTotalExp + newExp
-//
-//                val titleCountMap = user.value?.wiDTitleCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentCount = titleCountMap[title.value] ?: 0
-//                titleCountMap[title.value] = currentCount + 1
-//
-//                val titleDurationMap = user.value?.wiDTitleDurationMap?.toMutableMap() ?: mutableMapOf()
-//                val currentDuration = titleDurationMap[title.value] ?: Duration.ZERO
-//                titleDurationMap[title.value] = currentDuration.plus(newWiD.duration)
-//
-//                val createdBy = CurrentTool.TIMER
-//                val toolCountMap = user.value?.wiDToolCountMap?.toMutableMap() ?: mutableMapOf()
-//                val currentToolCount = toolCountMap[createdBy] ?: 0
-//                toolCountMap[createdBy] = currentToolCount + 1
-//
-//                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-//                    val newLevel = currentLevel + 1
-//                    val newLevelAsString = newLevel.toString()
-//
-//                    val today = LocalDate.now()
-//                    val levelUpHistoryMap = user.value?.levelUpHistoryMap?.toMutableMap() ?: mutableMapOf()
-//                    levelUpHistoryMap[newLevelAsString] = today
-//
-//                    val newCurrentExp = currentExp + newExp - currentRequiredExp
-//
-//                    userDataSource.pauseTimerWithLevelUp(
-////                        newCurrentToolState = newCurrentToolState,
-////                        newTimerNextSelectedTime = newTimerNextSelectedTime,
-//                        newLevel = newLevel,
-//                        newLevelUpHistoryMap = levelUpHistoryMap,
-//                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                } else {
-//                    val newCurrentExp = currentExp + newExp
-//
-//                    userDataSource.pauseTimer(
-////                        newCurrentToolState = newCurrentToolState,
-////                        newTimerNextSelectedTime = newTimerNextSelectedTime,
-//                        newCurrentExp = newCurrentExp,
-//                        newWiDTotalExp = newWiDTotalExp,
-//                        newTitleCountMap = titleCountMap,
-//                        newTitleDurationMap = titleDurationMap,
-//                        newToolCountMap = toolCountMap
-//                    )
-//                }
-//
-//                addWiDToMap(createdWiD = newWiD)
-//            },
-////            onWiDCreated = { createdWiD: WiD ->
-////                addWiDToMap(createdWiD = createdWiD)
-////            }
-//        )
-//    }
-//
-//    fun stopTimer() {
-//        Log.d(TAG, "stopTimer executed")
-//
-//        toolDataSource.stopTimer(
-////            onTimerStopped = { newCurrentTool: CurrentTool, newCurrentToolState: CurrentToolState ->
-////                userDataSource.stopTimer(
-////                    newCurrentTool = newCurrentTool,
-////                    newCurrentToolState = newCurrentToolState
-////                )
-////            }
-//        )
-//    }
+
+    fun startStopwatch() {
+        Log.d(TAG, "startStopwatch executed")
+
+        wiDDataSource.startStopwatch()
+    }
+
+    fun pauseStopwatch() {
+        Log.d(TAG, "pauseStopwatch executed")
+
+        wiDDataSource.pauseStopwatch(
+            email = user.value?.email ?: "",
+            onStopwatchPaused = { newExp: Int ->
+                // 레벨
+                val currentLevel = user.value?.level ?: 1
+                // 경험치
+                val currentExp = user.value?.currentExp ?: 0
+                val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val newWiDTotalExp = wiDTotalExp + newExp
+
+                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+                    // 레벨
+                    val newLevel = currentLevel + 1
+                    val newLevelAsString = newLevel.toString()
+                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
+                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
+
+                    userDataSource.pauseStopwatchWithLevelUp(
+                        newLevel = newLevel,
+                        newLevelUpHistoryMap = levelDateMap,
+                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                } else { // 레벨업 아님.
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp
+
+                    userDataSource.pauseStopwatch(
+                        newCurrentExp = newCurrentExp,
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                }
+            }
+        )
+    }
+
+    fun stopStopwatch() {
+        Log.d(TAG, "stopStopwatch executed")
+
+        wiDDataSource.stopStopwatch()
+    }
+
+    fun startTimer() {
+        Log.d(TAG, "startTimer executed")
+
+        wiDDataSource.startTimer(
+            email = user.value?.email ?: "",
+            onTimerAutoStopped = { newExp: Int ->
+                // 레벨
+                val currentLevel = user.value?.level ?: 1
+                // 경험치
+                val currentExp = user.value?.currentExp ?: 0
+                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val newWiDTotalExp = wiDTotalExp + newExp
+
+                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
+                    // 레벨
+                    val newLevel = currentLevel + 1
+                    val newLevelAsString = newLevel.toString()
+                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
+                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp - currentRequiredExp
+
+                    userDataSource.autoStopTimerWithLevelUp(
+                        newLevel = newLevel,
+                        newLevelUpHistoryMap = levelDateMap,
+                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                } else {
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp
+
+                    userDataSource.autoStopTimer(
+                        newCurrentExp = newCurrentExp,
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                }
+            },
+        )
+    }
+
+    fun pauseTimer() {
+        Log.d(TAG, "pauseTimer executed")
+
+        wiDDataSource.pauseTimer(
+            email = user.value?.email ?: "",
+            onTimerPaused = { newExp: Int ->
+                // 레벨
+                val currentLevel = user.value?.level ?: 1
+
+                // 경험치
+                val currentExp = user.value?.currentExp ?: 0
+                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val newWiDTotalExp = wiDTotalExp + newExp
+
+                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
+                    // 레벨
+                    val newLevel = currentLevel + 1
+                    val newLevelAsString = newLevel.toString()
+                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
+                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp - currentRequiredExp
+
+                    userDataSource.pauseTimerWithLevelUp(
+                        newLevel = newLevel,
+                        newLevelUpHistoryMap = levelDateMap,
+                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                } else {
+                    // 경험치
+                    val newCurrentExp = currentExp + newExp
+
+                    userDataSource.pauseTimer(
+                        newCurrentExp = newCurrentExp,
+                        newWiDTotalExp = newWiDTotalExp
+                    )
+                }
+            }
+        )
+    }
+
+    fun stopTimer() {
+        Log.d(TAG, "stopTimer executed")
+
+        wiDDataSource.stopTimer()
+    }
 }

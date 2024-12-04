@@ -2,7 +2,6 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.model.User
-import andpact.project.wid.util.defaultTitleDurationMap
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State

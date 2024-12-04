@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun StopwatchView(
-    onStopwatchViewBarVisibleChanged: (Boolean) -> Unit,
+    onBackButtonPressed: () -> Unit,
     stopwatchViewModel: StopwatchViewModel = hiltViewModel()
 ) {
     val TAG = "StopwatchView"
@@ -56,10 +56,6 @@ fun StopwatchView(
     val currentToolState = stopwatchViewModel.currentToolState.value
     val totalDuration = stopwatchViewModel.totalDuration.value
 
-    LaunchedEffect(stopwatchViewBarVisible) {
-        onStopwatchViewBarVisibleChanged(stopwatchViewBarVisible)
-    }
-
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
@@ -73,6 +69,33 @@ fun StopwatchView(
         modifier = Modifier
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
+        topBar = {
+            CenterAlignedTopAppBar(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            onBackButtonPressed()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                            contentDescription = "뒤로 가기",
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = "스톱워치",
+                        style = Typography.titleLarge,
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
+        },
         content = { contentPadding: PaddingValues ->
             if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
                 LazyColumn(

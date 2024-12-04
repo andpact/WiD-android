@@ -126,7 +126,7 @@ class WeeklyWiDListViewModel @Inject constructor(
             email = user.value?.email ?: "",
             firstDate = startDate,
             lastDate = finishDate,
-            onWiDListFetchedFromFirstDateToLastDate = { wiDList: List<WiD> ->
+            onWiDListFetched = { wiDList: List<WiD> ->
                 Log.d(TAG, "WiD Collection Changed: New List Size = ${wiDList.size}")
 
                 /** 복구 */

@@ -66,19 +66,17 @@ class StopwatchViewModel @Inject constructor(
         wiDDataSource.startStopwatch()
     }
 
-    // 위드가 2개 생성되면 위드, 유저 컬렉션을 2번씩 호출함.
     fun pauseStopwatch() {
         Log.d(TAG, "pauseStopwatch executed")
 
         wiDDataSource.pauseStopwatch(
             email = user.value?.email ?: "",
-            onStopwatchPaused = { newWiD: WiD ->
+            onStopwatchPaused = { newExp: Int ->
                 // 레벨
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
                 val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
-                val newExp = newWiD.duration.seconds.toInt()
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
