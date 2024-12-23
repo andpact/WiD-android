@@ -2,18 +2,23 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.*
+import andpact.project.wid.ui.theme.chivoMonoBlackItalic
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,7 +37,8 @@ class TimerViewModel @Inject constructor(
     val user: State<User?> = userDataSource.user
 
     // 제목
-    val title: State<Title> = wiDDataSource.title
+    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
+    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
 
     // 도구
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
@@ -44,7 +50,7 @@ class TimerViewModel @Inject constructor(
     fun setTitle(newTitle: Title) {
         Log.d(TAG, "setTitle executed")
 
-        wiDDataSource.setTitle(newTitle)
+        wiDDataSource.setCurrentWiDTitle(newTitle)
     }
 
     fun setSelectedTime(newSelectedTime: Duration) {
@@ -69,7 +75,7 @@ class TimerViewModel @Inject constructor(
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -113,7 +119,7 @@ class TimerViewModel @Inject constructor(
 
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -150,5 +156,24 @@ class TimerViewModel @Inject constructor(
         Log.d(TAG, "stopTimer executed")
 
         wiDDataSource.stopTimer()
+    }
+
+
+    fun getTimerDurationString(duration: Duration): AnnotatedString {
+        Log.d(TAG, "getTimerDurationString executed")
+
+        val hours = duration.toHours()
+        val minutes = (duration.toMinutes() % 60).toInt()
+        val seconds = (duration.seconds % 60).toInt()
+
+        val hoursText = hours.toString()
+        val minutesText = minutes.toString().padStart(2, '0')
+        val secondsText = seconds.toString().padStart(2, '0')
+
+        return buildAnnotatedString {
+            withStyle(style = SpanStyle(fontSize = 60.sp, fontFamily = chivoMonoBlackItalic)) {
+                append("$hoursText:$minutesText:$secondsText")
+            }
+        }
     }
 }

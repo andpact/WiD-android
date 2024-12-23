@@ -2,8 +2,10 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.WeeklyWiDListStackedVerticalBarChartView
+import andpact.project.wid.model.Title
+import andpact.project.wid.model.TitleDurationMap
+import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.WeeklyWiDListViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.Duration
+import java.time.Year
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +42,8 @@ fun WeeklyWiDListView(
     val weekPickerExpanded = weeklyWiDListViewModel.weekPickerExpanded.value
 
     // WiD
-    val wiDListFetched = weeklyWiDListViewModel.wiDListFetched.value
+//    val wiDListFetched = weeklyWiDListViewModel.wiDListFetched.value
+//    val wiDList = weeklyWiDListViewModel.wiDList.value
     val wiDList = weeklyWiDListViewModel.wiDList.value
 
     // 맵
@@ -50,9 +54,8 @@ fun WeeklyWiDListView(
     val titleMinDateMap = weeklyWiDListViewModel.titleMinDateMap.value
 
     // Current WiD
-    val date = weeklyWiDListViewModel.date.value
-    val start = weeklyWiDListViewModel.start.value
-    val finish = weeklyWiDListViewModel.finish.value
+//    val firstCurrentWiD = weeklyWiDListViewModel.firstCurrentWiD.value
+//    val secondCurrentWiD = weeklyWiDListViewModel.secondCurrentWiD.value
 
     // 조회할 맵 변경
     LaunchedEffect(mapType) {
@@ -62,8 +65,6 @@ fun WeeklyWiDListView(
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        weeklyWiDListViewModel.setToday(newDate = today)
-
         weeklyWiDListViewModel.setStartDateAndFinishDate(
             startDate = weeklyWiDListViewModel.startDate.value,
             finishDate = weeklyWiDListViewModel.finishDate.value
@@ -72,31 +73,37 @@ fun WeeklyWiDListView(
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    LaunchedEffect(finish) {
-        Log.d(TAG, "wid list update")
-
-        if (start.isBefore(finish)) { // date가 포함된 기간을 조회할 때만 리스트 갱신
-            if ((startDate.isBefore(date) && finishDate.isAfter(date)) || startDate.isEqual(date) || finishDate.isEqual(date)) {
-                weeklyWiDListViewModel.setStartDateAndFinishDate(
-                    startDate = startDate,
-                    finishDate = finishDate
-                )
-            }
-        } else if (start.isAfter(finish)) { // date + 1 날짜 조회할 때 리스트 갱신
-            if ((startDate.isBefore(date.plusDays(1)) && finishDate.isAfter(date.plusDays(1))) || startDate.isEqual(date.plusDays(1)) || finishDate.isEqual(date.plusDays(1))) {
-                weeklyWiDListViewModel.setStartDateAndFinishDate(
-                    startDate = startDate,
-                    finishDate = finishDate
-                )
-            }
-        }
-    }
+//    LaunchedEffect(
+//        key1 = firstCurrentWiD,
+//        block = {
+//            Log.d(TAG, "LaunchedEffect: firstCurrentWiD update")
+//
+//            if (firstCurrentWiD.date in startDate..finishDate) {
+//                weeklyWiDListViewModel.setStartDateAndFinishDate(
+//                    startDate = startDate,
+//                    finishDate = finishDate
+//                )
+//            }
+//        }
+//    )
+//
+//    LaunchedEffect(
+//        key1 = secondCurrentWiD,
+//        block = {
+//            Log.d(TAG, "LaunchedEffect: secondCurrentWiD update")
+//
+//            if (secondCurrentWiD.date in startDate..finishDate) {
+//                weeklyWiDListViewModel.setStartDateAndFinishDate(
+//                    startDate = startDate,
+//                    finishDate = finishDate
+//                )
+//            }
+//        }
+//    )
 
     BackHandler(
         enabled = weekPickerExpanded,
-        onBack = {
-            weeklyWiDListViewModel.setWeekPickerExpanded(false)
-        }
+        onBack = { weeklyWiDListViewModel.setWeekPickerExpanded(false) }
     )
 
     Scaffold(
@@ -127,7 +134,7 @@ fun WeeklyWiDListView(
                         )
 
                         Text(
-                            text = getPeriodStringOfWeek(
+                            text = weeklyWiDListViewModel.getPeriodStringOfWeek(
                                 firstDayOfWeek = startDate,
                                 lastDayOfWeek = finishDate
                             ),
@@ -166,7 +173,7 @@ fun WeeklyWiDListView(
 
                         weeklyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                     },
-                    enabled = !(startDate == getFirstDateOfWeek(today) && finishDate == getLastDateOfWeek(today))
+                    enabled = !(startDate == weeklyWiDListViewModel.getFirstDateOfWeek(today) && finishDate == weeklyWiDListViewModel.getLastDateOfWeek(today))
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
@@ -181,7 +188,7 @@ fun WeeklyWiDListView(
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            if (wiDListFetched && wiDList.isEmpty()) {
+            if (wiDList.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -201,7 +208,7 @@ fun WeeklyWiDListView(
                         style = Typography.bodyMedium,
                     )
                 }
-            } else if (wiDListFetched) {
+            } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -273,7 +280,7 @@ fun WeeklyWiDListView(
                                     Text(
                                         modifier = Modifier
                                             .padding(top = 4.dp, bottom = 8.dp),
-                                        text = getDurationString(duration = duration),
+                                        text = weeklyWiDListViewModel.getDurationString(duration = duration),
                                         style = Typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
@@ -292,7 +299,7 @@ fun WeeklyWiDListView(
                                         )
                                         .padding(horizontal = 8.dp, vertical = 4.dp),
                                     text = when (currentMapType) {
-                                        TitleDurationMap.TOTAL -> getDurationPercentageStringOfWeek(duration = duration)
+                                        TitleDurationMap.TOTAL -> weeklyWiDListViewModel.getDurationPercentageStringOfWeek(duration = duration)
                                         TitleDurationMap.AVERAGE -> "총 ${titleDateCountMap[title]}일 기준"
                                         TitleDurationMap.MAX -> "${titleMaxDateMap[title]?.dayOfMonth}일"
                                         TitleDurationMap.MIN -> "${titleMinDateMap[title]?.dayOfMonth}일"
@@ -319,8 +326,6 @@ fun WeeklyWiDListView(
                         )
                     }
                 }
-            } else {
-                CircularProgressIndicator()
             }
         }
 
@@ -355,8 +360,8 @@ fun WeeklyWiDListView(
                         repeat(5) { index -> // 0부터 시작
                             val reverseIndex = 4 - index // 역순 인덱스 계산
 
-                            val firstDayOfWeek = getFirstDateOfWeek(today).minusWeeks(reverseIndex.toLong())
-                            val lastDayOfWeek = getLastDateOfWeek(today).minusWeeks(reverseIndex.toLong())
+                            val firstDayOfWeek = weeklyWiDListViewModel.getFirstDateOfWeek(today).minusWeeks(reverseIndex.toLong())
+                            val lastDayOfWeek = weeklyWiDListViewModel.getLastDateOfWeek(today).minusWeeks(reverseIndex.toLong())
 
                             Row(
                                 modifier = Modifier
@@ -374,7 +379,7 @@ fun WeeklyWiDListView(
                                 Text(
                                     modifier = Modifier
                                         .padding(16.dp),
-                                    text = getPeriodStringOfWeek(firstDayOfWeek = firstDayOfWeek, lastDayOfWeek = lastDayOfWeek),
+                                    text = weeklyWiDListViewModel.getPeriodStringOfWeek(firstDayOfWeek = firstDayOfWeek, lastDayOfWeek = lastDayOfWeek),
                                     style = Typography.bodyMedium,
                                 )
 

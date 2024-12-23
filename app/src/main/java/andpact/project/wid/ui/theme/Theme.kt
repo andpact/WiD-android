@@ -2,7 +2,9 @@ package andpact.project.wid.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -85,6 +87,15 @@ private val DarkColorScheme = darkColorScheme(
     surfaceDim = dark_surface_dim                       // 32
 )
 
+val Shapes = Shapes(
+//    extraSmall = RoundedCornerShape(0),  // 작은 UI 요소의 모서리
+//    small = RoundedCornerShape(8),  // 작은 UI 요소의 모서리
+    medium = RoundedCornerShape(16), // 중간 크기 UI 요소의 모서리
+    large = RoundedCornerShape(24),  // 큰 UI 요소의 모서리
+    extraLarge = RoundedCornerShape(32)  // 큰 UI 요소의 모서리
+)
+
+
 @Composable
 fun WiDTheme( // 메인 액티비티에 적용되는 테마
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -105,41 +116,9 @@ fun WiDTheme( // 메인 액티비티에 적용되는 테마
         SideEffect {
             // 상태 표시줄 + 탐색 메뉴 = 시스템 표시줄
 
-//            (view.context as Activity).window.statusBarColor = colorScheme.surface.toArgb() // 상태 표시줄
-            (view.context as Activity).window.statusBarColor = colorScheme.secondaryContainer.toArgb() // 상태 표시줄 색상
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태 표시줄 의 컨텐츠를 어둡게 함.
-//
-            (view.context as Activity).window.navigationBarColor = colorScheme.surface.toArgb() // 탐색 메뉴 색상
-//            (view.context as Activity).window.navigationBarColor = colorScheme.surfaceContainer.toArgb() // 탐색 메뉴 색상
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 탐색 메뉴의 컨텐츠를 어둡게 함.
-        }
-    }
+            (view.context as Activity).window.statusBarColor = colorScheme.surface.toArgb() // 상태 표시줄 색상
+            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태 표시줄의 컨텐츠를 어둡게 함.
 
-    // WiD 테마가 Material 테마를 감싸고 있음.
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
-}
-
-@Composable
-fun SplashTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            // 상태 표시줄 + 탐색 메뉴 = 시스템 표시줄
-
-            (view.context as Activity).window.statusBarColor = colorScheme.surface.toArgb() // 상태 표시줄
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태 표시줄 의 컨텐츠를 어둡게 함.
-//
             (view.context as Activity).window.navigationBarColor = colorScheme.surface.toArgb() // 탐색 메뉴 색상
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 탐색 메뉴의 컨텐츠를 어둡게 함.
         }
@@ -149,6 +128,7 @@ fun SplashTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }
@@ -163,46 +143,12 @@ fun changeStatusBarColor(color: Color) {
     }
 }
 
-@Composable
-fun changeNavigationBarColor(color: Color) {
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            (view.context as Activity).window.navigationBarColor = color.toArgb()
-        }
-    }
-}
-
-
 //@Composable
-//fun SplashTheme( // 스플래쉬 액티비티에 적용되는 테마
-//    darkTheme: Boolean = isSystemInDarkTheme(),
-//    // Dynamic color is available on Android 12+
-//    dynamicColor: Boolean = true,
-//    content: @Composable () -> Unit
-//) {
-//    val colorScheme = when {
-////        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-////            val context = LocalContext.current
-////            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-////        }
-//        darkTheme -> DarkColorScheme
-//        else -> LightColorScheme
-//    }
+//fun changeNavigationBarColor(color: Color) {
 //    val view = LocalView.current
 //    if (!view.isInEditMode) {
 //        SideEffect {
-//            (view.context as Activity).window.statusBarColor = colorScheme.secondary.toArgb() // 상태 바 색상
-//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = !darkTheme // 상태바 의 컨텐츠를 어둡게 함.
-//
-//            (view.context as Activity).window.navigationBarColor = colorScheme.secondary.toArgb() // 네비게이션 바 색상
-//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars = !darkTheme // 네비게이션 바 의 컨텐츠를 어둡게 함.
+//            (view.context as Activity).window.navigationBarColor = color.toArgb()
 //        }
 //    }
-//
-//    MaterialTheme(
-//        colorScheme = colorScheme,
-//        typography = Typography,
-//        content = content
-//    )
 //}

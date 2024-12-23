@@ -31,7 +31,6 @@ class SplashViewModel @Inject constructor(
 ) : ViewModel() {
     private val TAG = "SplashViewModel"
     init { Log.d(TAG, "created") }
-
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "cleared")
@@ -40,7 +39,7 @@ class SplashViewModel @Inject constructor(
     fun setFirebaseUserAndUser() {
         Log.d(TAG, "setFirebaseUserAndUser executed")
 
-        userDataSource.setFirebaseUserAndUser()
+        userDataSource.getFirebaseUserAndUser()
     }
 
     // 한 번 실행하고 말거니까, 필드로 굳이 빼지말자, 스플래쉬 뷰에서는 로그인 기록이 있는 지만 확인하면 되니까 FirebaseUser객체를 반환할 필요 없다.

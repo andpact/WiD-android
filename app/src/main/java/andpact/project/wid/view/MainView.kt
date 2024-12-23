@@ -1,21 +1,16 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
 import andpact.project.wid.destinations.MainViewDestinations
-//import andpact.project.wid.model.Diary
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.CurrentTool
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -34,12 +29,9 @@ import androidx.navigation.compose.rememberNavController
 fun MainView(
     onStopwatchClicked: () -> Unit,
     onTimerClicked: () -> Unit,
-    onNewWiDClicked: () -> Unit,
     onWiDClicked: () -> Unit,
     onUserSignedOut: () -> Unit,
     onUserDeleted: (Boolean) -> Unit,
-//    onDiaryClicked: (List<WiD>, Diary) -> Unit,
-    onMainViewBarVisibleChanged: (Boolean) -> Unit // Main Activity View의 시스템 상태바, 네비게이션 바 색상 변경 용 콜백
 ) {
     val TAG = "MainView"
 
@@ -60,13 +52,20 @@ fun MainView(
         bottomBar = {
             MainBottomBarView(
                 currentRoute = currentRoute,
-                onDestinationChanged = { route ->
+                onDestinationChanged = { route: String ->
                     mainViewNavController.navigate(route) {
                         popUpTo(mainViewNavController.graph.findStartDestination().id) { // 이동할 때, 파라미터(시작점)을 제외하고는 나머지 스택을 삭제함.
                             saveState = true
                         }
                         launchSingleTop = true // 같은 곳으로 이동해도, 스택 최상단에 중복으로 스택이 쌓이지 않도록 함.
                         restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
+                    }
+                },
+                onCurrentToolClicked = { currentTool: CurrentTool ->
+                    if (currentTool == CurrentTool.STOPWATCH) {
+                        onStopwatchClicked()
+                    } else if (currentTool == CurrentTool.TIMER) {
+                        onTimerClicked()
                     }
                 }
             )
@@ -91,23 +90,9 @@ fun MainView(
 
                 composable(MainViewDestinations.WiDListViewDestination.route) {
                     WiDListView(
-                        onEmptyWiDClicked = {
-                            onNewWiDClicked()
-                        },
                         onWiDClicked = {
                             onWiDClicked()
-                        }
-                    )
-                }
-
-                composable(MainViewDestinations.SearchViewDestination.route) {
-                    SearchView(
-                        onDiaryClicked = {
-
                         },
-                        onWiDClicked = {
-                            onWiDClicked()
-                        }
                     )
                 }
 

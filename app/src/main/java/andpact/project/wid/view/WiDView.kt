@@ -2,31 +2,38 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.TimeSelectorView
-import andpact.project.wid.model.WiD
+import andpact.project.wid.chartView.TitleSelectorView
+import andpact.project.wid.model.Title
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.WiDViewModel
 import android.util.Log
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
-import java.time.*
-import java.util.*
+import java.time.Duration
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -36,11 +43,15 @@ fun WiDView(
 ) {
     val TAG = "WiDView"
 
-    // WiD
-    val wiD = wiDViewModel.wiD.value
+//    val now = wiDViewModel.now.value
 
-    // Updated WiD
-    val updatedWiD = wiDViewModel.updatedWiD.value
+    // WiD
+    val clickedWiD = wiDViewModel.clickedWiD.value
+    val clickedWiDCopy = wiDViewModel.clickedWiDCopy.value
+    val updateClickedWiDToNow = wiDViewModel.updateClickedWiDToNow.value
+    val updateClickedWiDCopyToNow = wiDViewModel.updateClickedWiDCopyToNow.value
+    val isNewWiD = wiDViewModel.isNewWiD.value
+    val isLastNewWiD = wiDViewModel.isLastNewWiD.value
 
     // 화면
     val configuration = LocalConfiguration.current
@@ -49,64 +60,40 @@ fun WiDView(
 
     // 제목
     val showTitleMenu = wiDViewModel.showTitleMenu.value
+    val titleExist = wiDViewModel.titleExist.value
+    val titleModified = wiDViewModel.titleModified.value
 
     // 시작 시간
     val showStartPicker = wiDViewModel.showStartPicker.value
-    val startHourPagerState = rememberPagerState(
-        initialPage = wiD.start.hour,
-        pageCount = { 24 }
-    )
-    val startMinutePagerState = rememberPagerState(
-        initialPage = wiD.start.minute,
-        pageCount = { 60 }
-    )
-    val startSecondPagerState = rememberPagerState(
-        initialPage = wiD.start.second,
-        pageCount = { 60 }
-    )
-//    val startTimePickerState = rememberTimePickerState(
-//        initialHour = updatedWiD.start.hour,
-//        initialMinute = updatedWiD.start.minute,
-//        is24Hour = false
-//    )
-    val startOverlap = wiDViewModel.startOverlap.value
+    val startHourPagerState = rememberPagerState(initialPage = clickedWiD.start.hour, pageCount = { 24 })
+    val startMinutePagerState = rememberPagerState(initialPage = clickedWiD.start.minute, pageCount = { 60 })
+    val startSecondPagerState = rememberPagerState(initialPage = clickedWiD.start.second, pageCount = { 60 })
+    val isStartOutOfRange = wiDViewModel.isStartOutOfRange.value
     val startModified = wiDViewModel.startModified.value
+    val minStart = wiDViewModel.minStart.value
+    val maxStart = wiDViewModel.maxStart.value
 
     // 종료 시간
     val showFinishPicker = wiDViewModel.showFinishPicker.value
-    val finishHourPagerState = rememberPagerState(
-        initialPage = wiD.finish.hour,
-        pageCount = { 24 }
-    )
-    val finishMinutePagerState = rememberPagerState(
-        initialPage = wiD.finish.minute,
-        pageCount = { 60 }
-    )
-    val finishSecondPagerState = rememberPagerState(
-        initialPage = wiD.finish.second,
-        pageCount = { 60 }
-    )
-    val finishTimePickerState = rememberTimePickerState(
-        initialHour = updatedWiD.finish.hour,
-        initialMinute = updatedWiD.finish.minute,
-        is24Hour = false
-    )
-    val finishOverlap = wiDViewModel.finishOverlap.value
+    val finishHourPagerState = rememberPagerState(initialPage = clickedWiD.finish.hour, pageCount = { 24 })
+    val finishMinutePagerState = rememberPagerState(initialPage = clickedWiD.finish.minute, pageCount = { 60 })
+    val finishSecondPagerState = rememberPagerState(initialPage = clickedWiD.finish.second, pageCount = { 60 })
+    val isFinishOutOfRange = wiDViewModel.isFinishOutOfRange.value
     val finishModified = wiDViewModel.finishModified.value
-
-    // 소요 시간
-    val durationExist = wiDViewModel.durationExist.value
+    val minFinish = wiDViewModel.minFinish.value
+    val maxFinish = wiDViewModel.maxFinish.value
 
     val showDeleteWiDDialog = wiDViewModel.showDeleteWiDDialog.value
-    val expandMenu = wiDViewModel.expandMenu.value
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
-
-        val clickedWiDDate = updatedWiD.date
-        wiDViewModel.getWiDListByDate(currentDate = clickedWiDDate)
-
         onDispose { Log.d(TAG, "disposed") }
+    }
+
+    LaunchedEffect(clickedWiDCopy) {
+        finishHourPagerState.scrollToPage(clickedWiDCopy.finish.hour)
+        finishMinutePagerState.scrollToPage(clickedWiDCopy.finish.minute)
+        finishSecondPagerState.scrollToPage(clickedWiDCopy.finish.second)
     }
 
     Scaffold(
@@ -120,6 +107,11 @@ fun WiDView(
                 navigationIcon = {
                     IconButton(
                         onClick = {
+                            if (isLastNewWiD) { // 나갈 때도 확인
+                                wiDViewModel.setUpdateClickedWiDToNow(update = false)
+                                wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
+                            }
+
                             onBackButtonPressed()
                         }
                     ) {
@@ -131,62 +123,167 @@ fun WiDView(
                 },
                 title = {
                     Text(
-                        text = "WiD",
+                        text = if (isNewWiD) "새로운 기록" else "기록",
                         style = Typography.titleLarge,
                     )
                 },
-                actions = {
-                    Box {
-                        IconButton(
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            )
+        },
+        bottomBar = {
+            if (isNewWiD) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    content = {
+                        FilledIconButton(
+                            modifier = Modifier
+                                .size(56.dp), // 바깥 패딩 없애기 위함
                             onClick = {
-                                wiDViewModel.setExpandMenu(expand = true)
-                            }
+                                wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = clickedWiD) // 제목, 시작, 종료 초기화
+                                wiDViewModel.setUpdateClickedWiDCopyToNow(update = isLastNewWiD)
+                            },
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = DeepSkyBlue,
+                                contentColor = White
+                            )
                         ) {
                             Icon(
                                 modifier = Modifier
                                     .size(24.dp),
-                                painter = painterResource(id = R.drawable.baseline_more_vert_24),
-                                contentDescription = "더보기",
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "초기화",
                             )
                         }
 
-                        DropdownMenu(
+                        FilledIconButton(
                             modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surface),
-                            expanded = expandMenu,
-                            onDismissRequest = {
-                                wiDViewModel.setExpandMenu(expand = false)
-                            }
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "WiD 삭제",
-                                        style = Typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                },
-                                onClick = {
-                                    wiDViewModel.setExpandMenu(expand = false)
-                                    wiDViewModel.setShowDeleteWiDDialog(show = true)
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        modifier = Modifier
-                                            .size(24.dp),
-                                        painter = painterResource(id = R.drawable.outline_delete_16),
-                                        contentDescription = "WiD 삭제",
-                                    )
-                                }
+                                .weight(1f)
+                                .height(56.dp), // 바깥 패딩 없애기 위함,
+                            onClick = {
+                                wiDViewModel.createWiD(
+                                    onWiDCreated = {
+                                        if (it) {
+                                            onBackButtonPressed()
+                                        }
+                                    }
+                                )
+                            },
+                            enabled = titleExist, // 새 기록이니까 제목만 있어도 됨.
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = LimeGreen,
+                                contentColor = White
                             )
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    space = 4.dp,
+                                    alignment = Alignment.CenterHorizontally
+                                ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_add_box_24),
+                                    contentDescription = "새로운 기록 만들기",
+                                )
+
+                                Text(
+                                    text = "새로운 기록 만들기",
+                                    style = Typography.bodyMedium
+                                )
+                            }
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
-            )
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    content = {
+                        FilledIconButton(
+                            modifier = Modifier
+                                .size(56.dp), // 바깥 패딩 없애기 위함
+                            onClick = {
+                                wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = clickedWiD) // 제목, 시작, 종료 초기화
+                                wiDViewModel.setUpdateClickedWiDCopyToNow(update = isLastNewWiD)
+                            },
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = DeepSkyBlue,
+                                contentColor = White
+                            )
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp),
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "초기화",
+                            )
+                        }
+
+                        FilledIconButton(
+                            modifier = Modifier
+                                .size(56.dp), // 바깥 패딩 없애기 위함
+                            onClick = {
+                                wiDViewModel.setShowDeleteWiDDialog(show = true)
+                            },
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = OrangeRed,
+                                contentColor = White
+                            )
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp),
+                                painter = painterResource(R.drawable.outline_delete_16),
+                                contentDescription = "삭제",
+                            )
+                        }
+
+                        FilledIconButton(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp), // 바깥 패딩 없애기 위함,
+                            onClick = {
+                                wiDViewModel.updateWiD(
+                                    onWiDUpdated = {
+                                        if (it) {
+                                            onBackButtonPressed()
+                                        }
+                                    }
+                                )
+                            },
+                            enabled = titleModified || startModified || finishModified, // 제목, 시작, 종료 중 하나라도 변화가 있어야 함
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = LimeGreen,
+                                contentColor = White
+                            )
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    space = 4.dp,
+                                    alignment = Alignment.CenterHorizontally
+                                ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.baseline_done_24),
+                                    contentDescription = "수정 완료",
+                                )
+
+                                Text(
+                                    text = "수정 완료",
+                                    style = Typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                )
+            }
         },
         content = { contentPadding: PaddingValues ->
             Column(
@@ -194,27 +291,25 @@ fun WiDView(
                     .fillMaxSize()
                     .padding(contentPadding)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(
+                        space = 4.dp,
+                        alignment = Alignment.CenterVertically
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "날짜",
-                            style = Typography.titleMedium,
-                        )
+                    Text(
+                        text = "날짜",
+                        style = Typography.bodyMedium,
+                    )
 
-                        Text(
-                            text = getDateString(date = updatedWiD.date),
-                            style = Typography.bodyMedium,
-                        )
-                    }
+                    Text(
+                        text = wiDViewModel.getDateString(date = clickedWiDCopy.date),
+                        style = Typography.bodyMedium,
+                    )
                 }
 
                 HorizontalDivider(
@@ -225,31 +320,57 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(56.dp)
+                        .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             wiDViewModel.setShowTitleMenu(show = true)
-                        },
+                        }
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(vertical = 16.dp)
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
                             text = "제목",
-                            style = Typography.titleMedium,
+                            style = Typography.bodyMedium,
                         )
 
                         Text(
-                            text = updatedWiD.title.kr,
+                            text = clickedWiDCopy.title.kr,
                             style = Typography.bodyMedium,
                         )
                     }
 
+                    if (titleModified) {
+                        VerticalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "변경 전",
+                                style = Typography.bodyMedium,
+                            )
+
+                            Text(
+                                text = clickedWiD.title.kr,
+                                style = Typography.bodyMedium,
+                            )
+                        }
+                    }
+
                     Icon(
                         modifier = Modifier
-                            .padding(16.dp),
+                            .size(24.dp),
                         painter = painterResource(R.drawable.baseline_edit_24),
                         contentDescription = "제목 수정",
                     )
@@ -263,71 +384,59 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(56.dp)
+                        .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             wiDViewModel.setShowStartPicker(show = true)
-                        },
+                        }
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(vertical = 16.dp)
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "시작",
-                                style = Typography.titleMedium,
-                            )
-
-                            if (startModified && startOverlap) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp),
-                                    painter = painterResource(R.drawable.baseline_error_outline_24),
-                                    contentDescription = "시작 시간 사용 불가",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-
-                                Text(
-                                    text = "사용 불가",
-                                    style = Typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            } else if (startModified) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp),
-                                    painter = painterResource(R.drawable.baseline_check_circle_outline_24),
-                                    contentDescription = "시작 시간 사용 가능",
-                                )
-
-                                Text(
-                                    text = "사용 가능",
-                                    style = Typography.labelSmall,
-                                )
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-                        }
+                        Text(
+                            text = "시작",
+                            style = Typography.bodyMedium,
+                        )
 
                         Text(
-                            text = getTimeString(time = updatedWiD.start),
+                            text = wiDViewModel.getTimeString(time = clickedWiDCopy.start),
                             style = Typography.bodyMedium,
                         )
                     }
 
+                    if (startModified) {
+                        VerticalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "변경 전",
+                                style = Typography.bodyMedium,
+                            )
+
+                            Text(
+                                text = wiDViewModel.getTimeString(time = clickedWiD.start),
+                                style = Typography.bodyMedium,
+                            )
+                        }
+                    }
+
                     Icon(
                         modifier = Modifier
-                            .padding(16.dp),
-                        painter = painterResource(R.drawable.baseline_edit_24),
-                        contentDescription = "시작 시간 수정",
+                            .size(24.dp),
+                        painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
+                        contentDescription = "시작 대화 상자 열기",
                     )
                 }
 
@@ -339,73 +448,95 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .height(56.dp)
+                        .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             wiDViewModel.setShowFinishPicker(show = true)
-                        },
+                        }
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(vertical = 16.dp)
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "종료",
-                                style = Typography.titleMedium,
-                            )
-
-                            if (finishModified && finishOverlap) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp),
-                                    painter = painterResource(R.drawable.baseline_error_outline_24),
-                                    contentDescription = "종료 시간 사용 불가",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-
-                                Text(
-                                    text = "사용 불가",
-                                    style = Typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            } else if (finishModified) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp),
-                                    painter = painterResource(R.drawable.baseline_check_circle_outline_24),
-                                    contentDescription = "종료 시간 사용 가능",
-                                )
-
-                                Text(
-                                    text = "사용 가능",
-                                    style = Typography.labelSmall,
-                                )
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-                        }
-
                         Text(
-                            text = getTimeString(time = updatedWiD.finish),
+                            text = "종료",
                             style = Typography.bodyMedium,
                         )
 
-                        /** LIVE 표시 */
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = wiDViewModel.getTimeString(time = clickedWiDCopy.finish),
+                                style = Typography.bodyMedium,
+                            )
+
+                            if (updateClickedWiDCopyToNow) {
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.error,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "Now",
+                                    style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onError
+                                )
+                            }
+                        }
+                    }
+
+                    if (finishModified) {
+                        VerticalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "변경 전",
+                                style = Typography.bodyMedium,
+                            )
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = wiDViewModel.getTimeString(time = clickedWiD.finish),
+                                    style = Typography.bodyMedium,
+                                )
+
+                                if (updateClickedWiDToNow) {
+                                    Text(
+                                        modifier = Modifier
+                                            .background(
+                                                color = MaterialTheme.colorScheme.error,
+                                                shape = MaterialTheme.shapes.medium
+                                            )
+                                            .padding(horizontal = 4.dp),
+                                        text = "Now",
+                                        style = Typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onError
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     Icon(
                         modifier = Modifier
-                            .padding(16.dp),
-                        painter = painterResource(R.drawable.baseline_edit_24),
-                        contentDescription = "종료 시간 수정",
+                            .size(24.dp),
+                        painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
+                        contentDescription = "종료 대화상자 열기",
                     )
                 }
 
@@ -416,51 +547,86 @@ fun WiDView(
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .height(intrinsicSize = IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(vertical = 16.dp)
                             .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "소요",
-                                style = Typography.titleMedium,
-                            )
-
-                            if (!durationExist) {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(12.dp),
-                                    painter = painterResource(R.drawable.baseline_error_outline_24),
-                                    contentDescription = "소요 시간 부족",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-
-                                Text(
-                                    text = "소요 시간 부족",
-                                    style = Typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(1f)
-                            )
-                        }
+                        Text(
+                            text = "소요",
+                            style = Typography.bodyMedium,
+                        )
 
                         Text(
-                            text = getDurationString(updatedWiD.duration),
+                            text = wiDViewModel.getDurationString(clickedWiDCopy.duration),
                             style = Typography.bodyMedium,
                         )
                     }
+
+                    if (startModified || finishModified) {
+                        VerticalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "변경 전",
+                                style = Typography.bodyMedium,
+                            )
+
+                            Text(
+                                text = wiDViewModel.getDurationString(clickedWiD.duration),
+                                style = Typography.bodyMedium,
+                            )
+                        }
+                    }
+
+                    Icon(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .alpha(0f),
+                        painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
+                        contentDescription = null,
+                    )
+                }
+
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(
+                        space = 4.dp,
+                        alignment = Alignment.CenterVertically
+                    )
+                ) {
+                    Text(
+                        text = "도구",
+                        style = Typography.bodyMedium,
+                    )
+
+                    Text(
+                        text = clickedWiDCopy.createdBy.kr,
+                        style = Typography.bodyMedium,
+                    )
                 }
 
                 HorizontalDivider(
@@ -468,120 +634,32 @@ fun WiDView(
                         .padding(horizontal = 16.dp)
                 )
 
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(
+                        space = 4.dp,
+                        alignment = Alignment.CenterVertically
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "도구",
-                            style = Typography.titleMedium,
-                        )
+                    Text(
+                        text = "경험치",
+                        style = Typography.bodyMedium,
+                    )
 
-                        Text(
-                            text = updatedWiD.createdBy.kr,
-                            style = Typography.bodyMedium,
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "변경 사항",
-                            style = Typography.titleMedium,
-                        )
-
-                        Text(
-                            text = "WiD -> UpdatedWiD 변경 사항 표시(ui 짜기) or 수정 사항이 없습니다.",
-                            style = Typography.bodyMedium,
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "경험치",
-                            style = Typography.titleMedium,
-                        )
-
-                        Text(
-                            text = "${wiD.duration.seconds}",
-                            style = Typography.bodyMedium,
-                        )
-                    }
-                }
-
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
-                FilledIconButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    onClick = {
-                        wiDViewModel.updateWiD(
-                            onWiDUpdated = { updateWiDSuccess: Boolean ->
-                                if (updateWiDSuccess) {
-                                    onBackButtonPressed()
-                                }
-                            }
-                        )
-                    },
-                    enabled = !startOverlap && !finishOverlap && durationExist,
-                    shape = RectangleShape
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            space = 8.dp,
-                            alignment = Alignment.CenterHorizontally
-                        ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_done_24),
-                            contentDescription = "수정 완료",
-                        )
-
-                        Text(
-                            text = "수정 완료",
-                            style = Typography.bodyMedium
-                        )
-                    }
+                    Text(
+                        text = "${clickedWiD.exp}",
+                        style = Typography.bodyMedium,
+                    )
                 }
             }
 
             if (showTitleMenu) {
                 AlertDialog(
                     modifier = Modifier
+                        .height(height = screenHeight / 2)
                         .background(
                             color = MaterialTheme.colorScheme.surfaceContainerHigh,
                             shape = MaterialTheme.shapes.extraLarge
@@ -590,111 +668,14 @@ fun WiDView(
                         wiDViewModel.setShowTitleMenu(show = false)
                     },
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .padding(16.dp),
-                            text = "제목 선택",
-                            style = Typography.titleLarge
-                        )
-
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(screenHeight / 2)
-                        ) {
-                            // Title enum을 사용하여 목록 생성
-                            items(Title.values().drop(1).size) { index -> // drop(1) 사용하여 첫 번째 요소 제외
-                                val itemTitle = Title.values().drop(1)[index] // Title enum에서 첫 번째 값 제외
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            // WiD 업데이트
-                                            val updatedWiD = WiD(
-                                                id = updatedWiD.id,
-                                                date = updatedWiD.date,
-                                                title = itemTitle,
-                                                start = updatedWiD.start,
-                                                finish = updatedWiD.finish,
-                                                duration = Duration.between(
-                                                    updatedWiD.start,
-                                                    updatedWiD.finish
-                                                ),
-                                                createdBy = updatedWiD.createdBy
-                                            )
-
-                                            wiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-                                            wiDViewModel.setShowTitleMenu(show = false)
-                                        },
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .width(8.dp)
-                                    )
-
-                                    Image(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(MaterialTheme.shapes.medium),
-                                        painter = painterResource(id = itemTitle.smallImage),
-                                        contentDescription = "앱 아이콘"
-                                    )
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .width(8.dp)
-                                    )
-
-                                    Column(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    ) {
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(top = 8.dp, bottom = 4.dp),
-                                            text = itemTitle.kr,
-                                            style = Typography.bodyMedium
-                                        )
-
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(top = 4.dp, bottom = 8.dp),
-                                            text = itemTitle.description,
-                                            style = Typography.labelMedium,
-                                            overflow = TextOverflow.Ellipsis,
-                                            maxLines = 1
-                                        )
-                                    }
-
-                                    RadioButton(
-                                        selected = updatedWiD.title == itemTitle,
-                                        onClick = {
-                                            // WiD 업데이트
-                                            val updatedWiD = WiD(
-                                                id = updatedWiD.id,
-                                                date = updatedWiD.date,
-                                                title = itemTitle,
-                                                start = updatedWiD.start,
-                                                finish = updatedWiD.finish,
-                                                duration = Duration.between(updatedWiD.start, updatedWiD.finish),
-                                                createdBy = updatedWiD.createdBy
-                                            )
-
-                                            wiDViewModel.setUpdatedWiD(updatedWiD = updatedWiD)
-                                            wiDViewModel.setShowTitleMenu(show = false)
-                                        }
-                                    )
-                                }
-                            }
+                    TitleSelectorView(
+                        currentTitle = clickedWiDCopy.title,
+                        onTitleSelected = { title: Title ->
+                            val newClickedWiDCopy = clickedWiDCopy.copy(title = title)
+                            wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
+                            wiDViewModel.setShowTitleMenu(show = false)
                         }
-                    }
+                    )
                 }
             }
 
@@ -705,26 +686,28 @@ fun WiDView(
                             color = MaterialTheme.colorScheme.surface,
                             shape = MaterialTheme.shapes.extraLarge
                         ),
-                    onDismissRequest = {
+                    onDismissRequest = { // 취소와 동일
                         wiDViewModel.setShowStartPicker(show = false)
 
-                        coroutineScope.launch {
-                            startHourPagerState.scrollToPage(page = updatedWiD.start.hour)
-                            startMinutePagerState.scrollToPage(page = updatedWiD.start.minute)
-                            startSecondPagerState.scrollToPage(page = updatedWiD.start.second)
+                        coroutineScope.launch { // 초기 상태가 아니라 해당 변경 이전으로 돌림
+                            startHourPagerState.scrollToPage(page = clickedWiDCopy.start.hour)
+                            startMinutePagerState.scrollToPage(page = clickedWiDCopy.start.minute)
+                            startSecondPagerState.scrollToPage(page = clickedWiDCopy.start.second)
                         }
                     },
                     content = {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
                                 modifier = Modifier
-                                    .padding(16.dp),
+                                    .height(56.dp),
                                 text = "시작 시간 선택",
-                                style = Typography.titleLarge
+                                style = Typography.titleLarge,
+                                textAlign = TextAlign.Center
                             )
 
                             TimeSelectorView(
@@ -737,23 +720,44 @@ fun WiDView(
                                 coroutineScope = coroutineScope
                             )
 
+                            val isMinStartEnabled = !(startHourPagerState.currentPage == minStart.hour &&
+                                    startMinutePagerState.currentPage == minStart.minute &&
+                                    startSecondPagerState.currentPage == minStart.second)
+
                             Row(
                                 modifier = Modifier
-                                    .padding(16.dp) // 바깥 패딩
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp) // 바깥 패딩
                                     .clip(shape = MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        /** 최소 시간 구해야함. */
-                                        coroutineScope.launch {
-//                                            launch { startHourPagerState.animateScrollToPage(page = newWiD.start.hour) }
-//                                            launch { startMinutePagerState.animateScrollToPage(page = newWiD.start.minute) }
-//                                            launch { startSecondPagerState.animateScrollToPage(page = newWiD.start.second) }
+                                    .clickable(
+                                        enabled = isMinStartEnabled,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                launch {
+                                                    startHourPagerState.animateScrollToPage(
+                                                        page = minStart.hour
+                                                    )
+                                                }
+                                                launch {
+                                                    startMinutePagerState.animateScrollToPage(
+                                                        page = minStart.minute
+                                                    )
+                                                }
+                                                launch {
+                                                    startSecondPagerState.animateScrollToPage(
+                                                        page = minStart.second
+                                                    )
+                                                }
+                                            }
                                         }
-                                    }
+                                    )
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
                                         shape = MaterialTheme.shapes.medium
                                     )
-                                    .padding(16.dp), // 안쪽 패딩
+                                    .padding(horizontal = 8.dp), // 안쪽 패딩
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
@@ -764,41 +768,52 @@ fun WiDView(
                                     Text(
                                         text = "선택 가능한 최소 시간",
                                         style = Typography.bodyMedium,
+                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
                                     )
 
-                                    /** 최소 시간 구해야함. */
-//                                    Text(
-//                                        text = getTimeString(
-//                                            time = newWiD.start,
-//                                            patten = "a hh:mm:ss"
-//                                        ),
-//                                        style = Typography.bodyMedium,
-//                                    )
+                                    Text(
+                                        text = wiDViewModel.getTimeString(time = minStart),
+                                        style = Typography.bodyMedium,
+                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
+                                    )
                                 }
 
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
                                     contentDescription = "최소 시간 사용",
+                                    tint = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
                                 )
                             }
 
+                            val isMaxStartEnabled = !(startHourPagerState.currentPage == maxStart.hour &&
+                                    startMinutePagerState.currentPage == maxStart.minute &&
+                                    startSecondPagerState.currentPage == maxStart.second)
+
                             Row(
                                 modifier = Modifier
-                                    .padding(16.dp) // 바깥 패딩
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp) // 바깥 패딩
                                     .clip(shape = MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        /** 최대 시간 구해야함. */
-                                        coroutineScope.launch {
-//                                            launch { startHourPagerState.animateScrollToPage(page = updatedNewWiD.finish.hour) }
-//                                            launch { startMinutePagerState.animateScrollToPage(page = updatedNewWiD.finish.minute) }
-//                                            launch { startSecondPagerState.animateScrollToPage(page = updatedNewWiD.finish.second) }
+                                    .clickable(
+                                        enabled = isMaxStartEnabled,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                launch { startHourPagerState.animateScrollToPage(page = maxStart.hour) }
+                                                launch { startMinutePagerState.animateScrollToPage(page = maxStart.minute) }
+                                                launch { startSecondPagerState.animateScrollToPage(page = maxStart.second) }
+                                            }
                                         }
-                                    }
+                                    )
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
                                         shape = MaterialTheme.shapes.medium
                                     )
-                                    .padding(16.dp), // 안쪽 패딩
+                                    .padding(horizontal = 8.dp), // 안쪽 패딩
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
@@ -809,21 +824,23 @@ fun WiDView(
                                     Text(
                                         text = "선택 가능한 최대 시간",
                                         style = Typography.bodyMedium,
+                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
                                     )
 
-                                    /** 최대 시간 구해야함. */
-//                                    Text(
-//                                        text = getTimeString(
-//                                            time = updatedWiD.finish,
-//                                            patten = "a hh:mm:ss"
-//                                        ),
-//                                        style = Typography.bodyMedium,
-//                                    )
+                                    Text(
+                                        text = wiDViewModel.getTimeString(time = maxStart),
+                                        style = Typography.bodyMedium,
+                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
+                                    )
                                 }
 
                                 Icon(
-                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24), /** 아이콘 변경 */
+                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
                                     contentDescription = "최대 시간 사용",
+                                    tint = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
                                 )
                             }
 
@@ -837,14 +854,14 @@ fun WiDView(
                                         .weight(1f)
                                 )
 
-                                FilledTonalButton(
+                                TextButton(
                                     onClick = {
                                         wiDViewModel.setShowStartPicker(show = false)
 
                                         coroutineScope.launch {
-                                            startHourPagerState.scrollToPage(page = updatedWiD.start.hour)
-                                            startMinutePagerState.scrollToPage(page = updatedWiD.start.minute)
-                                            startSecondPagerState.scrollToPage(page = updatedWiD.start.second)
+                                            startHourPagerState.scrollToPage(page = clickedWiDCopy.start.hour)
+                                            startMinutePagerState.scrollToPage(page = clickedWiDCopy.start.minute)
+                                            startSecondPagerState.scrollToPage(page = clickedWiDCopy.start.second)
                                         }
                                     }
                                 ) {
@@ -856,26 +873,17 @@ fun WiDView(
 
                                 FilledTonalButton(
                                     onClick = {
-                                        val newStart = LocalTime.of(
-                                            startHourPagerState.currentPage,
-                                            startMinutePagerState.currentPage,
-                                            startSecondPagerState.currentPage
-                                        )
+                                        val newStart = LocalTime.of(startHourPagerState.currentPage, startMinutePagerState.currentPage, startSecondPagerState.currentPage)
 
-                                        val newUpdatedWiD = WiD(
-                                            id = updatedWiD.id,
-                                            date = updatedWiD.date,
-                                            title = updatedWiD.title,
+                                        val newClickedWiDCopy = clickedWiDCopy.copy(
                                             start = newStart,
-                                            finish = updatedWiD.finish,
-                                            duration = Duration.between(newStart, updatedWiD.finish),
-                                            createdBy = updatedWiD.createdBy
+                                            duration = Duration.between(newStart, clickedWiDCopy.finish)
                                         )
 
-                                        wiDViewModel.setUpdatedWiD(updatedWiD = newUpdatedWiD)
-                                        wiDViewModel.setStartModified(modified = true)
+                                        wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
                                         wiDViewModel.setShowStartPicker(show = false)
-                                    }
+                                    },
+                                    enabled = !isStartOutOfRange
                                 ) {
                                     Text(
                                         text = "확인",
@@ -883,11 +891,6 @@ fun WiDView(
                                     )
                                 }
                             }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .height(16.dp)
-                            )
                         }
                     }
                 )
@@ -904,22 +907,24 @@ fun WiDView(
                         wiDViewModel.setShowFinishPicker(show = false)
 
                         coroutineScope.launch {
-                            finishHourPagerState.scrollToPage(page = updatedWiD.finish.hour)
-                            finishMinutePagerState.scrollToPage(page = updatedWiD.finish.minute)
-                            finishSecondPagerState.scrollToPage(page = updatedWiD.finish.second)
+                            finishHourPagerState.scrollToPage(page = clickedWiDCopy.finish.hour)
+                            finishMinutePagerState.scrollToPage(page = clickedWiDCopy.finish.minute)
+                            finishSecondPagerState.scrollToPage(page = clickedWiDCopy.finish.second)
                         }
                     },
                     content = {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
                                 modifier = Modifier
-                                    .padding(16.dp),
+                                    .height(56.dp),
                                 text = "종료 시간 선택",
-                                style = Typography.titleLarge
+                                style = Typography.titleLarge,
+                                textAlign = TextAlign.Center
                             )
 
                             TimeSelectorView(
@@ -929,26 +934,38 @@ fun WiDView(
                                 hourPagerState = finishHourPagerState,
                                 minutePagerState = finishMinutePagerState,
                                 secondPagerState = finishSecondPagerState,
-                                coroutineScope = coroutineScope
+                                coroutineScope = coroutineScope,
+                                onTimeChanged = { // 종료 시간 변경 시 갱신을 멈춤
+                                    if (isLastNewWiD) wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
+                                }
                             )
+
+                            val isMinFinishEnabled = !(finishHourPagerState.currentPage == minFinish.hour &&
+                                    finishMinutePagerState.currentPage == minFinish.minute &&
+                                    finishSecondPagerState.currentPage == minFinish.second)
 
                             Row(
                                 modifier = Modifier
-                                    .padding(16.dp) // 바깥 패딩
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp) // 바깥 패딩
                                     .clip(shape = MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        /** 최소 시간 특정해야함. */
-                                        coroutineScope.launch {
-//                                            launch { finishHourPagerState.animateScrollToPage(page = updatedNewWiD.start.hour) }
-//                                            launch { finishMinutePagerState.animateScrollToPage(page = updatedNewWiD.start.minute) }
-//                                            launch { finishSecondPagerState.animateScrollToPage(page = updatedNewWiD.start.second) }
+                                    .clickable(
+                                        enabled = isMinFinishEnabled,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                launch { finishHourPagerState.animateScrollToPage(page = minFinish.hour) }
+                                                launch { finishMinutePagerState.animateScrollToPage(page = minFinish.minute) }
+                                                launch { finishSecondPagerState.animateScrollToPage(page = minFinish.second) }
+                                            }
                                         }
-                                    }
+                                    )
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
                                         shape = MaterialTheme.shapes.medium
                                     )
-                                    .padding(16.dp), // 안쪽 패딩
+                                    .padding(horizontal = 8.dp), // 안쪽 패딩
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
@@ -959,41 +976,68 @@ fun WiDView(
                                     Text(
                                         text = "선택 가능한 최소 시간",
                                         style = Typography.bodyMedium,
+                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
                                     )
 
-                                    /** 최소 시간 특정해야함. */
-//                                    Text(
-//                                        text = getTimeString(
-//                                            time = updatedNewWiD.start,
-//                                            patten = "a hh:mm:ss"
-//                                        ),
-//                                        style = Typography.bodyMedium,
-//                                    )
+                                    Text(
+                                        text = wiDViewModel.getTimeString(time = minFinish),
+                                        style = Typography.bodyMedium,
+                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
+                                    )
                                 }
 
                                 Icon(
                                     painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
                                     contentDescription = "최소 시간 사용",
+                                    tint = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
                                 )
+                            }
+
+                            val isMaxFinishEnabled = if (isLastNewWiD) {
+                                !updateClickedWiDCopyToNow
+                            } else {
+                                !(finishHourPagerState.currentPage == maxFinish.hour &&
+                                        finishMinutePagerState.currentPage == maxFinish.minute &&
+                                        finishSecondPagerState.currentPage == maxFinish.second)
                             }
 
                             Row(
                                 modifier = Modifier
-                                    .padding(16.dp) // 바깥 패딩
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp) // 바깥 패딩
                                     .clip(shape = MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        /** 최대 시간 특정해야함. */
-                                        coroutineScope.launch {
-//                                            launch { finishHourPagerState.animateScrollToPage(page = newWiD.finish.hour) }
-//                                            launch { finishMinutePagerState.animateScrollToPage(page = newWiD.finish.minute) }
-//                                            launch { finishSecondPagerState.animateScrollToPage(page = newWiD.finish.second) }
+                                    .clickable(
+                                        enabled = isMaxFinishEnabled,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                launch {
+                                                    finishHourPagerState.animateScrollToPage(
+                                                        page = maxFinish.hour
+                                                    )
+                                                }
+                                                launch {
+                                                    finishMinutePagerState.animateScrollToPage(
+                                                        page = maxFinish.minute
+                                                    )
+                                                }
+                                                launch {
+                                                    finishSecondPagerState.animateScrollToPage(
+                                                        page = maxFinish.second
+                                                    )
+                                                }
+                                            }
                                         }
-                                    }
+                                    )
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
                                         shape = MaterialTheme.shapes.medium
                                     )
-                                    .padding(16.dp), // 안쪽 패딩
+                                    .padding(horizontal = 8.dp), // 안쪽 패딩
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
@@ -1004,21 +1048,43 @@ fun WiDView(
                                     Text(
                                         text = "선택 가능한 최대 시간",
                                         style = Typography.bodyMedium,
+                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
                                     )
 
-                                    /** 최소 시간 특정해야함. */
-//                                    Text(
-//                                        text = getTimeString(
-//                                            time = newWiD.finish,
-//                                            patten = "a hh:mm:ss"
-//                                        ),
-//                                        style = Typography.bodyMedium,
-//                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = wiDViewModel.getTimeString(time = maxFinish),
+                                            style = Typography.bodyMedium,
+                                            color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
+                                        )
+
+                                        if (updateClickedWiDCopyToNow) {
+                                            Text(
+                                                modifier = Modifier
+                                                    .background(
+                                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.error
+                                                        else MaterialTheme.colorScheme.errorContainer,
+                                                        shape = MaterialTheme.shapes.medium
+                                                    )
+                                                    .padding(horizontal = 4.dp),
+                                                text = "Now",
+                                                style = Typography.bodyMedium,
+                                                color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onError
+                                                else MaterialTheme.colorScheme.onErrorContainer,
+                                            )
+                                        }
+                                    }
                                 }
 
                                 Icon(
-                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24), /** 아이콘 변경 */
+                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
                                     contentDescription = "최대 시간 사용",
+                                    tint = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
                                 )
                             }
 
@@ -1032,14 +1098,14 @@ fun WiDView(
                                         .weight(1f)
                                 )
 
-                                FilledTonalButton(
+                                TextButton(
                                     onClick = {
                                         wiDViewModel.setShowFinishPicker(show = false)
 
                                         coroutineScope.launch {
-                                            finishHourPagerState.scrollToPage(page = updatedWiD.finish.hour)
-                                            finishMinutePagerState.scrollToPage(page = updatedWiD.finish.minute)
-                                            finishSecondPagerState.scrollToPage(page = updatedWiD.finish.second)
+                                            finishHourPagerState.scrollToPage(page = clickedWiDCopy.finish.hour)
+                                            finishMinutePagerState.scrollToPage(page = clickedWiDCopy.finish.minute)
+                                            finishSecondPagerState.scrollToPage(page = clickedWiDCopy.finish.second)
                                         }
                                     }
                                 ) {
@@ -1051,26 +1117,18 @@ fun WiDView(
 
                                 FilledTonalButton(
                                     onClick = {
-                                        val newFinish = LocalTime.of(
-                                            finishHourPagerState.currentPage,
-                                            finishMinutePagerState.currentPage,
-                                            finishSecondPagerState.currentPage
-                                        )
+                                        val newFinish = LocalTime.of(finishHourPagerState.currentPage, finishMinutePagerState.currentPage, finishSecondPagerState.currentPage)
 
-                                        val newUpdatedWiD = WiD(
-                                            id = updatedWiD.id,
-                                            date = updatedWiD.date,
-                                            title = updatedWiD.title,
-                                            start = updatedWiD.start,
+                                        val newClickedWiDCopy = clickedWiDCopy.copy(
                                             finish = newFinish,
-                                            duration = Duration.between(updatedWiD.start, newFinish),
-                                            createdBy = updatedWiD.createdBy
+                                            duration = Duration.between(clickedWiDCopy.start, newFinish)
                                         )
 
-                                        wiDViewModel.setUpdatedWiD(updatedWiD = newUpdatedWiD)
-                                        wiDViewModel.setFinishModified(modified = true)
+                                        wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
+                                        wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
                                         wiDViewModel.setShowFinishPicker(show = false)
-                                    }
+                                    },
+                                    enabled = !isFinishOutOfRange
                                 ) {
                                     Text(
                                         text = "확인",
@@ -1078,11 +1136,6 @@ fun WiDView(
                                     )
                                 }
                             }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .height(16.dp)
-                            )
                         }
                     }
                 )
@@ -1096,11 +1149,13 @@ fun WiDView(
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                wiDViewModel.deleteWiD() { deleteWiDSuccess: Boolean ->
-                                    if (deleteWiDSuccess) {
-                                        onBackButtonPressed()
+                                wiDViewModel.deleteWiD(
+                                    onWiDDeleted = { deleteWiDSuccess: Boolean ->
+                                        if (deleteWiDSuccess) {
+                                            onBackButtonPressed()
+                                        }
                                     }
-                                }
+                                )
 
                                 wiDViewModel.setShowDeleteWiDDialog(false)
                             }
@@ -1132,7 +1187,7 @@ fun WiDView(
                         Text(
                             modifier = Modifier
                                 .padding(16.dp),
-                            text = "WiD를 삭제하시겠습니까?",
+                            text = "기록을 삭제하시겠습니까?",
                             style = Typography.bodyMedium
                         )
                     }
@@ -1141,3 +1196,268 @@ fun WiDView(
         }
     )
 }
+
+//@Composable
+//@Preview(showBackground = true)
+//fun WiDPreview() {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//    ) {
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp)
+//                .height(intrinsicSize = IntrinsicSize.Min)
+//                .padding(horizontal = 16.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "제목",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "공부",
+//                    style = Typography.bodyMedium,
+//                )
+//            }
+//
+//            VerticalDivider(
+//                modifier = Modifier
+//                    .padding(vertical = 8.dp)
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "수정 전",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "운동",
+//                    style = Typography.bodyMedium,
+//                )
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp),
+//                imageVector = Icons.Default.KeyboardArrowDown,
+//                contentDescription = "제목 수정",
+//            )
+//        }
+//
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp)
+//                .height(intrinsicSize = IntrinsicSize.Min)
+//                .padding(horizontal = 16.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "시작",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "00:00:00",
+//                    style = Typography.bodyMedium,
+//                )
+//            }
+//
+//            VerticalDivider(
+//                modifier = Modifier
+//                    .padding(vertical = 8.dp)
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "수정 전",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "00:00:00",
+//                    style = Typography.bodyMedium
+//                )
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp),
+//                imageVector = Icons.Default.ArrowDropDown,
+//                contentDescription = "제목 수정",
+//            )
+//        }
+//
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp)
+//                .height(intrinsicSize = IntrinsicSize.Min)
+//                .padding(horizontal = 16.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "종료",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "00:00:00",
+//                    style = Typography.bodyMedium,
+//                )
+//            }
+//
+//            VerticalDivider(
+//                modifier = Modifier
+//                    .padding(vertical = 8.dp)
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "수정 전",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//
+//                Row(
+//                    horizontalArrangement = Arrangement
+//                        .spacedBy(4.dp)
+//                ) {
+//                    Text(
+//                        text = "00:00:00",
+//                        style = Typography.bodyMedium
+//                    )
+//
+//                    Text(
+//                        modifier = Modifier
+//                            .background(
+//                                color = MaterialTheme.colorScheme.error,
+//                                shape = RoundedCornerShape(16)
+//                            )
+//                            .padding(horizontal = 4.dp),
+//                        text = "Now",
+//                        style = Typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.onError,
+//                        textAlign = TextAlign.Right
+//                    )
+//                }
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp),
+//                imageVector = Icons.Default.ArrowDropDown,
+//                contentDescription = "제목 수정",
+//            )
+//        }
+//
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(56.dp)
+//                .height(intrinsicSize = IntrinsicSize.Min)
+//                .padding(horizontal = 16.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "시작",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "3시간 30분 30초",
+//                    style = Typography.bodyMedium,
+//                )
+//            }
+//
+//            VerticalDivider(
+//                modifier = Modifier
+//                    .padding(vertical = 8.dp)
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Text(
+//                    text = "수정 전",
+//                    style = Typography.bodyMedium,
+//                )
+//
+//                Text(
+//                    text = "2시간 20분 20초",
+//                    style = Typography.bodyMedium
+//                )
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .alpha(0f),
+//                imageVector = Icons.Default.ArrowDropDown,
+//                contentDescription = null,
+//            )
+//        }
+//
+//        HorizontalDivider(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//        )
+//    }
+//}

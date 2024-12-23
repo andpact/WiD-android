@@ -1,7 +1,6 @@
 package andpact.project.wid.tmp
 
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.getWiDTitleTotalDurationMap
 import android.graphics.drawable.GradientDrawable
 import android.view.ViewGroup
 import android.widget.LinearLayout

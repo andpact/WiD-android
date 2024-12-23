@@ -2,18 +2,22 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.levelRequiredExpMap
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Year
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.timer
@@ -30,86 +34,84 @@ class WiDViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-    private val today = wiDDataSource.today.value
-    private var now = LocalTime.now()
+    private val NEW_WID = wiDDataSource.NEW_WID
+    private val LAST_NEW_WID = wiDDataSource.LAST_NEW_WID
+
+    private val today = wiDDataSource.today
+    val now = wiDDataSource.now
     private val user: State<User?> = userDataSource.user
 
-    private val _expandMenu = mutableStateOf(false)
-    val expandMenu: State<Boolean> = _expandMenu
-
-    /** 기존 WiD와 수정된 WiD의 차이를 파악하기 위해 필요함, 화면에 차이를 표시할 수도 있겠는데? */
     // WiD
-    val wiD: State<WiD> = wiDDataSource.wiD // 수정 전
+    val clickedWiD: State<WiD> = wiDDataSource.clickedWiD // 수정 전
+    val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy // 수정 후
+    val updateClickedWiDToNow: State<Boolean> = wiDDataSource.updateClickedWiDToNow
+    val updateClickedWiDCopyToNow: State<Boolean> = wiDDataSource.updateClickedWiDCopyToNow
+    val isNewWiD: State<Boolean> = derivedStateOf { clickedWiD.value.id == NEW_WID || clickedWiD.value.id == LAST_NEW_WID }
+    val isLastNewWiD: State<Boolean> = derivedStateOf { clickedWiD.value.id == LAST_NEW_WID }
     private val _showDeleteWiDDialog = mutableStateOf(false)
     val showDeleteWiDDialog: State<Boolean> = _showDeleteWiDDialog
-
-    // Updated WiD
-    val updatedWiD: State<WiD> = wiDDataSource.updatedWiD // 수정 후
-    private var updatedWiDTimer: Timer? = null
 
     // 제목
     private val _showTitleMenu = mutableStateOf(false)
     val showTitleMenu: State<Boolean> = _showTitleMenu
+    val titleModified: State<Boolean> = derivedStateOf { clickedWiD.value.title != clickedWiDCopy.value.title }
+    val titleExist: State<Boolean> = derivedStateOf { clickedWiD.value.title != Title.UNTITLED }
 
     // 시작
     private val _showStartPicker = mutableStateOf(false)
     val showStartPicker: State<Boolean> = _showStartPicker
-    private val _startOverlap = mutableStateOf(false)
-    val startOverlap: State<Boolean> = _startOverlap
-    private val _startModified = mutableStateOf(false)
-    val startModified: State<Boolean> = _startModified
+    val minStart: State<LocalTime> = derivedStateOf { getMinStart() }
+    val maxStart: State<LocalTime> = derivedStateOf { getMaxStart() }
+    val startModified: State<Boolean> = derivedStateOf{ clickedWiD.value.start != clickedWiDCopy.value.start }
+    val isStartOutOfRange: State<Boolean> = derivedStateOf { setIsStartOutOfRange() }
 
     // 종료
     private val _showFinishPicker = mutableStateOf(false)
     val showFinishPicker: State<Boolean> = _showFinishPicker
-    private val _finishOverlap = mutableStateOf(false)
-    val finishOverlap: State<Boolean> = _finishOverlap
-    private val _finishModified = mutableStateOf(false)
-    val finishModified: State<Boolean> = _finishModified
+    val minFinish: State<LocalTime> = derivedStateOf { getMinFinish() }
+    val maxFinish: State<LocalTime> = derivedStateOf { getMaxFinish() }
+    val finishModified: State<Boolean> = derivedStateOf{ clickedWiD.value.finish != clickedWiDCopy.value.finish }
+    val isFinishOutOfRange: State<Boolean> = derivedStateOf { setIsFinishOutOfRange() }
 
-    // 소요
-    private val _durationExist = mutableStateOf(true)
-    val durationExist: State<Boolean> = _durationExist
+    // 도구
+    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
     // WiD List
-    private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
+    private val fullWiDList: State<List<WiD>> = derivedStateOf { updateFullWiDList() }
 
-    fun setExpandMenu(expand: Boolean) {
-        Log.d(TAG, "setExpandMenu executed")
+    private fun updateFullWiDList(): List<WiD> {
+        Log.d(TAG, "fullWiDList updated")
 
-        _expandMenu.value = expand
+        val date = clickedWiD.value.date // date가 오늘 날짜면 기록 리스트가 계속 갱신되기 때문에 반영되도록 해줌.
+        val wiDList = wiDDataSource.yearDateWiDListMap.value
+            .getOrDefault(Year.of(date.year), emptyMap())
+            .getOrDefault(date, emptyList())
+        val now = if (currentToolState.value == CurrentToolState.STARTED) { null } else { now.value }
+
+        return wiDDataSource.getFullWiDListFromWiDList(
+            date = date,
+            wiDList = wiDList,
+            today = today.value,
+            currentTime = now
+        )
     }
 
-    fun setUpdatedWiD(updatedWiD: WiD) {
-        Log.d(TAG, "setUpdatedWiD executed")
+    fun setClickedWiDCopy(newClickedWiDCopy: WiD) { // 제목, 시작, 종료 변경시
+        Log.d(TAG, "setClickedWiDCopy executed")
 
-        wiDDataSource.setUpdatedWiD(updatedWiD = updatedWiD)
-
-        checkNewStartOverlap()
-        checkNewFinishOverlap()
-        checkNewWiDOverlap()
-        checkDurationExist()
+        wiDDataSource.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
     }
 
-    fun startUpdatedWiDTimer() {
-        Log.d(TAG, "startUpdatedWiDTimer executed")
+    fun setUpdateClickedWiDToNow(update: Boolean) {
+        Log.d(TAG, "setUpdateClickedWiDToNow executed")
 
-        updatedWiDTimer = timer(period = 1_000) {
-            now = LocalTime.now().withNano(0)
-
-            val updatedWiD = updatedWiD.value.copy(
-                finish = now,
-                duration = Duration.between(updatedWiD.value.start, now)
-            )
-
-            setUpdatedWiD(updatedWiD = updatedWiD)
-        }
+        wiDDataSource.setUpdateClickedWiDToNow(update = update)
     }
 
-    fun stopUpdatedWiDTimer() {
-        Log.d(TAG, "stopUpdatedWiDTimer executed")
+    fun setUpdateClickedWiDCopyToNow(update: Boolean) {
+        Log.d(TAG, "setUpdateClickedWiDCopyToNow executed")
 
-        updatedWiDTimer?.cancel()
+        wiDDataSource.setUpdateClickedWiDCopyToNow(update = update)
     }
 
     fun setShowTitleMenu(show: Boolean) {
@@ -118,22 +120,102 @@ class WiDViewModel @Inject constructor(
         _showTitleMenu.value = show
     }
 
+    private fun setIsStartOutOfRange(): Boolean {
+        Log.d(TAG, "setIsStartOutOfRange executed")
+
+        val startTime = clickedWiDCopy.value.start
+        return startTime < minStart.value || maxStart.value < startTime
+    }
+
+    private fun setIsFinishOutOfRange(): Boolean {
+        Log.d(TAG, "setIsFinishOutOfRange executed")
+
+        val finishTime = clickedWiDCopy.value.finish
+        return finishTime < minFinish.value || maxFinish.value < finishTime
+    }
+
+    private fun getPreviousWiD(): WiD? {
+        Log.d(TAG, "getPreviousWiD executed")
+
+        val currentWiD = clickedWiD.value
+        val sortedWiDList = fullWiDList.value.filterNot { it.id == LAST_NEW_WID }.sortedBy { it.start }
+
+        val currentIndex = sortedWiDList.indexOfFirst { it == currentWiD }
+        return if (currentIndex > 0) sortedWiDList[currentIndex - 1] else null
+    }
+
+    private fun getNextWiD(): WiD? {
+        Log.d(TAG, "getNextWiD executed")
+
+        val currentWiD = clickedWiD.value
+        val sortedWiDList = fullWiDList.value.filterNot { it.id == LAST_NEW_WID }.sortedBy { it.start }
+
+        val currentIndex = sortedWiDList.indexOfFirst { it == currentWiD }
+        return if (currentIndex >= 0 && currentIndex < sortedWiDList.size - 1) sortedWiDList[currentIndex + 1] else null
+    }
+
+    private fun getMinStart(): LocalTime {
+        Log.d(TAG, "getMinStart executed")
+
+//        val currentWiD = clickedWiD.value
+//        val previousWiD = getPreviousWiD()
+
+//        return when (currentWiD.id) {
+//            LAST_NEW_WID -> previousWiD?.finish ?: LocalTime.MIN
+//            else -> previousWiD?.finish ?: LocalTime.MIN
+//        }
+
+        val previousWiD = getPreviousWiD()
+        return previousWiD?.finish ?: LocalTime.MIN
+    }
+
+    private fun getMaxStart(): LocalTime {
+        Log.d(TAG, "getMaxStart executed")
+
+//        val currentWiD = clickedWiD.value
+//        val nextWiD = getNextWiD()
+
+//        return when (currentWiD.id) {
+//            LAST_NEW_WID -> now.value.minusSeconds(1)
+//            else -> nextWiD?.start?.minusSeconds(1) ?: LocalTime.MAX.withNano(0).minusSeconds(1) /** 꼭 1초가 아니고 사용자 설정 값이 들어가도록 */
+//        }
+
+        return clickedWiDCopy.value.finish.minusSeconds(1) // 마이너스 소요 시간이 안나오도록
+    }
+
+    private fun getMinFinish(): LocalTime {
+        Log.d(TAG, "getMinFinish executed")
+
+//        val currentWiD = clickedWiD.value
+//        val previousWiD = getPreviousWiD()
+//
+//        return when (currentWiD.id) {
+//            LAST_NEW_WID -> (previousWiD?.finish ?: LocalTime.MIN).plusSeconds(1)
+//            else -> (previousWiD?.finish ?: LocalTime.MIN).plusSeconds(1)
+//        }
+
+//        val previousWiD = getPreviousWiD()
+//        return (previousWiD?.finish ?: LocalTime.MIN).plusSeconds(1) /** 꼭 1초가 아니고 사용자 설정 값이 들어가도록 */
+
+        return clickedWiDCopy.value.start.plusSeconds(1) // 마이너스 소요 시간이 안나오도록
+    }
+
+    private fun getMaxFinish(): LocalTime {
+        Log.d(TAG, "getMaxFinish executed")
+
+        val currentWiD = clickedWiD.value
+        val nextWiD = getNextWiD()
+
+        return when (currentWiD.id) {
+            LAST_NEW_WID -> now.value
+            else -> nextWiD?.start ?: LocalTime.MAX.withNano(0)
+        }
+    }
+
     fun setShowStartPicker(show: Boolean) {
         Log.d(TAG, "setShowStartPicker executed")
 
         _showStartPicker.value = show
-    }
-
-    private fun setStartOverlap(overlap: Boolean) {
-        Log.d(TAG, "setStartOverlap executed")
-
-        _startOverlap.value = overlap
-    }
-
-    fun setStartModified(modified: Boolean) {
-        Log.d(TAG, "setStartModified executed")
-
-        _startModified.value = modified
     }
 
     fun setShowFinishPicker(show: Boolean) {
@@ -142,129 +224,35 @@ class WiDViewModel @Inject constructor(
         _showFinishPicker.value = show
     }
 
-    private fun setFinishOverlap(overlap: Boolean) {
-        Log.d(TAG, "setFinishOverlap executed")
-
-        _finishOverlap.value = overlap
-    }
-
-    fun setFinishModified(modified: Boolean) {
-        Log.d(TAG, "setFinishModified executed")
-
-        _finishModified.value = modified
-    }
-
-    private fun setDurationExist(exist: Boolean) {
-        Log.d(TAG, "setDurationExist executed")
-
-        _durationExist.value = exist
-    }
-
     fun setShowDeleteWiDDialog(show: Boolean) {
         Log.d(TAG, "setShowDeleteWiDDialog executed")
 
         _showDeleteWiDDialog.value = show
     }
 
-    private fun checkNewStartOverlap() { // 생성할 WiD의 시작 시간이 겹치는지 확인
-        Log.d(TAG, "checkNewStartOverlap executed")
+    fun createWiD(onWiDCreated: (Boolean) -> Unit) { // 새로운 기록 용
+        Log.d(TAG, "createWiD executed")
 
-        now = LocalTime.now().withNano(0)
-
-        for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value.id == existingWiD.id) {
-                continue
-            }
-
-            if (existingWiD.start < updatedWiD.value.start && updatedWiD.value.start < existingWiD.finish) {
-                setStartOverlap(overlap = true)
-                break
-            } else if (updatedWiD.value.date == today && now < updatedWiD.value.start) {
-                setStartOverlap(overlap = true)
-                break
-            } else {
-                setStartOverlap(overlap = false)
-            }
-        }
-    }
-
-    private fun checkNewFinishOverlap() { // 생성할 WiD의 종료 시간이 겹치는지 확인
-        Log.d(TAG, "checkNewFinishOverlap executed")
-
-        now = LocalTime.now().withNano(0)
-
-        for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value.id == existingWiD.id) {
-                continue
-            }
-
-            if (existingWiD.start < updatedWiD.value.finish && updatedWiD.value.finish < existingWiD.finish) {
-                setFinishOverlap(overlap = true)
-                break
-            } else if (updatedWiD.value.date == today && now < updatedWiD.value.finish) {
-                setFinishOverlap(overlap = true)
-                break
-            } else {
-                setFinishOverlap(overlap = false)
-            }
-        }
-    }
-
-    private fun checkNewWiDOverlap() { // 생성할 WiD가 기존의 WiD를 덮고 있는지 확인
-        Log.d(TAG, "checkNewWiDOverlap executed")
-
-        for (existingWiD in _wiDList.value) {
-            if (updatedWiD.value.id == existingWiD.id) {
-                continue
-            }
-
-            // 등호를 넣어서 부등호를 사용해야 기존의 WiD를 덮고 있는지를 정확히 확인할 수 있다.
-            if (updatedWiD.value.start <= existingWiD.start && existingWiD.finish <= updatedWiD.value.finish) {
-                setStartOverlap(overlap = true)
-                setFinishOverlap(overlap = true)
-                break
-            } else {
-                setStartOverlap(overlap = false)
-                setFinishOverlap(overlap = false)
-            }
-        }
-    }
-
-    private fun checkDurationExist() {
-        Log.d(TAG, "checkDurationExist executed")
-
-        setDurationExist(exist = Duration.ZERO < updatedWiD.value.duration)
-    }
-
-    fun getWiDListByDate(currentDate: LocalDate) {
-        Log.d(TAG, "getWiDListByDate executed")
-
-        wiDDataSource.getWiDListOfDate(
+        wiDDataSource.createWiD(
             email = user.value?.email ?: "",
-            date = currentDate,
-            onWiDListFetchedOfDate = { wiDList: List<WiD> ->
-                _wiDList.value = wiDList
+            onWiDAdded = { success: Boolean ->
+                onWiDCreated(success)
             }
         )
     }
 
-    fun updateWiD(onWiDUpdated: (Boolean) -> Unit) {
+    fun updateWiD(onWiDUpdated: (Boolean) -> Unit) { // 기존 기록 용
         Log.d(TAG, "updateWiD executed")
 
         wiDDataSource.updateWiD(
             email = user.value?.email ?: "",
             onWiDUpdated = { wiDUpdated: Boolean ->
-                if (wiDUpdated) { // 업데이트 성공
-                    onWiDUpdated(true)
-                } else { // 업데이트 실패
-                    onWiDUpdated(false)
-                }
+                onWiDUpdated(wiDUpdated)
             }
         )
     }
 
-    // 삭제할 때는 wiD를 사용해야 함.
-    fun deleteWiD(onWiDDeleted: (Boolean) -> Unit) {
+    fun deleteWiD(onWiDDeleted: (Boolean) -> Unit) { // 삭제할 때는 wiD를 사용해야 함, 기존 기록 용
         Log.d(TAG, "deleteWiD executed")
 
         wiDDataSource.deleteWiD(
@@ -273,7 +261,7 @@ class WiDViewModel @Inject constructor(
                 if (wiDDeleted) { // 삭제 성공
                     // 경험치
                     val currentExp = user.value?.currentExp ?: 0
-                    val exp = wiD.value.duration.seconds.toInt()
+                    val exp = clickedWiD.value.duration.seconds.toInt()
                     val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                     val prevWiDTotalExp = wiDTotalExp - exp
                     val prevCurrentExp = currentExp - exp // 마이너스 나올 수 있음.
@@ -289,5 +277,24 @@ class WiDViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    fun getDurationString(duration: Duration): String {
+        Log.d(TAG, "getDurationString executed")
+
+        return wiDDataSource.getDurationString(duration = duration)
+    }
+
+    @Composable
+    fun getDateString(date: LocalDate): AnnotatedString {
+        Log.d(TAG, "getDateString executed")
+
+        return wiDDataSource.getDateString(date = date)
+    }
+
+    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
+        Log.d(TAG, "getTimeString executed")
+
+        return wiDDataSource.getTimeString(time = time)
     }
 }

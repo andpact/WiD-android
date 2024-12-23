@@ -2,8 +2,8 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.Title
-import andpact.project.wid.util.TitleDurationMap
+import andpact.project.wid.model.Title
+import andpact.project.wid.model.TitleDurationMap
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -22,13 +22,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WiDListView(
-    onEmptyWiDClicked: () -> Unit,
-    onWiDClicked: () -> Unit,
+//    onNewWiDClicked: () -> Unit,
+    onWiDClicked: () -> Unit
 ) {
     val TAG = "WiDListView"
 
     // 화면
-    val pageList = listOf("일별 조회", "주별 조회", "제목별 조회")
+//    val pageList = listOf("일별 조회", "주별 조회", "월별 조회")
+    val pageList = listOf("일별 조회", "주별 조회")
     val pagerState = rememberPagerState(pageCount = { pageList.size })
     val coroutineScope = rememberCoroutineScope()
 
@@ -161,55 +162,55 @@ fun WiDListView(
                     }
                 }
             )
-        }
-    ) { contentPadding: PaddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-        ) {
-            ScrollableTabRow(
+        },
+        content = { contentPadding: PaddingValues ->
+            Column(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                    .clip(RoundedCornerShape(16.dp, 16.dp, 0.dp, 0.dp)),
-                containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
-                selectedTabIndex = pagerState.currentPage,
-                divider = {},
-                edgePadding = 0.dp
+                    .fillMaxSize()
+                    .padding(contentPadding)
             ) {
-                pageList.forEachIndexed { index: Int, _: String ->
-                    Tab(
-                        text = {
-                            Text(
-                                text = pageList[index],
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        },
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.scrollToPage(index)
+                ScrollableTabRow(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .clip(RoundedCornerShape(16, 16)),
+                    containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
+                    selectedTabIndex = pagerState.currentPage,
+                    divider = {},
+                    edgePadding = 0.dp
+                ) {
+                    pageList.forEachIndexed { index: Int, pageName: String ->
+                        Tab(
+                            text = {
+                                Text(
+                                    text = pageName,
+                                    style = Typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            selected = pagerState.currentPage == index,
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.scrollToPage(index)
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
-            }
 
-            HorizontalPager(state = pagerState) { page ->
-                when (page) {
-                    0 -> DailyWiDListView(
-                        onEmptyWiDClicked = {
-                            onEmptyWiDClicked()
-                        },
-                        onWiDClicked = {
-                            onWiDClicked()
-                        }
-                    )
-                    1 -> WeeklyWiDListView(mapType = currentMapType)
-                    2 -> TitleWiDListView(title = currentTitle)
+                HorizontalPager(state = pagerState) { page: Int ->
+                    when (page) {
+                        0 -> DailyWiDListView(
+//                            onNewWiDClicked = {
+//                                onNewWiDClicked()
+//                            },
+                            onWiDClicked = {
+                                onWiDClicked()
+                            },
+                        )
+                        1 -> WeeklyWiDListView(mapType = currentMapType)
+                    }
                 }
             }
         }
-    }
+    )
 }

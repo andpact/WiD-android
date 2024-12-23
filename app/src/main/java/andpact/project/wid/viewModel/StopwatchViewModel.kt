@@ -2,18 +2,20 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.*
+import andpact.project.wid.ui.theme.chivoMonoBlackItalic
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.*
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 /**
@@ -39,8 +41,8 @@ class StopwatchViewModel @Inject constructor(
     // 유저
     val user: State<User?> = userDataSource.user
 
-    // 제목
-    val title: State<Title> = wiDDataSource.title
+    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
+    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
 
     // 도구
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
@@ -51,7 +53,7 @@ class StopwatchViewModel @Inject constructor(
     fun setTitle(newTitle: Title) {
         Log.d(TAG, "setTitle executed")
 
-        wiDDataSource.setTitle(newTitle)
+        wiDDataSource.setCurrentWiDTitle(newTitle)
     }
 
     fun setStopwatchViewBarVisible(stopwatchViewBarVisible: Boolean) {
@@ -76,7 +78,7 @@ class StopwatchViewModel @Inject constructor(
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -113,5 +115,45 @@ class StopwatchViewModel @Inject constructor(
         Log.d(TAG, "stopStopwatch executed")
 
         wiDDataSource.stopStopwatch()
+    }
+
+    fun getStopwatchDurationString(duration: Duration): AnnotatedString {
+        Log.d(TAG, "getStopwatchDurationString executed")
+
+        val hours = duration.toHours()
+        val minutes = (duration.toMinutes() % 60).toInt()
+        val seconds = (duration.seconds % 60).toInt()
+
+        val hoursText = hours.toString()
+        val minutesText = if (0 < hours) {
+            minutes.toString().padStart(2, '0')
+        } else {
+            minutes.toString().padStart(1, '0')
+        }
+        val secondsText = if (0 < minutes || 0 < hours) {
+            seconds.toString().padStart(2, '0')
+        } else {
+            seconds.toString().padStart(1, '0')
+        }
+
+        return buildAnnotatedString {
+            withStyle(style = ParagraphStyle(lineHeight = 80.sp)) {
+                if (0 < hours) {
+                    withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
+                        append(hoursText + "\n")
+                    }
+                }
+
+                if (0 < minutes || 0 < hours) {
+                    withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
+                        append(minutesText + "\n")
+                    }
+                }
+
+                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
+                    append(secondsText + "\n")
+                }
+            }
+        }
     }
 }

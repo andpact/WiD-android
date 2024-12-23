@@ -2,7 +2,6 @@ package andpact.project.wid.repository
 
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.*
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ActionCodeSettings
@@ -731,4 +730,22 @@ class UserRepository @Inject constructor(
 //                }
 //            }
 //    }
+
+    /** 클라이언트 : Map<String, LocalDate> -> 서버 : Map<String, String> */
+    private fun convertLevelToDateMapForServer(map: Map<String, LocalDate>): Map<String, String> {
+        Log.d(TAG, "convertLevelToDateMapForServer executed")
+
+        return map.mapValues { it.value.toString() }
+    }
+
+    /** 서버 : Map<String, String> -> 클라이언트 : Map<String, LocalDate> */
+    private fun convertLevelToDateMapForClient(map: Map<String, String>): Map<String, LocalDate> {
+        Log.d(TAG, "convertLevelToDateMapForClient executed")
+
+        return map.mapValues { LocalDate.parse(it.value) }
+    }
+
+    private val defaultLevelDateMap: Map<String, LocalDate> = mapOf(
+        "1" to LocalDate.now()
+    )
 }

@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -27,14 +28,29 @@ fun TimeSelectorView(
     hourPagerState: PagerState,
     minutePagerState: PagerState,
     secondPagerState: PagerState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    onTimeChanged: () -> Unit = {}
 ) {
+    var isInitialPage by remember { mutableStateOf(true) }
+
+    LaunchedEffect(
+        key1 = hourPagerState.currentPage,
+        key2 = minutePagerState.currentPage,
+        key3 = secondPagerState.currentPage
+    ) {
+        if (!isInitialPage) { onTimeChanged() }
+    }
+
+    LaunchedEffect(Unit) {
+        isInitialPage = false
+    }
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        listOf(hourPagerState, minutePagerState, secondPagerState).forEachIndexed { index, pagerState ->
+        listOf(hourPagerState, minutePagerState, secondPagerState).forEachIndexed { index: Int, pagerState: PagerState ->
             Column(
                 modifier = Modifier
                     .weight(1f),
@@ -45,6 +61,7 @@ fun TimeSelectorView(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
+                        isInitialPage = false // 사용자 동작 시 초기 상태 플래그 해제
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage - 1)
                         }
@@ -71,11 +88,8 @@ fun TimeSelectorView(
                     ) {
                         Text(
                             text = page.toString(),
-                            style = if (pagerState.currentPage == page && !pagerState.isScrollInProgress) {
-                                Typography.titleLarge
-                            } else {
-                                Typography.bodyMedium
-                            },
+                            style = if (pagerState.currentPage == page && !pagerState.isScrollInProgress) { Typography.titleLarge }
+                            else { Typography.bodyMedium },
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center
                         )
@@ -86,6 +100,7 @@ fun TimeSelectorView(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
+                        isInitialPage = false // 사용자 동작 시 초기 상태 플래그 해제
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }

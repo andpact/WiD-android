@@ -1,14 +1,13 @@
 package andpact.project.wid.chartView
 
+import andpact.project.wid.model.CurrentTool
 import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.Title
-import andpact.project.wid.util.daysOfWeekFromMonday
+import andpact.project.wid.model.Title
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -59,7 +58,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                 color = Transparent
             )
 
-            val daysOfWeek = daysOfWeekFromMonday
+            val daysOfWeek = listOf("월", "화", "수", "목", "금", "토", "일")
 
             daysOfWeek.forEachIndexed { index, day ->
                 val textColor = when (index) {
@@ -223,46 +222,46 @@ fun WeeklyWiDListStackedVerticalBarChartView(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WeeklyWiDListStackedVerticalBarChartPreview() {
-    val days: Long = 7
-    val tmpStartDate = LocalDate.now()
-    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
-
-    val tmpWiDList = mutableListOf<WiD>()
-
-    for (index in 0 until days) {
-        val indexDate = tmpStartDate.plusDays(index)
-
-        tmpWiDList.add(
-            WiD(
-                id = "tmpWiD",
-                date = indexDate,
-                title = Title.STUDY,
-                start = LocalTime.of(0, 0),
-                finish = LocalTime.of(2, 0),
-                duration = Duration.ofHours(2),
-                createdBy = CurrentTool.LIST
-            )
-        )
-
-        tmpWiDList.add(
-            WiD(
-                id = "tmpWiD",
-                date = indexDate,
-                title = Title.STUDY,
-                start = LocalTime.of(6, 0),
-                finish = LocalTime.of(9, 0),
-                duration = Duration.ofHours(3),
-                createdBy = CurrentTool.LIST
-            )
-        )
-    }
-
-    WeeklyWiDListStackedVerticalBarChartView(
-        startDate = tmpStartDate,
-        finishDate = tmpFinishDate,
-        wiDList = tmpWiDList
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WeeklyWiDListStackedVerticalBarChartPreview() {
+//    val days: Long = 7
+//    val tmpStartDate = LocalDate.now()
+//    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
+//
+//    val tmpWiDList = mutableListOf<WiD>()
+//
+//    for (index in 0 until days) {
+//        val indexDate = tmpStartDate.plusDays(index)
+//
+//        tmpWiDList.add(
+//            WiD(
+//                id = "tmpWiD",
+//                date = indexDate,
+//                title = Title.STUDY,
+//                start = LocalTime.of(0, 0),
+//                finish = LocalTime.of(2, 0),
+//                duration = Duration.ofHours(2),
+//                createdBy = CurrentTool.LIST
+//            )
+//        )
+//
+//        tmpWiDList.add(
+//            WiD(
+//                id = "tmpWiD",
+//                date = indexDate,
+//                title = Title.STUDY,
+//                start = LocalTime.of(6, 0),
+//                finish = LocalTime.of(9, 0),
+//                duration = Duration.ofHours(3),
+//                createdBy = CurrentTool.LIST
+//            )
+//        )
+//    }
+//
+//    WeeklyWiDListStackedVerticalBarChartView(
+//        startDate = tmpStartDate,
+//        finishDate = tmpFinishDate,
+//        wiDList = tmpWiDList
+//    )
+//}

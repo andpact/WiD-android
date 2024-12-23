@@ -2,9 +2,11 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.DailyWiDListPieChartView
+import andpact.project.wid.model.CurrentTool
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.DailyWiDListViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -15,7 +17,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -37,14 +38,17 @@ import java.time.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyWiDListView(
-    onEmptyWiDClicked: () -> Unit,
     onWiDClicked: () -> Unit,
     dailyWiDListViewModel: DailyWiDListViewModel = hiltViewModel()
 ) {
     val TAG = "DailyWiDListView"
+    val NEW_WID = dailyWiDListViewModel.NEW_WID
+    val LAST_NEW_WID = dailyWiDListViewModel.LAST_NEW_WID
+    val CURRENT_WID = dailyWiDListViewModel.CURRENT_WID
 
     // 날짜
-    val today = LocalDate.now() // DailyWiDListView 화면에 나타난 시점의 날, "오늘"의 기준
+    val today = dailyWiDListViewModel.today.value
+    val now = dailyWiDListViewModel.now.value
     val currentDate = dailyWiDListViewModel.currentDate.value // 조회하려는 날짜
     val showDatePicker = dailyWiDListViewModel.showDatePicker.value
     val datePickerState = rememberDatePickerState(
@@ -63,55 +67,31 @@ fun DailyWiDListView(
         }
     )
 
+//    val tmpFullWiDList = yearDateWiDListMap
+//        .getOrDefault(Year.of(currentDate.year), emptyMap())
+//        .getOrDefault(currentDate, emptyList())
+
+    // 도구
+//    val currentToolState = dailyWiDListViewModel.currentToolState.value
+
     // WiD List
-    val fullWiDListLoaded = dailyWiDListViewModel.fullWiDListLoaded.value
     val fullWiDList = dailyWiDListViewModel.fullWiDList.value
 
     // 합계
     val totalDurationMap = dailyWiDListViewModel.totalDurationMap.value
 
-    // Current WiD
-    val date = dailyWiDListViewModel.date.value
-    val start = dailyWiDListViewModel.start.value
-    val finish = dailyWiDListViewModel.finish.value
-
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        // Day WiD View의 Today를 기준으로 today를 통일함.
-        dailyWiDListViewModel.setToday(newDate = today)
-
         // 리스트 수정 후, 돌아 왔을 때, 갱신된 리스트를 반영하기 위함.
-        dailyWiDListViewModel.setCurrentDate(
-            today = today,
-            newDate = currentDate
-        )
+        dailyWiDListViewModel.setCurrentDate(newDate = currentDate)
 
-        onDispose {
-            Log.d(TAG, "disposed")
-
-            dailyWiDListViewModel.stopLastNewWiDTimer()
-        }
-    }
-
-    /** 위드가 실시간 갱신되는 화면만 갱신하면 됨(단일 위드 생성 -> date, 다중 위드 생성 -> date + 1) */
-    LaunchedEffect(finish) { // Current WiD, finish가 갱신되고 있다는 것은 도구가 시작 상태라는 것임.
-        Log.d(TAG, "LaunchedEffect: finish update")
-
-        if ((currentDate == date && start.isBefore(finish)) || (currentDate == date.plusDays(1) && start.isAfter(finish))) {
-            // currentDate가 date이거나, currentDate가 date + 1일이고, 각 조건에서 start와 finish의 관계에 맞을 때
-            dailyWiDListViewModel.setCurrentDate(
-                today = today,
-                newDate = currentDate
-            )
-        }
+        onDispose { Log.d(TAG, "disposed") }
     }
 
     BackHandler(
         enabled = showDatePicker,
-        onBack = {
-            dailyWiDListViewModel.setShowDatePicker(show = false)
-        }
+        onBack = { dailyWiDListViewModel.setShowDatePicker(show = false) }
     )
 
     Scaffold(
@@ -145,7 +125,7 @@ fun DailyWiDListView(
                         )
 
                         Text(
-                            text = getDateString(currentDate),
+                            text = dailyWiDListViewModel.getDateString(currentDate),
                             style = Typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             overflow = TextOverflow.Ellipsis,
@@ -157,10 +137,7 @@ fun DailyWiDListView(
                 FilledTonalIconButton(
                     onClick = {
                         val newDate = currentDate.minusDays(1)
-                        dailyWiDListViewModel.setCurrentDate(
-                            today = today,
-                            newDate = newDate
-                        )
+                        dailyWiDListViewModel.setCurrentDate(newDate = newDate)
                     },
                 ) {
                     Icon(
@@ -172,10 +149,7 @@ fun DailyWiDListView(
                 FilledTonalIconButton(
                     onClick = {
                         val newDate = currentDate.plusDays(1)
-                        dailyWiDListViewModel.setCurrentDate(
-                            today = today,
-                            newDate = newDate
-                        )
+                        dailyWiDListViewModel.setCurrentDate(newDate = newDate)
                     },
                     enabled = currentDate != today
                 ) {
@@ -186,39 +160,65 @@ fun DailyWiDListView(
                 }
             }
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    val isToday = today == currentDate
+                    val minTime = LocalTime.MIN
+                    val nowOrMax = if (isToday) LocalTime.now() else LocalTime.MAX.withNano(0)
+
+                    val newClickedWiD = WiD.default().copy(
+                        id = if (isToday) LAST_NEW_WID else NEW_WID,
+                        date = currentDate,
+                        start = minTime, // 기록이 없는 날짜기 때문에 무조건 Min에서 시작
+                        finish = nowOrMax, // 갱신되기 전에 초기화
+                        duration = Duration.between(minTime, nowOrMax)
+                    )
+
+                    dailyWiDListViewModel.setClickedWiDAndCopy(clickedWiD = newClickedWiD)
+
+                    onWiDClicked()
+                },
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp),
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "새로운 기록 생성"
+                )
+            }
+        },
         content = { contentPadding: PaddingValues ->
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-            ) {
-                if (fullWiDListLoaded && fullWiDList.isEmpty()) {
-                    Icon(
-                        modifier = Modifier
-                            .size(48.dp),
-                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                        contentDescription = "표시할 기록이 없습니다.",
-                    )
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = {
+                    if (fullWiDList.size == 1) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                content = {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(48.dp),
+                                        painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                                        contentDescription = "표시할 기록이 없습니다."
+                                    )
 
-                    Text(
-                        text = "표시할 기록이 없습니다.",
-                        style = Typography.titleLarge,
-                    )
-
-                    Text(
-                        text = "WiD를 생성하여\n하루를 어떻게 보냈는지\n기록해 보세요.",
-                        style = Typography.bodyMedium,
-                        textAlign = TextAlign.Center
-                    )
-                } else if (fullWiDListLoaded) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        // 파이 차트
+                                    Text(
+                                        text = "표시할 기록이 없습니다.",
+                                        style = Typography.titleLarge,
+                                    )
+                                }
+                            )
+                        }
+                    } else {
                         item {
                             DailyWiDListPieChartView(
                                 modifier = Modifier
@@ -239,7 +239,6 @@ fun DailyWiDListView(
                             )
                         }
 
-                        // 리스트
                         item {
                             Row(
                                 modifier = Modifier
@@ -249,240 +248,155 @@ fun DailyWiDListView(
                             ) {
                                 Text(
                                     modifier = Modifier
-                                        .padding(vertical = 4.dp)
                                         .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                        .padding(horizontal = 4.dp),
-                                    text = getTimeString(time = LocalTime.MIN),
+                                        .padding(horizontal = 8.dp),
+                                    text = dailyWiDListViewModel.getTimeString(time = LocalTime.MIN),
                                     fontFamily = chivoMonoBlackItalic,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
 
-                                HorizontalDivider(thickness = 0.5.dp)
+                                HorizontalDivider(
+                                    thickness = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
+                        }
 
-                            fullWiDList.forEach { wiD: WiD ->
-                                if (wiD.id == "newWiD" || wiD.id == "lastNewWiD") { // 빈 WiD
-                                    Column(
+                        fullWiDList.forEach { wiD: WiD ->
+                            val isNewWiD = wiD.id == NEW_WID || wiD.id == LAST_NEW_WID // 새 WiD 조건 변수
+
+                            // WiD Row
+                            item {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                ) {
+                                    Row(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                    ) {
-                                        ElevatedCard(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp)
-                                                .clip(MaterialTheme.shapes.medium)
-                                                .clickable {
-                                                    dailyWiDListViewModel.setNewWiD(newWiD = wiD)
-                                                    dailyWiDListViewModel.setUpdatedNewWiD(
-                                                        updatedNewWiD = wiD
-                                                    )
-
-                                                    onEmptyWiDClicked()
-                                                },
-                                            colors = CardDefaults.elevatedCardColors(
-                                                containerColor = MaterialTheme.colorScheme.surface
+                                            .height(56.dp)
+                                            .border(
+                                                width = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                shape = MaterialTheme.shapes.medium
                                             )
-                                        ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Image(
-                                                    modifier = Modifier
-                                                        .padding(16.dp)
-                                                        .clip(MaterialTheme.shapes.medium)
-                                                        .size(40.dp),
-                                                    painter = painterResource(id = R.drawable.image_untitled),
-                                                    contentDescription = "앱 아이콘"
-                                                )
-
-                                                Column(
-                                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                                                ) {
-                                                    Text(
-                                                        text = wiD.title.kr, // "무제"
-                                                        style = Typography.bodyMedium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-
-                                                    Text(
-                                                        text = getDurationString(wiD.duration),
-                                                        style = Typography.bodyMedium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                }
-
-                                                Spacer(
-                                                    modifier = Modifier
-                                                        .weight(1f)
-                                                )
-
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .padding(horizontal = 16.dp)
-                                                        .size(24.dp),
-                                                    imageVector = Icons.Default.KeyboardArrowRight,
-                                                    contentDescription = "이 WiD로 전환하기",
-                                                    tint = MaterialTheme.colorScheme.onSurface
-                                                )
+                                            .clickable(enabled = wiD.id != CURRENT_WID) {
+                                                dailyWiDListViewModel.setClickedWiDAndCopy(clickedWiD = wiD)
+                                                onWiDClicked()
                                             }
-                                        }
-
-                                        Row(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Text(
-                                                modifier = Modifier
-                                                    .padding(vertical = 4.dp)
-                                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                                    .padding(horizontal = 4.dp),
-                                                text = getTimeString(time = wiD.finish),
-                                                fontFamily = chivoMonoBlackItalic,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                                            )
-
-                                            HorizontalDivider(thickness = 0.5.dp)
-                                        }
-                                    }
-                                } else { // 기존에 있는 위드
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        ElevatedCard(
+                                        Image(
                                             modifier = Modifier
-                                                .padding(horizontal = 16.dp)
-                                                .clip(MaterialTheme.shapes.medium)
-                                                .clickable {
-                                                    dailyWiDListViewModel.setExistingWiD(existingWiD = wiD)
-                                                    dailyWiDListViewModel.setUpdatedWiD(updatedWiD = wiD)
+                                                .size(40.dp)
+                                                .clip(MaterialTheme.shapes.medium),
+                                            painter = if (isNewWiD) painterResource(id = R.drawable.image_untitled) else painterResource(id = wiD.title.smallImage),
+                                            contentDescription = "제목 이미지"
+                                        )
 
-                                                    onWiDClicked() // 화면 전환 용
-                                                },
-                                            colors = CardDefaults.elevatedCardColors(
-                                                containerColor = MaterialTheme.colorScheme.surface
-                                            )
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
                                             Row(
-                                                verticalAlignment = Alignment.CenterVertically
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
-                                                Image(
-                                                    modifier = Modifier
-                                                        .padding(16.dp)
-                                                        .clip(MaterialTheme.shapes.medium)
-                                                        .size(40.dp),
-                                                    painter = painterResource(id = wiD.title.smallImage),
-                                                    contentDescription = "앱 아이콘"
+                                                Text(
+                                                    text = wiD.title.kr,
+                                                    style = Typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
 
-                                                Column(
-                                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                                                ) {
-                                                    Row {
-                                                        Text(
-                                                            text = wiD.title.kr,
-                                                            style = Typography.bodyMedium,
-                                                            color = MaterialTheme.colorScheme.onSurface
-                                                        )
-
-                                                        Spacer(
-                                                            modifier = Modifier
-                                                                .width(8.dp)
-                                                        )
-
-                                                        Text(
-                                                            modifier = Modifier
-                                                                .background(
-                                                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                                                    shape = MaterialTheme.shapes.medium
-                                                                )
-                                                                .padding(horizontal = 8.dp),
-                                                            text = wiD.createdBy.kr,
-                                                            style = Typography.bodyMedium,
-                                                            color = MaterialTheme.colorScheme.onSurface
-                                                        )
-                                                    }
-
-                                                    Text(
-                                                        text = getDurationString(wiD.duration),
-                                                        style = Typography.bodyMedium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                }
-
-                                                Spacer(
-                                                    modifier = Modifier
-                                                        .weight(1f)
-                                                )
-
-                                                if (wiD.id == "currentWiD") {
+                                                if (!isNewWiD) {
                                                     Text(
                                                         modifier = Modifier
-                                                            .padding(horizontal = 16.dp)
                                                             .background(
-                                                                color = MaterialTheme.colorScheme.error,
-                                                                shape = CircleShape
+                                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                                shape = MaterialTheme.shapes.medium
                                                             )
-                                                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                                                        text = "LIVE",
+                                                            .padding(horizontal = 8.dp),
+                                                        text = wiD.createdBy.kr,
                                                         style = Typography.bodyMedium,
-                                                        color = MaterialTheme.colorScheme.onError
-                                                    )
-                                                } else {
-                                                    Icon(
-                                                        modifier = Modifier
-                                                            .padding(horizontal = 16.dp)
-                                                            .size(24.dp),
-                                                        imageVector = Icons.Default.KeyboardArrowRight,
-                                                        contentDescription = "이 WiD로 전환하기",
-                                                        tint = MaterialTheme.colorScheme.onSurface
+                                                        color = MaterialTheme.colorScheme.onSurface
                                                     )
                                                 }
                                             }
+
+                                            Text(
+                                                text = dailyWiDListViewModel.getDurationString(wiD.duration),
+                                                style = Typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
                                         }
 
-                                        Row(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
+                                        if (wiD.id == CURRENT_WID) {
                                             Text(
                                                 modifier = Modifier
-                                                    .padding(vertical = 4.dp)
-                                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                                    .padding(horizontal = 4.dp),
-                                                text = getTimeString(time = wiD.finish),
-                                                fontFamily = chivoMonoBlackItalic,
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    .background(
+                                                        color = MaterialTheme.colorScheme.error,
+                                                        shape = MaterialTheme.shapes.medium
+                                                    )
+                                                    .padding(horizontal = 8.dp),
+                                                text = "LIVE",
+                                                style = Typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onError
                                             )
-
-                                            HorizontalDivider(thickness = 0.5.dp)
+                                        } else {
+                                            Icon(
+                                                modifier = Modifier
+                                                    .size(24.dp),
+                                                imageVector = Icons.Default.KeyboardArrowRight,
+                                                contentDescription = "이 WiD로 전환하기",
+                                                tint = MaterialTheme.colorScheme.onSurface
+                                            )
                                         }
                                     }
                                 }
                             }
+
+                            item {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        modifier = Modifier
+                                            .background(color = if (wiD.finish == now) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondaryContainer)
+                                            .padding(horizontal = 8.dp),
+                                        text = dailyWiDListViewModel.getTimeString(time = wiD.finish),
+                                        fontFamily = chivoMonoBlackItalic,
+                                        color = if (wiD.finish == now) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    HorizontalDivider(
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
 
-                        // 합계 기록
                         item {
                             Text(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(horizontal = 16.dp),
                                 text = "합계 기록",
                                 style = Typography.titleLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
-                        // 합계 기록
-                        totalDurationMap.onEachIndexed { index: Int, (title: Title, totalDuration: Duration) ->
-                            item {
+                        item { // 요소 사이 여백 필요 없으니 하나의 아이템으로 처리
+                            totalDurationMap.onEachIndexed { index: Int, (title: Title, totalDuration: Duration) ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .height(56.dp)
                                         .padding(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
@@ -501,33 +415,23 @@ fun DailyWiDListView(
                                         )
                                     }
 
-                                    Spacer(
+                                    Column(
                                         modifier = Modifier
-                                            .width(8.dp)
-                                    )
-
-                                    Column {
+                                            .weight(1f),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
                                         Text(
-                                            modifier = Modifier
-                                                .padding(top = 8.dp, bottom = 4.dp),
                                             text = title.kr,
                                             style = Typography.titleMedium,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
 
                                         Text(
-                                            modifier = Modifier
-                                                .padding(top = 4.dp, bottom = 8.dp),
-                                            text = getDurationString(duration = totalDuration),
+                                            text = dailyWiDListViewModel.getDurationString(duration = totalDuration),
                                             style = Typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                     }
-
-                                    Spacer(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                    )
 
                                     Text(
                                         modifier = Modifier
@@ -535,8 +439,8 @@ fun DailyWiDListView(
                                                 color = MaterialTheme.colorScheme.secondaryContainer,
                                                 shape = MaterialTheme.shapes.medium
                                             )
-                                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                                        text = getDurationPercentageStringOfDay(duration = totalDuration),
+                                            .padding(horizontal = 8.dp),
+                                        text = dailyWiDListViewModel.getDurationPercentageStringOfDay(duration = totalDuration),
                                         style = Typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
@@ -551,20 +455,10 @@ fun DailyWiDListView(
                                 }
                             }
                         }
-
-                        item {
-                            Spacer(
-                                modifier = Modifier
-                                    .height(8.dp)
-                            )
-                        }
                     }
-                } else {
-                    CircularProgressIndicator()
                 }
-            }
+            )
 
-            /** 날짜 선택 대화상자 */
             if (showDatePicker) {
                 DatePickerDialog(
                     onDismissRequest = {
@@ -578,29 +472,29 @@ fun DailyWiDListView(
                                     .atZone(ZoneId.systemDefault())
                                     .toLocalDate()
 
-                                dailyWiDListViewModel.setCurrentDate(
-                                    today = today,
-                                    newDate = newDate
-                                )
+                                dailyWiDListViewModel.setCurrentDate(newDate = newDate)
                                 dailyWiDListViewModel.setShowDatePicker(show = false)
-                            }) {
-                            Text(
-                                text = "확인",
-                                style = Typography.bodyMedium
-                            )
-                        }
+                            },
+                            content = {
+                                Text(
+                                    text = "확인",
+                                    style = Typography.bodyMedium
+                                )
+                            }
+                        )
                     },
                     dismissButton = {
                         TextButton(
                             onClick = {
                                 dailyWiDListViewModel.setShowDatePicker(show = false)
+                            },
+                            content = {
+                                Text(
+                                    text = "취소",
+                                    style = Typography.bodyMedium
+                                )
                             }
-                        ) {
-                            Text(
-                                text = "취소",
-                                style = Typography.bodyMedium
-                            )
-                        }
+                        )
                     }
                 ) {
                     Column(
@@ -625,221 +519,124 @@ fun DailyWiDListView(
                     }
                 }
             }
-        },
-        floatingActionButton = {
-            if (fullWiDListLoaded && fullWiDList.isEmpty()) {
-                FloatingActionButton(
-                    onClick = {
-                        val newWiD = WiD(
-                            id = "newWiD",
-                            date = dailyWiDListViewModel.currentDate.value,
-                            title = Title.UNTITLED,
-                            start = LocalTime.MIN,
-                            finish = LocalTime.MIN,
-                            duration = Duration.ZERO,
-                            createdBy = CurrentTool.LIST
-                        )
-
-                        dailyWiDListViewModel.setNewWiD(newWiD = newWiD)
-                        dailyWiDListViewModel.setUpdatedNewWiD(updatedNewWiD = newWiD)
-
-                        onEmptyWiDClicked()
-                    },
-                    shape = CircleShape,
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "새로운 WiD",
-                        )
-                    }
-                )
-            }
         }
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DayWiDPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "오전 00:00:00",
-                    style = Typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                HorizontalDivider(
-                    thickness = 0.5.dp
-                )
-            }
-
-            ElevatedCard(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
-//                elevation = CardDefaults.cardElevation(
-//                    defaultElevation = 1.dp
-//                ),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .clip(shape = MaterialTheme.shapes.medium),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .size(40.dp),
-                        painter = painterResource(id = Title.STUDY.smallImage),
-                        contentDescription = "앱 아이콘"
-                    )
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Row {
-                            Text(
-                                text = "공부",
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(
-                                modifier = Modifier
-                                    .width(8.dp)
-                            )
-
-                            Text(
-                                modifier = Modifier
-                                    .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = MaterialTheme.shapes.medium
-                                    )
-                                    .padding(horizontal = 8.dp),
-                                text = CurrentTool.STOPWATCH.kr,
-                                style = Typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        Text(
-                            text = "3시간 30분 30초",
-                            style = Typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    Icon(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .size(24.dp),
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "이 WiD로 전환하기",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "오전 00:00:00",
-                    style = Typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                HorizontalDivider()
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(40.dp)
-                    .aspectRatio(1f / 1f)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = MaterialTheme.shapes.medium
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "10",
-                    style = Typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-
-            Spacer(
-                modifier = Modifier
-                    .width(8.dp)
-            )
-
-            Column {
-                Text(
-                    modifier = Modifier
-                        .padding(top = 8.dp, bottom = 4.dp),
-                    text = "공부",
-                    style = Typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Text(
-                    modifier = Modifier
-                        .padding(top = 4.dp, bottom = 8.dp),
-                    text = "3시간 30분 30초",
-                    style = Typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            Spacer(
-                modifier = Modifier
-                    .weight(1f)
-            )
-
-            Text(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                text = "20%",
-                style = Typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DailyWiDListPreview() {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(color = MaterialTheme.colorScheme.surface),
+//        verticalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        Row(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+//                    .padding(horizontal = 8.dp),
+//                text = "getTimeString(time = LocalTime.MIN)",
+//                fontFamily = chivoMonoBlackItalic,
+//                color = MaterialTheme.colorScheme.onSecondaryContainer
+//            )
+//
+//            HorizontalDivider(
+//                thickness = 0.5.dp,
+//                color = MaterialTheme.colorScheme.onSurface
+//            )
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(height = 56.dp)
+//                .padding(horizontal = 16.dp)
+//                .border(
+//                    width = 0.5.dp,
+//                    color = MaterialTheme.colorScheme.onSurface,
+//                    shape = MaterialTheme.shapes.medium
+//                )
+//                .padding(8.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Image(
+//                modifier = Modifier
+//                    .size(40.dp)
+//                    .clip(shape = MaterialTheme.shapes.medium),
+//                painter = painterResource(id = Title.STUDY.smallImage),
+//                contentDescription = "앱 아이콘"
+//            )
+//
+//            Column(
+//                modifier = Modifier
+//                    .weight(1f),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                Row(
+//                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                ) {
+//                    Text(
+//                        text = "공부",
+//                        style = Typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.onSurface
+//                    )
+//
+//                    Text(
+//                        modifier = Modifier
+//                            .background(
+//                                color = MaterialTheme.colorScheme.secondaryContainer,
+//                                shape = MaterialTheme.shapes.medium
+//                            )
+//                            .padding(horizontal = 8.dp),
+//                        text = CurrentTool.STOPWATCH.kr,
+//                        style = Typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.onSurface
+//                    )
+//                }
+//
+//                Text(
+//                    text = "3시간 30분 30초",
+//                    style = Typography.labelMedium,
+//                    color = MaterialTheme.colorScheme.onSurface
+//                )
+//            }
+//
+//            Icon(
+//                modifier = Modifier
+//                    .size(24.dp),
+//                imageVector = Icons.Default.KeyboardArrowRight,
+//                contentDescription = "이 WiD로 전환하기",
+//                tint = MaterialTheme.colorScheme.onSurface
+//            )
+//        }
+//
+//        Row(
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+//                    .padding(horizontal = 8.dp),
+//                text = "getTimeString(time = LocalTime.MIN)",
+//                fontFamily = chivoMonoBlackItalic,
+//                color = MaterialTheme.colorScheme.onSecondaryContainer
+//            )
+//
+//            HorizontalDivider(
+//                thickness = 0.5.dp,
+//                color = MaterialTheme.colorScheme.onSurface
+//            )
+//        }
+//    }
+//}

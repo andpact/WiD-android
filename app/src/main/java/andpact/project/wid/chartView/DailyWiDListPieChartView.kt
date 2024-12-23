@@ -3,9 +3,6 @@ package andpact.project.wid.chartView
 import andpact.project.wid.R
 import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.Title
-import andpact.project.wid.util.getFullWiDListFromWiDList
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,12 +16,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
 import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
 import kotlin.math.*
 
 @Composable
@@ -176,62 +170,62 @@ fun DailyWiDListPieChartView(
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DailyWiDListPieChartPreview() {
-    val yesterday = LocalDate.now().minusDays(1)
-    val today = LocalDate.now()
-    val now = LocalTime.now().withNano(0)
-    val tmpWiDList = mutableListOf<WiD>()
-
-    tmpWiDList.add(
-        WiD(
-            id = "tmpWiD",
-            date = yesterday,
-            title = Title.STUDY,
-            start = LocalTime.of(0, 0),
-            finish = LocalTime.of(1, 0),
-            duration = Duration.ofHours(1),
-            createdBy = CurrentTool.LIST
-        )
-    )
-    tmpWiDList.add(
-        WiD(
-            id = "tmpWiD2",
-            date = yesterday,
-            title = Title.STUDY,
-            start = LocalTime.of(2, 0),
-            finish = LocalTime.of(5, 0),
-            duration = Duration.ofHours(3),
-            createdBy = CurrentTool.LIST
-        )
-    )
-    tmpWiDList.add(
-        WiD(
-            id = "tmpWiD3",
-            date = yesterday,
-            title = Title.STUDY,
-            start = LocalTime.of(6, 0),
-            finish = LocalTime.of(7, 0),
-            duration = Duration.ofHours(1),
-            createdBy = CurrentTool.LIST
-        )
-    )
-
-    val tmpFullWiDList = getFullWiDListFromWiDList(
-        date = yesterday,
-        wiDList = tmpWiDList,
-        today = today,
-        currentTime = now
-    )
-
-    DailyWiDListPieChartView(
-        fullWiDList = tmpFullWiDList,
-//        onNewWiDClicked = { newWiD: WiD ->
+//@Preview(showBackground = true)
+//@Composable
+//fun DailyWiDListPieChartPreview() {
+//    val yesterday = LocalDate.now().minusDays(1)
+//    val today = LocalDate.now()
+//    val now = LocalTime.now().withNano(0)
+//    val tmpWiDList = mutableListOf<WiD>()
 //
-//        },
-//        onWiDClicked = { wiD: WiD ->
+//    tmpWiDList.add(
+//        WiD(
+//            id = "tmpWiD",
+//            date = yesterday,
+//            title = Title.STUDY,
+//            start = LocalTime.of(0, 0),
+//            finish = LocalTime.of(1, 0),
+//            duration = Duration.ofHours(1),
+//            createdBy = CurrentTool.LIST
+//        )
+//    )
+//    tmpWiDList.add(
+//        WiD(
+//            id = "tmpWiD2",
+//            date = yesterday,
+//            title = Title.STUDY,
+//            start = LocalTime.of(2, 0),
+//            finish = LocalTime.of(5, 0),
+//            duration = Duration.ofHours(3),
+//            createdBy = CurrentTool.LIST
+//        )
+//    )
+//    tmpWiDList.add(
+//        WiD(
+//            id = "tmpWiD3",
+//            date = yesterday,
+//            title = Title.STUDY,
+//            start = LocalTime.of(6, 0),
+//            finish = LocalTime.of(7, 0),
+//            duration = Duration.ofHours(1),
+//            createdBy = CurrentTool.LIST
+//        )
+//    )
 //
-//        }
-    )
-}
+//    val tmpFullWiDList = getFullWiDListFromWiDList(
+//        date = yesterday,
+//        wiDList = tmpWiDList,
+//        today = today,
+//        currentTime = now
+//    )
+//
+//    DailyWiDListPieChartView(
+//        fullWiDList = tmpFullWiDList,
+////        onNewWiDClicked = { newWiD: WiD ->
+////
+////        },
+////        onWiDClicked = { wiD: WiD ->
+////
+////        }
+//    )
+//}

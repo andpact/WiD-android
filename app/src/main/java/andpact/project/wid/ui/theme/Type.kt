@@ -2,6 +2,7 @@ package andpact.project.wid.ui.theme
 
 import andpact.project.wid.R
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily

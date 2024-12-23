@@ -2,8 +2,6 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.getDateString
-import andpact.project.wid.util.getRandomNickname
 import andpact.project.wid.viewModel.MyAccountViewModel
 import android.util.Log
 import androidx.compose.foundation.background
@@ -36,13 +34,14 @@ fun MyAccountView(
     }
 
     // 계정
-    val email = myAccountViewModel.firebaseUser.value?.email ?: ""
+//    val email = myAccountViewModel.firebaseUser.value?.email ?: ""
+    val email = myAccountViewModel.user.value?.email ?: ""
     val emailForDialog = myAccountViewModel.emailForDialog.value
     val level = myAccountViewModel.user.value?.level
     val levelDateMap = myAccountViewModel.user.value?.levelDateMap
     val showLevelDateMapDialog = myAccountViewModel.showLevelDateMapDialog.value
     val signedUpOn = myAccountViewModel.user.value?.signedUpOn ?: LocalDate.now()
-    val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: getRandomNickname()
+    val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: myAccountViewModel.getRandomNickname()
     val displayNameForDialog = myAccountViewModel.displayNameForDialog.value
     val showDisplayNameDialog = myAccountViewModel.showDisplayNameDialog.value
     val currentExp = myAccountViewModel.user.value?.currentExp
@@ -55,17 +54,19 @@ fun MyAccountView(
             .fillMaxSize()
     ) {
         item {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterVertically)
+            ) {
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                     text = "이메일",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                 )
 
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                     text = email,
                     style = Typography.bodyMedium,
                 )
@@ -79,41 +80,36 @@ fun MyAccountView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(56.dp)
                     .clickable {
                         myAccountViewModel.setShowDisplayNameDialog(show = true)
-                    },
+                    }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                         text = "닉네임",
-                        style = Typography.titleMedium,
+                        style = Typography.bodyMedium,
                     )
 
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                         text = displayName,
                         style = Typography.bodyMedium,
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
                     onClick = {
                         myAccountViewModel.setShowDisplayNameDialog(show = true)
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_edit_24),
+                        painter = painterResource(id = R.drawable.baseline_arrow_drop_down_24),
                         contentDescription = "닉네임 수정"
                     )
                 }
@@ -124,18 +120,20 @@ fun MyAccountView(
                     .padding(horizontal = 16.dp)
             )
 
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterVertically)
+            ) {
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                     text = "가입 날짜",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                 )
 
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
-                    text = getDateString(date = signedUpOn),
+                    text = myAccountViewModel.getDateString(date = signedUpOn),
                     style = Typography.bodyMedium,
                 )
             }
@@ -145,17 +143,19 @@ fun MyAccountView(
                     .padding(horizontal = 16.dp)
             )
 
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterVertically)
+            ) {
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                     text = "레벨",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                 )
 
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                     text = "$level",
                     style = Typography.bodyMedium,
                 )
@@ -169,35 +169,30 @@ fun MyAccountView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(56.dp)
                     .clickable {
                         myAccountViewModel.setShowLevelDateMapDialog(show = true)
-                    },
+                    }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                         text = "레벨 업 히스토리",
-                        style = Typography.titleMedium,
+                        style = Typography.bodyMedium,
                     )
 
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                         text = "레벨 업 기록을 표시합니다.",
                         style = Typography.bodyMedium,
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
                     onClick = {
                         myAccountViewModel.setShowLevelDateMapDialog(show = true)
                     }
@@ -205,7 +200,7 @@ fun MyAccountView(
                     Icon(
                         modifier = Modifier
                             .size(24.dp),
-                        painter = painterResource(id = R.drawable.outline_delete_16),
+                        painter = painterResource(id = R.drawable.baseline_arrow_drop_down_24),
                         contentDescription = "레벨 업 날짜 표시"
                     )
                 }
@@ -216,17 +211,19 @@ fun MyAccountView(
                     .padding(horizontal = 16.dp)
             )
 
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterVertically)
+            ) {
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                     text = "현재 경험치",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                 )
 
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                     text = "$currentExp",
                     style = Typography.bodyMedium,
                 )
@@ -237,17 +234,19 @@ fun MyAccountView(
                     .padding(horizontal = 16.dp)
             )
 
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterVertically)
+            ) {
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                     text = "총 경험치",
-                    style = Typography.titleMedium,
+                    style = Typography.bodyMedium,
                 )
 
                 Text(
-                    modifier = Modifier
-                        .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                     text = "$wiDTotalExp",
                     style = Typography.bodyMedium,
                 )
@@ -261,41 +260,36 @@ fun MyAccountView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(56.dp)
                     .clickable {
                         myAccountViewModel.setShowSignOutDialog(show = true)
-                    },
+                    }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                         text = "로그아웃",
-                        style = Typography.titleMedium,
+                        style = Typography.bodyMedium,
                     )
 
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                         text = "계정이 로그아웃 됩니다.",
                         style = Typography.bodyMedium,
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
                     onClick = {
                         myAccountViewModel.setShowSignOutDialog(show = true)
                     }
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.baseline_edit_24),
+                        painter = painterResource(id = R.drawable.baseline_logout_24),
                         contentDescription = "로그아웃"
                     )
                 }
@@ -309,35 +303,30 @@ fun MyAccountView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(56.dp)
                     .clickable {
                         myAccountViewModel.setShowDeleteUserDialog(show = true)
-                    },
+                    }
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 4.dp),
                         text = "회원 탈퇴",
-                        style = Typography.titleMedium,
+                        style = Typography.bodyMedium,
                     )
 
                     Text(
-                        modifier = Modifier
-                            .padding(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 8.dp),
                         text = "계정을 삭제합니다.",
                         style = Typography.bodyMedium,
                     )
                 }
 
-                Spacer(
-                    modifier = Modifier
-                        .weight(1f)
-                )
-
                 IconButton(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
                     onClick = {
                         myAccountViewModel.setShowDeleteUserDialog(show = true)
                     }
@@ -350,11 +339,6 @@ fun MyAccountView(
                     )
                 }
             }
-
-            Spacer(
-                modifier = Modifier
-                    .height(8.dp)
-            )
         }
     }
 
@@ -460,7 +444,7 @@ fun MyAccountView(
                         )
 
                         Text(
-                            text = getDateString(date),
+                            text = myAccountViewModel.getDateString(date),
                             style = Typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )

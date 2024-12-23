@@ -1,19 +1,24 @@
 package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
+import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.model.User
-import andpact.project.wid.util.getRandomNickname
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class MyAccountViewModel @Inject constructor(
-    private val userDataSource: UserDataSource
+    private val userDataSource: UserDataSource,
+    private val wiDDataSource: WiDDataSource
 ) : ViewModel() {
     private val TAG = "MyAccountViewModel"
     init { Log.d(TAG, "created") }
@@ -102,4 +107,31 @@ class MyAccountViewModel @Inject constructor(
             }
         )
     }
+
+    @Composable
+    fun getDateString(date: LocalDate): AnnotatedString {
+        Log.d(TAG, "getDateString executed")
+
+        return wiDDataSource.getDateString(date = date)
+    }
+
+    fun getRandomNickname(): String {
+        Log.d(TAG, "getRandomNickname executed")
+
+        return tmpNicknameList[Random.nextInt(tmpNicknameList.size)]
+    }
+
+    val tmpNicknameList: List<String> = listOf(
+        "부지런한 고양이",
+        "활기찬 햇살",
+        "즐거운 토끼",
+        "웃음 가득한 나비",
+        "활동적인 다람쥐",
+        "상큼한 레몬",
+        "밝은 별빛",
+        "행복한 새벽",
+        "긍정적인 물결",
+        "힘찬 파랑새",
+        "활력 넘치는 해바라기"
+    )
 }

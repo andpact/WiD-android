@@ -2,28 +2,30 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.TimeSelectorView
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
-import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -42,10 +44,13 @@ fun TimerView(
 ) {
     val TAG = "TimerView"
 
+    // currentWiD
+    val firstCurrentWiD = timerViewModel.firstCurrentWiD.value
+    val secondCurrentWiD = timerViewModel.secondCurrentWiD.value
+
     val timerViewBarVisible = timerViewModel.timerViewBarVisible.value
 
-    val title = timerViewModel.title.value
-    val titlePageIndex = Title.values().drop(1).indexOf(title).coerceAtLeast(0)
+    val titlePageIndex = Title.values().drop(1).indexOf(firstCurrentWiD.title).coerceAtLeast(0)
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -89,31 +94,33 @@ fun TimerView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onBackButtonPressed()
+            if (timerViewBarVisible) {
+                CenterAlignedTopAppBar(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onBackButtonPressed()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                                contentDescription = "뒤로 가기",
+                            )
                         }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "뒤로 가기",
+                    },
+                    title = {
+                        Text(
+                            text = "타이머",
+                            style = Typography.titleLarge,
                         )
-                    }
-                },
-                title = {
-                    Text(
-                        text = "타이머",
-                        style = Typography.titleLarge,
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
-            )
+            }
         },
         content = { contentPadding: PaddingValues ->
             if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
@@ -193,7 +200,7 @@ fun TimerView(
                                 Text(
                                     modifier = Modifier
                                         .weight(1f),
-                                    text = title.kr,
+                                    text = firstCurrentWiD.title.kr,
                                     style = Typography.titleLarge,
                                     textAlign = TextAlign.Center
                                 )
@@ -250,7 +257,7 @@ fun TimerView(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = getTimerDurationString(duration = remainingTime),
+                        text = timerViewModel.getTimerDurationString(duration = remainingTime),
                         style = TextStyle(
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.primary,
@@ -311,7 +318,7 @@ fun TimerView(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(MaterialTheme.shapes.medium),
-                        painter = painterResource(id = title.image),
+                        painter = painterResource(id = firstCurrentWiD.title.image),
                         contentDescription = "앱 아이콘"
                     )
 
@@ -427,181 +434,6 @@ fun TimerView(
 //        modifier = Modifier
 //            .fillMaxSize()
 //    ) {
-//        Text(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(16.dp)
-//                .background(
-//                    color = MaterialTheme.colorScheme.secondaryContainer,
-//                    shape = MaterialTheme.shapes.medium
-//                )
-//                .padding(16.dp),
-//            text = "제목 선택",
-//            style = Typography.titleLarge,
-//            color = MaterialTheme.colorScheme.onSecondaryContainer,
-//            textAlign = TextAlign.Center
-//        )
 //
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp)
-//        ) {
-//            Image(
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .aspectRatio(1f / 1f)
-//                    .clip(MaterialTheme.shapes.medium),
-//                painter = painterResource(id = titleImageMap["0"] ?: R.drawable.image_untitled),
-//                contentDescription = "앱 아이콘"
-//            )
-//
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f)
-//                    .aspectRatio(1f / 1f)
-//            ) {
-//                Text(
-//                    text = "공부",
-//                    style = Typography.bodyMedium
-//                )
-//
-//                Row() {
-//                    FilledTonalIconButton(
-//                        modifier = Modifier
-//                            .size(48.dp),
-//                        onClick = {
-//                        }
-//                    ) {
-//                        Icon(
-//                            modifier = Modifier
-//                                .size(36.dp),
-//                            imageVector = Icons.Default.KeyboardArrowLeft,
-//                            contentDescription = "이전 제목"
-//                        )
-//                    }
-//
-//                    FilledTonalIconButton(
-//                        modifier = Modifier
-//                            .size(48.dp),
-//                        onClick = {
-//                        }
-//                    ) {
-//                        Icon(
-//                            modifier = Modifier
-//                                .size(36.dp),
-//                            imageVector = Icons.Default.KeyboardArrowRight,
-//                            contentDescription = "다음 제목",
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//
-//        Text(
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .background(
-//                    color = MaterialTheme.colorScheme.secondary,
-//                    shape = MaterialTheme.shapes.medium
-//                )
-//                .padding(16.dp),
-//            text = "시간 선택",
-//            style = Typography.titleLarge
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp)
-//        ) {
-//            FilledTonalIconButton(
-//                modifier = Modifier
-//                    .size(48.dp),
-//                onClick = {
-//                }
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(36.dp),
-//                    imageVector = Icons.Default.KeyboardArrowLeft,
-//                    contentDescription = "이전 제목"
-//                )
-//            }
-//
-//            Text(
-//                modifier = Modifier
-//                    .weight(1f),
-//                text = "0",
-//                style = Typography.titleLarge
-//            )
-//
-//            FilledTonalIconButton(
-//                modifier = Modifier
-//                    .size(48.dp),
-//                onClick = {
-//                }
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(36.dp),
-//                    imageVector = Icons.Default.KeyboardArrowRight,
-//                    contentDescription = "다음 제목",
-//                )
-//            }
-//        }
-//
-//        Text(
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .background(
-//                    color = MaterialTheme.colorScheme.secondary,
-//                    shape = MaterialTheme.shapes.medium
-//                )
-//                .padding(16.dp),
-//            text = "분 선택",
-//            style = Typography.titleLarge
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 16.dp)
-//        ) {
-//            FilledTonalIconButton(
-//                modifier = Modifier
-//                    .size(48.dp),
-//                onClick = {
-//                }
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(36.dp),
-//                    imageVector = Icons.Default.KeyboardArrowLeft,
-//                    contentDescription = "이전 제목"
-//                )
-//            }
-//
-//            Text(
-//                modifier = Modifier
-//                    .weight(1f),
-//                text = "0",
-//                style = Typography.titleLarge
-//            )
-//
-//            FilledTonalIconButton(
-//                modifier = Modifier
-//                    .size(48.dp),
-//                onClick = {
-//                }
-//            ) {
-//                Icon(
-//                    modifier = Modifier
-//                        .size(36.dp),
-//                    imageVector = Icons.Default.KeyboardArrowRight,
-//                    contentDescription = "다음 제목",
-//                )
-//            }
-//        }
 //    }
 //}

@@ -3,20 +3,15 @@ package andpact.project.wid.viewModel
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.destinations.MainViewDestinations
+import andpact.project.wid.model.CurrentToolState
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
-import andpact.project.wid.util.CurrentTool
-import andpact.project.wid.util.CurrentToolState
-import andpact.project.wid.util.Title
-import andpact.project.wid.util.levelRequiredExpMap
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
 
 @HiltViewModel // <- 생성자 주입 할 때 명시해야함.
@@ -33,10 +28,11 @@ class MainBottomBarViewModel @Inject constructor(
 
     val user: State<User?> = userDataSource.user
 
-    val currentTool: State<CurrentTool> = wiDDataSource.currentTool
-    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
+    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
 
-    val title: State<Title> = wiDDataSource.title
+
+    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
     val totalDuration: State<Duration> = wiDDataSource.totalDuration
     val remainingTime: State<Duration> = wiDDataSource.remainingTime
@@ -44,7 +40,6 @@ class MainBottomBarViewModel @Inject constructor(
     val destinationList = listOf(
         MainViewDestinations.HomeViewDestination,
         MainViewDestinations.WiDListViewDestination,
-        MainViewDestinations.SearchViewDestination,
         MainViewDestinations.MyPageViewDestination
     )
 
@@ -64,7 +59,7 @@ class MainBottomBarViewModel @Inject constructor(
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentLevelRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -113,7 +108,7 @@ class MainBottomBarViewModel @Inject constructor(
                 val currentLevel = user.value?.level ?: 1
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -157,7 +152,7 @@ class MainBottomBarViewModel @Inject constructor(
 
                 // 경험치
                 val currentExp = user.value?.currentExp ?: 0
-                val currentRequiredExp = levelRequiredExpMap[currentLevel] ?: 0
+                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
                 val wiDTotalExp = user.value?.wiDTotalExp ?: 0
                 val newWiDTotalExp = wiDTotalExp + newExp
 
@@ -194,5 +189,11 @@ class MainBottomBarViewModel @Inject constructor(
         Log.d(TAG, "stopTimer executed")
 
         wiDDataSource.stopTimer()
+    }
+
+    fun getDurationString(duration: Duration): String {
+//        Log.d(TAG, "getDurationString executed")
+
+        return wiDDataSource.getDurationString(duration = duration)
     }
 }

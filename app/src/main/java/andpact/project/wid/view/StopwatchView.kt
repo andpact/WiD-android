@@ -1,8 +1,9 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
+import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.Title
 import andpact.project.wid.ui.theme.*
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.StopwatchViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -13,20 +14,22 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,9 +43,12 @@ fun StopwatchView(
 ) {
     val TAG = "StopwatchView"
 
+    // currentWiD
+    val firstCurrentWiD = stopwatchViewModel.firstCurrentWiD.value
+    val secondCurrentWiD = stopwatchViewModel.secondCurrentWiD.value
+
     // 제목
-    val title = stopwatchViewModel.title.value
-    val titlePageIndex = Title.values().drop(1).indexOf(title).coerceAtLeast(0)
+    val titlePageIndex = Title.values().drop(1).indexOf(firstCurrentWiD.title).coerceAtLeast(0)
 
     // 화면
     val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
@@ -70,38 +76,54 @@ fun StopwatchView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onBackButtonPressed()
+            if (stopwatchViewBarVisible) {
+                CenterAlignedTopAppBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .clip(shape = MaterialTheme.shapes.medium),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onBackButtonPressed()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                                contentDescription = "뒤로 가기",
+                            )
                         }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                            contentDescription = "뒤로 가기",
+                    },
+                    title = {
+                        Text(
+                            text = "스톱워치",
+                            style = Typography.titleLarge,
                         )
-                    }
-                },
-                title = {
-                    Text(
-                        text = "스톱워치",
-                        style = Typography.titleLarge,
+                    },
+                    actions = {
+                        /** 현재 기록 보기 */
+                        IconButton(
+                            onClick = {
+                                onBackButtonPressed()
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_keyboard_double_arrow_right_24),
+                                contentDescription = "현재 기록 보기",
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
-            )
+            }
         },
         content = { contentPadding: PaddingValues ->
             if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = contentPadding),
+                        .fillMaxSize(),
                     content = {
                         item {
                             Text(
@@ -154,21 +176,21 @@ fun StopwatchView(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Text(
-                                    text = title.kr,
+                                    text = firstCurrentWiD.title.kr,
                                     style = Typography.titleLarge,
                                 )
 
-                                Spacer(
-                                    modifier = Modifier
-                                        .height(height = 8.dp)
-                                )
-
-                                Text(
-                                    text = title.description,
-                                    style = Typography.bodyMedium,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1
-                                )
+//                                Spacer(
+//                                    modifier = Modifier
+//                                        .height(height = 8.dp)
+//                                )
+//
+//                                Text(
+//                                    text = firstCurrentWiD.title.description,
+//                                    style = Typography.bodyMedium,
+//                                    overflow = TextOverflow.Ellipsis,
+//                                    maxLines = 1
+//                                )
                             }
                         }
                     }
@@ -176,12 +198,11 @@ fun StopwatchView(
             } else { // 스톱 워치 시작, 중지 상태
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues = contentPadding),
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = getStopwatchDurationString(totalDuration),
+                        text = stopwatchViewModel.getStopwatchDurationString(totalDuration),
                         style = TextStyle(textAlign = TextAlign.End)
                     )
                 }
@@ -307,7 +328,7 @@ fun StopwatchView(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(MaterialTheme.shapes.medium),
-                        painter = painterResource(id = title.smallImage),
+                        painter = painterResource(id = firstCurrentWiD.title.smallImage),
                         contentDescription = "앱 아이콘"
                     )
 
@@ -427,14 +448,36 @@ fun StopwatchView(
     )
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun StopwatchPreview() {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize(),
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Center
-//    ) {
-//    }
-//}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+fun StopwatchPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        CenterAlignedTopAppBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0))),
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                        contentDescription = "뒤로 가기",
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "새로운 기록",
+                    style = Typography.titleLarge,
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        )
+    }
+}

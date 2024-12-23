@@ -1,8 +1,8 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.destinations.MainActivityViewDestinations
-import andpact.project.wid.ui.theme.changeNavigationBarColor
 import andpact.project.wid.ui.theme.changeStatusBarColor
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,212 +12,133 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 /**
  * 컴포저블 - Jetpack Compose에서 화면을 그리는 데 사용되는 함수,
  * 컴포넌트 - 서비스을 구성하는 블록(ui과 관련이 있는 액티비티와 그렇지 않은 서비스 클래스까지 포함)
  */
-@Composable // 네비게이션 그래프에는 NavController가 아닌 NavHostController가 파라미터로 들어감.
+@Composable
 fun MainActivityView(dynamicLink: String?) {
-    // 네비게이션
-    val mainActivityViewNavController: NavHostController = rememberNavController()
+    val TAG = "MainActivity"
 
-    var mainActivityBarVisible by remember { mutableStateOf(true) }
-
-    if (mainActivityBarVisible) {
-        changeStatusBarColor(color = MaterialTheme.colorScheme.secondaryContainer)
-//        changeNavigationBarColor(color = MaterialTheme.colorScheme.surfaceContainer)
-    } else {
-        changeStatusBarColor(color = MaterialTheme.colorScheme.surface)
-//        changeNavigationBarColor(color = MaterialTheme.colorScheme.surface)
+    DisposableEffect(Unit) {
+        Log.d(TAG, "composed")
+        onDispose { Log.d(TAG, "disposed") }
     }
 
-//    val navBackStackEntry by mainActivityViewNavController.currentBackStackEntryAsState()
-//    val currentRoute = navBackStackEntry?.destination?.route
+    val mainActivityViewNavController: NavHostController = rememberNavController() // 네비게이션 그래프에는 NavController가 아닌 NavHostController가 파라미터로 들어감.
 
     NavHost(
         modifier = Modifier
             .fillMaxSize(),
         navController = mainActivityViewNavController,
-//        startDestination = MainActivityViewDestinations.SplashViewDestination.route
-        startDestination = MainActivityViewDestinations.MainViewDestination.route
-    ) {
-        // 스플래쉬 뷰
-        composable(
-            route = MainActivityViewDestinations.SplashViewDestination.route,
-        ) {
-            SplashView(
-                dynamicLink = dynamicLink,
-                onEmailLinkVerified = { emailLinkVerified: Boolean ->
-                    if (emailLinkVerified) { // 이메일 링크 인증 완료 -> 메인 뷰로 전환
-                        mainActivityViewNavController.navigate(MainActivityViewDestinations.MainViewDestination.route)
-                    } else { // 이메일 링크 인증 실패 -> 인증 뷰로 전환
-                        mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                    }
+        startDestination = MainActivityViewDestinations.SplashViewDestination.route,
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                animationSpec = tween(500)
+            )
+        },
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                animationSpec = tween(500)
+            )
+        },
+        builder = {
+            composable(
+                route = MainActivityViewDestinations.SplashViewDestination.route,
+//                enterTransition = { null },
+//                exitTransition = { null },
+                content = {
+                    SplashView(
+                        dynamicLink = dynamicLink,
+                        onEmailLinkVerified = { emailLinkVerified: Boolean ->
+                            if (emailLinkVerified) { // 이메일 링크 인증 완료 -> 메인 뷰로 전환
+                                mainActivityViewNavController.navigate(MainActivityViewDestinations.MainViewDestination.route)
+                            } else { // 이메일 링크 인증 실패 -> 인증 뷰로 전환
+                                mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
+                            }
+                        }
+                    )
+                }
+            )
+
+            composable(
+                route = MainActivityViewDestinations.AuthenticationViewDestination.route,
+//                enterTransition = { null },
+//                exitTransition = { null },
+                content = {
+                    AuthenticationView()
+                }
+            )
+
+            composable(
+                route = MainActivityViewDestinations.MainViewDestination.route,
+//                enterTransition = { null },
+//                exitTransition = { null },
+                content = {
+                    changeStatusBarColor(color = MaterialTheme.colorScheme.secondaryContainer)
+
+                    MainView(
+                        onStopwatchClicked = {
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.StopwatchViewDestination.route)
+                        },
+                        onTimerClicked = {
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.TimerViewDestination.route)
+                        },
+                        onWiDClicked = {
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
+                        },
+                        onUserSignedOut = {
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
+                        },
+                        onUserDeleted = { userDeleted: Boolean ->
+                            if (userDeleted) {
+                                mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
+                            }
+                        }
+                    )
+                }
+            )
+
+            composable(
+                route = MainActivityViewDestinations.StopwatchViewDestination.route,
+                content = {
+                    changeStatusBarColor(color = MaterialTheme.colorScheme.surface)
+
+                    StopwatchView(
+                        onBackButtonPressed = {
+                            mainActivityViewNavController.popBackStack()
+                        }
+                    )
+                }
+            )
+
+            composable(
+                route = MainActivityViewDestinations.TimerViewDestination.route,
+                content = {
+                    changeStatusBarColor(color = MaterialTheme.colorScheme.surface)
+
+                    TimerView(
+                        onBackButtonPressed = {
+                            mainActivityViewNavController.popBackStack()
+                        }
+                    )
+                }
+            )
+
+            composable(
+                route = MainActivityViewDestinations.WiDViewDestination.route,
+                content = {
+                    WiDView(
+                        onBackButtonPressed = {
+                            mainActivityViewNavController.popBackStack()
+                        }
+                    )
                 }
             )
         }
-
-        // 인증 뷰
-        composable(
-            route = MainActivityViewDestinations.AuthenticationViewDestination.route,
-        ) {
-            AuthenticationView()
-        }
-
-        // 메인 뷰
-        composable(
-            route = MainActivityViewDestinations.MainViewDestination.route,
-        ) {
-            MainView(
-                onStopwatchClicked = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.StopwatchViewDestination.route)
-                },
-                onTimerClicked = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.TimerViewDestination.route)
-                },
-                onNewWiDClicked = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.NewWiDViewDestination.route)
-                },
-                onWiDClicked = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
-                },
-                onUserSignedOut = {
-                    mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                },
-                onUserDeleted = { userDeleted: Boolean ->
-                    if (userDeleted) {
-                        mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
-                    }
-                },
-                onMainViewBarVisibleChanged = { visible ->
-                    mainActivityBarVisible = visible
-                },
-            )
-        }
-
-        // StopwatchView
-        composable(
-            route = MainActivityViewDestinations.StopwatchViewDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            StopwatchView(
-                onBackButtonPressed = {
-                    mainActivityViewNavController.popBackStack()
-                }
-            )
-        }
-
-        // TimerView
-        composable(
-            route = MainActivityViewDestinations.TimerViewDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            TimerView(
-                onBackButtonPressed = {
-                    mainActivityViewNavController.popBackStack()
-                }
-            )
-        }
-
-        // NewWiDView
-        composable(
-            route = MainActivityViewDestinations.NewWiDViewDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            NewWiDView(
-                onBackButtonPressed = {
-                    mainActivityViewNavController.popBackStack()
-                }
-            )
-        }
-
-        // WiD 뷰
-        composable(
-            route = MainActivityViewDestinations.WiDViewDestination.route,
-            enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(500)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(500)
-                )
-            }
-        ) {
-            WiDView(
-                onBackButtonPressed = {
-                    mainActivityViewNavController.popBackStack()
-                }
-            )
-        }
-
-        // 다이어리 뷰
-//        composable(
-//            route = MainActivityViewDestinations.DiaryViewDestination.route + "/{wiDList}/{diary}",
-//            enterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Left,
-//                    animationSpec = tween(500)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Right,
-//                    animationSpec = tween(500)
-//                )
-//            }
-//        ) { backStackEntry ->
-//            // 어떻게 역직렬화 시킬 건가?
-//            val wiDListString = backStackEntry.arguments?.getString("wiDList")
-//            val diaryString = backStackEntry.arguments?.getString("diary")
-//
-//            val date = run {
-//                val dateString = backStackEntry.arguments?.getString("date") ?: ""
-//                LocalDate.parse(dateString)
-//            }
-//            DiaryView(
-//                onBackButtonPressed = { mainActivityViewNavController.popBackStack() },
-//                date = date,
-//            )
-//        }
-    }
+    )
 }

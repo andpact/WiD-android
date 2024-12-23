@@ -1,8 +1,6 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
-import andpact.project.wid.ui.theme.SplashTheme
-import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.viewModel.SplashViewModel
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -16,8 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 
 @Composable
@@ -45,68 +41,68 @@ fun SplashView(
         // 인증(회원 가입, 로그인)이 되었다는 것은 Firebase Auth 객체를 가지고 있다는 것.
         // 기존 로그인 기록이 없는 상황에서 다이나믹 링크를 전송함.
         // 앱을 실행하고, 다이나믹 링크로 앱을 실행함.
-        splashViewModel.verifyAuthenticationLink(dynamicLink) { authenticationLinkVerified ->
-            if (authenticationLinkVerified || splashViewModel.hasFirebaseUser()) { // 동적 링크가 검증되거나 기존 로그인 유저 있거나.
-                splashViewModel.setFirebaseUserAndUser() // Firebase User 및 User 문서 가져옴.
+        splashViewModel.verifyAuthenticationLink(
+            dynamicLink = dynamicLink,
+            onAuthenticationLinkVerified = { authenticationLinkVerified: Boolean ->
+                if (authenticationLinkVerified || splashViewModel.hasFirebaseUser()) { // 동적 링크가 검증되거나 기존 로그인 유저 있거나.
+                    splashViewModel.setFirebaseUserAndUser() // Firebase User 및 User 문서 가져옴.
 
-                onEmailLinkVerified(true) // 화면 전환
-            } else { // 기존 로그인 기록이 없는 경우
-                onEmailLinkVerified(false)
+                    onEmailLinkVerified(true) // 메인 화면 전환
+                } else { // 기존 로그인 기록이 없는 경우
+                    onEmailLinkVerified(false) // 인증 화면 전환
+                }
             }
-        }
+        )
     }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
-
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    SplashTheme {
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.surface)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-    //                    modifier = Modifier
-    //                        .size(96.dp),
-                    painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main, ic_main_rounded는 안되네?
-                    contentDescription = "앱 아이콘"
-                )
+            Image(
+                //                    modifier = Modifier
+                //                        .size(96.dp),
+                painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main, ic_main_rounded는 안되네?
+                contentDescription = "앱 아이콘"
+            )
 
-    //                Text(
-    //                    text = "WiD",
-    //                    style = TextStyle(
-    //                        color = MaterialTheme.colorScheme.primary,
-    //                        textAlign = TextAlign.Center,
-    //                        fontSize = 70.sp,
-    //                        fontWeight = FontWeight.Bold,
-    //                        fontFamily = acmeRegular
-    //                    )
-    //                )
-            }
-/** 인터넷 연결 확인 메시지는 대화상자로 띄우자. */
-    //            if (!isInternetConnected) {
-    //                Column(modifier = Modifier
-    //                    .fillMaxSize()
-    //                    .padding(bottom = 100.dp),
-    //                    verticalArrangement = Arrangement.Center,
-    //                    horizontalAlignment = Alignment.CenterHorizontally
-    //                ) {
-    //                    Text(
-    //                        text = "인터넷 연결을 확인하세요.",
-    //                        style = Typography.bodyMedium,
-    //                        color = MaterialTheme.colorScheme.primary
-    //                    )
-    //                }
-    //            }
+            //                Text(
+            //                    text = "WiD",
+            //                    style = TextStyle(
+            //                        color = MaterialTheme.colorScheme.primary,
+            //                        textAlign = TextAlign.Center,
+            //                        fontSize = 70.sp,
+            //                        fontWeight = FontWeight.Bold,
+            //                        fontFamily = acmeRegular
+            //                    )
+            //                )
         }
+        /** 인터넷 연결 확인 메시지는 대화상자로 띄우자. */
+        //            if (!isInternetConnected) {
+        //                Column(modifier = Modifier
+        //                    .fillMaxSize()
+        //                    .padding(bottom = 100.dp),
+        //                    verticalArrangement = Arrangement.Center,
+        //                    horizontalAlignment = Alignment.CenterHorizontally
+        //                ) {
+        //                    Text(
+        //                        text = "인터넷 연결을 확인하세요.",
+        //                        style = Typography.bodyMedium,
+        //                        color = MaterialTheme.colorScheme.primary
+        //                    )
+        //                }
+        //            }
     }
 }

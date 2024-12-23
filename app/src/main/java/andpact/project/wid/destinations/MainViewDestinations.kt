@@ -20,12 +20,6 @@ sealed class MainViewDestinations(
         selectedIcon = R.drawable.baseline_article_24,
         unselectedIcon = R.drawable.outline_article_24
     )
-    object SearchViewDestination : MainViewDestinations(
-        route = "search_view",
-        title = "검색",
-        selectedIcon = R.drawable.round_screen_search_desktop_24,
-        unselectedIcon = R.drawable.outline_screen_search_desktop_24
-    )
     object MyPageViewDestination : MainViewDestinations(
         route = "my_page_view",
         title = "내 페이지",

@@ -2,21 +2,20 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.destinations.MainViewDestinations
+import andpact.project.wid.model.CurrentTool
+import andpact.project.wid.model.CurrentToolState
 import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.util.*
 import andpact.project.wid.viewModel.MainBottomBarViewModel
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.*
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -27,56 +26,85 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun MainBottomBarView(
     currentRoute: String?,
-    onDestinationChanged: (String) -> Unit,
+    onDestinationChanged: (destination: String) -> Unit,
+    onCurrentToolClicked: (currentTool: CurrentTool) -> Unit,
     mainBottomBarViewModel: MainBottomBarViewModel = hiltViewModel()
 ) {
-    val title = mainBottomBarViewModel.title.value
+    val firstCurrentWiD = mainBottomBarViewModel.firstCurrentWiD.value
+    val secondCurrentWiD = mainBottomBarViewModel.secondCurrentWiD.value
 
     val totalDuration = mainBottomBarViewModel.totalDuration.value
     val remainingTime = mainBottomBarViewModel.remainingTime.value
 
-    val currentTool = mainBottomBarViewModel.currentTool.value
     val currentToolState = mainBottomBarViewModel.currentToolState.value
 
     val destinationList = mainBottomBarViewModel.destinationList
+
+    DisposableEffect(Unit) {
+        val TAG = "MainBottomBarView"
+        Log.d(TAG, "composed")
+        onDispose { Log.d(TAG, "disposed") }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface) // 네비게이션 지웠을 때의 색상
     ) {
-        if (currentTool != CurrentTool.NONE && currentToolState != CurrentToolState.STOPPED) {
-            /** 클릭 시 해당 도구로 화면 전환 */
+        if (firstCurrentWiD.createdBy != CurrentTool.NONE && currentToolState != CurrentToolState.STOPPED) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    .height(56.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable(
+                        onClick = {
+                            onCurrentToolClicked(firstCurrentWiD.createdBy)
+                        }
+                    )
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     modifier = Modifier
-                        .padding(16.dp)
                         .clip(MaterialTheme.shapes.medium)
                         .size(40.dp),
-                    painter = painterResource(id = title.smallImage),
-                    contentDescription = "앱 아이콘"
+                    painter = painterResource(id = firstCurrentWiD.title.smallImage),
+                    contentDescription = "현재 제목"
                 )
 
                 Column(
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
-                        text = title.kr,
-                        style = Typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = firstCurrentWiD.title.kr,
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(horizontal = 8.dp),
+                            text = firstCurrentWiD.createdBy.kr,
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
 
                     Text(
-                        text = when (currentTool) {
-                            CurrentTool.STOPWATCH -> getDurationString(totalDuration) // 스톱 워치
-                            else -> getDurationString(remainingTime) // 타이머
+                        text = when (firstCurrentWiD.createdBy) {
+                            CurrentTool.STOPWATCH -> mainBottomBarViewModel.getDurationString(totalDuration) // 스톱 워치
+                            else -> mainBottomBarViewModel.getDurationString(remainingTime) // 타이머
                         },
                         style = Typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -86,7 +114,7 @@ fun MainBottomBarView(
 
                 FilledIconButton(
                     onClick = {
-                        when (currentTool) {
+                        when (firstCurrentWiD.createdBy) {
                             CurrentTool.STOPWATCH -> mainBottomBarViewModel.stopStopwatch() // 스톱 워치
                             else -> mainBottomBarViewModel.stopTimer() // 타이머
                         }
@@ -104,13 +132,13 @@ fun MainBottomBarView(
                     onClick = {
                         when (currentToolState) {
                             CurrentToolState.STARTED -> {
-                                when (currentTool) {
+                                when (firstCurrentWiD.createdBy) {
                                     CurrentTool.STOPWATCH -> mainBottomBarViewModel.pauseStopwatch() // 스톱 워치
                                     else -> mainBottomBarViewModel.pauseTimer() // 타이머
                                 }
                             }
                             else -> {
-                                when (currentTool) {
+                                when (firstCurrentWiD.createdBy) {
                                     CurrentTool.STOPWATCH -> mainBottomBarViewModel.startStopwatch() // 스톱 워치
                                     else -> mainBottomBarViewModel.startTimer() // 타이머
                                 }

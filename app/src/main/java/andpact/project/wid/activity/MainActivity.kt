@@ -67,19 +67,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//fun parseWiDFromString(wiDString: String): WiD {
-//    val parts = wiDString.split(",")
-//    require(parts.size == 6) { "Invalid string format" }
-//    val id = parts[0].toLong()
-//    val date = LocalDate.parse(parts[1])
-//    val title = parts[2]
-//    val start = LocalTime.parse(parts[3])
-//    val finish = LocalTime.parse(parts[4])
-//    val durationMillis = parts[5].toLong()
-//    val duration = Duration.ofMillis(durationMillis)
-//    return WiD(id, date, title, start, finish, duration)
-//}
-
 //@Preview(showBackground = true)
 //@Composable
 //fun WiDMainActivityPreview() {
