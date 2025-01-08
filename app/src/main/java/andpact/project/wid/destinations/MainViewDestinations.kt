@@ -4,7 +4,7 @@ import andpact.project.wid.R
 
 sealed class MainViewDestinations(
     val route: String,
-    val title: String? = null,
+    val title: String,
     val selectedIcon: Int,
     val unselectedIcon: Int
 ) {

@@ -1,15 +1,14 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.R
+import andpact.project.wid.chartView.MonthlyWiDListChartView
 import andpact.project.wid.chartView.WeeklyWiDListChartView
 import andpact.project.wid.model.Title
 import andpact.project.wid.model.TitleDurationMap
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.viewModel.MonthlyWiDListViewModel
 import andpact.project.wid.viewModel.WeeklyWiDListViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,7 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -28,34 +29,31 @@ import java.time.Duration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewModel()) {
-    val TAG = "WeeklyWiDListView"
+fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltViewModel()) {
+    val TAG = "MonthlyWiDListView"
 
-    // 날짜
-    val today = weeklyWiDListViewModel.today.value
-    val startDate = weeklyWiDListViewModel.startDate.value // 조회 시작 날짜
-    val finishDate = weeklyWiDListViewModel.finishDate.value // 조회 종료 날짜
-    val weekPickerExpanded = weeklyWiDListViewModel.weekPickerExpanded.value
+    val today = monthlyWiDListViewModel.today.value
+    val startDate = monthlyWiDListViewModel.startDate.value // 조회 시작 날짜
+    val finishDate = monthlyWiDListViewModel.finishDate.value // 조회 종료 날짜
+    val monthPickerExpanded = monthlyWiDListViewModel.monthPickerExpanded.value
 
-    // WiD
-    val wiDList = weeklyWiDListViewModel.wiDList.value
+    val wiDList = monthlyWiDListViewModel.wiDList.value
 
-    // 맵
-    val currentMapType = weeklyWiDListViewModel.currentMapType.value
-    val currentMap = weeklyWiDListViewModel.currentMap.value
-    val titleDateCountMap = weeklyWiDListViewModel.titleDateCountMap.value
-    val titleMaxDateMap = weeklyWiDListViewModel.titleMaxDateMap.value
-    val titleMinDateMap = weeklyWiDListViewModel.titleMinDateMap.value
+    val currentMapType = monthlyWiDListViewModel.currentMapType.value
+    val currentMap = monthlyWiDListViewModel.currentMap.value
+    val titleDateCountMap = monthlyWiDListViewModel.titleDateCountMap.value
+    val titleMaxDateMap = monthlyWiDListViewModel.titleMaxDateMap.value
+    val titleMinDateMap = monthlyWiDListViewModel.titleMinDateMap.value
+
+    BackHandler(
+        enabled = monthPickerExpanded,
+        onBack = { monthlyWiDListViewModel.setMonthPickerExpanded(expand = false) }
+    )
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
     }
-
-    BackHandler(
-        enabled = weekPickerExpanded,
-        onBack = { weeklyWiDListViewModel.setWeekPickerExpanded(false) }
-    )
 
     Scaffold(
         modifier = Modifier
@@ -66,14 +64,11 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 title = {
                     TextButton(
                         onClick = {
-                            weeklyWiDListViewModel.setWeekPickerExpanded(true)
+                            monthlyWiDListViewModel.setMonthPickerExpanded(expand = true)
                         }
                     ) {
                         Text(
-                            text = weeklyWiDListViewModel.getWeekString(
-                                firstDayOfWeek = startDate,
-                                lastDayOfWeek = finishDate
-                            ),
+                            text = monthlyWiDListViewModel.getMonthString(firstDayOfMonth = startDate),
                             style = MaterialTheme.typography.bodyLarge,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1
@@ -83,10 +78,10 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 actions = {
                     FilledTonalIconButton(
                         onClick = {
-                            val newStartDate = startDate.minusWeeks(1)
-                            val newFinishDate = finishDate.minusWeeks(1)
+                            val newStartDate = monthlyWiDListViewModel.getFirstDateOfMonth(startDate.minusDays(15))
+                            val newFinishDate = monthlyWiDListViewModel.getLastDateOfMonth(finishDate.minusDays(45))
 
-                            weeklyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
+                            monthlyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                         },
                     ) {
                         Icon(
@@ -97,12 +92,12 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
 
                     FilledTonalIconButton(
                         onClick = {
-                            val newStartDate = startDate.plusWeeks(1)
-                            val newFinishDate = finishDate.plusWeeks(1)
+                            val newStartDate = monthlyWiDListViewModel.getFirstDateOfMonth(startDate.plusDays(45))
+                            val newFinishDate = monthlyWiDListViewModel.getLastDateOfMonth(finishDate.plusDays(15))
 
-                            weeklyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
+                            monthlyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                         },
-                        enabled = !(startDate == weeklyWiDListViewModel.getFirstDateOfWeek(today) && finishDate == weeklyWiDListViewModel.getLastDateOfWeek(today))
+                        enabled = !(startDate == monthlyWiDListViewModel.getFirstDateOfMonth(today) && finishDate == monthlyWiDListViewModel.getLastDateOfMonth(today))
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowRight,
@@ -135,7 +130,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 }
             } else {
                 item {
-                    WeeklyWiDListChartView(
+                    MonthlyWiDListChartView(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         startDate = startDate,
@@ -158,7 +153,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                 FilterChip(
                                     selected = currentMapType == mapType,
                                     onClick = {
-                                        weeklyWiDListViewModel.setCurrentMapType(mapType)
+                                        monthlyWiDListViewModel.setCurrentMapType(mapType)
                                     },
                                     label = {
                                         Text(text = mapType.kr)
@@ -184,8 +179,6 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
 //                                ) {
 //                                    Text(
 //                                        text = "${index + 1}",
-//                                        style = Typography.titleLarge,
-//                                        color = MaterialTheme.colorScheme.onSecondaryContainer
 //                                    )
 //                                }
 
@@ -195,12 +188,12 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                 Text(text = title.kr)
                             },
                             supportingContent = {
-                                Text(text = weeklyWiDListViewModel.getDurationString(duration = duration))
+                                Text(text = monthlyWiDListViewModel.getDurationString(duration = duration))
                             },
                             trailingContent = {
                                 Text(
                                     text = when (currentMapType) {
-                                        TitleDurationMap.TOTAL -> weeklyWiDListViewModel.getDurationPercentageStringOfWeek(duration = duration)
+                                        TitleDurationMap.TOTAL -> monthlyWiDListViewModel.getDurationPercentageStringOfMonth(date = startDate, duration = duration)
                                         TitleDurationMap.AVERAGE -> "총 ${titleDateCountMap[title]}일 기준"
                                         TitleDurationMap.MAX -> "${titleMaxDateMap[title]?.dayOfMonth}일"
                                         TitleDurationMap.MIN -> "${titleMinDateMap[title]?.dayOfMonth}일"
@@ -221,81 +214,8 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
             }
         }
 
-        if (weekPickerExpanded) {
-            AlertDialog(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        shape = MaterialTheme.shapes.extraLarge
-                    ),
-                onDismissRequest = {
-                    weeklyWiDListViewModel.setWeekPickerExpanded(false)
-                },
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        text = "기간 선택",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        repeat(5) { index -> // 0부터 시작
-                            val reverseIndex = 4 - index // 역순 인덱스 계산
-
-                            val firstDayOfWeek = weeklyWiDListViewModel.getFirstDateOfWeek(today).minusWeeks(reverseIndex.toLong())
-                            val lastDayOfWeek = weeklyWiDListViewModel.getLastDateOfWeek(today).minusWeeks(reverseIndex.toLong())
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        weeklyWiDListViewModel.setStartDateAndFinishDate(
-                                            startDate = firstDayOfWeek,
-                                            finishDate = lastDayOfWeek
-                                        )
-
-                                        weeklyWiDListViewModel.setWeekPickerExpanded(false)
-                                    },
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .padding(16.dp),
-                                    text = weeklyWiDListViewModel.getWeekString(firstDayOfWeek = firstDayOfWeek, lastDayOfWeek = lastDayOfWeek),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                )
-
-                                RadioButton(
-                                    selected = startDate == firstDayOfWeek && finishDate == lastDayOfWeek,
-                                    onClick = {
-                                        weeklyWiDListViewModel.setStartDateAndFinishDate(
-                                            startDate = firstDayOfWeek,
-                                            finishDate = lastDayOfWeek
-                                        )
-
-                                        weeklyWiDListViewModel.setWeekPickerExpanded(false)
-                                    },
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+        if (monthPickerExpanded) {
+            // TODO: 월 선택 대화상자 만들기
         }
     }
 }

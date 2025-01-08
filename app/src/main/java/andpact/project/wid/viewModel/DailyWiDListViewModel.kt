@@ -35,6 +35,8 @@ class DailyWiDListViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
+    val WID_LIST_LIMIT_PER_DAY = wiDDataSource.WID_LIST_LIMIT_PER_DAY
+
     val NEW_WID = wiDDataSource.NEW_WID
     val LAST_NEW_WID = wiDDataSource.LAST_NEW_WID
     val CURRENT_WID = wiDDataSource.CURRENT_WID
@@ -71,8 +73,10 @@ class DailyWiDListViewModel @Inject constructor(
 
         _currentDate.value = newDate
 
+        val currentUser = user.value ?: return
+
         wiDDataSource.getYearlyWiDListMap(
-            email = user.value?.email ?: "",
+            email = currentUser.email,
             year = Year.of(newDate.year)
         )
     }
@@ -80,7 +84,11 @@ class DailyWiDListViewModel @Inject constructor(
     fun setClickedWiDAndCopy(clickedWiD: WiD) {
         Log.d(TAG, "setClickedWiDAndCopy executed")
 
-        wiDDataSource.setClickedWiDAndCopy(clickedWiD = clickedWiD)
+        val currentUser = user.value ?: return
+
+        val updatedClickedWiD = clickedWiD.copy(city = currentUser.city)
+
+        wiDDataSource.setClickedWiDAndCopy(clickedWiD = updatedClickedWiD)
     }
 
     fun getDurationString(duration: Duration): String { // 'H시간 m분 s초'

@@ -2,6 +2,7 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
+import andpact.project.wid.model.City
 import andpact.project.wid.model.User
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -27,6 +28,8 @@ class MyAccountViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
+    private val CITY = userDataSource.CITY
+
     // user 인스턴스 자체가 갱신되면서 화면의 데이터가 갱신되도록 함.
     val firebaseUser: State<FirebaseUser?> = userDataSource.firebaseUser
     val user: State<User?> = userDataSource.user
@@ -36,7 +39,7 @@ class MyAccountViewModel @Inject constructor(
     val emailForDialog: State<String> = _emailForDialog
 
     // 닉네임(대화상자)
-    private val _displayNameForDialog = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: getRandomNickname())
+    private val _displayNameForDialog = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: "tmp nickname")
     val displayNameForDialog: State<String> = _displayNameForDialog
     private val _showDisplayNameDialog = mutableStateOf(false)
     val showDisplayNameDialog: State<Boolean> = _showDisplayNameDialog
@@ -64,7 +67,7 @@ class MyAccountViewModel @Inject constructor(
     fun updateDisplayName(newDisplayName: String) {
         Log.d(TAG, "updateDisplayName executed")
 
-        /** 파이어베이스 유저 갱신하는 코드 작성. */
+        // TODO: 파이어베이스 유저 갱신하는 코드 작성
     }
 
     fun setShowDisplayNameDialog(show: Boolean) {
@@ -77,6 +80,19 @@ class MyAccountViewModel @Inject constructor(
         Log.d(TAG, "setShowLevelDateMapDialog executed")
 
         _showLevelDateMapDialog.value = show
+    }
+
+    fun updateCity(updatedCity: City) {
+        Log.d(TAG, "updateCity executed")
+
+        val currentUser = user.value ?: return
+        val updatedFields = mutableMapOf<String, Any>()
+        updatedFields[CITY] = updatedCity.name // String 타입으로 서버로 보냄.
+
+        userDataSource.setUserDocument(
+            email = currentUser.email,
+            updatedUserDocument = updatedFields
+        )
     }
 
     fun setShowSignOutDialog(show: Boolean) {
@@ -100,8 +116,10 @@ class MyAccountViewModel @Inject constructor(
     fun deleteUser(onUserDeleted: (Boolean) -> Unit) {
         Log.d(TAG, "deleteUser executed")
 
+        val currentUser = user.value ?: return
+
         userDataSource.deleteUser(
-            email = user.value?.email ?: "",
+            email = currentUser.email,
             onUserDeleted = { userDeleted: Boolean ->
                 onUserDeleted(userDeleted)
             }
@@ -115,23 +133,23 @@ class MyAccountViewModel @Inject constructor(
         return wiDDataSource.getDateString(date = date)
     }
 
-    fun getRandomNickname(): String {
-        Log.d(TAG, "getRandomNickname executed")
-
-        return tmpNicknameList[Random.nextInt(tmpNicknameList.size)]
-    }
-
-    val tmpNicknameList: List<String> = listOf(
-        "부지런한 고양이",
-        "활기찬 햇살",
-        "즐거운 토끼",
-        "웃음 가득한 나비",
-        "활동적인 다람쥐",
-        "상큼한 레몬",
-        "밝은 별빛",
-        "행복한 새벽",
-        "긍정적인 물결",
-        "힘찬 파랑새",
-        "활력 넘치는 해바라기"
-    )
+//    fun getRandomNickname(): String {
+//        Log.d(TAG, "getRandomNickname executed")
+//
+//        return tmpNicknameList[Random.nextInt(tmpNicknameList.size)]
+//    }
+//
+//    val tmpNicknameList: List<String> = listOf(
+//        "부지런한 고양이",
+//        "활기찬 햇살",
+//        "즐거운 토끼",
+//        "웃음 가득한 나비",
+//        "활동적인 다람쥐",
+//        "상큼한 레몬",
+//        "밝은 별빛",
+//        "행복한 새벽",
+//        "긍정적인 물결",
+//        "힘찬 파랑새",
+//        "활력 넘치는 해바라기"
+//    )
 }

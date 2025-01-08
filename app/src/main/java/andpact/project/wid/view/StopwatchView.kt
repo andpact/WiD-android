@@ -2,11 +2,16 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.model.CurrentToolState
-import andpact.project.wid.model.Title
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.ui.theme.DeepSkyBlue
+import andpact.project.wid.ui.theme.LocalDimensions
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.viewModel.StopwatchViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,11 +19,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -27,35 +31,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import java.time.Duration
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun StopwatchView(
     onBackButtonPressed: () -> Unit,
+    onTitlePickerClicked: () -> Unit,
     stopwatchViewModel: StopwatchViewModel = hiltViewModel()
 ) {
     val TAG = "StopwatchView"
 
-    // currentWiD
+    val WID_LIST_LIMIT_PER_DAY = stopwatchViewModel.WID_LIST_LIMIT_PER_DAY
+
+    val isSameDateForStartAndFinish = stopwatchViewModel.isSameDateForStartAndFinish.value
     val firstCurrentWiD = stopwatchViewModel.firstCurrentWiD.value
     val secondCurrentWiD = stopwatchViewModel.secondCurrentWiD.value
 
-    // 제목
-    val titlePageIndex = Title.values().drop(1).indexOf(firstCurrentWiD.title).coerceAtLeast(0)
+    val wiDList = stopwatchViewModel.wiDList.value
+
+    val user = stopwatchViewModel.user.value
+    val wiDMinLimit = user?.wiDMinLimit ?: Duration.ZERO
+    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ZERO
 
     // 화면
     val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
-    val pagerState = rememberPagerState(
-        initialPage = titlePageIndex,
-        pageCount = { Title.values().drop(1).size}
-    )
+    val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
     // 도구
@@ -76,408 +86,752 @@ fun StopwatchView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
         topBar = {
-            if (stopwatchViewBarVisible) {
+            AnimatedVisibility(
+                visible = stopwatchViewBarVisible,
+                enter = slideInVertically(
+                    initialOffsetY = { -it } // 위에서 아래로 슬라이드
+                ) + fadeIn(
+                    animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing),
+                    initialAlpha = 0f // 점점 불투명하게
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { -it } // 아래에서 위로 슬라이드
+                ) + fadeOut(
+                    animationSpec = tween(durationMillis = 300, easing = FastOutLinearInEasing),
+                    targetAlpha = 0f // 점점 투명하게
+                )
+            ) {
                 CenterAlignedTopAppBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .clip(shape = MaterialTheme.shapes.medium),
                     navigationIcon = {
                         IconButton(
-                            onClick = {
-                                onBackButtonPressed()
-                            }
+                            onClick = { onBackButtonPressed() }
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                                imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "뒤로 가기",
                             )
                         }
                     },
                     title = {
-                        Text(
-                            text = "스톱워치",
-                            style = Typography.titleLarge,
-                        )
+                        Text(text = "스톱워치")
                     },
-                    actions = {
-                        /** 현재 기록 보기 */
-                        IconButton(
-                            onClick = {
-                                onBackButtonPressed()
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_keyboard_double_arrow_right_24),
-                                contentDescription = "현재 기록 보기",
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
                 )
             }
         },
-        content = { contentPadding: PaddingValues ->
-            if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
-                LazyColumn(
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                AnimatedVisibility(
+                    visible = stopwatchViewBarVisible,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
+                            TextButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart),
+                                onClick = {
+                                    onTitlePickerClicked()
+                                },
+                                enabled = currentToolState == CurrentToolState.STOPPED,
+                            ) {
+                                Text(
+                                    text = firstCurrentWiD.subTitle.kr + ", " + firstCurrentWiD.title.kr,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        FilledIconButton(
+                            onClick = {
+                                if (currentToolState == CurrentToolState.STARTED) { // 시작 상태
+                                    stopwatchViewModel.pauseStopwatch()
+                                } else { // 중지 및 정지 상태
+                                    stopwatchViewModel.startStopwatch()
+                                }
+                            },
+                            enabled = wiDList.size <= WID_LIST_LIMIT_PER_DAY
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (currentToolState == CurrentToolState.STARTED) R.drawable.baseline_pause_24
+                                    else R.drawable.baseline_play_arrow_24
+                                ),
+                                contentDescription = when (currentToolState) {
+                                    CurrentToolState.STARTED -> "스톱워치 일시 정지"
+                                    CurrentToolState.PAUSED, CurrentToolState.STOPPED -> "스톱워치 시작"
+                                },
+                                tint = White
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
+                            IconButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd),
+                                onClick = {
+                                    stopwatchViewModel.stopStopwatch()
+                                },
+                                enabled = currentToolState == CurrentToolState.PAUSED
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_stop_24),
+                                    contentDescription = "스톱워치 초기화",
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Row(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    content = {
-                        item {
-                            Text(
+                        .fillMaxWidth()
+                        .height(64.dp)
+                ) {
+                    AnimatedVisibility(
+                        modifier = Modifier
+                            .weight(1f), // 여기 설정해야 함 하위 컴포넌트가 아니라
+                        visible = stopwatchViewBarVisible,
+                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.extraSmall
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "최소",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+
+                                Text(
+                                    text = stopwatchViewModel.getDurationString(wiDMinLimit),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.extraSmall
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "최대",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+
+                                Text(
+                                    text = stopwatchViewModel.getDurationString(wiDMaxLimit),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (stopwatchViewBarVisible) {
+                                stopwatchViewModel.setStopwatchViewBarVisible(false)
+                            } else {
+                                stopwatchViewModel.setStopwatchViewBarVisible(true)
+                            }
+
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.initialPage)
+                            }
+                        },
+                        enabled = currentToolState == CurrentToolState.STARTED
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (stopwatchViewBarVisible) {
+                                    R.drawable.baseline_fullscreen_24
+                                } else {
+                                    R.drawable.baseline_fullscreen_exit_24
+                                }
+                            ),
+                            contentDescription = "탑 바텀 바 숨기기 보이기",
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        modifier = Modifier
+                            .weight(1f),
+                        visible = stopwatchViewBarVisible,
+                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${wiDList.size}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.extraSmall
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "현재",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                            }
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = WID_LIST_LIMIT_PER_DAY.toString(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                Text(
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            shape = MaterialTheme.shapes.extraSmall
+                                        )
+                                        .padding(horizontal = 4.dp),
+                                    text = "최대",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        content = { contentPadding: PaddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+            ) {
+                AnimatedVisibility(
+                    visible = stopwatchViewBarVisible,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val currentPage = pagerState.currentPage
+
+                        Row(
+                            modifier = Modifier
+                                .height(32.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                                    shape = MaterialTheme.shapes.extraLarge
+                                )
+                        ) {
+                            FilterChip(
+                                selected = currentPage == 0,
+                                shape = MaterialTheme.shapes.extraLarge,
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
+                                border = null,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(0)
+                                    }
+                                },
+                                label = {
+                                    Text(text = "표지")
+                                }
+                            )
+
+                            FilterChip(
+                                selected = currentPage == 1,
+                                shape = MaterialTheme.shapes.extraLarge,
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
+                                border = null,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(1)
+                                    }
+                                },
+                                label = {
+                                    Text(text = "시간")
+                                }
+                            )
+
+                            FilterChip(
+                                selected = currentPage == 2,
+                                shape = MaterialTheme.shapes.extraLarge,
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
+                                border = null,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(2)
+                                    }
+                                },
+                                label = {
+                                    Text(text = "기록")
+                                }
+                            )
+                        }
+                    }
+                }
+
+                HorizontalPager(
+                    modifier = Modifier
+                        .weight(1f),
+                    state = pagerState,
+                    verticalAlignment = Alignment.CenterVertically
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp)
+                                    .padding(horizontal = 16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Image(
+                                    modifier = Modifier
+                                        .padding(horizontal = 64.dp),
+                                    painter = painterResource(id = firstCurrentWiD.title.smallImage),
+                                    contentDescription = "제목 이미지"
+                                )
+
+                                val progress = if (wiDMaxLimit.seconds > 0) { // 0으로 나누는 오류 방지
+                                    totalDuration.seconds / wiDMaxLimit.seconds.toFloat()
+                                } else {
+                                    0f
+                                }
+
+                                Slider(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp),
+                                    value = progress,
+                                    enabled = false,
+                                    onValueChange = {},
+                                    colors = SliderDefaults.colors(
+                                        disabledThumbColor = MaterialTheme.colorScheme.onSurface,
+                                        disabledActiveTrackColor = MaterialTheme.colorScheme.onSurface
+                                    )
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = stopwatchViewModel.getDurationString(totalDuration),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+
+                                    Text(
+                                        text = stopwatchViewModel.getDurationString(wiDMaxLimit),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        }
+                        1 -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stopwatchViewModel.getStopwatchDurationString(totalDuration),
+                                    style = TextStyle(textAlign = TextAlign.End)
+                                )
+                            }
+                        }
+                        2 -> {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
                                     .background(
                                         color = MaterialTheme.colorScheme.secondaryContainer,
                                         shape = MaterialTheme.shapes.medium
                                     )
-                                    .padding(16.dp),
-                                text = "제목 선택",
-                                style = Typography.titleLarge,
-                                textAlign = TextAlign.Center
-                            )
+                            ) {
+                                item {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(intrinsicSize = IntrinsicSize.Min)
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                        ) {
+                                            Text(
+                                                text = "날짜",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
 
-                            HorizontalPager(
-                                state = pagerState,
-                                pageSpacing = (-48).dp
-                            ) { page: Int ->
-                                val currentTitle = Title.values()[page + 1] // 인덱스 보정
-
-                                FilledIconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 32.dp)
-                                        .aspectRatio(1f),
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(page)
+                                            Text(
+                                                text = stopwatchViewModel.getDateString(date = firstCurrentWiD.date),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
 
-                                        stopwatchViewModel.setTitle(newTitle = currentTitle)
-                                    },
-                                    shape = MaterialTheme.shapes.extraLarge
-                                ) {
-                                    Image(
+                                        if (!isSameDateForStartAndFinish) {
+                                            VerticalDivider(
+                                                modifier = Modifier
+                                                    .padding(vertical = 12.dp),
+                                                thickness = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = "날짜",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                )
+
+                                                Text(
+                                                    text = stopwatchViewModel.getDateString(date = secondCurrentWiD.date),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(
                                         modifier = Modifier
-                                            .fillMaxSize(),
-                                        painter = painterResource(id = currentTitle.image), // Title enum의 image 사용
-                                        contentDescription = currentTitle.kr // 한글 설명 사용
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = "제목",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                        )
+
+                                        Text(
+                                            text = firstCurrentWiD.title.kr,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(intrinsicSize = IntrinsicSize.Min)
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                        ) {
+                                            Text(
+                                                text = "시작",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
+
+                                            Text(
+                                                text = stopwatchViewModel.getTimeString(time = firstCurrentWiD.start),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                            )
+                                        }
+
+                                        if (!isSameDateForStartAndFinish) {
+                                            VerticalDivider(
+                                                modifier = Modifier
+                                                    .padding(vertical = 12.dp),
+                                                thickness = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = "시작",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                )
+
+                                                Text(
+                                                    text = stopwatchViewModel.getTimeString(time = secondCurrentWiD.start),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(intrinsicSize = IntrinsicSize.Min)
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                        ) {
+                                            Text(
+                                                text = "종료",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
+
+                                            Text(
+                                                text = stopwatchViewModel.getTimeString(time = firstCurrentWiD.finish),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                            )
+                                        }
+
+                                        if (!isSameDateForStartAndFinish) {
+                                            VerticalDivider(
+                                                modifier = Modifier
+                                                    .padding(vertical = 12.dp),
+                                                thickness = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = "종료",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                )
+
+                                                Text(
+                                                    text = stopwatchViewModel.getTimeString(time = secondCurrentWiD.finish),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(intrinsicSize = IntrinsicSize.Min)
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                        ) {
+                                            Text(
+                                                text = "소요",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
+
+                                            Text(
+                                                text = stopwatchViewModel.getDurationString(firstCurrentWiD.duration),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                            )
+                                        }
+
+                                        if (!isSameDateForStartAndFinish) {
+                                            VerticalDivider(
+                                                modifier = Modifier
+                                                    .padding(vertical = 12.dp),
+                                                thickness = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = "소요",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                )
+
+                                                Text(
+                                                    text = stopwatchViewModel.getDurationString(secondCurrentWiD.duration),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(intrinsicSize = IntrinsicSize.Min)
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .weight(1f),
+                                        ) {
+                                            Text(
+                                                text = "경험치",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
+
+                                            Text(
+                                                text = "${firstCurrentWiD.exp}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                            )
+                                        }
+
+                                        if (!isSameDateForStartAndFinish) {
+                                            VerticalDivider(
+                                                modifier = Modifier
+                                                    .padding(vertical = 12.dp),
+                                                thickness = 0.5.dp,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                            ) {
+                                                Text(
+                                                    text = "경험치",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                )
+
+                                                Text(
+                                                    text = "${secondCurrentWiD.exp}",
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(LocalDimensions.current.listItemHeight)
+                                            .padding(horizontal = 16.dp),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = "위치",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                        )
+
+                                        Text(
+                                            text = firstCurrentWiD.city.kr + ", " + firstCurrentWiD.city.country.kr,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
                                 }
                             }
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(all = 16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Text(
-                                    text = firstCurrentWiD.title.kr,
-                                    style = Typography.titleLarge,
-                                )
-
-//                                Spacer(
-//                                    modifier = Modifier
-//                                        .height(height = 8.dp)
-//                                )
-//
-//                                Text(
-//                                    text = firstCurrentWiD.title.description,
-//                                    style = Typography.bodyMedium,
-//                                    overflow = TextOverflow.Ellipsis,
-//                                    maxLines = 1
-//                                )
-                            }
                         }
                     }
-                )
-            } else { // 스톱 워치 시작, 중지 상태
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stopwatchViewModel.getStopwatchDurationString(totalDuration),
-                        style = TextStyle(textAlign = TextAlign.End)
-                    )
-                }
-            }
-        },
-        bottomBar = {
-            if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            val firstPage = pagerState.initialPage // 0
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(firstPage)
-                            }
-                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[firstPage])
-                        },
-                        enabled = 0 < pagerState.currentPage
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(R.drawable.baseline_keyboard_double_arrow_left_24),
-                            contentDescription = "첫 제목"
-                        )
-                    }
-
-                    IconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            val prevPage = pagerState.currentPage - 1
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(prevPage)
-                            }
-                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[prevPage])
-                        },
-                        enabled = 0 < pagerState.currentPage
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "이전 제목"
-                        )
-                    }
-
-                    FilledIconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            coroutineScope.launch {
-                                stopwatchViewModel.startStopwatch()
-                            }
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = LimeGreen)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(R.drawable.baseline_play_arrow_24),
-                            contentDescription = "스톱 워치 시작",
-                            tint = White
-                        )
-                    }
-
-                    IconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            val nextPage = pagerState.currentPage + 1
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(nextPage)
-                            }
-                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[nextPage])
-                        },
-                        enabled = pagerState.currentPage < pagerState.pageCount - 1
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "다음 제목",
-                        )
-                    }
-
-                    IconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            val lastPage = pagerState.pageCount - 1
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(lastPage)
-                            }
-                            stopwatchViewModel.setTitle(newTitle = Title.values().drop(1)[lastPage])
-                        },
-                        enabled = pagerState.currentPage < pagerState.pageCount - 1
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(R.drawable.baseline_keyboard_double_arrow_right_24),
-                            contentDescription = "마지막 제목",
-                        )
-                    }
-                }
-            } else if (stopwatchViewBarVisible) { // 스톱 워치 중지, 정지
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(MaterialTheme.shapes.medium),
-                        painter = painterResource(id = firstCurrentWiD.title.smallImage),
-                        contentDescription = "앱 아이콘"
-                    )
-
-                    IconButton(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .alpha(0f),
-                        onClick = {
-
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_done_24),
-                            contentDescription = "현재 제목",
-                        )
-                    }
-
-                    FilledTonalIconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            stopwatchViewModel.setStopwatchViewBarVisible(false)
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(id = R.drawable.baseline_fullscreen_24),
-                            contentDescription = "탑 바텀 바 숨기기",
-                        )
-                    }
-
-                    FilledIconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            stopwatchViewModel.stopStopwatch()
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = OrangeRed)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(id = R.drawable.baseline_stop_24),
-                            contentDescription = "스톱워치 정지",
-                            tint = White
-                        )
-                    }
-
-                    FilledIconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            if (currentToolState == CurrentToolState.STARTED) { // 스톱 워치 시작 상태
-                                stopwatchViewModel.pauseStopwatch()
-                            } else { // 스톱 워치 중지, 정지 상태
-                                stopwatchViewModel.startStopwatch()
-                            }
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = if (currentToolState == CurrentToolState.STARTED) { // 스톱 워치 시작 상태
-                                DeepSkyBlue
-                            } else { // 스톱 워치 중지 상태
-                                LimeGreen
-                            }
-                        )
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(
-                                id = if (currentToolState == CurrentToolState.STARTED) {
-                                    R.drawable.baseline_pause_24
-                                } else {
-                                    R.drawable.baseline_play_arrow_24
-                                }
-                            ),
-                            contentDescription = "스톱 워치 중지 및 시작",
-                            tint = White
-                        )
-                    }
-                }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-
-                    FilledTonalIconButton(
-                        modifier = Modifier
-                            .size(48.dp),
-                        onClick = {
-                            stopwatchViewModel.setStopwatchViewBarVisible(true)
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(36.dp),
-                            painter = painterResource(id = R.drawable.baseline_fullscreen_exit_24),
-                            contentDescription = "탑 바텀 바 보이기",
-                        )
-                    }
-
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
                 }
             }
         }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun StopwatchPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        CenterAlignedTopAppBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0))),
-            navigationIcon = {
-                IconButton(
-                    onClick = {
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                        contentDescription = "뒤로 가기",
-                    )
-                }
-            },
-            title = {
-                Text(
-                    text = "새로운 기록",
-                    style = Typography.titleLarge,
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        )
-    }
 }

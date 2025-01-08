@@ -38,6 +38,11 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     val LAST_NEW_WID = "lastNewWiD"
     val CURRENT_WID = "currentWiD"
 
+    val START = wiDRepository.START
+    val FINISH = wiDRepository.FINISH
+
+    val WID_LIST_LIMIT_PER_DAY = 24 // TODO: 24로 할 거?
+
     private var timer: Timer? = null
     private val _today: MutableState<LocalDate> = mutableStateOf(LocalDate.now())
     val today: State<LocalDate> = _today
@@ -53,7 +58,8 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
     val firstCurrentWiD: State<WiD> = _firstCurrentWiD
     private val _secondCurrentWiD = mutableStateOf(WiD.default().copy(id = CURRENT_WID))
     val secondCurrentWiD: State<WiD> = _secondCurrentWiD
-    private var _isSameDateForStartAndFinish = true
+    private val _isSameDateForStartAndFinish = mutableStateOf(true)
+    val isSameDateForStartAndFinish: State<Boolean> = _isSameDateForStartAndFinish
 
     private val _currentToolState: MutableState<CurrentToolState> = mutableStateOf(CurrentToolState.STOPPED)
     val currentToolState: State<CurrentToolState> = _currentToolState
@@ -241,7 +247,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
     fun deleteWiD(
         email: String,
-        onWiDDeleted: (wiDDeleted: Boolean) -> Unit
+        onWiDDeleted: (deletedExp: Int) -> Unit
     ) {
         Log.d(TAG, "deleteWiD executed")
 
@@ -264,25 +270,25 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 //            onComplete = {
 //                if (it) {
 //                    _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[targetYear] = currentYearMap }
-//                    onWiDDeleted(true)
+//                    onWiDDeleted(clickedWiD.exp)
 //                } else {
-//                    onWiDDeleted(false)
+//                    onWiDDeleted(0) // 실패 시 0 반환
 //                }
 //            }
 //        )
 
         /** 클라 메모리 사용 */
         _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[targetYear] = currentYearMap }
-        onWiDDeleted(true)
+        onWiDDeleted(clickedWiD.exp)
         /** 클라 메모리 사용 */
     }
 
-    private fun setCurrentWiDToMap() {
-        Log.d(TAG, "setCurrentWiDToMap executed")
+    private fun insertCurrentWiDToMap() {
+        Log.d(TAG, "insertCurrentWiDToMap executed")
 
         val wiDListToInsert = mutableListOf<WiD>()
 
-        if (_isSameDateForStartAndFinish) { // 동일한 날짜 내 WiD 처리
+        if (_isSameDateForStartAndFinish.value) { // 동일한 날짜 내 WiD 처리
             wiDListToInsert.add(_firstCurrentWiD.value) // 첫 번째 현재 기록만 추가
         } else { // 자정을 넘어가는 WiD 처리
             wiDListToInsert.add(_secondCurrentWiD.value) // 두 번째 현재 기록만 추가
@@ -316,7 +322,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
         val wiDListToRemove = mutableListOf<WiD>()
 
-        if (_isSameDateForStartAndFinish) { // 동일한 날짜 내 WiD 처리
+        if (_isSameDateForStartAndFinish.value) { // 동일한 날짜 내 WiD 처리
             wiDListToRemove.add(_firstCurrentWiD.value) // 첫 번째 현재 기록만 추가
         } else { // 자정을 넘어가는 WiD 처리
             wiDListToRemove.add(_secondCurrentWiD.value) // 두 번째 현재 기록만 추가
@@ -348,11 +354,12 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         _yearDateWiDListMap.value = currentYearMap
     }
 
-    fun setCurrentWiDTitle(newTitle: Title) { // 도구에서만 실행됨
-        Log.d(TAG, "setCurrentWiDTitle executed")
+    fun setCurrentWiDTitleAndSubTitle(newTitle: Title, newSubTitle: SubTitle) { // 도구에서만 실행됨
+        Log.d(TAG, "setCurrentWiDTitleAndSubTitle executed")
 
-        _firstCurrentWiD.value = _firstCurrentWiD.value.copy(title = newTitle)
-        _secondCurrentWiD.value = _secondCurrentWiD.value.copy(title = newTitle)
+        val updatedWiD = _firstCurrentWiD.value.copy(title = newTitle, subTitle = newSubTitle)
+        _firstCurrentWiD.value = updatedWiD
+        _secondCurrentWiD.value = updatedWiD
     }
 
     private fun setCurrentWiDtoNow(currentTool: CurrentTool) {
@@ -380,7 +387,12 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         )
     }
 
-    fun startStopwatch() {
+    fun startStopwatch(
+        email: String,
+        wiDMinLimit: Duration,
+        wiDMaxLimit: Duration,
+        onStopwatchPaused: (newExp: Int) -> Unit
+    ) {
         Log.d(TAG, "startStopwatch executed")
 
         timer?.cancel() // 이전 타이머 캔슬
@@ -388,17 +400,27 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         setCurrentWiDtoNow(currentTool = CurrentTool.STOPWATCH)
         updateNow()
 
-        /** 12시간 넘으면 자동 종료되도록 해야함!!!!!! */
         timer = timer(
             name = CURRENT_WID_TIMER,
             period = 1_000,
             action = {
+                if (wiDMaxLimit <= _totalDuration.value) { // 최대 시간 초과
+                    pauseStopwatch(
+                        email = email,
+                        wiDMinLimit = wiDMinLimit,
+                        onStopwatchPaused = { newExp: Int ->
+                            onStopwatchPaused(newExp)
+                        }
+                    )
+                    stopStopwatch()
+                }
+
                 val realTime = updateNow()
 
-                _isSameDateForStartAndFinish = _firstCurrentWiD.value.start < realTime // 매 초 마다 자정 넘어가는 지 확인해야 함. 도구 시작할 때만 갱신하면 될 듯
+                _isSameDateForStartAndFinish.value = _firstCurrentWiD.value.start <= realTime // 매 초 마다 자정 넘어가는 지 확인해야 함. 도구 시작할 때만 갱신하면 될 듯
 
                 val newFirstCurrentWiDDuration = Duration.between(_firstCurrentWiD.value.start, realTime)
-                if (_isSameDateForStartAndFinish) { // 동일한 날짜
+                if (_isSameDateForStartAndFinish.value) { // 동일한 날짜
                     _firstCurrentWiD.value = _firstCurrentWiD.value.copy( // First Current WiD만 갱신
                         finish = realTime, // 종료 시간 갱신
                         duration = newFirstCurrentWiDDuration, // 소요 시간 갱신
@@ -418,13 +440,14 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                     _totalDuration.value = accumulatedPrevDuration + newFirstCurrentWiDDuration + newSecondCurrentWiDDuration
                 }
 
-                setCurrentWiDToMap()
+                insertCurrentWiDToMap()
             }
         )
     }
 
     fun pauseStopwatch(
         email: String,
+        wiDMinLimit: Duration,
         onStopwatchPaused: (newExp: Int) -> Unit
     ) {
         Log.d(TAG, "pauseStopwatch executed")
@@ -438,20 +461,13 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
         val newWiDList = mutableListOf<WiD>()
 
-//        if (firstCurrentWiD.date.year != secondCurrentWiD.date.year) { // 기록 2개의 연도가 다른 경우 - 서버 2번 호출
-//        } else if (_isSameDateForStartAndFinish) { // 동일 날짜 내 기록 생성 - 서버 1번 호출
-//        } else { // 동일 날짜 내 기록 2개 생성 - 서버 1번 호출
-//        }
-
-        if (_isSameDateForStartAndFinish) { // Case 1: 동일 날짜 내에 WiD 생성
-            /** 복구 */
-//            if (firstCurrentWiD.duration < Duration.ofMinutes(1)) return
+        if (_isSameDateForStartAndFinish.value) { // Case 1: 동일 날짜 내에 WiD 생성
+            if (firstCurrentWiD.duration < wiDMinLimit) return
 
             val firstCurrentWiDCopy = firstCurrentWiD.copy(id = generateUniqueWiDId())
             newWiDList.add(firstCurrentWiDCopy)
         } else { // Case 2: 자정을 넘어가는 경우 WiD 생성
-            /** 복구 */
-//            if (firstCurrentWiD.duration + secondCurrentWiD.duration < Duration.ofMinutes(1)) return
+            if (firstCurrentWiD.duration + secondCurrentWiD.duration < wiDMinLimit) return
 
             val firstCurrentWiDCopy = firstCurrentWiD.copy(id = generateUniqueWiDId())
             val secondCurrentWiDCopy = secondCurrentWiD.copy(id = generateUniqueWiDId())
@@ -470,29 +486,34 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
             updatedYearlyWiDListMap[targetYear] = currentYearDateWiDListMap.toMutableMap().apply { this[date] = (this[date] ?: emptyList()) + wiDList } // 날짜 - 기록 리스트 맵 갱신
         }
 
-        var totalCurrentWiDDuration = 0L // 성공한 WiD의 총 소요 시간
+        var totalNewExp = 0 // 성공한 WiD의 총 소요 시간
 
         updatedYearlyWiDListMap.forEach { (year: Year, dateWiDListMap: Map<LocalDate, List<WiD>>) -> // 기록의 연도가 2개면 서버가 2번 호출 됨.
-            wiDRepository.setYearlyWiDListMap(
-                email = email,
-                year = year,
-                dateWiDListMap = dateWiDListMap,
-                onComplete = { success: Boolean ->
-                    if (success) {
-                        totalCurrentWiDDuration += dateWiDListMap.values.flatten().sumOf { it.duration.seconds }
-                        _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[year] = dateWiDListMap }
-                    }
-                }
-            )
+//            wiDRepository.setYearlyWiDListMap(
+//                email = email,
+//                year = year,
+//                dateWiDListMap = dateWiDListMap,
+//                onComplete = { success: Boolean ->
+//                    if (success) {
+//                        totalNewExp += dateWiDListMap.values.flatten()
+//                            .filter { wiD -> newWiDList.any { it.id == wiD.id } }
+//                            .sumOf { it.exp }
+//
+//                        _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[year] = dateWiDListMap }
+//                    }
+//                }
+//            )
 
             /** 클라 메모리 사용 */
-            totalCurrentWiDDuration += dateWiDListMap.values.flatten().sumOf { it.duration.seconds } /** 방금 생성된 기록의 경험치만 더해야함. */
+            totalNewExp += dateWiDListMap.values.flatten()
+                .filter { wiD -> newWiDList.any { it.id == wiD.id } }
+                .sumOf { it.exp }
             _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[year] = dateWiDListMap }
             /** 클라 메모리 사용 */
         }
 
         removeCurrentWiDFromMap()
-        onStopwatchPaused(totalCurrentWiDDuration.toInt()) // 유저 문서 갱신은 한 번만
+        onStopwatchPaused(totalNewExp) // 유저 문서 갱신은 한 번만
     }
 
     fun stopStopwatch() {
@@ -509,7 +530,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
     private fun resetCurrentWiD() {
         Log.d(TAG, "resetCurrentWiD executed")
-        /** 시작, 종료, 소요시간 다 변경해야 하지 않나? */
+        // TODO: 시작, 종료, 소요시간 다 변경해야 하지 않나?
         _firstCurrentWiD.value = _firstCurrentWiD.value.copy(
             id = CURRENT_WID,
             createdBy = CurrentTool.NONE
@@ -520,14 +541,16 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         )
     }
 
-    fun setSelectedTime(newSelectedTime: Duration) {
-        Log.d(TAG, "setSelectedTime executed")
+    fun setTimerTime(newSelectedTime: Duration) {
+        Log.d(TAG, "setTimerTime executed")
 
-        _selectedTime.value = newSelectedTime
+        _selectedTime.value = newSelectedTime // 얘는 고정
+        _remainingTime.value = newSelectedTime // 최초에 같이 설정해줌.
     }
 
     fun startTimer(
         email: String,
+        wiDMinLimit: Duration,
         onTimerAutoStopped: (newExp: Int) -> Unit, // 자동 종료 용 콜백
     ) {
         Log.d(TAG, "startTimer executed")
@@ -537,17 +560,16 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         setCurrentWiDtoNow(currentTool = CurrentTool.TIMER)
         updateNow()
 
-        /** 12시간 넘으면 자동 종료되도록 해야함!!!!!! */
         timer = timer(
             name = CURRENT_WID_TIMER,
             period = 1_000,
             action = {
                 val realTime = updateNow()
 
-                _isSameDateForStartAndFinish = _firstCurrentWiD.value.start < realTime
+                _isSameDateForStartAndFinish.value = _firstCurrentWiD.value.start <= realTime
 
                 val newFirstCurrentWiDDuration = Duration.between(_firstCurrentWiD.value.start, realTime)
-                if (_isSameDateForStartAndFinish) { // 자정 안 넘음
+                if (_isSameDateForStartAndFinish.value) { // 자정 안 넘음
                     _firstCurrentWiD.value = _firstCurrentWiD.value.copy( // First Current WiD만 갱신
                         finish = realTime, // 종료 시간 갱신
                         duration = newFirstCurrentWiDDuration, // 소요 시간 갱신
@@ -567,11 +589,12 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
                     _remainingTime.value = _selectedTime.value - (newFirstCurrentWiDDuration + newSecondCurrentWiDDuration)
                 }
 
-                setCurrentWiDToMap()
+                insertCurrentWiDToMap()
 
                 if (_remainingTime.value <= Duration.ZERO) {
                     autoStopTimer(
                         email = email,
+                        wiDMinLimit = wiDMinLimit,
                         onTimerAutoStopped = { newExp: Int ->
                             onTimerAutoStopped(newExp)
                         },
@@ -583,6 +606,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
     fun pauseTimer(
         email: String,
+        wiDMinLimit: Duration,
         onTimerPaused: (newExp: Int) -> Unit
     ) {
         Log.d(TAG, "pauseTimer executed")
@@ -596,15 +620,13 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
         val newWiDList = mutableListOf<WiD>()
 
-        if (_isSameDateForStartAndFinish) { // Case 1: 동일 날짜 내 WiD 생성
-            /** 복구 */
-//            if (_firstCurrentWiD.value.duration < Duration.ofMinutes(1)) return
+        if (_isSameDateForStartAndFinish.value) { // Case 1: 동일 날짜 내 WiD 생성
+            if (_firstCurrentWiD.value.duration < wiDMinLimit) return
 
             val firstCurrentWiDCopy = firstCurrentWiD.copy(id = generateUniqueWiDId())
             newWiDList.add(firstCurrentWiDCopy)
         } else { // Case 2: 자정을 넘어가는 경우 WiD 생성
-            /** 복구 */
-//            if (_firstCurrentWiD.value.duration + _secondCurrentWiD.value.duration < Duration.ofMinutes(1)) return
+            if (_firstCurrentWiD.value.duration + _secondCurrentWiD.value.duration < wiDMinLimit) return
 
             val firstCurrentWiDCopy = firstCurrentWiD.copy(id = generateUniqueWiDId())
             val secondCurrentWiDCopy = secondCurrentWiD.copy(id = generateUniqueWiDId())
@@ -625,25 +647,27 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
             }
         }
 
-        var totalCurrentWiDDuration = 0L
+        var totalNewExp = 0
 
         updatedYearlyWiDListMap.forEach { (year: Year, dateWiDListMap: Map<LocalDate, List<WiD>>) -> // 기록이 2개면 서버가 2번 호출 됨.
 //            wiDRepository.setYearlyWiDListMap(
 //                email = email,
-//                date = dateWiDListMap.keys.first(), // Representative date (first one)
-//                wiDList = dateWiDListMap.values.flatten(), // Flattened WiD list
-//                onYearlyWiDListMapSet = { success: Boolean ->
+//                year = year,
+//                dateWiDListMap = dateWiDListMap,
+//                onComplete = { success: Boolean ->
 //                    if (success) {
-//                        totalCurrentWiDDuration += dateWiDListMap.values.flatten().sumOf { it.duration.seconds }
-//                        _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply {
-//                            this[year] = dateWiDListMap
-//                        }
+//                        totalNewExp += dateWiDListMap.values.flatten()
+//                            .filter { wiD -> newWiDList.any { it.id == wiD.id } }
+//                            .sumOf { it.exp }
+//                        _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply { this[year] = dateWiDListMap }
 //                    }
 //                }
 //            )
 
             /** 클라 메모리 사용 */
-            totalCurrentWiDDuration += dateWiDListMap.values.flatten().sumOf { it.duration.seconds } /** 방금 생성된 기록의 경험치만 더해야함. */
+            totalNewExp += dateWiDListMap.values.flatten()
+                .filter { wiD -> newWiDList.any { it.id == wiD.id } }
+                .sumOf { it.exp }
             _yearDateWiDListMap.value = _yearDateWiDListMap.value.toMutableMap().apply {
                 this[year] = dateWiDListMap
             }
@@ -651,7 +675,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         }
 
         removeCurrentWiDFromMap()
-        onTimerPaused(totalCurrentWiDDuration.toInt()) // 유저 문서 갱신은 한 번만
+        onTimerPaused(totalNewExp) // 유저 문서 갱신은 한 번만
     }
 
     fun stopTimer() {
@@ -668,12 +692,14 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
 
     private fun autoStopTimer( // pause와 stop 둘 다 동작해야 함.
         email: String,
+        wiDMinLimit: Duration,
         onTimerAutoStopped: (newExp: Int) -> Unit
     ) {
         Log.d(TAG, "autoStopTimer executed")
 
         pauseTimer(
             email = email,
+            wiDMinLimit = wiDMinLimit,
             onTimerPaused = { newExp: Int ->
                 onTimerAutoStopped(newExp)
             }
@@ -703,9 +729,7 @@ class WiDDataSource @Inject constructor(private val wiDRepository: WiDRepository
         _clickedWiDCopy.value = newClickedWiDCopy
     }
 
-    /*
-    **************************************** 유틸 메서드 ****************************************
-     */
+    /** **************************************** 유틸 메서드 **************************************** */
     private fun generateUniqueWiDId(): String { // 14자리 문자열 생성
         Log.d(TAG, "generateUniqueId executed")
 

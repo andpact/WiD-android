@@ -1,11 +1,13 @@
 package andpact.project.wid.dataSource
 
+import andpact.project.wid.model.City
 import andpact.project.wid.model.User
 import andpact.project.wid.repository.UserRepository
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.auth.FirebaseUser
+import java.time.Duration
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -14,6 +16,14 @@ class UserDataSource @Inject constructor(private val userRepository: UserReposit
     private val TAG = "UserDataSource"
     init { Log.d(TAG, "created") }
     fun onCleared() { Log.d(TAG, "cleared") }
+
+    val LEVEL = userRepository.LEVEL
+    val LEVEL_DATE_MAP = userRepository.LEVEL_DATE_MAP
+    val CURRENT_EXP = userRepository.CURRENT_EXP
+    val WID_TOTAL_EXP = userRepository.WID_TOTAL_EXP
+    val WID_MIN_LIMIT = userRepository.WID_MIN_LIMIT
+    val WID_MAX_LIMIT = userRepository.WID_MAX_LIMIT
+    val CITY = userRepository.CITY
 
     // 최초 null 상태로 시작한 후, 동적 링크를 감지하거나, 기존 로그인 상태가 있음을 확인하면 할당해줌.
     private val _firebaseUser = mutableStateOf<FirebaseUser?>(null)
@@ -102,295 +112,52 @@ class UserDataSource @Inject constructor(private val userRepository: UserReposit
         )
     }
 
-    fun pauseStopwatch(
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
+    fun setUserDocument(
+        email: String,
+        updatedUserDocument: Map<String, Any>,
     ) {
-        Log.d(TAG, "pauseStopwatch executed")
+        Log.d(TAG, "setUserDocument executed")
 
-//        userRepository.pauseStopwatch(
-//            email = _firebaseUser.value?.email ?: "",
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onStopwatchPaused = { stopwatchPaused: Boolean ->
-//                if (stopwatchPaused) {
-//                    _user.value = _user.value?.copy(
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
+        val currentUser = _user.value ?: return
+
+//        userRepository.setUserDocument(
+//            email = email,
+//            updatedUserDocument = updatedUserDocument,
+//            onComplete = { success ->
+//                if (success) {
+//                    _user.value = currentUser.copy( // 키가 있으면 밸류 갱신, 없으면 그대로
+//                        level = updatedUserDocument[LEVEL]?.let { (it as Int) } ?: currentUser.level, // 맵 안에서 Int 타입
+//                        levelDateMap = updatedUserDocument[LEVEL_DATE_MAP]?.let {
+//                            @Suppress("UNCHECKED_CAST")
+//                            (it as Map<String, String>).mapValues { entry -> LocalDate.parse(entry.value) }
+//                        } ?: currentUser.levelDateMap, // 맵 안에서 Map<String, String> 타입
+//                        city = updatedUserDocument[CITY]?.let { City.valueOf(it as String) } ?: currentUser.city, // 맵 안에서 String 타입
+//                        currentExp = updatedUserDocument[CURRENT_EXP]?.let { (it as Int) } ?: currentUser.currentExp, // 맵 안에서 Int 타입
+//                        wiDTotalExp = updatedUserDocument[WID_TOTAL_EXP]?.let { (it as Int) } ?: currentUser.wiDTotalExp, // 맵 안에서 Int 타입
+//                        wiDMinLimit = updatedUserDocument[WID_MIN_LIMIT]?.let { Duration.ofSeconds((it as Long)) } ?: currentUser.wiDMinLimit,  // 맵 안에서 Long 타입
+//                        wiDMaxLimit = updatedUserDocument[WID_MAX_LIMIT]?.let { Duration.ofSeconds((it as Long)) } ?: currentUser.wiDMaxLimit // 맵 안에서 Long 타입
 //                    )
 //                }
 //            }
 //        )
 
         /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
+        _user.value = currentUser.copy(
+            level = updatedUserDocument[LEVEL]?.let { it as Int } ?: currentUser.level,
+            levelDateMap = updatedUserDocument[LEVEL_DATE_MAP]?.let {
+                @Suppress("UNCHECKED_CAST")
+                (it as Map<String, String>).mapValues { entry -> LocalDate.parse(entry.value) }
+            } ?: currentUser.levelDateMap,
+            city = updatedUserDocument[CITY]?.let { City.valueOf(it as String) } ?: currentUser.city,
+            currentExp = updatedUserDocument[CURRENT_EXP]?.let { it as Int } ?: currentUser.currentExp,
+            wiDTotalExp = updatedUserDocument[WID_TOTAL_EXP]?.let { it as Int } ?: currentUser.wiDTotalExp,
+            wiDMinLimit = updatedUserDocument[WID_MIN_LIMIT]?.let { Duration.ofSeconds((it as Long)) } ?: currentUser.wiDMinLimit,
+            wiDMaxLimit = updatedUserDocument[WID_MAX_LIMIT]?.let { Duration.ofSeconds((it as Long)) } ?: currentUser.wiDMaxLimit
         )
         /** 클라이언트 메모리 사용 */
     }
 
-    fun pauseStopwatchWithLevelUp(
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
-    ) {
-        Log.d(TAG, "pauseStopwatchWithLevelUp executed")
-
-//        userRepository.pauseStopwatchWithLevelUp(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel, // 레벨 업 시 추가 갱신 됨
-//            newLevelUpHistoryMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onStopwatchPausedWithLevelUp = { stopwatchPausedWithLevelUp: Boolean ->
-//                if (stopwatchPausedWithLevelUp) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel, // 레벨 업 시 추가 갱신 됨
-//                        levelDateMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-
-        /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            level = newLevel, // 레벨 업 시 추가 갱신 됨
-            levelDateMap = newLevelUpHistoryMap, // 레벨 업 시 추가 갱신 됨
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
-        )
-        /** 클라이언트 메모리 사용 */
-    }
-
-    fun pauseTimer(
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
-    ) {
-        Log.d(TAG, "pauseTimer executed")
-
-//        userRepository.pauseTimer(
-//            email = _firebaseUser.value?.email ?: "",
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onTimerPaused = { timerPaused: Boolean ->
-//                if (timerPaused) {
-//                    _user.value = _user.value?.copy(
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-
-        /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
-        )
-        /** 클라이언트 메모리 사용 */
-    }
-
-    fun pauseTimerWithLevelUp(
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
-    ) {
-        Log.d(TAG, "pauseTimerWithLevelUp executed")
-
-//        userRepository.pauseTimerWithLevelUp(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel,
-//            newLevelUpHistoryMap = newLevelUpHistoryMap,
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onTimerPausedWithLevelUp = { timerPausedWithLevelUp: Boolean ->
-//                if (timerPausedWithLevelUp) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel,
-//                        levelDateMap = newLevelUpHistoryMap,
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-
-        /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            level = newLevel,
-            levelDateMap = newLevelUpHistoryMap,
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
-        )
-        /** 클라이언트 메모리 사용 */
-    }
-
-    fun autoStopTimer(
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
-    ) {
-        Log.d(TAG, "autoStopTimer executed")
-
-//        userRepository.autoStopTimer(
-//            email = _firebaseUser.value?.email ?: "",
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onTimerAutoStopped = { timerAutoStopped: Boolean ->
-//                if (timerAutoStopped) {
-//                    _user.value = _user.value?.copy(
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-
-        /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
-        )
-        /** 클라이언트 메모리 사용 */
-    }
-
-    fun autoStopTimerWithLevelUp(
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int
-    ) {
-        Log.d(TAG, "autoStopTimerWithLevelUp executed")
-
-//        userRepository.autoStopTimerWithLevelUp(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel,
-//            newLevelUpHistoryMap = newLevelUpHistoryMap,
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onTimerAutoStoppedWithLevelUp = { timerAutoStoppedWithLevelUp: Boolean ->
-//                if (timerAutoStoppedWithLevelUp) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel,
-//                        levelDateMap = newLevelUpHistoryMap,
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-
-        /** 클라이언트 메모리 사용 */
-        _user.value = _user.value?.copy(
-            level = newLevel,
-            levelDateMap = newLevelUpHistoryMap,
-            currentExp = newCurrentExp,
-            wiDTotalExp = newWiDTotalExp
-        )
-        /** 클라이언트 메모리 사용 */
-    }
-
-//    fun createdWiD(
-//        newCurrentExp: Int,
-//        newWiDTotalExp: Int
-//    ) {
-//        Log.d(TAG, "createdWiD executed")
-//
-//        userRepository.createWiD(
-//            email = _firebaseUser.value?.email ?: "",
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onCreatedWiD = { createdWiD: Boolean ->
-//                if (createdWiD) {
-//                    _user.value = _user.value?.copy(
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-//    }
-//
-//    fun createdWiDWithLevelUp(
-//        newLevel: Int,
-//        newLevelUpHistoryMap: Map<String, LocalDate>,
-//        newCurrentExp: Int,
-//        newWiDTotalExp: Int
-//    ) {
-//        Log.d(TAG, "createdWiDWithLevelUp executed")
-//
-//        userRepository.createdWiDWithLevelUp(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel,
-//            newLevelUpHistoryMap = newLevelUpHistoryMap,
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onCreatedWiDWithLevelUp = { createdWiDWithLevelUp: Boolean ->
-//                if (createdWiDWithLevelUp) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel,
-//                        levelDateMap = newLevelUpHistoryMap,
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-//    }
-//
-//    fun updateWiD(
-//        newCurrentExp: Int,
-//        newWiDTotalExp: Int
-//    ) {
-//        Log.d(TAG, "updateWiD executed")
-//
-//        userRepository.updateWiD(
-//            email = _firebaseUser.value?.email ?: "",
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onWiDUpdated = { wiDUpdated: Boolean ->
-//                if (wiDUpdated) {
-//                    _user.value = _user.value?.copy(
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-//    }
-//
-//    fun updateWiDWithLevelUp(
-//        newLevel: Int,
-//        newLevelUpHistoryMap: Map<String, LocalDate>,
-//        newCurrentExp: Int,
-//        newWiDTotalExp: Int
-//    ) {
-//        Log.d(TAG, "updateWiDWithLevelUp executed")
-//
-//        userRepository.updateWiDWithLevelUp(
-//            email = _firebaseUser.value?.email ?: "",
-//            newLevel = newLevel,
-//            newLevelUpHistoryMap = newLevelUpHistoryMap,
-//            newCurrentExp = newCurrentExp,
-//            newWiDTotalExp = newWiDTotalExp,
-//            onWiDUpdatedWithLevelUp = { wiDUpdatedWithLevelUp: Boolean ->
-//                if (wiDUpdatedWithLevelUp) {
-//                    _user.value = _user.value?.copy(
-//                        level = newLevel,
-//                        levelDateMap = newLevelUpHistoryMap,
-//                        currentExp = newCurrentExp,
-//                        wiDTotalExp = newWiDTotalExp
-//                    )
-//                }
-//            }
-//        )
-//    }
-
-    /** 경험치가 있는 기록만 경험치를 제거 해야 함. */
+    // TODO: 경험치가 있는 기록만 경험치를 제거 해야 함.
     fun deleteWiD(
         newCurrentExp: Int,
         newWiDTotalExp: Int

@@ -1,6 +1,7 @@
 package andpact.project.wid.view
 
 import andpact.project.wid.destinations.MainViewDestinations
+import andpact.project.wid.model.City
 import andpact.project.wid.model.CurrentTool
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,6 +31,7 @@ fun MainView(
     onStopwatchClicked: () -> Unit,
     onTimerClicked: () -> Unit,
     onWiDClicked: () -> Unit,
+    onCityPickerClicked: (currentCity: City) -> Unit,
     onUserSignedOut: () -> Unit,
     onUserDeleted: (Boolean) -> Unit,
 ) {
@@ -48,7 +50,6 @@ fun MainView(
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
-//            .background(MaterialTheme.colorScheme.secondary),
         bottomBar = {
             MainBottomBarView(
                 currentRoute = currentRoute,
@@ -92,12 +93,15 @@ fun MainView(
                     WiDListView(
                         onWiDClicked = {
                             onWiDClicked()
-                        },
+                        }
                     )
                 }
 
                 composable(MainViewDestinations.MyPageViewDestination.route) {
                     MyPageView(
+                        onCityPickerClicked = {
+                            onCityPickerClicked(it)
+                        },
                         onUserSignedOut = {
                             onUserSignedOut()
                         },

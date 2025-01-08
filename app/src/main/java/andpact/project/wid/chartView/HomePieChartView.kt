@@ -4,6 +4,7 @@ import andpact.project.wid.R
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
@@ -46,49 +48,41 @@ fun HomePieChartView(
 
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(32.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .weight(1f)
         ) {
-            Text(
-                text = "${today.year}년",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
             Canvas(
                 modifier = Modifier
+                    .padding(16.dp)
                     .aspectRatio(1f)
             ) {
                 val radius = size.minDimension / 2
 
-                drawArc(
-                    color = colorScheme.error,
-                    startAngle = -90f + (yearProgress / 100) * 360,
-                    sweepAngle = (1 - yearProgress / 100) * 360,
-                    useCenter = false,
-                    topLeft = Offset(
-                        center.x - radius,
-                        center.y - radius
-                    ),
-                    size = Size(
-                        width = radius * 2,
-                        height = radius * 2
-                    ),
-                    style = Stroke(
-                        width = radius * 0.45f,
-                        cap = StrokeCap.Round
-                    )
-                )
+//                drawArc(
+//                    color = colorScheme.onSurface,
+//                    startAngle = -90f + (yearProgress / 100) * 360,
+//                    sweepAngle = (1 - yearProgress / 100) * 360,
+//                    useCenter = false,
+//                    topLeft = Offset(
+//                        center.x - radius,
+//                        center.y - radius
+//                    ),
+//                    size = Size(
+//                        width = radius * 2,
+//                        height = radius * 2
+//                    ),
+//                    style = Stroke(
+//                        width = radius * 0.45f,
+//                        cap = StrokeCap.Round
+//                    )
+//                )
 
                 drawArc(
-                    color = colorScheme.secondaryContainer,
+                    color = colorScheme.onSurface,
                     startAngle = -90f,
                     sweepAngle = (yearProgress / 100) * 360,
                     useCenter = false,
@@ -111,7 +105,6 @@ fun HomePieChartView(
                         color = colorScheme.onSurface.toArgb()
                         textSize = radius * 0.4f
                         textAlign = android.graphics.Paint.Align.CENTER
-                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_regular)
                     }
 
                     drawText(
@@ -122,47 +115,49 @@ fun HomePieChartView(
                     )
                 }
             }
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = "${today.year}년",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
         }
 
-        Column(
+        Card(
             modifier = Modifier
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .weight(1f)
         ) {
-            Text(
-                text = "${today.monthValue}월",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
             Canvas(
                 modifier = Modifier
+                    .padding(16.dp)
                     .aspectRatio(1f)
             ) {
                 val radius = size.minDimension / 2
 
-                drawArc(
-                    color = colorScheme.error,
-                    startAngle = -90f + (monthProgress / 100) * 360,
-                    sweepAngle = (1 - monthProgress / 100) * 360,
-                    useCenter = false,
-                    topLeft = Offset(
-                        center.x - radius,
-                        center.y - radius
-                    ),
-                    size = Size(
-                        width = radius * 2,
-                        height = radius * 2
-                    ),
-                    style = Stroke(
-                        width = radius * 0.45f,
-                        cap = StrokeCap.Round
-                    )
-                )
+//                drawArc(
+//                    color = colorScheme.onSurface,
+//                    startAngle = -90f + (monthProgress / 100) * 360,
+//                    sweepAngle = (1 - monthProgress / 100) * 360,
+//                    useCenter = false,
+//                    topLeft = Offset(
+//                        center.x - radius,
+//                        center.y - radius
+//                    ),
+//                    size = Size(
+//                        width = radius * 2,
+//                        height = radius * 2
+//                    ),
+//                    style = Stroke(
+//                        width = radius * 0.45f,
+//                        cap = StrokeCap.Round
+//                    )
+//                )
 
                 drawArc(
-                    color = colorScheme.secondaryContainer,
+                    color = colorScheme.onSurface,
                     startAngle = -90f,
                     sweepAngle = (monthProgress / 100) * 360,
                     useCenter = false,
@@ -185,7 +180,6 @@ fun HomePieChartView(
                         color = colorScheme.onSurface.toArgb()
                         textSize = radius * 0.4f
                         textAlign = android.graphics.Paint.Align.CENTER
-                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_regular)
                     }
 
                     drawText(
@@ -196,47 +190,49 @@ fun HomePieChartView(
                     )
                 }
             }
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = "${today.monthValue}월",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
         }
 
-        Column(
+        Card(
             modifier = Modifier
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .weight(1f)
         ) {
-            Text(
-                text = "${today.dayOfMonth}일",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
             Canvas(
                 modifier = Modifier
+                    .padding(16.dp)
                     .aspectRatio(1f)
             ) {
                 val radius = size.minDimension / 2
 
-                drawArc(
-                    color = colorScheme.error,
-                    startAngle = -90f + (dayProgress / 100) * 360,
-                    sweepAngle = (1 - dayProgress / 100) * 360,
-                    useCenter = false,
-                    topLeft = Offset(
-                        center.x - radius,
-                        center.y - radius
-                    ),
-                    size = Size(
-                        width = radius * 2,
-                        height = radius * 2
-                    ),
-                    style = Stroke(
-                        width = radius * 0.45f,
-                        cap = StrokeCap.Round
-                    )
-                )
+//                drawArc(
+//                    color = colorScheme.onSurface,
+//                    startAngle = -90f + (dayProgress / 100) * 360,
+//                    sweepAngle = (1 - dayProgress / 100) * 360,
+//                    useCenter = false,
+//                    topLeft = Offset(
+//                        center.x - radius,
+//                        center.y - radius
+//                    ),
+//                    size = Size(
+//                        width = radius * 2,
+//                        height = radius * 2
+//                    ),
+//                    style = Stroke(
+//                        width = radius * 0.45f,
+//                        cap = StrokeCap.Round
+//                    )
+//                )
 
                 drawArc(
-                    color = colorScheme.secondaryContainer,
+                    color = colorScheme.onSurface,
                     startAngle = -90f,
                     sweepAngle = (dayProgress / 100) * 360,
                     useCenter = false,
@@ -259,7 +255,6 @@ fun HomePieChartView(
                         color = colorScheme.onSurface.toArgb()
                         textSize = radius * 0.4f
                         textAlign = android.graphics.Paint.Align.CENTER
-                        typeface = ResourcesCompat.getFont(localContext, R.font.pretendard_regular)
                     }
 
                     drawText(
@@ -270,22 +265,15 @@ fun HomePieChartView(
                     )
                 }
             }
-        }
-    }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun HomePieChartPreview() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        HomePieChartView(
-            today = LocalDate.now(),
-            now = LocalTime.now(),
-        )
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = "${today.dayOfMonth}일",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }

@@ -1,7 +1,6 @@
 package andpact.project.wid.chartView
 
 import andpact.project.wid.R
-import andpact.project.wid.ui.theme.Typography
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.PagerState
@@ -10,13 +9,11 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -29,7 +26,8 @@ fun TimeSelectorView(
     minutePagerState: PagerState,
     secondPagerState: PagerState,
     coroutineScope: CoroutineScope,
-    onTimeChanged: () -> Unit = {}
+    onTimeChanged: () -> Unit = {} // TODO: 드래그로 시간 변경시에도 동작하도록
+// FIXME: 초기상태 왜 캡쳐하록 헀음?, 시, 분, 초 때문에 ":" 높이 안맞음.
 ) {
     var isInitialPage by remember { mutableStateOf(true) }
 
@@ -57,6 +55,17 @@ fun TimeSelectorView(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = when (index) {
+                        0 -> "시"
+                        1 -> "분"
+                        2 -> "초"
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
                 FilledTonalIconButton(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -88,8 +97,8 @@ fun TimeSelectorView(
                     ) {
                         Text(
                             text = page.toString(),
-                            style = if (pagerState.currentPage == page && !pagerState.isScrollInProgress) { Typography.titleLarge }
-                            else { Typography.bodyMedium },
+                            style = if (pagerState.currentPage == page && !pagerState.isScrollInProgress) { MaterialTheme.typography.bodyLarge }
+                            else { MaterialTheme.typography.bodySmall },
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center
                         )
@@ -118,7 +127,7 @@ fun TimeSelectorView(
             if (index < 2) {
                 Text(
                     text = ":",
-                    style = Typography.titleLarge,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }

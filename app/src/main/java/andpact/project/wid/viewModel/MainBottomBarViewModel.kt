@@ -26,11 +26,19 @@ class MainBottomBarViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
+    val LEVEL = userDataSource.LEVEL
+    val LEVEL_DATE_MAP = userDataSource.LEVEL_DATE_MAP
+    val CURRENT_EXP = userDataSource.CURRENT_EXP
+    val WID_TOTAL_EXP = userDataSource.WID_TOTAL_EXP
+
+    private val CITY = userDataSource.CITY
+
+    val today: State<LocalDate> = wiDDataSource.today
+
     val user: State<User?> = userDataSource.user
 
     val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
     val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
-
 
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
 
@@ -46,48 +54,96 @@ class MainBottomBarViewModel @Inject constructor(
     fun startStopwatch() {
         Log.d(TAG, "startStopwatch executed")
 
-        wiDDataSource.startStopwatch()
+        val currentUser = user.value ?: return // 잘못된 접근
+
+        wiDDataSource.startStopwatch(
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
+            wiDMaxLimit = currentUser.wiDMaxLimit,
+            onStopwatchPaused = { newExp: Int ->
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
+                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
+                val newWiDTotalExp = wiDTotalExp + newExp
+
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
+                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+                    // 레벨 업데이트
+                    val newLevel = currentLevel + 1
+                    val newLevelAsString = newLevel.toString()
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
+
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
+                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
+                    updatedFields[CURRENT_EXP] = newCurrentExp
+                } else {
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
+                }
+
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+                updatedFields[CITY] = currentUser.city // 도시 할당
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
+            }
+        )
     }
 
     fun pauseStopwatch() {
         Log.d(TAG, "pauseStopwatch executed")
 
+        val currentUser = user.value ?: return // 잘못된 접근
+
         wiDDataSource.pauseStopwatch(
-            email = user.value?.email ?: "",
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
             onStopwatchPaused = { newExp: Int ->
-                // 레벨
-                val currentLevel = user.value?.level ?: 1
-                // 경험치
-                val currentExp = user.value?.currentExp ?: 0
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
                 val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
                 val newWiDTotalExp = wiDTotalExp + newExp
 
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
                 if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨
+                    // 레벨 업데이트
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
 
-                    // 경험치
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-
-                    userDataSource.pauseStopwatchWithLevelUp(
-                        newLevel = newLevel,
-                        newLevelUpHistoryMap = levelDateMap,
-                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp
-                    )
-                } else { // 레벨업 아님.
-                    // 경험치
-                    val newCurrentExp = currentExp + newExp
-
-                    userDataSource.pauseStopwatch(
-                        newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    updatedFields[CURRENT_EXP] = newCurrentExp
+                } else {
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
                 }
+
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+                updatedFields[CITY] = currentUser.city // 도시 할당
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
             }
         )
     }
@@ -101,86 +157,97 @@ class MainBottomBarViewModel @Inject constructor(
     fun startTimer() {
         Log.d(TAG, "startTimer executed")
 
+        val currentUser = user.value ?: return // 잘못된 접근
+
         wiDDataSource.startTimer(
-            email = user.value?.email ?: "",
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
             onTimerAutoStopped = { newExp: Int ->
-                // 레벨
-                val currentLevel = user.value?.level ?: 1
-                // 경험치
-                val currentExp = user.value?.currentExp ?: 0
+                // 현재 상태
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
                 val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
                 val newWiDTotalExp = wiDTotalExp + newExp
 
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨
+                    // 레벨 업데이트
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
 
-                    // 경험치
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
-
-                    userDataSource.autoStopTimerWithLevelUp(
-                        newLevel = newLevel,
-                        newLevelUpHistoryMap = levelDateMap,
-                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    updatedFields[CURRENT_EXP] = newCurrentExp
                 } else {
-                    // 경험치
-                    val newCurrentExp = currentExp + newExp
-
-                    userDataSource.autoStopTimer(
-                        newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
                 }
-            },
+
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+                updatedFields[CITY] = currentUser.city // 도시 할당
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
+            }
         )
     }
 
     fun pauseTimer() {
         Log.d(TAG, "pauseTimer executed")
 
-        wiDDataSource.pauseTimer(
-            email = user.value?.email ?: "",
-            onTimerPaused = { newExp: Int ->
-                // 레벨
-                val currentLevel = user.value?.level ?: 1
+        val currentUser = user.value ?: return // 잘못된 접근
 
-                // 경험치
-                val currentExp = user.value?.currentExp ?: 0
+        wiDDataSource.pauseTimer(
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
+            onTimerPaused = { newExp: Int ->
+                // 현재 상태
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
                 val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
                 val newWiDTotalExp = wiDTotalExp + newExp
 
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨
+                    // 레벨 업데이트
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
 
-                    // 경험치
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
-
-                    userDataSource.pauseTimerWithLevelUp(
-                        newLevel = newLevel,
-                        newLevelUpHistoryMap = levelDateMap,
-                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    updatedFields[CURRENT_EXP] = newCurrentExp
                 } else {
-                    // 경험치
-                    val newCurrentExp = currentExp + newExp
-
-                    userDataSource.pauseTimer(
-                        newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
                 }
+
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+                updatedFields[CITY] = currentUser.city // 도시 할당
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
             }
         )
     }

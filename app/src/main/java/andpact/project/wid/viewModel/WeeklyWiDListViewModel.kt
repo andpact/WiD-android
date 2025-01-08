@@ -52,27 +52,7 @@ class WeeklyWiDListViewModel @Inject constructor(
     private val _weekPickerExpanded = mutableStateOf(false)
     val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
 
-    // Map
-//    val yearDateWiDListMap: State<Map<Year, Map<LocalDate, List<WiD>>>> = wiDDataSource.yearDateWiDListMap
-
-    // WiD
-//    private val _wiDListFetched = mutableStateOf(false)
-//    val wiDListFetched: State<Boolean> = _wiDListFetched
-//    private val _wiDList = mutableStateOf<List<WiD>>(emptyList())
-//    val wiDList: State<List<WiD>> = _wiDList
-    val wiDList: State<List<WiD>> = derivedStateOf { // 이 블럭 안의 State 변수가 변화하면 영향을 받음
-        Log.d(TAG, "wiDList updated from yearDateWiDListMap")
-
-        val start = _startDate.value
-        val finish = _finishDate.value
-
-        wiDDataSource.yearDateWiDListMap.value
-            .filterKeys { year -> year.value == start.year || year.value == finish.year } // 필요한 연도만 필터링
-            .flatMap { (_, dateMap: Map<LocalDate, List<WiD>>) ->
-                dateMap.filterKeys { date -> date in start..finish } // start부터 finish까지의 날짜만 필터링
-                    .values.flatten() // 날짜에 해당하는 WiD 리스트를 병합
-            }
-    }
+    val wiDList: State<List<WiD>> = derivedStateOf { updateWiDList() }
 
     // 맵(모든 제목의 맵을 만들어둠).
     private val totalDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleTotalDurationMap(wiDList = wiDList.value) }
@@ -87,25 +67,32 @@ class WeeklyWiDListViewModel @Inject constructor(
     // 표시 되는 맵
     private val _currentMapType = mutableStateOf(TitleDurationMap.TOTAL)
     val currentMapType: State<TitleDurationMap> = _currentMapType
-    private val _currentMap = mutableStateOf(totalDurationMap.value)
-    val currentMap: State<Map<Title, Duration>> = _currentMap
+    val currentMap: State<Map<Title, Duration>> = derivedStateOf { setCurrentMap() }
 
-    // Current WiD
-//    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
-//    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+    private fun updateWiDList(): List<WiD> {
+        Log.d(TAG, "updateWiDList executed")
 
-    fun setCurrentMapType(mapType: TitleDurationMap) {
-        Log.d(TAG, "setCurrentMapType executed with mapType: $mapType")
+        val start = _startDate.value
+        val finish = _finishDate.value
 
-        _currentMapType.value = mapType
-
-        setCurrentMap(mapType = mapType)
+        return wiDDataSource.yearDateWiDListMap.value
+            .filterKeys { year -> year.value == start.year || year.value == finish.year } // 필요한 연도만 필터링
+            .flatMap { (_, dateMap: Map<LocalDate, List<WiD>>) ->
+                dateMap.filterKeys { date -> date in start..finish } // start부터 finish까지의 날짜만 필터링
+                    .values.flatten() // 날짜에 해당하는 WiD 리스트를 병합
+            }
     }
 
-    private fun setCurrentMap(mapType: TitleDurationMap) {
-        Log.d(TAG, "setCurrentMap executed with mapType: $mapType")
+    fun setCurrentMapType(mapType: TitleDurationMap) {
+        Log.d(TAG, "setCurrentMapType executed")
 
-        _currentMap.value = when (mapType) {
+        _currentMapType.value = mapType
+    }
+
+    private fun setCurrentMap(): Map<Title, Duration> {
+        Log.d(TAG, "setCurrentMap executed")
+
+        return when (_currentMapType.value) {
             TitleDurationMap.TOTAL -> totalDurationMap.value
             TitleDurationMap.AVERAGE -> averageDurationMap.value
             TitleDurationMap.MAX -> maxDurationMap.value
@@ -125,62 +112,18 @@ class WeeklyWiDListViewModel @Inject constructor(
     ) {
         Log.d(TAG, "setStartDateAndFinishDate executed")
 
+        val currentUser = user.value ?: return
+
         _startDate.value = startDate
         _finishDate.value = finishDate
 
         (startDate.year..finishDate.year).forEach { year: Int ->
             wiDDataSource.getYearlyWiDListMap(
-                email = user.value?.email ?: "",
+                email = currentUser.email,
                 year = Year.of(year)
             )
         }
-
-//        setWiDListFetched(wiDListFetched = false)
-
-//        getWiDListFromStartDateToFinishDate(
-//            startDate = startDate,
-//            finishDate = finishDate
-//        )
     }
-
-//    private fun getWiDListFromStartDateToFinishDate(
-//        startDate: LocalDate,
-//        finishDate: LocalDate
-//    ) {
-//        Log.d(TAG, "getWiDListFromStartDateToFinishDate executed")
-//
-//        wiDDataSource.getWiDListFromFirstDateToLastDate(
-//            email = user.value?.email ?: "",
-//            firstDate = startDate,
-//            lastDate = finishDate,
-//            onWiDListFetched = { wiDList: List<WiD> ->
-//                _wiDList.value = wiDList
-//                setDurationMaps(wiDList = wiDList)
-//                setWiDListFetched(wiDListFetched = true)
-//            }
-//        )
-//    }
-
-//    private fun setDurationMaps(wiDList: List<WiD>) {
-//        Log.d(TAG, "setDurationMaps executed")
-//
-//        totalDurationMap = wiDDataSource.getWiDTitleTotalDurationMap(wiDList = wiDList)
-//        averageDurationMap = wiDDataSource.getWiDTitleAverageDurationMap(wiDList = wiDList)
-//        maxDurationMap = wiDDataSource.getWiDTitleMaxDurationMap(wiDList = wiDList)
-//        minDurationMap = wiDDataSource.getWiDTitleMinDurationMap(wiDList = wiDList)
-//
-//        _titleDateCountMap.value = wiDDataSource.getWiDTitleDateCountMap(wiDList = wiDList)
-//        _titleMaxDateMap.value = wiDDataSource.getWiDTitleMaxDateMap(wiDList = wiDList)
-//        _titleMinDateMap.value = wiDDataSource.getWiDTitleMinDateMap(wiDList = wiDList)
-//
-//        setCurrentMap(_currentMapType.value) // 예를 계속 갱신해줘야 함.
-//    }
-
-//    private fun setWiDListFetched(wiDListFetched: Boolean) {
-//        Log.d(TAG, "setWiDListFetched executed")
-//
-//        _wiDListFetched.value = wiDListFetched
-//    }
 
     fun getDurationString(duration: Duration): String {
         Log.d(TAG, "getDurationString executed")
@@ -189,23 +132,23 @@ class WeeklyWiDListViewModel @Inject constructor(
     }
 
     fun getDurationPercentageStringOfWeek(duration: Duration): String {
-        Log.d(TAG, "getDurationPercentageStringOfWeek executed")
-
         val totalSecondsInWeek = 7 * 24 * 60 * 60
         val durationInSeconds = duration.seconds
 
         val percentage = (durationInSeconds.toFloat() / totalSecondsInWeek) * 100
 
-        return if (percentage % 1.0 == 0.0) {
-            "${percentage.toInt()}%"
+        val tenTimesPercentage = (percentage * 10).toInt()
+
+        return if (tenTimesPercentage % 10 == 0) { // 소수점 첫째 자리 숫자 확인
+            "${percentage.toInt()}%" // 소수점 제거
         } else {
-            "${String.format("%.1f", percentage)}%"
+            "${tenTimesPercentage / 10f}%" // 소수점 첫째 자리까지 표시
         }
     }
 
     @Composable
-    fun getPeriodStringOfWeek(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
-        Log.d(TAG, "getPeriodStringOfWeek executed")
+    fun getWeekString(firstDayOfWeek: LocalDate, lastDayOfWeek: LocalDate): AnnotatedString {
+        Log.d(TAG, "getWeekString executed")
 
         return buildAnnotatedString {
             if (firstDayOfWeek.year == LocalDate.now().year) {

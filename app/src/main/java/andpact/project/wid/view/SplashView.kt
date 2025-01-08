@@ -99,7 +99,7 @@ fun SplashView(
         //                ) {
         //                    Text(
         //                        text = "인터넷 연결을 확인하세요.",
-        //                        style = Typography.bodyMedium,
+        //                        style = MaterialTheme.typography.bodySmall,
         //                        color = MaterialTheme.colorScheme.primary
         //                    )
         //                }

@@ -9,99 +9,116 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val acmeRegular = FontFamily(
-    Font(R.font.acme_regular)
-)
-
-val pretendardRegular = FontFamily(
-    Font(R.font.pretendard_regular)
-)
-
-val pretendardSemiBold = FontFamily(
-    Font(R.font.pretendard_semi_bold)
-)
-
-val pretendardExtraBold = FontFamily(
-    Font(R.font.pretendard_extra_bold)
-)
-
 val chivoMonoBlackItalic = FontFamily(
     Font(R.font.chivo_mono_black_italic)
 )
 
-// Set of Material typography styles to start with
-//
-
-/**
-    Title - ExtraBold
-    Body - SemiBold
-    Label - Regular
-
-    Large - 18.dp
-    Medium - 16.dp
-    Small - 14.dp
-
-    자주 안쓰이는 스타일은 직접 설정함.
- */
-val Typography = Typography(
-    titleLarge = TextStyle(
-        fontFamily = pretendardExtraBold,
-        fontSize = 18.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = pretendardExtraBold,
-        fontSize = 16.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = pretendardExtraBold,
-        fontSize = 14.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = pretendardSemiBold,
-        fontSize = 18.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = pretendardSemiBold,
-        fontSize = 16.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = pretendardSemiBold,
-        fontSize = 14.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = pretendardRegular,
-        fontSize = 18.sp
-    ),
-    labelMedium = TextStyle(
-        fontFamily = pretendardRegular,
-        fontSize = 16.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = pretendardRegular,
-        fontSize = 14.sp
-    ),
-
-    /* Other default text styles to override
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
-)
+//val Typography = Typography(
+    /* (Normal = Regular)
+        displayLarge = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 57.sp,
+            lineHeight = 64.sp,
+            letterSpacing = -0.25.sp
+        ),
+        displayMedium = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 45.sp,
+            lineHeight = 52.sp,
+            letterSpacing = 0.sp
+        ),
+        displaySmall = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 36.sp,
+            lineHeight = 44.sp,
+            letterSpacing = 0.sp
+        ),
+        headlineLarge = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 32.sp,
+            lineHeight = 40.sp,
+            letterSpacing = 0.sp
+        ),
+        headlineMedium = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 28.sp,
+            lineHeight = 36.sp,
+            letterSpacing = 0.sp
+        ),
+        headlineSmall = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 24.sp,
+            lineHeight = 32.sp,
+            letterSpacing = 0.sp
+        ),
+        titleLarge = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 22.sp,
+            lineHeight = 28.sp,
+            letterSpacing = 0.sp
+        ),
+        titleMedium = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.15.sp
+        ),
+        titleSmall = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.1.sp
+        ),
+        bodyLarge = TextStyle( // 기본 적용 스타일
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.5.sp
+        ),
+        bodyMedium = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.25.sp
+        ),
+        bodySmall = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.4.sp
+        ),
+        labelLarge = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.1.sp
+        ),
+        labelMedium = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.5.sp
+        ),
+        labelSmall = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Medium,
+            fontSize = 11.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.5.sp
+        )
+     */
+//)

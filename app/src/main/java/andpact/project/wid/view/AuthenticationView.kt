@@ -1,18 +1,16 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
-import andpact.project.wid.ui.theme.Typography
 import andpact.project.wid.viewModel.AuthenticationViewModel
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -59,10 +57,7 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                         authenticationViewModel.setEmailValid(it)
                     },
                     placeholder = {
-                        Text(
-                            text = "이메일",
-                            style = Typography.bodyMedium
-                        )
+                        Text(text = "이메일")
                     },
                     supportingText = {
                         Text(
@@ -71,12 +66,11 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                             } else {
                                 ""
                             },
-                            style = Typography.labelSmall
                         )
                     }
                 )
 
-                FilledIconButton(
+                FilledTonalButton(
                     modifier = Modifier
                         .fillMaxWidth(),
                     onClick = {
@@ -86,24 +80,15 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                     enabled = emailModified && emailValid && !authenticationLinkSentButtonClicked,
                     shape = MaterialTheme.shapes.medium,
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally)
-                    ) {
-                        if (authenticationLinkSentButtonClicked) {
-                            CircularProgressIndicator()
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_send_24),
-                                contentDescription = "이메일 링크 전송",
-                            )
+                    if (authenticationLinkSentButtonClicked) {
+                        CircularProgressIndicator()
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "이메일 링크 전송",
+                        )
 
-                            Text(
-                                text = "이메일 링크 전송",
-                                style = Typography.bodyMedium,
-                            )
-                        }
+                        Text(text = "이메일 링크 전송")
                     }
                 }
             }
@@ -121,8 +106,7 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                     content = {
                         Text(
                             text = "${email}로 전송된 링크를 클릭하여 인증 절차를 완료하세요.\n링크를 클릭하면 기존 계정으로 로그인되거나,\n새로운 계정이 생성됩니다.",
-                            style = Typography.bodyMedium,
-                            textAlign = TextAlign.Center
+//                            textAlign = TextAlign.Center
                         )
                     }
                 )

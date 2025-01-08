@@ -1,5 +1,6 @@
 package andpact.project.wid.repository
 
+import andpact.project.wid.model.City
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import android.util.Log
@@ -30,15 +31,15 @@ class UserRepository @Inject constructor(
     private val USER_COLLECTION = "UserCollection"
     private val WID_COLLECTION = "WiDCollection"
 
-    // 계정
     private val EMAIL = "email"
     private val SIGNED_UP_ON = "signedUpOn"
-    // 레벨
-    private val LEVEL = "level"
-    private val LEVEL_DATE_MAP = "levelDateMap"
-    // 경험치
-    private val CURRENT_EXP = "currentExp"
-    private val WID_TOTAL_EXP = "wiDTotalExp"
+    val LEVEL = "level"
+    val LEVEL_DATE_MAP = "levelDateMap"
+    val CURRENT_EXP = "currentExp"
+    val WID_TOTAL_EXP = "wiDTotalExp"
+    val WID_MIN_LIMIT = "wiDMinLimit"
+    val WID_MAX_LIMIT = "wiDMaxLimit"
+    val CITY = "city"
 
     init { Log.d(TAG, "created") }
     protected fun finalize() { Log.d(TAG, "destroyed") }
@@ -149,8 +150,7 @@ class UserRepository @Inject constructor(
             .whereEqualTo(EMAIL, email)
             .get()
             .addOnSuccessListener { querySnapshot: QuerySnapshot ->
-                // 회원 가입 시 새로운 문서를 생성함.
-                if (querySnapshot.isEmpty) {
+                if (querySnapshot.isEmpty) { // 회원 가입 시 새로운 문서를 생성함.
                     createUser(
                         email = email,
                         onUserCreated = { user: User? ->
@@ -158,12 +158,15 @@ class UserRepository @Inject constructor(
                         }
                     )
                 } else { // 문서가 존재할 때만 변환 작업을 수행합니다.
-                    getExistingUser(
-                        documentSnapshot = querySnapshot.documents[0],
-                        onUserFetched = { user: User? ->
-                            onUserFetched(user)
-                        }
-                    )
+                    val user = querySnapshot.documents.first().toUserOrNull()
+
+                    onUserFetched(user)
+//                    getExistingUser(
+//                        documentSnapshot = querySnapshot.documents.first(),
+//                        onUserFetched = { user: User? ->
+//                            onUserFetched(user)
+//                        }
+//                    )
                 }
             }
             .addOnFailureListener { exception ->
@@ -179,40 +182,13 @@ class UserRepository @Inject constructor(
     ) {
         Log.d(TAG, "createUser executed")
 
-        val today = LocalDate.now()
-        val todayAsString = today.toString()
-
-        // 레벨
-        val defaultLevelDateMapForServer = convertLevelToDateMapForServer(defaultLevelDateMap)
-
-        val newUserDocument = hashMapOf(
-            // 계정
-            EMAIL to email,
-            SIGNED_UP_ON to todayAsString,
-            // 레벨
-            LEVEL to 1,
-            LEVEL_DATE_MAP to defaultLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to 0,
-            WID_TOTAL_EXP to 0,
-        )
+        val newUser = User.default().copy(email = email)
+        val newUserDocument = newUser.toDocument()
 
         firestore.collection(USER_COLLECTION)
             .add(newUserDocument)
             .addOnSuccessListener { documentReference ->
                 Log.d(TAG, "DocumentSnapshot added with ID : ${documentReference.id}")
-
-                val newUser = User(
-                    // 계정
-                    email = email,
-                    signedUpOn = today,
-                    // 레벨
-                    level = 1,
-                    levelDateMap = defaultLevelDateMap,
-                    // 경험치
-                    currentExp = 0,
-                    wiDTotalExp = 0,
-                )
 
                 onUserCreated(newUser)
             }
@@ -220,40 +196,6 @@ class UserRepository @Inject constructor(
                 Log.w(TAG, "Error adding document", e)
                 onUserCreated(null)
             }
-    }
-
-    private fun getExistingUser(
-        documentSnapshot: DocumentSnapshot,
-        onUserFetched: (user: User?) -> Unit
-    ) {
-        Log.d(TAG, "getExistingUser executed")
-
-        // 계정
-        val userEmail = documentSnapshot.getString(EMAIL) ?: ""
-        val signedUpOn = LocalDate.parse(documentSnapshot.getString(SIGNED_UP_ON))
-
-        // 레벨
-        val level = documentSnapshot.getLong(LEVEL)?.toInt() ?: 1
-        val levelDateMapFromServer = documentSnapshot.get(LEVEL_DATE_MAP) as? HashMap<String, String> ?: convertLevelToDateMapForServer(defaultLevelDateMap)
-        val levelDateMap = convertLevelToDateMapForClient(levelDateMapFromServer)
-
-        // 경험치
-        val currentExp = documentSnapshot.getLong(CURRENT_EXP)?.toInt() ?: 0
-        val wiDTotalExp = documentSnapshot.getLong(WID_TOTAL_EXP)?.toInt() ?: 0
-
-        val user = User(
-            // 계정
-            email = userEmail,
-            signedUpOn = signedUpOn,
-            // 레벨
-            level = level,
-            levelDateMap = levelDateMap,
-            // 경험치
-            currentExp = currentExp,
-            wiDTotalExp = wiDTotalExp,
-        )
-
-        onUserFetched(user)
     }
 
 //    fun updateNickname(newNickname: String) {
@@ -266,314 +208,21 @@ class UserRepository @Inject constructor(
 
 //    }
 
-    fun pauseStopwatch(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onStopwatchPaused: (stopwatchPaused: Boolean) -> Unit
-    ) {
-        Log.d(TAG, "pauseStopwatch executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onStopwatchPaused(userUpdated)
-            }
-        )
-    }
-
-    fun pauseStopwatchWithLevelUp(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onStopwatchPausedWithLevelUp: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "pauseStopwatchWithLevelUp executed")
-
-        // 레벨
-        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-
-        val updatedUserDocument = hashMapOf(
-            // 레벨
-            LEVEL to newLevel,
-            LEVEL_DATE_MAP to newLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onStopwatchPausedWithLevelUp(userUpdated)
-            }
-        )
-    }
-
-    fun pauseTimer(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onTimerPaused: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "pauseTimer executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onTimerPaused(userUpdated)
-            }
-        )
-    }
-
-    fun pauseTimerWithLevelUp(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onTimerPausedWithLevelUp: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "pauseTimerWithLevelUp executed")
-
-        // 레벨
-        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-
-        val updatedUserDocument = hashMapOf(
-            // 레벨
-            LEVEL to newLevel,
-            LEVEL_DATE_MAP to newLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onTimerPausedWithLevelUp(userUpdated)
-            }
-        )
-    }
-
-    fun autoStopTimer(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onTimerAutoStopped: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "autoStopTimer executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onTimerAutoStopped(userUpdated)
-            }
-        )
-    }
-
-    fun autoStopTimerWithLevelUp(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onTimerAutoStoppedWithLevelUp: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "autoStopTimerWithLevelUp executed")
-
-        // 경험치
-        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-
-        val updatedUserDocument = hashMapOf(
-            // 레벨
-            LEVEL to newLevel,
-            LEVEL_DATE_MAP to newLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onTimerAutoStoppedWithLevelUp(userUpdated)
-            }
-        )
-    }
-
-    fun createWiD(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onCreatedWiD: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "createWiD executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onCreatedWiD(userUpdated)
-            }
-        )
-    }
-
-    fun createdWiDWithLevelUp(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onCreatedWiDWithLevelUp: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "createdWiDWithLevelUp executed")
-
-        // 경험치
-        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-
-        val updatedUserDocument = hashMapOf(
-            // 레벨
-            LEVEL to newLevel,
-            LEVEL_DATE_MAP to newLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onCreatedWiDWithLevelUp(userUpdated)
-            }
-        )
-    }
-
-    fun updateWiD(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onWiDUpdated: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "updateWiD executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onWiDUpdated(userUpdated)
-            }
-        )
-    }
-
-    fun updateWiDWithLevelUp(
-        email: String,
-        newLevel: Int,
-        newLevelUpHistoryMap: Map<String, LocalDate>,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onWiDUpdatedWithLevelUp: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "updateWiDWithLevelUp executed")
-
-        // 경험치
-        val newLevelDateMapForServer = convertLevelToDateMapForServer(newLevelUpHistoryMap)
-
-        val updatedUserDocument = hashMapOf(
-            // 레벨
-            LEVEL to newLevel,
-            LEVEL_DATE_MAP to newLevelDateMapForServer,
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onWiDUpdatedWithLevelUp(userUpdated)
-            }
-        )
-    }
-
-    fun deleteWiD(
-        email: String,
-        newCurrentExp: Int,
-        newWiDTotalExp: Int,
-        onWiDDeleted: (wiDDeleted: Boolean) -> Unit
-    ) {
-        Log.d(TAG, "deleteWiD executed")
-
-        val updatedUserDocument = hashMapOf(
-            // 경험치
-            CURRENT_EXP to newCurrentExp,
-            WID_TOTAL_EXP to newWiDTotalExp,
-        )
-
-        updateUserDocument(
-            email = email,
-            updatedUserDocument = updatedUserDocument,
-            onUserUpdated = { userUpdated: Boolean ->
-                onWiDDeleted(userUpdated)
-            }
-        )
-    }
-
-    private fun updateUserDocument(
+    fun setUserDocument(
         email: String,
         updatedUserDocument: Map<String, Any>,
-        onUserUpdated: (Boolean) -> Unit
+        onComplete: (Boolean) -> Unit
     ) {
         firestore.collection(USER_COLLECTION)
             .document(email)
             .set(updatedUserDocument)
             .addOnSuccessListener {
                 Log.d(TAG, "DocumentSnapshot successfully updated!")
-                onUserUpdated(true)
+                onComplete(true)
             }
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error updating document", e)
-                onUserUpdated(false)
+                onComplete(false)
             }
     }
 
@@ -674,6 +323,7 @@ class UserRepository @Inject constructor(
             }
     }
 
+    // TODO: WiDRepository에서 실행되야지
     private fun deleteWiDDocument(
         email: String,
         onWiDCollectionDeleted: (Boolean) -> Unit
@@ -715,7 +365,6 @@ class UserRepository @Inject constructor(
             }
     }
 
-    /** 익명 로그인 */
 //    fun signInAnonymously(callback: (Boolean) -> Unit) {
 //        Log.d(TAG, "signInAnonymously executed")
 //
@@ -731,21 +380,54 @@ class UserRepository @Inject constructor(
 //            }
 //    }
 
-    /** 클라이언트 : Map<String, LocalDate> -> 서버 : Map<String, String> */
-    private fun convertLevelToDateMapForServer(map: Map<String, LocalDate>): Map<String, String> {
-        Log.d(TAG, "convertLevelToDateMapForServer executed")
-
-        return map.mapValues { it.value.toString() }
-    }
-
-    /** 서버 : Map<String, String> -> 클라이언트 : Map<String, LocalDate> */
-    private fun convertLevelToDateMapForClient(map: Map<String, String>): Map<String, LocalDate> {
-        Log.d(TAG, "convertLevelToDateMapForClient executed")
-
-        return map.mapValues { LocalDate.parse(it.value) }
-    }
-
+    // **************************************** 유틸 메서드 ****************************************
     private val defaultLevelDateMap: Map<String, LocalDate> = mapOf(
         "1" to LocalDate.now()
     )
+
+    private fun User.toDocument(): Map<String, Any> { // User -> Map
+        return mapOf(
+            EMAIL to email,
+            SIGNED_UP_ON to signedUpOn.toString(),
+            CITY to city.toString(),
+            LEVEL to level,
+            LEVEL_DATE_MAP to levelDateMap.mapValues { it.value.toString() },
+            CURRENT_EXP to currentExp,
+            WID_TOTAL_EXP to wiDTotalExp,
+            WID_MIN_LIMIT to wiDMinLimit.seconds, // Duration을 초 단위로 변환
+            WID_MAX_LIMIT to wiDMaxLimit.seconds  // Duration을 초 단위로 변환
+        )
+    }
+
+//    private fun Map<String, Any>.toUser(): User { // Map -> User
+//        return User(
+//            email = this[EMAIL] as String,
+//            signedUpOn = LocalDate.parse(this[SIGNED_UP_ON] as String),
+//            level = (this[LEVEL] as Long).toInt(), // Firebase 숫자는 Long으로 반환됨
+//            levelDateMap = (this[LEVEL_DATE_MAP] as Map<String, String>).mapValues { LocalDate.parse(it.value) },
+//            currentExp = (this[CURRENT_EXP] as Long).toInt(),
+//            wiDTotalExp = (this[WID_TOTAL_EXP] as Long).toInt(),
+//            wiDMinLimit = (this[WID_MIN_LIMIT] as Long).toInt(),
+//            wiDMaxLimit = (this[WID_MAX_LIMIT] as Long).toInt()
+//        )
+//    }
+
+    private fun DocumentSnapshot.toUserOrNull(): User? {
+        return try {
+            User(
+                email = getString(EMAIL) ?: return null, // 잘못된 접근
+                signedUpOn = getString(SIGNED_UP_ON)?.let { LocalDate.parse(it) } ?: LocalDate.now(),
+                city = getString(CITY)?.let { City.valueOf(it) } ?: City.SEOUL,
+                level = getLong(LEVEL)?.toInt() ?: 1,
+                levelDateMap = (get(LEVEL_DATE_MAP) as? Map<String, String>)?.mapValues { LocalDate.parse(it.value) } ?: defaultLevelDateMap,
+                currentExp = getLong(CURRENT_EXP)?.toInt() ?: 0,
+                wiDTotalExp = getLong(WID_TOTAL_EXP)?.toInt() ?: 0,
+                wiDMinLimit = Duration.ofSeconds(getLong(WID_MIN_LIMIT) ?: 0), // 초 단위로 Duration 변환
+                wiDMaxLimit = Duration.ofSeconds(getLong(WID_MAX_LIMIT) ?: 0)  // 초 단위로 Duration 변환
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error converting document to User", e)
+            null
+        }
+    }
 }

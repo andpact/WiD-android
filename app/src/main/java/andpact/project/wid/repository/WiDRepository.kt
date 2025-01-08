@@ -1,9 +1,6 @@
 package andpact.project.wid.repository
 
-import andpact.project.wid.model.CurrentTool
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.WiD
-import andpact.project.wid.model.YearlyWiDListMap
+import andpact.project.wid.model.*
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
@@ -34,9 +31,11 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
     private val ID = "id"
     private val DATE = "date"
     private val TITLE = "title"
-    private val START = "start"
-    private val FINISH = "finish"
+    private val SUB_TITLE = "subTitle"
+    val START = "start"
+    val FINISH = "finish"
     private val DURATION = "duration"
+    private val CITY = "city"
     private val EXP = "exp"
     private val CREATED_BY = "createdBy"
 
@@ -108,9 +107,11 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             ID to id,
             DATE to date.toString(),
             TITLE to title.name,
+            SUB_TITLE to subTitle.name,
             START to Timestamp(Date.from(start.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
             FINISH to Timestamp(Date.from(finish.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
             DURATION to duration.seconds.toInt(),
+            CITY to city.name,
             EXP to exp,
             CREATED_BY to createdBy.name
         )
@@ -124,9 +125,11 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             id = this[ID] as String,
             date = LocalDate.parse(this[DATE] as String),
             title = Title.valueOf(this[TITLE] as String),
+            subTitle = SubTitle.valueOf(this[SUB_TITLE] as String),
             start = startTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
             finish = finishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
             duration = Duration.ofSeconds(this[DURATION] as Long),
+            city = City.valueOf(this[CITY] as String),
             exp = this[EXP] as Int,
             createdBy = CurrentTool.valueOf(this[CREATED_BY] as String)
         )

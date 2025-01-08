@@ -1,13 +1,9 @@
 package andpact.project.wid.chartView
 
-import andpact.project.wid.model.CurrentTool
-import andpact.project.wid.model.TitleDurationChartData
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.*
 import andpact.project.wid.ui.theme.DeepSkyBlue
 import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Transparent
-import andpact.project.wid.ui.theme.Typography
-import andpact.project.wid.model.Title
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,13 +24,13 @@ import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun WeeklyWiDListStackedVerticalBarChartView(
+fun WeeklyWiDListChartView(
     modifier: Modifier = Modifier,
     startDate: LocalDate,
     finishDate: LocalDate,
     wiDList: List<WiD>
 ) {
-    val TAG = "WeeklyWiDListStackedVerticalBarChartView"
+    val TAG = "WeeklyWiDListChartView"
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -51,9 +48,10 @@ fun WeeklyWiDListStackedVerticalBarChartView(
         ) {
             // 더미
             Text(
-                modifier = Modifier,
-                text = "24",
-                style = Typography.bodySmall,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp),
+                text = "자정",
+                style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = Transparent
             )
@@ -71,7 +69,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                     modifier = Modifier
                         .weight(1f),
                     text = day,
-                    style = Typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = textColor
                 )
@@ -91,9 +89,27 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 for (hour in 0..24 step 2) { // 2시간 간격으로 숫자 표시
+                    val displayText = when (hour) {
+                        0 -> "자정"
+                        12 -> "정오"
+                        24 -> "자정"
+                        else -> hour.toString()
+                    }
+
+                    val backgroundColor = when (hour) {
+                        0, 12, 24 -> MaterialTheme.colorScheme.secondaryContainer // 배경색
+                        else -> Transparent // 기본 투명
+                    }
+
                     Text(
-                        text = hour.toString(),
-                        style = Typography.bodySmall,
+                        modifier = Modifier
+                            .background(
+                                color = backgroundColor,
+                                shape = MaterialTheme.shapes.extraSmall
+                            )
+                            .padding(horizontal = 4.dp),
+                        text = displayText,
+                        style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -161,7 +177,8 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = 7.dp)
+                        .padding(horizontal = 10.dp, vertical = 8.dp)
+                        .clip(shape = MaterialTheme.shapes.extraSmall)
                 ) {
                     for (barData in barChartData) {
                         val barHeight = barData.duration.toMinutes().toFloat() / totalMinutes // duration을 비율로 계산
@@ -169,12 +186,8 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 1.dp)
                                     .weight(barHeight) // 계산된 높이를 weight로 설정
-                                    .background(
-                                        color = barData.title.color,
-                                        shape = MaterialTheme.shapes.extraSmall
-                                    )
+                                    .background(color = barData.title.color)
                             )
                         }
                     }
@@ -189,9 +202,10 @@ fun WeeklyWiDListStackedVerticalBarChartView(
         ) {
             // 더미
             Text(
-                modifier = Modifier,
-                text = "24",
-                style = Typography.bodySmall,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp),
+                text = "자정",
+                style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = Transparent
             )
@@ -213,7 +227,7 @@ fun WeeklyWiDListStackedVerticalBarChartView(
                         modifier = Modifier
                             .weight(1f),
                         text = "${dayNumber}일", // "n일" 형식으로 날짜 표시
-                        style = Typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         color = textColor // 조건부 색상 적용
                     )
@@ -222,46 +236,52 @@ fun WeeklyWiDListStackedVerticalBarChartView(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun WeeklyWiDListStackedVerticalBarChartPreview() {
-//    val days: Long = 7
-//    val tmpStartDate = LocalDate.now()
-//    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
-//
-//    val tmpWiDList = mutableListOf<WiD>()
-//
-//    for (index in 0 until days) {
-//        val indexDate = tmpStartDate.plusDays(index)
-//
-//        tmpWiDList.add(
-//            WiD(
-//                id = "tmpWiD",
-//                date = indexDate,
-//                title = Title.STUDY,
-//                start = LocalTime.of(0, 0),
-//                finish = LocalTime.of(2, 0),
-//                duration = Duration.ofHours(2),
-//                createdBy = CurrentTool.LIST
-//            )
-//        )
-//
-//        tmpWiDList.add(
-//            WiD(
-//                id = "tmpWiD",
-//                date = indexDate,
-//                title = Title.STUDY,
-//                start = LocalTime.of(6, 0),
-//                finish = LocalTime.of(9, 0),
-//                duration = Duration.ofHours(3),
-//                createdBy = CurrentTool.LIST
-//            )
-//        )
-//    }
-//
-//    WeeklyWiDListStackedVerticalBarChartView(
-//        startDate = tmpStartDate,
-//        finishDate = tmpFinishDate,
-//        wiDList = tmpWiDList
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun WeeklyWiDListStackedVerticalBarChartPreview() {
+    val days: Long = 7
+    val tmpStartDate = LocalDate.now().minusDays(1)
+    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
+
+    val tmpWiDList = mutableListOf<WiD>()
+
+    for (index in 0 until days) {
+        val indexDate = tmpStartDate.plusDays(index)
+
+        tmpWiDList.add(
+            WiD(
+                id = "tmpWiD",
+                date = indexDate,
+                title = Title.STUDY,
+                subTitle = SubTitle.UNSELECTED,
+                start = LocalTime.of(0, 0),
+                finish = LocalTime.of(2, 0),
+                duration = Duration.ofHours(2),
+                city = City.SEOUL,
+                exp = 0,
+                createdBy = CurrentTool.LIST
+            )
+        )
+
+        tmpWiDList.add(
+            WiD(
+                id = "tmpWiD",
+                date = indexDate,
+                title = Title.STUDY,
+                subTitle = SubTitle.UNSELECTED,
+                start = LocalTime.of(6, 0),
+                finish = LocalTime.of(9, 0),
+                duration = Duration.ofHours(3),
+                city = City.BUSAN,
+                exp = 0,
+                createdBy = CurrentTool.LIST
+            )
+        )
+    }
+
+    WeeklyWiDListChartView(
+        startDate = tmpStartDate,
+        finishDate = tmpFinishDate,
+        wiDList = tmpWiDList
+    )
+}

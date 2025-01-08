@@ -8,7 +8,9 @@ import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.chivoMonoBlackItalic
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -19,6 +21,8 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.Year
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,30 +37,50 @@ class TimerViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-    // 유저
-    val user: State<User?> = userDataSource.user
+    val LEVEL = userDataSource.LEVEL
+    val LEVEL_DATE_MAP = userDataSource.LEVEL_DATE_MAP
+    val CURRENT_EXP = userDataSource.CURRENT_EXP
+    val WID_TOTAL_EXP = userDataSource.WID_TOTAL_EXP
 
-    // 제목
+    private val CITY = userDataSource.CITY
+
+    val WID_LIST_LIMIT_PER_DAY = wiDDataSource.WID_LIST_LIMIT_PER_DAY
+
+    val user: State<User?> = userDataSource.user
+    val today: State<LocalDate> = wiDDataSource.today
+
+    val isSameDateForStartAndFinish: State<Boolean> = wiDDataSource.isSameDateForStartAndFinish
     val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
     val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
 
-    // 도구
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
     val remainingTime: State<Duration> = wiDDataSource.remainingTime
     val selectedTime: State<Duration> = wiDDataSource.selectedTime
     private val _timerViewBarVisible = mutableStateOf(true)
     val timerViewBarVisible: State<Boolean> = _timerViewBarVisible
 
-    fun setTitle(newTitle: Title) {
-        Log.d(TAG, "setTitle executed")
+    val wiDList: State<List<WiD>> = derivedStateOf { updateWiDList() }
 
-        wiDDataSource.setCurrentWiDTitle(newTitle)
+    private fun updateWiDList(): List<WiD> {
+        Log.d(TAG, "updateWiDList executed")
+
+        val currentToday = today.value
+
+        return wiDDataSource.yearDateWiDListMap.value
+            .getOrDefault(Year.of(currentToday.year), emptyMap())
+            .getOrDefault(currentToday, emptyList())
     }
 
-    fun setSelectedTime(newSelectedTime: Duration) {
-        Log.d(TAG, "setSelectedTime executed")
+//    fun setTitle(newTitle: Title) {
+//        Log.d(TAG, "setTitle executed")
+//
+//        wiDDataSource.setCurrentWiDTitle(newTitle)
+//    }
 
-        wiDDataSource.setSelectedTime(newSelectedTime)
+    fun setTimerTime(newSelectedTime: Duration) {
+        Log.d(TAG, "setTimerTime executed")
+
+        wiDDataSource.setTimerTime(newSelectedTime)
     }
 
     fun setTimerViewBarVisible(timerViewBarVisible: Boolean) {
@@ -68,86 +92,97 @@ class TimerViewModel @Inject constructor(
     fun startTimer() {
         Log.d(TAG, "startTimer executed")
 
+        val currentUser = user.value ?: return // 잘못된 접근
+
         wiDDataSource.startTimer(
-            email = user.value?.email ?: "",
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
             onTimerAutoStopped = { newExp: Int ->
-                // 레벨
-                val currentLevel = user.value?.level ?: 1
-                // 경험치
-                val currentExp = user.value?.currentExp ?: 0
+                // 현재 상태
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
                 val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
                 val newWiDTotalExp = wiDTotalExp + newExp
 
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨
+                    // 레벨 업데이트
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
 
-                    // 경험치
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
-
-                    userDataSource.autoStopTimerWithLevelUp(
-                        newLevel = newLevel,
-                        newLevelUpHistoryMap = levelDateMap,
-                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    updatedFields[CURRENT_EXP] = newCurrentExp
                 } else {
-                    // 경험치
-                    val newCurrentExp = currentExp + newExp
-
-                    userDataSource.autoStopTimer(
-                        newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
                 }
-            },
+
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+                updatedFields[CITY] = currentUser.city // 도시 할당
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
+            }
         )
     }
 
     fun pauseTimer() {
         Log.d(TAG, "pauseTimer executed")
 
-        wiDDataSource.pauseTimer(
-            email = user.value?.email ?: "",
-            onTimerPaused = { newExp: Int ->
-                // 레벨
-                val currentLevel = user.value?.level ?: 1
+        val currentUser = user.value ?: return // 잘못된 접근
 
-                // 경험치
-                val currentExp = user.value?.currentExp ?: 0
+        wiDDataSource.pauseTimer(
+            email = currentUser.email,
+            wiDMinLimit = currentUser.wiDMinLimit,
+            onTimerPaused = { newExp: Int ->
+                // 현재 상태
+                val currentLevel = currentUser.level
+                val currentExp = currentUser.currentExp
                 val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = user.value?.wiDTotalExp ?: 0
+                val wiDTotalExp = currentUser.wiDTotalExp
                 val newWiDTotalExp = wiDTotalExp + newExp
 
+                // 업데이트할 필드
+                val updatedFields = mutableMapOf<String, Any>()
+
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨
+                    // 레벨 업데이트
                     val newLevel = currentLevel + 1
                     val newLevelAsString = newLevel.toString()
-                    val levelDateMap = user.value?.levelDateMap?.toMutableMap() ?: mutableMapOf()
-                    levelDateMap[newLevelAsString] = LocalDate.now() // 실행되는 순간 날짜를 사용함
+                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
+                    levelDateMap[newLevelAsString] = today.value
 
-                    // 경험치
+                    updatedFields[LEVEL] = newLevel
+                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
+
+                    // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
-
-                    userDataSource.pauseTimerWithLevelUp(
-                        newLevel = newLevel,
-                        newLevelUpHistoryMap = levelDateMap,
-                        newCurrentExp = newCurrentExp, // 현재 경험치 초기화
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    updatedFields[CURRENT_EXP] = newCurrentExp
                 } else {
-                    // 경험치
-                    val newCurrentExp = currentExp + newExp
-
-                    userDataSource.pauseTimer(
-                        newCurrentExp = newCurrentExp,
-                        newWiDTotalExp = newWiDTotalExp
-                    )
+                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
+                    updatedFields[CURRENT_EXP] = currentExp + newExp
                 }
+
+                // 총 WiD 경험치 업데이트
+                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp
+
+                // UserDataSource를 통해 문서 갱신
+                userDataSource.setUserDocument(
+                    email = currentUser.email,
+                    updatedUserDocument = updatedFields
+                )
             }
         )
     }
@@ -175,5 +210,25 @@ class TimerViewModel @Inject constructor(
                 append("$hoursText:$minutesText:$secondsText")
             }
         }
+    }
+
+
+    fun getDurationString(duration: Duration): String {
+        Log.d(TAG, "getDurationString executed")
+
+        return wiDDataSource.getDurationString(duration = duration)
+    }
+
+    @Composable
+    fun getDateString(date: LocalDate): AnnotatedString {
+        Log.d(TAG, "getDateString executed")
+
+        return wiDDataSource.getDateString(date = date)
+    }
+
+    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
+        Log.d(TAG, "getTimeString executed")
+
+        return wiDDataSource.getTimeString(time = time)
     }
 }

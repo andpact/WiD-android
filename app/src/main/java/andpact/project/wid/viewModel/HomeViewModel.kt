@@ -2,7 +2,9 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
+import andpact.project.wid.model.CurrentToolState
 import andpact.project.wid.model.User
+import andpact.project.wid.model.WiD
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -41,6 +43,10 @@ class HomeViewModel @Inject constructor(
 
     val today: State<LocalDate> = wiDDataSource.today
     val now: State<LocalTime> = wiDDataSource.now
+
+    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
+
+    val currentToolState = wiDDataSource.currentToolState
 
     private fun startLastNewWiDTimer() {
         Log.d(TAG, "startLastNewWiDTimer executed")

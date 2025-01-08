@@ -1,6 +1,7 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.ui.theme.Typography
+import andpact.project.wid.destinations.MainViewDestinations
+import andpact.project.wid.model.City
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -10,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MyPageView(
+    onCityPickerClicked: (currentCity: City) -> Unit,
     onUserSignedOut: () -> Unit,
     onUserDeleted: (Boolean) -> Unit,
 ) {
@@ -33,7 +35,7 @@ fun MyPageView(
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    val pageList = listOf("계정")
+    val pageList = listOf("계정", "기록")
     val pagerState = rememberPagerState(pageCount = { pageList.size })
     val coroutineScope = rememberCoroutineScope()
 
@@ -44,15 +46,8 @@ fun MyPageView(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "내 페이지",
-                        style = Typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+                    Text(text = MainViewDestinations.MyPageViewDestination.title)
+                }
             )
         },
         content = { contentPadding: PaddingValues ->
@@ -62,9 +57,6 @@ fun MyPageView(
                     .padding(contentPadding)
             ) {
                 ScrollableTabRow(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .clip(RoundedCornerShape(16, 16)),
                     containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
                     selectedTabIndex = pagerState.currentPage,
                     divider = {},
@@ -75,7 +67,6 @@ fun MyPageView(
                             text = {
                                 Text(
                                     text = pageList[index],
-                                    style = Typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
@@ -89,9 +80,12 @@ fun MyPageView(
                     }
                 }
 
-                HorizontalPager(state = pagerState) { page ->
+                HorizontalPager(state = pagerState) { page: Int ->
                     when (page) {
                         0 -> MyAccountView(
+                            onCityPickerClicked = { selectedCity: City ->
+                                onCityPickerClicked(selectedCity)
+                            },
                             onUserSignedOut = {
                                 onUserSignedOut()
                             },
@@ -101,15 +95,10 @@ fun MyPageView(
                                 }
                             }
                         )
+                        1 -> MyWiDView()
                     }
                 }
             }
         }
     )
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun MyPagePreview() {
-//
-//}
