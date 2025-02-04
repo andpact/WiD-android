@@ -31,7 +31,7 @@ class MyAccountViewModel @Inject constructor(
     private val CITY = userDataSource.CITY
 
     // user 인스턴스 자체가 갱신되면서 화면의 데이터가 갱신되도록 함.
-    val firebaseUser: State<FirebaseUser?> = userDataSource.firebaseUser
+//    val firebaseUser: State<FirebaseUser?> = userDataSource.firebaseUser
     val user: State<User?> = userDataSource.user
 
     // 이메일(계정 삭제 대화상자 속)
@@ -39,14 +39,12 @@ class MyAccountViewModel @Inject constructor(
     val emailForDialog: State<String> = _emailForDialog
 
     // 닉네임(대화상자)
-    private val _displayNameForDialog = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: "tmp nickname")
-    val displayNameForDialog: State<String> = _displayNameForDialog
-    private val _showDisplayNameDialog = mutableStateOf(false)
-    val showDisplayNameDialog: State<Boolean> = _showDisplayNameDialog
+//    private val _displayNameForDialog = mutableStateOf(userDataSource.firebaseUser.value?.displayName ?: "tmp nickname")
+//    val displayNameForDialog: State<String> = _displayNameForDialog
+//    private val _showDisplayNameDialog = mutableStateOf(false)
+//    val showDisplayNameDialog: State<Boolean> = _showDisplayNameDialog
 
     // 계정
-    private val _showLevelDateMapDialog = mutableStateOf(false)
-    val showLevelDateMapDialog: State<Boolean> = _showLevelDateMapDialog
     private val _showSignOutDialog = mutableStateOf(false)
     val showSignOutDialog: State<Boolean> = _showSignOutDialog
     private val _showDeleteUserDialog = mutableStateOf(false)
@@ -58,42 +56,23 @@ class MyAccountViewModel @Inject constructor(
         _emailForDialog.value = newEmailForDialog
     }
 
-    fun setDisplayNameForDialog(newDisplayNameForDialog: String) {
-        Log.d(TAG, "setDisplayNameForDialog executed")
+//    fun setDisplayNameForDialog(newDisplayNameForDialog: String) {
+//        Log.d(TAG, "setDisplayNameForDialog executed")
+//
+//        _displayNameForDialog.value = newDisplayNameForDialog
+//    }
 
-        _displayNameForDialog.value = newDisplayNameForDialog
-    }
+//    fun updateDisplayName(newDisplayName: String) {
+//        Log.d(TAG, "updateDisplayName executed")
+//
+//         TODO: 파이어베이스 유저 갱신하는 코드 작성
+//    }
 
-    fun updateDisplayName(newDisplayName: String) {
-        Log.d(TAG, "updateDisplayName executed")
-
-        // TODO: 파이어베이스 유저 갱신하는 코드 작성
-    }
-
-    fun setShowDisplayNameDialog(show: Boolean) {
-        Log.d(TAG, "setShowDisplayNameDialog executed")
-
-        _showDisplayNameDialog.value = show
-    }
-
-    fun setShowLevelDateMapDialog(show: Boolean) {
-        Log.d(TAG, "setShowLevelDateMapDialog executed")
-
-        _showLevelDateMapDialog.value = show
-    }
-
-    fun updateCity(updatedCity: City) {
-        Log.d(TAG, "updateCity executed")
-
-        val currentUser = user.value ?: return
-        val updatedFields = mutableMapOf<String, Any>()
-        updatedFields[CITY] = updatedCity.name // String 타입으로 서버로 보냄.
-
-        userDataSource.setUserDocument(
-            email = currentUser.email,
-            updatedUserDocument = updatedFields
-        )
-    }
+//    fun setShowDisplayNameDialog(show: Boolean) {
+//        Log.d(TAG, "setShowDisplayNameDialog executed")
+//
+//        _showDisplayNameDialog.value = show
+//    }
 
     fun setShowSignOutDialog(show: Boolean) {
         Log.d(TAG, "setShowSignOutDialog executed")

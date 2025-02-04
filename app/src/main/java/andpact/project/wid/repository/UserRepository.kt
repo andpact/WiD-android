@@ -2,24 +2,16 @@ package andpact.project.wid.repository
 
 import andpact.project.wid.model.City
 import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
 import android.util.Log
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
-import java.util.*
 import javax.inject.Inject
-import kotlin.collections.HashMap
 
 // 파이어 베이스 인증 관련 기능을 담당하는 클래스
 // FirebaseUser는 FirebaseAuth 객체에 묶여 있다고 보면 됨.
@@ -34,7 +26,6 @@ class UserRepository @Inject constructor(
     private val EMAIL = "email"
     private val SIGNED_UP_ON = "signedUpOn"
     val LEVEL = "level"
-    val LEVEL_DATE_MAP = "levelDateMap"
     val CURRENT_EXP = "currentExp"
     val WID_TOTAL_EXP = "wiDTotalExp"
     val WID_MIN_LIMIT = "wiDMinLimit"
@@ -381,17 +372,12 @@ class UserRepository @Inject constructor(
 //    }
 
     // **************************************** 유틸 메서드 ****************************************
-    private val defaultLevelDateMap: Map<String, LocalDate> = mapOf(
-        "1" to LocalDate.now()
-    )
-
     private fun User.toDocument(): Map<String, Any> { // User -> Map
         return mapOf(
             EMAIL to email,
             SIGNED_UP_ON to signedUpOn.toString(),
             CITY to city.toString(),
             LEVEL to level,
-            LEVEL_DATE_MAP to levelDateMap.mapValues { it.value.toString() },
             CURRENT_EXP to currentExp,
             WID_TOTAL_EXP to wiDTotalExp,
             WID_MIN_LIMIT to wiDMinLimit.seconds, // Duration을 초 단위로 변환
@@ -404,7 +390,6 @@ class UserRepository @Inject constructor(
 //            email = this[EMAIL] as String,
 //            signedUpOn = LocalDate.parse(this[SIGNED_UP_ON] as String),
 //            level = (this[LEVEL] as Long).toInt(), // Firebase 숫자는 Long으로 반환됨
-//            levelDateMap = (this[LEVEL_DATE_MAP] as Map<String, String>).mapValues { LocalDate.parse(it.value) },
 //            currentExp = (this[CURRENT_EXP] as Long).toInt(),
 //            wiDTotalExp = (this[WID_TOTAL_EXP] as Long).toInt(),
 //            wiDMinLimit = (this[WID_MIN_LIMIT] as Long).toInt(),
@@ -419,7 +404,6 @@ class UserRepository @Inject constructor(
                 signedUpOn = getString(SIGNED_UP_ON)?.let { LocalDate.parse(it) } ?: LocalDate.now(),
                 city = getString(CITY)?.let { City.valueOf(it) } ?: City.SEOUL,
                 level = getLong(LEVEL)?.toInt() ?: 1,
-                levelDateMap = (get(LEVEL_DATE_MAP) as? Map<String, String>)?.mapValues { LocalDate.parse(it.value) } ?: defaultLevelDateMap,
                 currentExp = getLong(CURRENT_EXP)?.toInt() ?: 0,
                 wiDTotalExp = getLong(WID_TOTAL_EXP)?.toInt() ?: 0,
                 wiDMinLimit = Duration.ofSeconds(getLong(WID_MIN_LIMIT) ?: 0), // 초 단위로 Duration 변환

@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-    val firebaseUser: State<FirebaseUser?> = userDateSource.firebaseUser
+//    val firebaseUser: State<FirebaseUser?> = userDateSource.firebaseUser
     val user: State<User?> = userDateSource.user
     val levelRequiredExpMap = userDateSource.levelRequiredExpMap
 

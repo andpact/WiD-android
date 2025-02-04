@@ -32,15 +32,25 @@ class MonthlyWiDListViewModel @Inject constructor(
     private val user: State<User?> = userDataSource.user
 
     val today: State<LocalDate> = wiDDataSource.today
-    private val _startDate = mutableStateOf(getFirstDateOfMonth(LocalDate.now()))
+    private val initialToday = LocalDate.now()
+    private val _startDate = mutableStateOf(getFirstDateOfMonth(initialToday))
     val startDate: State<LocalDate> = _startDate
-    private val _finishDate = mutableStateOf(getLastDateOfMonth(LocalDate.now()))
+    private val _finishDate = mutableStateOf(getLastDateOfMonth(initialToday))
     val finishDate: State<LocalDate> = _finishDate
+
     private val _monthPickerExpanded = mutableStateOf(false)
     val monthPickerExpanded: State<Boolean> = _monthPickerExpanded
 
+    private val _monthPickerCurrentYear = mutableStateOf(Year.of(initialToday.year))
+    val monthPickerCurrentYear: State<Year> = _monthPickerCurrentYear
+    private val _monthPickerStartDateOfCurrentMonth = mutableStateOf(_startDate.value)
+    val monthPickerStartDateOfCurrentMonth: State<LocalDate> = _monthPickerStartDateOfCurrentMonth
+    private val _monthPickerFinishDateOfCurrentMonth = mutableStateOf(_finishDate.value)
+    val monthPickerFinishDateOfCurrentMonth: State<LocalDate> = _monthPickerFinishDateOfCurrentMonth
+
     val wiDList: State<List<WiD>> = derivedStateOf { updateWiDList() }
-//    val dateWiDListMap: State<Map<LocalDate, List<WiD>>> = derivedStateOf { updateDateWiDListMap() }
+
+    val titleDurationMapList = TitleDurationMap.values().toList()
 
     private val totalDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleTotalDurationMap(wiDList = wiDList.value) }
     private val averageDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleAverageDurationMap(wiDList = wiDList.value) }
@@ -56,17 +66,17 @@ class MonthlyWiDListViewModel @Inject constructor(
     val currentMap: State<Map<Title, Duration>> = derivedStateOf { setCurrentMap() }
 
     fun setStartDateAndFinishDate(
-        startDate: LocalDate,
-        finishDate: LocalDate
+        newStartDate: LocalDate,
+        newFinishDate: LocalDate
     ) {
         Log.d(TAG, "setStartDateAndFinishDate executed")
 
         val currentUser = user.value ?: return
 
-        _startDate.value = startDate
-        _finishDate.value = finishDate
+        _startDate.value = newStartDate
+        _finishDate.value = newFinishDate
 
-        (startDate.year..finishDate.year).forEach { year: Int ->
+        (newStartDate.year..newFinishDate.year).forEach { year: Int ->
             wiDDataSource.getYearlyWiDListMap(
                 email = currentUser.email,
                 year = Year.of(year)
@@ -78,6 +88,22 @@ class MonthlyWiDListViewModel @Inject constructor(
         Log.d(TAG, "setMonthPickerExpanded executed")
 
         _monthPickerExpanded.value = expand
+    }
+
+    fun setMonthPickerCurrentYear(newYear: Year) {
+        Log.d(TAG, "setMonthPickerExpanded executed")
+
+        _monthPickerCurrentYear.value = newYear
+    }
+
+    fun setMonthPickerStartDateOfCurrentMonthAndMonthPickerFinishDateOfCurrentMonth(
+        newMonthPickerStartDateOfCurrentMonth: LocalDate,
+        newMonthPickerFinishDateOfCurrentMonth: LocalDate
+    ) {
+        Log.d(TAG, "setMonthPickerStartDateOfCurrentMonthAndMonthPickerFinishDateOfCurrentMonth executed")
+
+        _monthPickerStartDateOfCurrentMonth.value = newMonthPickerStartDateOfCurrentMonth
+        _monthPickerFinishDateOfCurrentMonth.value = newMonthPickerFinishDateOfCurrentMonth
     }
 
     fun getFirstDateOfMonth(date: LocalDate): LocalDate {
@@ -164,22 +190,4 @@ class MonthlyWiDListViewModel @Inject constructor(
             "${tenTimesPercentage / 10f}%" // 소수점 첫째 자리까지 표시
         }
     }
-
-//    private fun updateDateWiDListMap(): Map<LocalDate, List<WiD>> {
-//        Log.d(TAG, "updateDateWiDListMap executed")
-//
-//        return wiDList.value // wiDList의 데이터를 기반으로 날짜별로 그룹화
-//            .groupBy { it.date }
-//
-////        val start = _startDate.value
-////        val finish = _finishDate.value
-////
-////        return wiDDataSource.yearDateWiDListMap.value
-////            .filterKeys { year -> year.value == start.year || year.value == finish.year } // 필요한 연도만 필터링
-////            .flatMap { (_, dateMap: Map<LocalDate, List<WiD>>) ->
-////                dateMap.filterKeys { date -> date in start..finish } // 시작 날짜와 종료 날짜 사이의 기록만 필터링
-////                    .entries // Map의 항목을 가져옴
-////            }
-////            .associate { it.toPair() } // 다시 Map 형태로 변환
-//    }
 }

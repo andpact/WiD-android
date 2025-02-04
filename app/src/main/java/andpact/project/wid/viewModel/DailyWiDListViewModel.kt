@@ -48,10 +48,16 @@ class DailyWiDListViewModel @Inject constructor(
     private val user: State<User?> = userDataSource.user
 
     // 날짜
-    private val _currentDate = mutableStateOf(LocalDate.now())
+    private val initialToday = LocalDate.now()
+    private val _currentDate = mutableStateOf(initialToday)
     val currentDate: State<LocalDate> = _currentDate
     private val _showDatePicker = mutableStateOf(false)
     val showDatePicker: State<Boolean> = _showDatePicker
+
+    private val _dayPickerMidDateOfCurrentMonth = mutableStateOf(initialToday.withDayOfMonth(15))
+    val dayPickerMidDateOfCurrentMonth: State<LocalDate> = _dayPickerMidDateOfCurrentMonth
+    private val _dayPickerCurrentDate = mutableStateOf(initialToday)
+    val dayPickerCurrentDate: State<LocalDate> = _dayPickerCurrentDate
 
     // 도구
     val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
@@ -79,6 +85,19 @@ class DailyWiDListViewModel @Inject constructor(
             email = currentUser.email,
             year = Year.of(newDate.year)
         )
+    }
+
+    fun setDayPickerCurrentDate(newDayPickerCurrentDate: LocalDate) {
+        Log.d(TAG, "setDayPickerCurrentDate executed")
+
+        _dayPickerCurrentDate.value = newDayPickerCurrentDate
+
+    }
+
+    fun setDayPickerMidDateOfCurrentMonth(newDayPickerMidDateOfCurrentMonth: LocalDate) {
+        Log.d(TAG, "setDayPickerMidDateOfCurrentMonth executed")
+
+        _dayPickerMidDateOfCurrentMonth.value = newDayPickerMidDateOfCurrentMonth
     }
 
     fun setClickedWiDAndCopy(clickedWiD: WiD) {

@@ -4,6 +4,7 @@ import andpact.project.wid.R
 import andpact.project.wid.chartView.TimeSelectorView
 import andpact.project.wid.model.City
 import andpact.project.wid.model.PreviousView
+import andpact.project.wid.model.SnackbarActionResult
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.viewModel.WiDViewModel
 import android.util.Log
@@ -16,10 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,14 +37,12 @@ import java.time.LocalTime
 @Composable
 fun WiDView(
     onBackButtonPressed: () -> Unit,
-    onTitlePickerClicked: () -> Unit,
+    onTitlePickerClicked: (previousView: PreviousView) -> Unit,
     onTimePickerClicked: (previousView: PreviousView) -> Unit,
     onCityPickerClicked: (currentCity: City) -> Unit,
     wiDViewModel: WiDViewModel = hiltViewModel()
 ) {
     val TAG = "WiDView"
-
-//    val now = wiDViewModel.now.value
 
     // WiD
     val clickedWiD = wiDViewModel.clickedWiD.value
@@ -56,49 +52,23 @@ fun WiDView(
     val isNewWiD = wiDViewModel.isNewWiD.value
     val isLastNewWiD = wiDViewModel.isLastNewWiD.value
 
-    // 화면
-//    val configuration = LocalConfiguration.current
-//    val screenHeight = configuration.screenHeightDp.dp
-//    val coroutineScope = rememberCoroutineScope()
-
-    // 제목
     val titleExist = wiDViewModel.titleExist.value
     val titleModified = wiDViewModel.titleModified.value
+    val subTitleModified = wiDViewModel.subTitleModified.value
 
-    // 시작 시간
-//    val showStartPicker = wiDViewModel.showStartPicker.value
-//    val startHourPagerState = rememberPagerState(initialPage = clickedWiD.start.hour, pageCount = { 24 })
-//    val startMinutePagerState = rememberPagerState(initialPage = clickedWiD.start.minute, pageCount = { 60 })
-//    val startSecondPagerState = rememberPagerState(initialPage = clickedWiD.start.second, pageCount = { 60 })
-//    val isStartOutOfRange = wiDViewModel.isStartOutOfRange.value
     val startModified = wiDViewModel.startModified.value
-//    val minStart = wiDViewModel.minStart.value
-//    val maxStart = wiDViewModel.maxStart.value
-
-    // 종료 시간
-//    val showFinishPicker = wiDViewModel.showFinishPicker.value
-//    val finishHourPagerState = rememberPagerState(initialPage = clickedWiD.finish.hour, pageCount = { 24 })
-//    val finishMinutePagerState = rememberPagerState(initialPage = clickedWiD.finish.minute, pageCount = { 60 })
-//    val finishSecondPagerState = rememberPagerState(initialPage = clickedWiD.finish.second, pageCount = { 60 })
-//    val isFinishOutOfRange = wiDViewModel.isFinishOutOfRange.value
     val finishModified = wiDViewModel.finishModified.value
-//    val minFinish = wiDViewModel.minFinish.value
-//    val maxFinish = wiDViewModel.maxFinish.value
-
     val cityModified = wiDViewModel.cityModified.value
 
     val showDeleteWiDDialog = wiDViewModel.showDeleteWiDDialog.value
+
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
     }
-
-//    LaunchedEffect(clickedWiDCopy) {
-//        finishHourPagerState.scrollToPage(clickedWiDCopy.finish.hour)
-//        finishMinutePagerState.scrollToPage(clickedWiDCopy.finish.minute)
-//        finishSecondPagerState.scrollToPage(clickedWiDCopy.finish.second)
-//    }
 
     Scaffold(
         modifier = Modifier
@@ -135,8 +105,6 @@ fun WiDView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 FilledIconButton(
                     modifier = Modifier
@@ -172,22 +140,37 @@ fun WiDView(
 
                 FilledTonalButton(
                     modifier = Modifier
-                        .weight(1f),
+                        .weight(1f)
+                        .height(56.dp),
                     onClick = {
                         if (isNewWiD) {
                             wiDViewModel.createWiD(
-                                onWiDCreated = {
-                                    if (it) {
-                                        onBackButtonPressed()
+                                onResult = { snackbarActionResult: SnackbarActionResult ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = snackbarActionResult.message,
+                                            actionLabel = "확인",
+                                            withDismissAction = true,
+                                            duration = SnackbarDuration.Short
+                                        )
                                     }
+
+                                    onBackButtonPressed()
                                 }
                             )
                         } else {
                             wiDViewModel.updateWiD(
-                                onWiDUpdated = {
-                                    if (it) {
-                                        onBackButtonPressed()
+                                onResult = { snackbarActionResult: SnackbarActionResult ->
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = snackbarActionResult.message,
+                                            actionLabel = "확인",
+                                            withDismissAction = true,
+                                            duration = SnackbarDuration.Short
+                                        )
                                     }
+
+                                    onBackButtonPressed()
                                 }
                             )
                         }
@@ -199,16 +182,18 @@ fun WiDView(
                 }
             }
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         content = { contentPadding: PaddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding)
+                    .padding(vertical = 8.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -231,10 +216,10 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
-                            onTitlePickerClicked() // 이미 데이터 소스의 클릭된 위드는 갱신된 상태
+                            onTitlePickerClicked(PreviousView.CLICKED_WID_TITLE) // 이미 데이터 소스의 클릭된 위드는 갱신된 상태
                         }
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -291,7 +276,67 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
+                        .height(intrinsicSize = IntrinsicSize.Min)
+                        .clickable {
+                            onTitlePickerClicked(PreviousView.CLICKED_WID_SUB_TITLE) // 이미 데이터 소스의 클릭된 위드는 갱신된 상태
+                        }
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                    ) {
+                        Text(
+                            text = "부제목",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+
+                        Text(
+                            text = clickedWiDCopy.subTitle.kr,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+
+                    if (subTitleModified) {
+                        VerticalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 12.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
+                            Text(
+                                text = "변경 전",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+
+                            Text(
+                                text = clickedWiD.subTitle.kr,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "제목 수정 뷰로 이동"
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             onTimePickerClicked(PreviousView.CLICKED_WID_START)
@@ -339,7 +384,7 @@ fun WiDView(
 
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "시작 종료 뷰로 이동"
+                        contentDescription = "시작 선택 뷰로 이동"
                     )
                 }
 
@@ -351,7 +396,7 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             onTimePickerClicked(PreviousView.CLICKED_WID_FINISH)
@@ -447,7 +492,7 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -506,7 +551,7 @@ fun WiDView(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -516,7 +561,7 @@ fun WiDView(
                     )
 
                     Text(
-                        text = clickedWiDCopy.createdBy.kr,
+                        text = clickedWiDCopy.tool.kr,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -529,7 +574,7 @@ fun WiDView(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -552,7 +597,7 @@ fun WiDView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalDimensions.current.listItemHeight)
+                        .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
                             onCityPickerClicked(clickedWiDCopy.city)
@@ -605,492 +650,6 @@ fun WiDView(
                 }
             }
 
-//            if (showStartPicker) {
-//                AlertDialog(
-//                    modifier = Modifier
-//                        .background(
-//                            color = MaterialTheme.colorScheme.surface,
-//                            shape = MaterialTheme.shapes.extraLarge
-//                        ),
-//                    onDismissRequest = { // 취소와 동일
-//                        wiDViewModel.setShowStartPicker(show = false)
-//
-//                        coroutineScope.launch { // 초기 상태가 아니라 해당 변경 이전으로 돌림
-//                            startHourPagerState.scrollToPage(page = clickedWiDCopy.start.hour)
-//                            startMinutePagerState.scrollToPage(page = clickedWiDCopy.start.minute)
-//                            startSecondPagerState.scrollToPage(page = clickedWiDCopy.start.second)
-//                        }
-//                    },
-//                    content = {
-//                        Column(
-//                            modifier = Modifier
-//                                .fillMaxWidth(),
-//                            horizontalAlignment = Alignment.CenterHorizontally,
-//                            verticalArrangement = Arrangement.spacedBy(8.dp)
-//                        ) {
-//                            Text(
-//                                modifier = Modifier
-//                                    .height(56.dp),
-//                                text = "시작 시간 선택",
-//                                style = Typography.titleLarge,
-//                                textAlign = TextAlign.Center
-//                            )
-//
-//                            TimeSelectorView(
-//                                modifier = Modifier
-//                                    .padding(horizontal = 16.dp)
-//                                    .height(screenHeight / 3),
-//                                hourPagerState = startHourPagerState,
-//                                minutePagerState = startMinutePagerState,
-//                                secondPagerState = startSecondPagerState,
-//                                coroutineScope = coroutineScope
-//                            )
-//
-//                            val isMinStartEnabled = !(startHourPagerState.currentPage == minStart.hour &&
-//                                    startMinutePagerState.currentPage == minStart.minute &&
-//                                    startSecondPagerState.currentPage == minStart.second)
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(56.dp)
-//                                    .padding(horizontal = 16.dp) // 바깥 패딩
-//                                    .clip(shape = MaterialTheme.shapes.medium)
-//                                    .clickable(
-//                                        enabled = isMinStartEnabled,
-//                                        onClick = {
-//                                            coroutineScope.launch {
-//                                                launch {
-//                                                    startHourPagerState.animateScrollToPage(
-//                                                        page = minStart.hour
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    startMinutePagerState.animateScrollToPage(
-//                                                        page = minStart.minute
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    startSecondPagerState.animateScrollToPage(
-//                                                        page = minStart.second
-//                                                    )
-//                                                }
-//                                            }
-//                                        }
-//                                    )
-//                                    .background(
-//                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
-//                                        shape = MaterialTheme.shapes.medium
-//                                    )
-//                                    .padding(horizontal = 8.dp), // 안쪽 패딩
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Column(
-//                                    modifier = Modifier
-//                                        .weight(1f),
-//                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-//                                ) {
-//                                    Text(
-//                                        text = "선택 가능한 최소 시간",
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//
-//                                    Text(
-//                                        text = wiDViewModel.getTimeString(time = minStart),
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//                                }
-//
-//                                Icon(
-//                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
-//                                    contentDescription = "최소 시간 사용",
-//                                    tint = if (isMinStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
-//                                )
-//                            }
-//
-//                            val isMaxStartEnabled = !(startHourPagerState.currentPage == maxStart.hour &&
-//                                    startMinutePagerState.currentPage == maxStart.minute &&
-//                                    startSecondPagerState.currentPage == maxStart.second)
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(56.dp)
-//                                    .padding(horizontal = 16.dp) // 바깥 패딩
-//                                    .clip(shape = MaterialTheme.shapes.medium)
-//                                    .clickable(
-//                                        enabled = isMaxStartEnabled,
-//                                        onClick = {
-//                                            coroutineScope.launch {
-//                                                launch {
-//                                                    startHourPagerState.animateScrollToPage(
-//                                                        page = maxStart.hour
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    startMinutePagerState.animateScrollToPage(
-//                                                        page = maxStart.minute
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    startSecondPagerState.animateScrollToPage(
-//                                                        page = maxStart.second
-//                                                    )
-//                                                }
-//                                            }
-//                                        }
-//                                    )
-//                                    .background(
-//                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
-//                                        shape = MaterialTheme.shapes.medium
-//                                    )
-//                                    .padding(horizontal = 8.dp), // 안쪽 패딩
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Column(
-//                                    modifier = Modifier
-//                                        .weight(1f),
-//                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-//                                ) {
-//                                    Text(
-//                                        text = "선택 가능한 최대 시간",
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//
-//                                    Text(
-//                                        text = wiDViewModel.getTimeString(time = maxStart),
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//                                }
-//
-//                                Icon(
-//                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
-//                                    contentDescription = "최대 시간 사용",
-//                                    tint = if (isMaxStartEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
-//                                )
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .padding(horizontal = 16.dp),
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                            ) {
-//                                Spacer(
-//                                    modifier = Modifier
-//                                        .weight(1f)
-//                                )
-//
-//                                TextButton(
-//                                    onClick = {
-//                                        wiDViewModel.setShowStartPicker(show = false)
-//
-//                                        coroutineScope.launch {
-//                                            startHourPagerState.scrollToPage(page = clickedWiDCopy.start.hour)
-//                                            startMinutePagerState.scrollToPage(page = clickedWiDCopy.start.minute)
-//                                            startSecondPagerState.scrollToPage(page = clickedWiDCopy.start.second)
-//                                        }
-//                                    }
-//                                ) {
-//                                    Text(
-//                                        text = "취소",
-//                                        style = Typography.bodyMedium
-//                                    )
-//                                }
-//
-//                                FilledTonalButton(
-//                                    onClick = {
-//                                        val newStart = LocalTime.of(startHourPagerState.currentPage, startMinutePagerState.currentPage, startSecondPagerState.currentPage)
-//
-//                                        val newClickedWiDCopy = clickedWiDCopy.copy(
-//                                            start = newStart,
-//                                            duration = Duration.between(newStart, clickedWiDCopy.finish)
-//                                        )
-//
-//                                        wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
-//                                        wiDViewModel.setShowStartPicker(show = false)
-//                                    },
-//                                    enabled = !isStartOutOfRange
-//                                ) {
-//                                    Text(
-//                                        text = "확인",
-//                                        style = Typography.bodyMedium
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                )
-//            }
-//
-//            if (showFinishPicker) {
-//                AlertDialog(
-//                    modifier = Modifier
-//                        .background(
-//                            color = MaterialTheme.colorScheme.surface,
-//                            shape = MaterialTheme.shapes.extraLarge
-//                        ),
-//                    onDismissRequest = {
-//                        wiDViewModel.setShowFinishPicker(show = false)
-//
-//                        coroutineScope.launch {
-//                            finishHourPagerState.scrollToPage(page = clickedWiDCopy.finish.hour)
-//                            finishMinutePagerState.scrollToPage(page = clickedWiDCopy.finish.minute)
-//                            finishSecondPagerState.scrollToPage(page = clickedWiDCopy.finish.second)
-//                        }
-//                    },
-//                    content = {
-//                        Column(
-//                            modifier = Modifier
-//                                .fillMaxWidth(),
-//                            horizontalAlignment = Alignment.CenterHorizontally,
-//                            verticalArrangement = Arrangement.spacedBy(8.dp)
-//                        ) {
-//                            Text(
-//                                modifier = Modifier
-//                                    .height(56.dp),
-//                                text = "종료 시간 선택",
-//                                style = Typography.titleLarge,
-//                                textAlign = TextAlign.Center
-//                            )
-//
-//                            TimeSelectorView(
-//                                modifier = Modifier
-//                                    .padding(horizontal = 16.dp)
-//                                    .height(screenHeight / 3),
-//                                hourPagerState = finishHourPagerState,
-//                                minutePagerState = finishMinutePagerState,
-//                                secondPagerState = finishSecondPagerState,
-//                                coroutineScope = coroutineScope,
-//                                onTimeChanged = { // 종료 시간 변경 시 갱신을 멈춤
-//                                    if (isLastNewWiD) wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
-//                                }
-//                            )
-//
-//                            val isMinFinishEnabled = !(finishHourPagerState.currentPage == minFinish.hour &&
-//                                    finishMinutePagerState.currentPage == minFinish.minute &&
-//                                    finishSecondPagerState.currentPage == minFinish.second)
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(56.dp)
-//                                    .padding(horizontal = 16.dp) // 바깥 패딩
-//                                    .clip(shape = MaterialTheme.shapes.medium)
-//                                    .clickable(
-//                                        enabled = isMinFinishEnabled,
-//                                        onClick = {
-//                                            coroutineScope.launch {
-//                                                launch {
-//                                                    finishHourPagerState.animateScrollToPage(
-//                                                        page = minFinish.hour
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    finishMinutePagerState.animateScrollToPage(
-//                                                        page = minFinish.minute
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    finishSecondPagerState.animateScrollToPage(
-//                                                        page = minFinish.second
-//                                                    )
-//                                                }
-//                                            }
-//                                        }
-//                                    )
-//                                    .background(
-//                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.primaryContainer // 활성화 색상
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
-//                                        shape = MaterialTheme.shapes.medium
-//                                    )
-//                                    .padding(horizontal = 8.dp), // 안쪽 패딩
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Column(
-//                                    modifier = Modifier
-//                                        .weight(1f),
-//                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-//                                ) {
-//                                    Text(
-//                                        text = "선택 가능한 최소 시간",
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//
-//                                    Text(
-//                                        text = wiDViewModel.getTimeString(time = minFinish),
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//                                }
-//
-//                                Icon(
-//                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
-//                                    contentDescription = "최소 시간 사용",
-//                                    tint = if (isMinFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
-//                                )
-//                            }
-//
-//                            val isMaxFinishEnabled = if (isLastNewWiD) {
-//                                !updateClickedWiDCopyToNow
-//                            } else {
-//                                !(finishHourPagerState.currentPage == maxFinish.hour &&
-//                                        finishMinutePagerState.currentPage == maxFinish.minute &&
-//                                        finishSecondPagerState.currentPage == maxFinish.second)
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(56.dp)
-//                                    .padding(horizontal = 16.dp) // 바깥 패딩
-//                                    .clip(shape = MaterialTheme.shapes.medium)
-//                                    .clickable(
-//                                        enabled = isMaxFinishEnabled,
-//                                        onClick = {
-//                                            coroutineScope.launch {
-//                                                launch {
-//                                                    finishHourPagerState.animateScrollToPage(
-//                                                        page = maxFinish.hour
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    finishMinutePagerState.animateScrollToPage(
-//                                                        page = maxFinish.minute
-//                                                    )
-//                                                }
-//                                                launch {
-//                                                    finishSecondPagerState.animateScrollToPage(
-//                                                        page = maxFinish.second
-//                                                    )
-//                                                }
-//                                            }
-//                                        }
-//                                    )
-//                                    .background(
-//                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.primaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), // 비활성화 색상
-//                                        shape = MaterialTheme.shapes.medium
-//                                    )
-//                                    .padding(horizontal = 8.dp), // 안쪽 패딩
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Column(
-//                                    modifier = Modifier
-//                                        .weight(1f),
-//                                    verticalArrangement = Arrangement.spacedBy(4.dp)
-//                                ) {
-//                                    Text(
-//                                        text = "선택 가능한 최대 시간",
-//                                        style = Typography.bodyMedium,
-//                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                    )
-//
-//                                    Row(
-//                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-//                                    ) {
-//                                        Text(
-//                                            text = wiDViewModel.getTimeString(time = maxFinish),
-//                                            style = Typography.bodyMedium,
-//                                            color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 텍스트 색상 설정
-//                                        )
-//
-//                                        if (updateClickedWiDCopyToNow) {
-//                                            Text(
-//                                                modifier = Modifier
-//                                                    .background(
-//                                                        color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.error
-//                                                        else MaterialTheme.colorScheme.errorContainer,
-//                                                        shape = MaterialTheme.shapes.medium
-//                                                    )
-//                                                    .padding(horizontal = 4.dp),
-//                                                text = "Now",
-//                                                style = Typography.bodyMedium,
-//                                                color = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onError
-//                                                else MaterialTheme.colorScheme.onErrorContainer,
-//                                            )
-//                                        }
-//                                    }
-//                                }
-//
-//                                Icon(
-//                                    painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
-//                                    contentDescription = "최대 시간 사용",
-//                                    tint = if (isMaxFinishEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-//                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // 아이콘 색상 설정
-//                                )
-//                            }
-//
-//                            Row(
-//                                modifier = Modifier
-//                                    .padding(horizontal = 16.dp),
-//                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//                            ) {
-//                                Spacer(
-//                                    modifier = Modifier
-//                                        .weight(1f)
-//                                )
-//
-//                                TextButton(
-//                                    onClick = {
-//                                        wiDViewModel.setShowFinishPicker(show = false)
-//
-//                                        coroutineScope.launch {
-//                                            finishHourPagerState.scrollToPage(page = clickedWiDCopy.finish.hour)
-//                                            finishMinutePagerState.scrollToPage(page = clickedWiDCopy.finish.minute)
-//                                            finishSecondPagerState.scrollToPage(page = clickedWiDCopy.finish.second)
-//                                        }
-//                                    }
-//                                ) {
-//                                    Text(
-//                                        text = "취소",
-//                                        style = Typography.bodyMedium
-//                                    )
-//                                }
-//
-//                                FilledTonalButton(
-//                                    onClick = {
-//                                        val newFinish = LocalTime.of(finishHourPagerState.currentPage, finishMinutePagerState.currentPage, finishSecondPagerState.currentPage)
-//
-//                                        val newClickedWiDCopy = clickedWiDCopy.copy(
-//                                            finish = newFinish,
-//                                            duration = Duration.between(clickedWiDCopy.start, newFinish)
-//                                        )
-//
-//                                        wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
-//                                        wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
-//                                        wiDViewModel.setShowFinishPicker(show = false)
-//                                    },
-//                                    enabled = !isFinishOutOfRange
-//                                ) {
-//                                    Text(
-//                                        text = "확인",
-//                                        style = Typography.bodyMedium
-//                                    )
-//                                }
-//                            }
-//                        }
-//                    }
-//                )
-//            }
-
             if (showDeleteWiDDialog) {
                 DatePickerDialog(
                     onDismissRequest = {
@@ -1100,10 +659,17 @@ fun WiDView(
                         TextButton(
                             onClick = {
                                 wiDViewModel.deleteWiD(
-                                    onWiDDeleted = { deleteWiDSuccess: Boolean ->
-                                        if (deleteWiDSuccess) {
-                                            onBackButtonPressed()
+                                    onResult = { snackbarActionResult: SnackbarActionResult ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = snackbarActionResult.message,
+                                                actionLabel = "확인",
+                                                withDismissAction = true,
+                                                duration = SnackbarDuration.Short
+                                            )
                                         }
+
+                                        onBackButtonPressed()
                                     }
                                 )
 
@@ -1139,268 +705,3 @@ fun WiDView(
         }
     )
 }
-
-//@Composable
-//@Preview(showBackground = true)
-//fun WiDPreview() {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//    ) {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(56.dp)
-//                .height(intrinsicSize = IntrinsicSize.Min)
-//                .padding(horizontal = 16.dp),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "제목",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "공부",
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-//
-//            VerticalDivider(
-//                modifier = Modifier
-//                    .padding(vertical = 8.dp)
-//            )
-//
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "수정 전",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "운동",
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-//
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp),
-//                imageVector = Icons.Default.KeyboardArrowDown,
-//                contentDescription = "제목 수정",
-//            )
-//        }
-//
-//        HorizontalDivider(
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(56.dp)
-//                .height(intrinsicSize = IntrinsicSize.Min)
-//                .padding(horizontal = 16.dp),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "시작",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "00:00:00",
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-//
-//            VerticalDivider(
-//                modifier = Modifier
-//                    .padding(vertical = 8.dp)
-//            )
-//
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "수정 전",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "00:00:00",
-//                    style = Typography.bodyMedium
-//                )
-//            }
-//
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp),
-//                imageVector = Icons.Default.ArrowDropDown,
-//                contentDescription = "제목 수정",
-//            )
-//        }
-//
-//        HorizontalDivider(
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(56.dp)
-//                .height(intrinsicSize = IntrinsicSize.Min)
-//                .padding(horizontal = 16.dp),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "종료",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "00:00:00",
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-//
-//            VerticalDivider(
-//                modifier = Modifier
-//                    .padding(vertical = 8.dp)
-//            )
-//
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "수정 전",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//
-//                Row(
-//                    horizontalArrangement = Arrangement
-//                        .spacedBy(4.dp)
-//                ) {
-//                    Text(
-//                        text = "00:00:00",
-//                        style = Typography.bodyMedium
-//                    )
-//
-//                    Text(
-//                        modifier = Modifier
-//                            .background(
-//                                color = MaterialTheme.colorScheme.error,
-//                                shape = RoundedCornerShape(16)
-//                            )
-//                            .padding(horizontal = 4.dp),
-//                        text = "Now",
-//                        style = Typography.bodyMedium,
-//                        color = MaterialTheme.colorScheme.onError,
-//                        textAlign = TextAlign.Right
-//                    )
-//                }
-//            }
-//
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp),
-//                imageVector = Icons.Default.ArrowDropDown,
-//                contentDescription = "제목 수정",
-//            )
-//        }
-//
-//        HorizontalDivider(
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//        )
-//
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(56.dp)
-//                .height(intrinsicSize = IntrinsicSize.Min)
-//                .padding(horizontal = 16.dp),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "시작",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "3시간 30분 30초",
-//                    style = Typography.bodyMedium,
-//                )
-//            }
-//
-//            VerticalDivider(
-//                modifier = Modifier
-//                    .padding(vertical = 8.dp)
-//            )
-//
-//            Column(
-//                modifier = Modifier
-//                    .weight(1f),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                Text(
-//                    text = "수정 전",
-//                    style = Typography.bodyMedium,
-//                )
-//
-//                Text(
-//                    text = "2시간 20분 20초",
-//                    style = Typography.bodyMedium
-//                )
-//            }
-//
-//            Icon(
-//                modifier = Modifier
-//                    .size(24.dp)
-//                    .alpha(0f),
-//                imageVector = Icons.Default.ArrowDropDown,
-//                contentDescription = null,
-//            )
-//        }
-//
-//        HorizontalDivider(
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp)
-//        )
-//    }
-//}

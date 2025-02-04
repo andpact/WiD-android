@@ -37,11 +37,45 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
     private val DURATION = "duration"
     private val CITY = "city"
     private val EXP = "exp"
-    private val CREATED_BY = "createdBy"
+    private val TOOL = "tool"
+
+    fun createWiD(
+        email: String,
+        year: Year,
+        dateWiDListMap: Map<LocalDate, List<WiD>>,
+        onResult: (snackbarActionResult: SnackbarActionResult) -> Unit
+    ) {
+        Log.d(TAG, "createWiD executed")
+
+        if (dateWiDListMap.isEmpty()) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR)
+            return
+        }
+
+        val operations = mutableMapOf<String, Any>() // Firebase에 적용할 업데이트 맵
+
+        dateWiDListMap.forEach { (date, wiDList) ->
+            val dateKey = date.toString()
+            operations[dateKey] = wiDList.map { it.toDocument() } // WiD 리스트를 문서 형식으로 변환
+        }
+
+        firestore.collection(DATA_COLLECTION)
+            .document(email)
+            .collection(WID_COLLECTION)
+            .document(year.toString())
+            .set(operations, SetOptions.merge()) // 병합 업데이트
+            .addOnSuccessListener {
+                onResult(SnackbarActionResult.SUCCESS_CREATE_WID)
+            }
+            .addOnFailureListener {
+                onResult(SnackbarActionResult.FAIL_SERVER_ERROR)
+            }
+    }
 
     fun getYearlyWiDListMap(
         email: String,
         year: Year,
+        onResult: (snackbarActionResult: SnackbarActionResult) -> Unit,
         onYearlyWiDListMapFetched: (yearlyWiDListMapFetched: YearlyWiDListMap) -> Unit,
     ) {
         Log.d(TAG, "getYearlyWiDListMap executed")
@@ -64,20 +98,21 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             }
             .addOnFailureListener { exception ->
                 Log.e(TAG, "Failed to fetch yearly document: ${exception.message}")
+
+                onResult(SnackbarActionResult.FAIL_SERVER_ERROR) // 실패했을 때만 스낵 바 호출
             }
     }
 
-    /** 연도 문서가 없으면 생성되도록 아니면 get 할 떄 생성되도록 하거나*/
-    fun setYearlyWiDListMap(
+    fun updateWiD(
         email: String,
         year: Year,
         dateWiDListMap: Map<LocalDate, List<WiD>>,
-        onComplete: (Boolean) -> Unit
+        onResult: (snackbarActionResult: SnackbarActionResult) -> Unit
     ) {
-        Log.d(TAG, "setYearlyWiDListMap executed")
+        Log.d(TAG, "updateWiD executed")
 
         if (dateWiDListMap.isEmpty()) {
-            onComplete(false)
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR)
             return
         }
 
@@ -94,12 +129,78 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             .document(year.toString())
             .set(operations, SetOptions.merge()) // 병합 업데이트
             .addOnSuccessListener {
-                onComplete(true)
+                onResult(SnackbarActionResult.SUCCESS_UPDATE_WID)
             }
             .addOnFailureListener {
-                onComplete(false)
+                onResult(SnackbarActionResult.FAIL_SERVER_ERROR)
             }
     }
+
+    fun deleteWiD(
+        email: String,
+        year: Year,
+        dateWiDListMap: Map<LocalDate, List<WiD>>,
+        onResult: (snackbarActionResult: SnackbarActionResult) -> Unit
+    ) {
+        Log.d(TAG, "deleteWiD executed")
+
+        if (dateWiDListMap.isEmpty()) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR)
+            return
+        }
+
+        val operations = mutableMapOf<String, Any>() // Firebase에 적용할 업데이트 맵
+
+        dateWiDListMap.forEach { (date, wiDList) ->
+            val dateKey = date.toString()
+            operations[dateKey] = wiDList.map { it.toDocument() } // WiD 리스트를 문서 형식으로 변환
+        }
+
+        firestore.collection(DATA_COLLECTION)
+            .document(email)
+            .collection(WID_COLLECTION)
+            .document(year.toString())
+            .set(operations, SetOptions.merge()) // 병합 업데이트
+            .addOnSuccessListener {
+                onResult(SnackbarActionResult.SUCCESS_DELETE_WID)
+            }
+            .addOnFailureListener {
+                onResult(SnackbarActionResult.FAIL_SERVER_ERROR)
+            }
+    }
+
+//    fun setYearlyWiDListMap(
+//        email: String,
+//        year: Year,
+//        dateWiDListMap: Map<LocalDate, List<WiD>>,
+//        onResult: (snackbarActionResult: SnackbarActionResult) -> Unit
+//    ) {
+//        Log.d(TAG, "setYearlyWiDListMap executed")
+//
+//        if (dateWiDListMap.isEmpty()) {
+//            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR)
+//            return
+//        }
+//
+//        val operations = mutableMapOf<String, Any>() // Firebase에 적용할 업데이트 맵
+//
+//        dateWiDListMap.forEach { (date, wiDList) ->
+//            val dateKey = date.toString()
+//            operations[dateKey] = wiDList.map { it.toDocument() } // WiD 리스트를 문서 형식으로 변환
+//        }
+//
+//        firestore.collection(DATA_COLLECTION)
+//            .document(email)
+//            .collection(WID_COLLECTION)
+//            .document(year.toString())
+//            .set(operations, SetOptions.merge()) // 병합 업데이트
+//            .addOnSuccessListener {
+//                onResult(SnackbarActionResult.SUCCESS_CREATE_WID)
+//            }
+//            .addOnFailureListener {
+//                onResult(SnackbarActionResult.FAIL_SERVER_ERROR)
+//            }
+//    }
 
     // **************************************** 유틸 메서드 ****************************************
     private fun WiD.toDocument(): Map<String, Any> {
@@ -110,10 +211,12 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             SUB_TITLE to subTitle.name,
             START to Timestamp(Date.from(start.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
             FINISH to Timestamp(Date.from(finish.atDate(date).atZone(ZoneId.systemDefault()).toInstant())),
-            DURATION to duration.seconds.toInt(),
+//            START to Timestamp(Date.from(start.atDate(date).atZone(ZoneId.of("UTC")).toInstant())), // UTC 시간으로 저장
+//            FINISH to Timestamp(Date.from(finish.atDate(date).atZone(ZoneId.of("UTC")).toInstant())), // UTC 시간으로 저장
+            DURATION to duration.seconds,
             CITY to city.name,
             EXP to exp,
-            CREATED_BY to createdBy.name
+            TOOL to tool.name
         )
     }
 
@@ -126,12 +229,12 @@ class WiDRepository @Inject constructor(private val firestore: FirebaseFirestore
             date = LocalDate.parse(this[DATE] as String),
             title = Title.valueOf(this[TITLE] as String),
             subTitle = SubTitle.valueOf(this[SUB_TITLE] as String),
-            start = startTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
-            finish = finishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT,
+            start = startTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT, // 로컬 시간으로 변환
+            finish = finishTimestamp?.toDate()?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.MIDNIGHT, // 로컬 시간으로 변환
             duration = Duration.ofSeconds(this[DURATION] as Long),
             city = City.valueOf(this[CITY] as String),
             exp = this[EXP] as Int,
-            createdBy = CurrentTool.valueOf(this[CREATED_BY] as String)
+            tool = Tool.valueOf(this[TOOL] as String)
         )
     }
 

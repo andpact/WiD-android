@@ -21,18 +21,18 @@ class TitlePickerViewModel @Inject constructor(private val wiDDataSource: WiDDat
         Log.d(TAG, "cleared")
     }
 
-    val titleArray = Title.values().drop(1)
+    val titleList = Title.values().drop(1)
     private val _selectedTitle = mutableStateOf(Title.STUDY)
     val selectedTitle: State<Title> = _selectedTitle
 
-    val sutTitleArray = SubTitle.values()
-
-    private val _isSearchMode = mutableStateOf(false)
-    val isSearchMode: State<Boolean> = _isSearchMode
-
-    private val _searchText = mutableStateOf("")
-    val searchText: State<String> = _searchText
-    val searchedSubTitleList: State<List<SubTitle>> = derivedStateOf { updateSearchedSubTitleList() }
+//    val sutTitleArray = SubTitle.values()
+//
+//    private val _isSearchMode = mutableStateOf(false)
+//    val isSearchMode: State<Boolean> = _isSearchMode
+//
+//    private val _searchText = mutableStateOf("")
+//    val searchText: State<String> = _searchText
+//    val searchedSubTitleList: State<List<SubTitle>> = derivedStateOf { updateSearchedSubTitleList() }
 
     val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy
 
@@ -45,30 +45,30 @@ class TitlePickerViewModel @Inject constructor(private val wiDDataSource: WiDDat
         _selectedTitle.value = newSelectedTitle
     }
 
-    fun setIsSearchMode(set: Boolean) {
-        Log.d(TAG, "setIsSearchMode executed")
-
-        _isSearchMode.value = set
-    }
-
-    fun updateSearchText(newSearchText: String) {
-        Log.d(TAG, "updateSearchText executed")
-
-        _searchText.value = newSearchText
-    }
-
-    private fun updateSearchedSubTitleList(): List<SubTitle> {
-        Log.d(TAG, "updateSearchedSubTitleList executed")
-
-        return if (_searchText.value.isBlank()) { // 검색어 없으면 빈 리스트
-            emptyList()
-        } else {
-            SubTitle.values().filter {
-                it.kr.contains(_searchText.value, ignoreCase = true) || // 한국어 검색
-                        it.name.contains(_searchText.value, ignoreCase = true) // 영어 검색
-            }
-        }
-    }
+//    fun setIsSearchMode(set: Boolean) {
+//        Log.d(TAG, "setIsSearchMode executed")
+//
+//        _isSearchMode.value = set
+//    }
+//
+//    fun updateSearchText(newSearchText: String) {
+//        Log.d(TAG, "updateSearchText executed")
+//
+//        _searchText.value = newSearchText
+//    }
+//
+//    private fun updateSearchedSubTitleList(): List<SubTitle> {
+//        Log.d(TAG, "updateSearchedSubTitleList executed")
+//
+//        return if (_searchText.value.isBlank()) { // 검색어 없으면 빈 리스트
+//            emptyList()
+//        } else {
+//            sutTitleArray.filter {
+//                it.kr.contains(_searchText.value, ignoreCase = true) || // 한국어 검색
+//                        it.name.contains(_searchText.value, ignoreCase = true) // 영어 검색
+//            }
+//        }
+//    }
 
     fun setCurrentWiDTitleAndSubTitle(newTitle: Title, newSubTitle: SubTitle) { // 현재 기록은 제목과 부제목만 수정
         Log.d(TAG, "setCurrentWiDTitleAndSubTitle executed")

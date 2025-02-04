@@ -28,7 +28,7 @@ fun DailyWiDListChartView(
 //    onWiDClicked: (wiD: WiD) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val TAG = "WeeklyWiDListChartView"
+    val TAG = "DailyWiDListChartView"
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -54,7 +54,7 @@ fun DailyWiDListChartView(
             var startAngle = -90f
 
             // 파이 차트
-            chartDataList.forEach { data ->
+            chartDataList.forEach { data: TitleDurationChartData ->
                 val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
                 if (sweepAngle <= 0) return@forEach
 
@@ -112,8 +112,8 @@ fun DailyWiDListChartView(
                     0 -> "자정"
                     6 -> "오전 6시"
                     12 -> "정오"
-                    18 -> "오후 6시"
-                    else -> (i % 12).toString()
+                    18 -> "오후 18시"
+                    else -> "$i"
                 }
 
                 val paint = when (i) {

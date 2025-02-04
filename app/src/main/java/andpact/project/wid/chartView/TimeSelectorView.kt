@@ -1,136 +1,242 @@
 package andpact.project.wid.chartView
 
-import andpact.project.wid.R
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.Duration
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimeSelectorView(
     modifier: Modifier = Modifier,
-    hourPagerState: PagerState,
-    minutePagerState: PagerState,
-    secondPagerState: PagerState,
     coroutineScope: CoroutineScope,
-    onTimeChanged: () -> Unit = {} // TODO: 드래그로 시간 변경시에도 동작하도록
-// FIXME: 초기상태 왜 캡쳐하록 헀음?, 시, 분, 초 때문에 ":" 높이 안맞음.
+    hourListState: LazyListState,
+    minuteListState: LazyListState,
+    secondListState: LazyListState,
+    onTimeChanged: (selectedTime: Duration) -> Unit = {}
 ) {
-    var isInitialPage by remember { mutableStateOf(true) }
+    val TAG = "TimeSelectorView"
+
+    DisposableEffect(Unit) {
+        Log.d(TAG, "composed")
+        onDispose { Log.d(TAG, "disposed") }
+    }
 
     LaunchedEffect(
-        key1 = hourPagerState.currentPage,
-        key2 = minutePagerState.currentPage,
-        key3 = secondPagerState.currentPage
-    ) {
-        if (!isInitialPage) { onTimeChanged() }
-    }
+        key1 = hourListState.firstVisibleItemIndex,
+        key2 = minuteListState.firstVisibleItemIndex,
+        key3 = secondListState.firstVisibleItemIndex,
+        block = {
+            val newSelectedTime = Duration.ofHours(hourListState.firstVisibleItemIndex.toLong())
+                .plusMinutes(minuteListState.firstVisibleItemIndex.toLong())
+                .plusSeconds(secondListState.firstVisibleItemIndex.toLong())
+            onTimeChanged(newSelectedTime)
+        }
+    )
 
-    LaunchedEffect(Unit) {
-        isInitialPage = false
-    }
-
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
     ) {
-        listOf(hourPagerState, minutePagerState, secondPagerState).forEachIndexed { index: Int, pagerState: PagerState ->
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            listOf("시", "분", "초").forEach { label ->
                 Text(
-                    text = when (index) {
-                        0 -> "시"
-                        1 -> "분"
-                        2 -> "초"
-                        else -> ""
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge
                 )
+            }
+        }
 
-                FilledTonalIconButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    onClick = {
-                        isInitialPage = false // 사용자 동작 시 초기 상태 플래그 해제
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                        }
-                    },
-                    enabled = pagerState.currentPage > 0,
-                    shape = MaterialTheme.shapes.medium
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(intrinsicSize = IntrinsicSize.Min)
+        ) {
+            VerticalDivider()
+
+            // 시
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .height((48 * 7).dp),
+                state = hourListState,
+                flingBehavior = rememberSnapFlingBehavior(lazyListState = hourListState)
+            ) {
+                items(
+                    count = 3,
+                    key = { index -> "hour-spacer-top-$index" },
+                    contentType = { "spacer" }
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_arrow_drop_up_24),
-                        contentDescription = "증가"
-                    )
+                    Spacer(modifier = Modifier.height(48.dp))
                 }
 
-                VerticalPager(
-                    modifier = Modifier
-                        .weight(1f),
-                    state = pagerState,
-                    pageSpacing = (-80).dp
-                ) { page ->
-                    Box(
+                items(
+                    count = 24,
+                    key = { itemIndex -> "hour-item-$itemIndex" },
+                    contentType = { "hour-item" }
+                ) { itemIndex ->
+                    TextButton(
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                hourListState.animateScrollToItem(index = itemIndex)
+                            }
+                        },
+                        shape = RectangleShape
                     ) {
                         Text(
-                            text = page.toString(),
-                            style = if (pagerState.currentPage == page && !pagerState.isScrollInProgress) { MaterialTheme.typography.bodyLarge }
-                            else { MaterialTheme.typography.bodySmall },
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
+                            text = "$itemIndex",
+                            style = if (hourListState.firstVisibleItemIndex == itemIndex && !hourListState.isScrollInProgress) {
+                                MaterialTheme.typography.bodyLarge
+                            } else {
+                                MaterialTheme.typography.bodySmall
+                            }
                         )
                     }
                 }
 
-                FilledTonalIconButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    onClick = {
-                        isInitialPage = false // 사용자 동작 시 초기 상태 플래그 해제
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                        }
-                    },
-                    enabled = pagerState.currentPage < pagerState.pageCount - 1,
-                    shape = MaterialTheme.shapes.medium
+                items(
+                    count = 3,
+                    key = { index -> "hour-spacer-bottom-$index" },
+                    contentType = { "spacer" }
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_arrow_drop_down_24),
-                        contentDescription = "감소"
-                    )
+                    Spacer(modifier = Modifier.height(48.dp))
                 }
             }
 
-            if (index < 2) {
-                Text(
-                    text = ":",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            VerticalDivider()
+
+            // 분
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .height((48 * 7).dp),
+                state = minuteListState,
+                flingBehavior = rememberSnapFlingBehavior(lazyListState = minuteListState)
+            ) {
+                items(
+                    count = 3,
+                    key = { index -> "minute-spacer-top-$index" },
+                    contentType = { "spacer" }
+                ) {
+                    Spacer(modifier = Modifier.height(48.dp))
+                }
+
+                items(
+                    count = 60,
+                    key = { itemIndex -> "minute-item-$itemIndex" },
+                    contentType = { "minute-item" }
+                ) { itemIndex ->
+                    TextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                minuteListState.animateScrollToItem(index = itemIndex)
+                            }
+                        },
+                        shape = RectangleShape
+                    ) {
+                        Text(
+                            text = "$itemIndex",
+                            style = if (minuteListState.firstVisibleItemIndex == itemIndex && !minuteListState.isScrollInProgress) {
+                                MaterialTheme.typography.bodyLarge
+                            } else {
+                                MaterialTheme.typography.bodySmall
+                            }
+                        )
+                    }
+                }
+
+                items(
+                    count = 3,
+                    key = { index -> "minute-spacer-bottom-$index" },
+                    contentType = { "spacer" }
+                ) {
+                    Spacer(modifier = Modifier.height(48.dp))
+                }
             }
+
+            VerticalDivider()
+
+            // 초
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .height((48 * 7).dp),
+                state = secondListState,
+                flingBehavior = rememberSnapFlingBehavior(lazyListState = secondListState)
+            ) {
+                items(
+                    count = 3,
+                    key = { index -> "second-spacer-top-$index" },
+                    contentType = { "spacer" }
+                ) {
+                    Spacer(modifier = Modifier.height(48.dp))
+                }
+
+                items(
+                    count = 60,
+                    key = { itemIndex -> "second-item-$itemIndex" },
+                    contentType = { "second-item" }
+                ) { itemIndex ->
+                    TextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                secondListState.animateScrollToItem(index = itemIndex)
+                            }
+                        },
+                        shape = RectangleShape
+                    ) {
+                        Text(
+                            text = "$itemIndex",
+                            style = if (secondListState.firstVisibleItemIndex == itemIndex && !secondListState.isScrollInProgress) {
+                                MaterialTheme.typography.bodyLarge
+                            } else {
+                                MaterialTheme.typography.bodySmall
+                            }
+                        )
+                    }
+                }
+
+                items(
+                    count = 3,
+                    key = { index -> "second-spacer-bottom-$index" },
+                    contentType = { "spacer" }
+                ) {
+                    Spacer(modifier = Modifier.height(48.dp))
+                }
+            }
+
+            VerticalDivider()
         }
     }
 }

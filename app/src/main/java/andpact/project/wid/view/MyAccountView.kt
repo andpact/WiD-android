@@ -39,13 +39,11 @@ fun MyAccountView(
     val email = myAccountViewModel.user.value?.email ?: ""
     val emailForDialog = myAccountViewModel.emailForDialog.value
     val level = myAccountViewModel.user.value?.level ?: 0
-    val levelDateMap = myAccountViewModel.user.value?.levelDateMap
-    val showLevelDateMapDialog = myAccountViewModel.showLevelDateMapDialog.value
     val city = myAccountViewModel.user.value?.city ?: City.SEOUL
     val signedUpOn = myAccountViewModel.user.value?.signedUpOn ?: LocalDate.now()
-    val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: "tmp nickname222"
-    val displayNameForDialog = myAccountViewModel.displayNameForDialog.value
-    val showDisplayNameDialog = myAccountViewModel.showDisplayNameDialog.value
+//    val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: "tmp nickname222"
+//    val displayNameForDialog = myAccountViewModel.displayNameForDialog.value
+//    val showDisplayNameDialog = myAccountViewModel.showDisplayNameDialog.value
     val currentExp = myAccountViewModel.user.value?.currentExp ?: 0
     val wiDTotalExp = myAccountViewModel.user.value?.wiDTotalExp ?: 0
     val showSignOutDialog = myAccountViewModel.showSignOutDialog.value
@@ -53,16 +51,14 @@ fun MyAccountView(
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        item {
+        item(
+            key = "email",
+            contentType = "list-item"
+        ) {
             ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = "이메일"
-                    )
-                },
                 headlineContent = {
                     Text(text = "이메일")
                 },
@@ -70,43 +66,41 @@ fun MyAccountView(
                     Text(text = email)
                 }
             )
+        }
 
-            ListItem(
-                modifier = Modifier
-                    .clickable {
-                        myAccountViewModel.setShowDisplayNameDialog(show = true)
-                    },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "닉네임"
-                    )
-                },
-                headlineContent = {
-                    Text(text = "닉네임")
-                },
-                supportingContent = {
-                    Text(text = displayName)
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "닉네임 수정 대화상자 열기"
-                    )
-                }
-            )
+//        item(
+//            key = "display-name",
+//            contentType = "list-item"
+//        ) {
+//            ListItem(
+//                modifier = Modifier
+//                    .clickable {
+//                        myAccountViewModel.setShowDisplayNameDialog(show = true)
+//                    },
+//                headlineContent = {
+//                    Text(text = "닉네임")
+//                },
+//                supportingContent = {
+//                    Text(text = displayName)
+//                },
+//                trailingContent = {
+//                    Icon(
+//                        imageVector = Icons.Default.ArrowDropDown,
+//                        contentDescription = "닉네임 수정 대화상자 열기"
+//                    )
+//                }
+//            )
+//        }
 
+        item(
+            key = "location",
+            contentType = "list-item"
+        ) {
             ListItem(
                 modifier = Modifier
                     .clickable {
                         onCityPickerClicked(city)
                     },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "위치"
-                    )
-                },
                 headlineContent = {
                     Text(text = "위치")
                 },
@@ -120,14 +114,13 @@ fun MyAccountView(
                     )
                 }
             )
+        }
 
+        item(
+            key = "signed-up-on",
+            contentType = "list-item"
+        ) {
             ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "가입 날짜"
-                    )
-                },
                 headlineContent = {
                     Text(text = "가입 날짜")
                 },
@@ -135,14 +128,13 @@ fun MyAccountView(
                     Text(text = myAccountViewModel.getDateString(date = signedUpOn))
                 }
             )
+        }
 
+        item(
+            key = "level",
+            contentType = "list-item"
+        ) {
             ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.AccountBox,
-                        contentDescription = "레벨"
-                    )
-                },
                 headlineContent = {
                     Text(text = "레벨")
                 },
@@ -150,39 +142,13 @@ fun MyAccountView(
                     Text(text = "$level")
                 }
             )
+        }
 
+        item(
+            key = "current-exp",
+            contentType = "list-item"
+        ) {
             ListItem(
-                modifier = Modifier
-                    .clickable {
-                        myAccountViewModel.setShowLevelDateMapDialog(show = true)
-                    },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "레벨 업 히스토리"
-                    )
-                },
-                headlineContent = {
-                    Text(text = "레벨 업 히스토리")
-                },
-                supportingContent = {
-                    Text(text = "레벨 업 기록을 표시합니다.")
-                },
-                trailingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "레벨 업 히스토리 수정 대화상자 열기"
-                    )
-                }
-            )
-
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.AccountBox,
-                        contentDescription = "현재 경험치"
-                    )
-                },
                 headlineContent = {
                     Text(text = "현재 경험치")
                 },
@@ -190,14 +156,13 @@ fun MyAccountView(
                     Text(text = "$currentExp")
                 }
             )
+        }
 
+        item(
+            key = "wid-total-exp",
+            contentType = "list-item"
+        ) {
             ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.AccountBox,
-                        contentDescription = "총 경험치"
-                    )
-                },
                 headlineContent = {
                     Text(text = "총 경험치")
                 },
@@ -205,18 +170,17 @@ fun MyAccountView(
                     Text(text = "$wiDTotalExp")
                 }
             )
+        }
 
+        item(
+            key = "sign-out",
+            contentType = "list-item"
+        ) {
             ListItem(
                 modifier = Modifier
                     .clickable {
                         myAccountViewModel.setShowSignOutDialog(show = true)
                     },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ExitToApp,
-                        contentDescription = "로그아웃"
-                    )
-                },
                 headlineContent = {
                     Text(text = "로그아웃")
                 },
@@ -230,18 +194,17 @@ fun MyAccountView(
                     )
                 }
             )
+        }
 
+        item(
+            key = "delete-user",
+            contentType = "list-item"
+        ) {
             ListItem(
                 modifier = Modifier
                     .clickable {
                         myAccountViewModel.setShowDeleteUserDialog(show = true)
                     },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ExitToApp,
-                        contentDescription = "회원 탈퇴"
-                    )
-                },
                 headlineContent = {
                     Text(text = "회원 탈퇴")
                 },
@@ -258,55 +221,55 @@ fun MyAccountView(
         }
     }
 
-    if (showDisplayNameDialog) {
-        DatePickerDialog(
-            onDismissRequest = {
-                myAccountViewModel.setShowDisplayNameDialog(show = false)
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        myAccountViewModel.setShowDisplayNameDialog(show = false)
-
-                        myAccountViewModel.updateDisplayName(newDisplayName = displayName)
-                    },
-                ) {
-                    Text(text = "확인")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        myAccountViewModel.setShowDisplayNameDialog(show = false)
-                    }
-                ) {
-                    Text(text = "취소")
-                }
-            }
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                text = "닉네임 수정",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                value = displayNameForDialog,
-                onValueChange = {
-                    myAccountViewModel.setDisplayNameForDialog(newDisplayNameForDialog = it)
-                },
-                placeholder = {
-                    Text(text = "닉네임")
-                }
-            )
-        }
-    }
+//    if (showDisplayNameDialog) {
+//        DatePickerDialog(
+//            onDismissRequest = {
+//                myAccountViewModel.setShowDisplayNameDialog(show = false)
+//            },
+//            confirmButton = {
+//                TextButton(
+//                    onClick = {
+//                        myAccountViewModel.setShowDisplayNameDialog(show = false)
+//
+//                        myAccountViewModel.updateDisplayName(newDisplayName = displayName)
+//                    },
+//                ) {
+//                    Text(text = "확인")
+//                }
+//            },
+//            dismissButton = {
+//                TextButton(
+//                    onClick = {
+//                        myAccountViewModel.setShowDisplayNameDialog(show = false)
+//                    }
+//                ) {
+//                    Text(text = "취소")
+//                }
+//            }
+//        ) {
+//            Text(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp),
+//                text = "닉네임 수정",
+//                style = MaterialTheme.typography.bodyLarge,
+//                textAlign = TextAlign.Center
+//            )
+//
+//            OutlinedTextField(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(horizontal = 16.dp),
+//                value = displayNameForDialog,
+//                onValueChange = {
+//                    myAccountViewModel.setDisplayNameForDialog(newDisplayNameForDialog = it)
+//                },
+//                placeholder = {
+//                    Text(text = "닉네임")
+//                }
+//            )
+//        }
+//    }
 
     if (showSignOutDialog) {
         DatePickerDialog(

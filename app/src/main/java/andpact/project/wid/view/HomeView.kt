@@ -1,31 +1,32 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
-import andpact.project.wid.chartView.HomePieChartView
-import andpact.project.wid.model.CurrentTool
 import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.viewModel.HomeViewModel
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.NumberFormat
+import java.time.LocalTime
+import java.time.YearMonth
 import java.util.*
 
 // 익명 가입 시 uid를 제외하고는 null이 할당됨.
@@ -42,7 +43,8 @@ fun HomeView(
     val today = homeViewModel.today.value
     val now = homeViewModel.now.value
 
-    val displayName = homeViewModel.firebaseUser.value?.displayName ?: ""
+//    val displayName = homeViewModel.firebaseUser.value?.displayName ?: ""
+    val email = homeViewModel.user.value?.email
     val level = homeViewModel.user.value?.level
     val currentExp = homeViewModel.user.value?.currentExp ?: 0
     val requiredExp = homeViewModel.levelRequiredExpMap[level] ?: 0
@@ -79,55 +81,71 @@ fun HomeView(
                 }
             )
         },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {
+        bottomBar = {
             if (currentToolState.value == CurrentToolState.STOPPED) {
-                OutlinedCard( // TODO: 테두리 색상 디바이더와 동일하게 만들기
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(intrinsicSize = IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium.copy(
+                        bottomStart = CornerSize(size = 0.dp),
+                        bottomEnd = CornerSize(size = 0.dp)
+                    ),
+                    colors = CardDefaults.cardColors(containerColor = NavigationBarDefaults.containerColor)
                 ) {
-                    Row {
-                        TextButton(
+//                    Text(
+//                        modifier = Modifier
+//                            .fillMaxWidth(),
+//                        text = "새로운 기록을 만들어 보세요!",
+//                        style = MaterialTheme.typography.bodySmall,
+//                        textAlign = TextAlign.Center
+//                    )
+
+                    Row(
+                        modifier = Modifier
+                            .height(intrinsicSize = IntrinsicSize.Min)
+                    ) {
+                        Text(
                             modifier = Modifier
                                 .weight(1f),
-                            onClick = {
-                                onStopwatchClicked()
-                            }
-                        ) {
-                            Text(text = "스톱 워치")
-                        }
-
-                        VerticalDivider(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
+                            text = "기록 만들기",
+                            style = MaterialTheme.typography.bodyLarge
                         )
 
                         TextButton(
                             modifier = Modifier
-                                .weight(1f),
+                                .weight(1f)
+                                .height(48.dp),
+                            onClick = {
+                                onStopwatchClicked()
+                            },
+                            shape = RectangleShape
+                        ) {
+                            Text(text = "스톱워치")
+                        }
+
+                        TextButton(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
                             onClick = {
                                 onTimerClicked()
-                            }
+                            },
+                            shape = RectangleShape
                         ) {
                             Text(text = "타이머")
                         }
 
-                        VerticalDivider(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
-                        )
-
-                        TextButton(
-                            modifier = Modifier
-                                .weight(1f),
-                            onClick = {
-                                // TODO: 포모도로 뷰로 이동
-                            }
-                        ) {
-                            Text(text = "포모도로")
-                        }
+//                        TextButton(
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .height(48.dp),
+//                            onClick = {
+//                                // TODO: 포모도로 뷰로 이동
+//                            },
+//                            shape = RectangleShape
+//                        ) {
+//                            Text(text = "포모도로")
+//                        }
                     }
                 }
             }
@@ -137,51 +155,72 @@ fun HomeView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding),
-                contentPadding = PaddingValues(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                item {
+                item(
+                    key = "email",
+                    contentType = "header"
+                ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        text = "${displayName}님",
+                        text = "${email}님",
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1
                     )
                 }
 
-                item {
-                    Column(
+                item (
+                    key = "spacer",
+                    contentType = "spacer"
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(
+                    key = "level",
+                    contentType = "card"
+                ) {
+                    Card(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp) // 바깥 패딩
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = MaterialTheme.shapes.medium
-                            )
-                            .padding(16.dp), // 안쪽 패딩
-                        verticalArrangement = Arrangement.spacedBy(32.dp)
+                            .padding(horizontal = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         Text(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
                             text = "LEVEL $level",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimary
                         )
 
-                        Slider(
-                            value = expRatio,
-                            onValueChange = {},
-                            thumb = {},
-                            track = { sliderState: SliderState ->
-                                SliderDefaults.Track(
-                                    modifier = Modifier.scale(scaleX = 1f, scaleY = 4f), // 기본 높이 4.dp * 4 = 16.dp
-                                    sliderState = sliderState
-                                )
-                            }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(16.dp)
+                                .padding(horizontal = 16.dp)
+                                .clip(shape = MaterialTheme.shapes.extraLarge)
+                                .border(
+                                    width = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    shape = MaterialTheme.shapes.extraLarge
+                                ),
+                            progress = expRatio.coerceIn(0f, 1f),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            trackColor = Transparent,
                         )
+
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Spacer(
@@ -189,28 +228,35 @@ fun HomeView(
                                     .weight(1f)
                             )
 
-                            Text(
-                                text = "$formattedCurrentExp / $formattedRequiredExp",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
+                            Text(text = "$formattedCurrentExp / $formattedRequiredExp")
 
                             Text(
                                 modifier = Modifier
                                     .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = MaterialTheme.shapes.medium
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        shape = MaterialTheme.shapes.extraSmall
                                     )
                                     .padding(horizontal = 4.dp),
                                 text = "${(expRatio * 100).toInt()}%",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 
-                item {
+                item (
+                    key = "spacer",
+                    contentType = "spacer"
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(
+                    key = "today",
+                    contentType = "header"
+                ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
@@ -220,26 +266,168 @@ fun HomeView(
                     )
                 }
 
-                item {
-                    HomePieChartView(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        today = today,
-                        now = now
-                    )
+                item (
+                    key = "spacer",
+                    contentType = "spacer"
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                item {
+                item(
+                    key = "today-chart",
+                    contentType = "today-chart"
+                ) {
+                    val yearProgress = today.dayOfYear.toFloat() / today.lengthOfYear().toFloat()
+                    val monthProgress = today.dayOfMonth.toFloat() / YearMonth.from(today).lengthOfMonth().toFloat()
+                    val dayProgress = now.toSecondOfDay().toFloat() / LocalTime.MAX.toSecondOfDay().toFloat()
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Year progress
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f / 1f)
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    progress = yearProgress,
+                                    strokeWidth = 8.dp,
+                                    strokeCap = StrokeCap.Round
+                                )
+                                Text(
+                                    text = "${(yearProgress * 100).toInt()}%",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = "${today.year}년",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        // Month progress
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f / 1f)
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    progress = monthProgress,
+                                    strokeWidth = 8.dp,
+                                    strokeCap = StrokeCap.Round
+                                )
+                                Text(
+                                    text = "${(monthProgress * 100).toInt()}%",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = "${today.monthValue}월",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        // Day progress
+                        Card(
+                            modifier = Modifier
+                                .weight(1f),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f / 1f)
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    progress = dayProgress,
+                                    strokeWidth = 8.dp,
+                                    strokeCap = StrokeCap.Round
+                                )
+                                Text(
+                                    text = "${(dayProgress * 100).toInt()}%",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = "${today.dayOfMonth}일",
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+
+                item (
+                    key = "spacer",
+                    contentType = "spacer"
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(
+                    key = "now",
+                    contentType = "header"
+                ) {
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        text = "현시간",
+                        text = "현재",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
-                item {
+                item (
+                    key = "spacer",
+                    contentType = "spacer"
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(
+                    key = "now-chart",
+                    contentType = "now-chart"
+                ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -406,13 +594,6 @@ fun HomeView(
                                 }
                             }
                         }
-                    }
-                }
-
-
-                if (currentToolState.value == CurrentToolState.STOPPED) {
-                    item {
-                        Spacer(modifier = Modifier.height(72.dp)) // TODO: 플로팅 버튼 높이 만큼 스페이스 만들기
                     }
                 }
             }

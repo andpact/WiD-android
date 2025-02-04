@@ -11,14 +11,13 @@ data class User(
     val signedUpOn: LocalDate, // <-> String("yyyy-MM-dd")
     val city: City, // <-> String("BUSAN")
     val level: Int, // <-> Long
-    val levelDateMap: Map<String, LocalDate>, // <-> Map<String, String("yyyy-MM-dd")>
     val currentExp: Int, // <-> Long (초단위) 기록 또는 계획으로 얻은 현재(레벨) 경험치
     val wiDTotalExp: Int, // <-> Long (초단위) 기록(WiD)으로 얻은 경험치
     val wiDMinLimit: Duration, // <-> Long (초단위)
     val wiDMaxLimit: Duration, // <-> Long (초단위)
 
 //    val wilDTotalExp: Int, // <-> Int (초단위) 계획으로 얻은 경험치
-//    val wiDIntervalLimit: Duration // <-> Int (초단위)
+//    val wiDIntervalLimit: Duration // <-> Long (초단위)
 
 
 
@@ -62,7 +61,6 @@ data class User(
                 email = "example@gmail.com",
                 signedUpOn = LocalDate.now(),
                 level = 1,
-                levelDateMap = mapOf<String, LocalDate>("1" to LocalDate.now()),
                 currentExp = 0,
                 wiDTotalExp = 0,
 //                wiDMinLimit = Duration.ofMinutes(1), // 1분

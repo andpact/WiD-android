@@ -2,49 +2,41 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.chartView.TimeSelectorView
-import andpact.project.wid.model.CurrentTool
 import andpact.project.wid.model.CurrentToolState
-import andpact.project.wid.model.Title
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.model.SnackbarActionResult
+import andpact.project.wid.ui.theme.White
 import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-// TODO: wiDMaxLimit으로 타이머 시간 제한하기
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TimerView(
@@ -67,40 +59,25 @@ fun TimerView(
     val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ZERO
 
     val timerViewBarVisible = timerViewModel.timerViewBarVisible.value
-//    val configuration = LocalConfiguration.current
-//    val screenHeight = configuration.screenHeightDp.dp
     val pagerState = rememberPagerState(pageCount = { 3 })
 
-
-    val hourPagerState = rememberPagerState(pageCount = { 12 })
-    val minutePagerState = rememberPagerState(pageCount = { 60 })
-    val secondPagerState = rememberPagerState(pageCount = { 60 })
     val coroutineScope = rememberCoroutineScope()
+    val hourListState = rememberLazyListState()
+    val minuteListState = rememberLazyListState()
+    val secondListState = rememberLazyListState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val currentToolState = timerViewModel.currentToolState.value
     val remainingTime = timerViewModel.remainingTime.value
     val selectedTime = timerViewModel.selectedTime.value
-    // TODO: 최초 선택 시간을 가지고 있어야 함.
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    LaunchedEffect(
-        key1 = hourPagerState.currentPage,
-        key2 = minutePagerState.currentPage,
-        key3 = secondPagerState.currentPage
-    ) {
-        val adjustedHour = hourPagerState.currentPage
-        val adjustedMinute = minutePagerState.currentPage
-        val adjustedSecond = secondPagerState.currentPage
-        val newRemainingTime =
-            Duration.ofHours(adjustedHour.toLong()) +
-            Duration.ofMinutes(adjustedMinute.toLong()) +
-            Duration.ofSeconds(adjustedSecond.toLong())
-
-        timerViewModel.setTimerTime(newRemainingTime)
+    BackHandler(enabled = !timerViewBarVisible) {
+        timerViewModel.setTimerViewBarVisible(true)
     }
 
     Scaffold(
@@ -108,38 +85,33 @@ fun TimerView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // 설정 해줘야 함.
         topBar = {
-            AnimatedVisibility(
-                visible = timerViewBarVisible,
-                enter = slideInVertically(
-                    initialOffsetY = { -it } // 위에서 아래로 슬라이드
-                ) + fadeIn(
-                    animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing),
-                    initialAlpha = 0f // 점점 불투명하게
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { -it } // 아래에서 위로 슬라이드
-                ) + fadeOut(
-                    animationSpec = tween(durationMillis = 300, easing = FastOutLinearInEasing),
-                    targetAlpha = 0f // 점점 투명하게
-                )
-            ) {
-                CenterAlignedTopAppBar(
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                onBackButtonPressed()
+            AnimatedContent(
+                targetState = timerViewBarVisible,
+                transitionSpec = {
+                    fadeIn() togetherWith fadeOut()
+                },
+            ) { isVisible: Boolean ->
+                if (isVisible) {
+                    CenterAlignedTopAppBar(
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    onBackButtonPressed()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "뒤로 가기",
+                                )
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                                contentDescription = "뒤로 가기",
-                            )
+                        },
+                        title = {
+                            Text(text = "타이머")
                         }
-                    },
-                    title = {
-                        Text(text = "타이머")
-                    }
-                )
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(64.dp)) // 빈 공간 유지
+                }
             }
         },
         bottomBar = {
@@ -148,95 +120,122 @@ fun TimerView(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                AnimatedVisibility(
-                    visible = timerViewBarVisible,
-                    enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
+                AnimatedContent(
+                    targetState = timerViewBarVisible,
+                    transitionSpec = {
+                        fadeIn() togetherWith fadeOut()
+                    },
+                ) { isVisible: Boolean ->
+                    if (isVisible) {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
+                                .fillMaxWidth()
+                                .height(64.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TextButton(
+                            Box(
                                 modifier = Modifier
-                                    .align(Alignment.CenterStart),
-                                onClick = {
-                                    onTitlePickerClicked()
-                                },
-                                enabled = currentToolState == CurrentToolState.STOPPED,
+                                    .weight(1f)
                             ) {
-                                Text(
-                                    text = firstCurrentWiD.subTitle.kr + ", " + firstCurrentWiD.title.kr,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-
-                        FilledIconButton(
-                            onClick = {
-                                if (currentToolState == CurrentToolState.STARTED) { // 시작 상태
-                                    timerViewModel.pauseTimer()
-                                } else { // 중지 및 정지 상태
-                                    timerViewModel.startTimer()
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(1) // 표지로 전환
-                                    }
+                                TextButton(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart),
+                                    onClick = {
+                                        onTitlePickerClicked()
+                                    },
+                                    enabled = currentToolState == CurrentToolState.STOPPED,
+                                ) {
+                                    Text(
+                                        text = firstCurrentWiD.subTitle.kr + ", " + firstCurrentWiD.title.kr,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
-                            },
-                            enabled = (user?.wiDMinLimit ?: Duration.ZERO) <= selectedTime && selectedTime <= user?.wiDMaxLimit && wiDList.size <= WID_LIST_LIMIT_PER_DAY
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (currentToolState == CurrentToolState.STARTED) { R.drawable.baseline_pause_24 }
-                                    else { R.drawable.baseline_play_arrow_24 }
-                                ),
-                                contentDescription = when (currentToolState) {
-                                    CurrentToolState.STARTED -> "타이머 일시 정지"
-                                    CurrentToolState.PAUSED, CurrentToolState.STOPPED -> "타이머 시작"
-                                },
-                                tint = White
-                            )
-                        }
+                            }
 
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            IconButton(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd),
+                            FilledIconButton(
                                 onClick = {
-                                    timerViewModel.stopTimer()
-                                },
-                                enabled = currentToolState == CurrentToolState.PAUSED
+                                    if (currentToolState == CurrentToolState.STARTED) { // 시작 상태
+                                        timerViewModel.pauseTimer(
+                                            onResult = { snackbarActionResult: SnackbarActionResult ->
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        message = snackbarActionResult.message,
+                                                        actionLabel = "확인",
+                                                        withDismissAction = true,
+                                                        duration = SnackbarDuration.Short
+                                                    )
+                                                }
+                                            }
+                                        )
+                                    } else { // 중지 및 정지 상태
+                                        timerViewModel.startTimer(
+                                            onResult = { snackbarActionResult: SnackbarActionResult ->
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        message = snackbarActionResult.message,
+                                                        actionLabel = "확인",
+                                                        withDismissAction = true,
+                                                        duration = SnackbarDuration.Short
+                                                    )
+                                                }
+                                            }
+                                        )
+                                    }
+                                }, // TODO: 제목이 있을 때만 시작 가능하도록
+                                enabled = wiDMinLimit <= selectedTime && selectedTime <= wiDMaxLimit && wiDList.size <= WID_LIST_LIMIT_PER_DAY
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "타이머 초기화"
+                                    painter = painterResource(
+                                        id = if (currentToolState == CurrentToolState.STARTED) { R.drawable.baseline_pause_24 }
+                                        else { R.drawable.baseline_play_arrow_24 }
+                                    ),
+                                    contentDescription = when (currentToolState) {
+                                        CurrentToolState.STARTED -> "타이머 일시 정지"
+                                        CurrentToolState.PAUSED, CurrentToolState.STOPPED -> "타이머 시작"
+                                    },
+                                    tint = White
                                 )
                             }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                            ) {
+                                IconButton(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd),
+                                    onClick = {
+                                        timerViewModel.stopTimer()
+                                    },
+                                    enabled = currentToolState != CurrentToolState.STOPPED
+                                ) {
+//                                    Icon(
+//                                        imageVector = Icons.Default.Close,
+//                                        contentDescription = "타이머 초기화"
+//                                    )
+
+                                    Text(text = "초기화")
+                                }
+                            }
                         }
+                    } else {
+                        Spacer(modifier = Modifier.height(64.dp)) // 빈 공간 유지
                     }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
+                        .height(64.dp),
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     AnimatedVisibility(
                         modifier = Modifier
                             .weight(1f),
                         visible = timerViewBarVisible,
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(
@@ -313,8 +312,8 @@ fun TimerView(
                         modifier = Modifier
                             .weight(1f),
                         visible = timerViewBarVisible,
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
                         Column(
                             horizontalAlignment = Alignment.End,
@@ -375,84 +374,83 @@ fun TimerView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding),
+                verticalArrangement = Arrangement.Center
             ) {
                 if (currentToolState == CurrentToolState.STOPPED) { // 스톱 워치 정지 상태
                     TimeSelectorView(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-//                                        .height(screenHeight / 3), // TODO: 화면높이가 아니라 고정하는 게 맞음
-                        hourPagerState = hourPagerState,
-                        minutePagerState = minutePagerState,
-                        secondPagerState = secondPagerState,
-                        coroutineScope = coroutineScope
+                        coroutineScope = coroutineScope,
+                        hourListState = hourListState,
+                        minuteListState = minuteListState,
+                        secondListState = secondListState,
+                        onTimeChanged = { selectedTime: Duration ->
+                            timerViewModel.setTimerTime(newSelectedTime = selectedTime)
+                        }
                     )
                 } else { // 스톱 워치 시작, 중지 상태
-                    AnimatedVisibility(
-                        visible = timerViewBarVisible,
-                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(64.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
+                    AnimatedContent(
+                        targetState = timerViewBarVisible,
+                        transitionSpec = {
+                            fadeIn() togetherWith fadeOut()
+                        },
+                    ) { isVisible: Boolean ->
+                        if (isVisible) {
                             val currentPage = pagerState.currentPage
 
-                            Row(
+                            SingleChoiceSegmentedButtonRow(
                                 modifier = Modifier
-                                    .height(32.dp)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                                        shape = MaterialTheme.shapes.extraLarge
-                                    )
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                                    .padding(horizontal = 16.dp)
                             ) {
-                                FilterChip(
+                                SegmentedButton(
+                                    modifier = Modifier
+                                        .height(40.dp),
                                     selected = currentPage == 0,
-                                    shape = MaterialTheme.shapes.extraLarge,
-                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
-                                    border = null,
+                                    shape = MaterialTheme.shapes.extraLarge.copy(topEnd = CornerSize(0.dp), bottomEnd = CornerSize(0.dp)),
                                     onClick = {
                                         coroutineScope.launch {
                                             pagerState.animateScrollToPage(0)
                                         }
                                     },
-                                    label = {
-                                        Text(text = "표지")
-                                    }
-                                )
+                                    icon = {}
+                                ) {
+                                    Text(text = "표지")
+                                }
 
-                                FilterChip(
+                                SegmentedButton(
+                                    modifier = Modifier
+                                        .height(40.dp),
                                     selected = currentPage == 1,
-                                    shape = MaterialTheme.shapes.extraLarge,
-                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
-                                    border = null,
+                                    shape = RectangleShape,
                                     onClick = {
                                         coroutineScope.launch {
                                             pagerState.animateScrollToPage(1)
                                         }
                                     },
-                                    label = {
-                                        Text(text = "시간")
-                                    }
-                                )
+                                    icon = {}
+                                ) {
+                                    Text(text = "시간")
+                                }
 
-                                FilterChip(
+                                SegmentedButton(
+                                    modifier = Modifier
+                                        .height(40.dp),
                                     selected = currentPage == 2,
-                                    shape = MaterialTheme.shapes.extraLarge,
-                                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = DeepSkyBlue),
-                                    border = null,
+                                    shape = MaterialTheme.shapes.extraLarge.copy(topStart = CornerSize(0.dp), bottomStart = CornerSize(0.dp)),
                                     onClick = {
                                         coroutineScope.launch {
                                             pagerState.animateScrollToPage(2)
                                         }
                                     },
-                                    label = {
-                                        Text(text = "기록")
-                                    }
-                                )
+                                    icon = {}
+                                ) {
+                                    Text(text = "기록")
+                                }
                             }
+                        } else {
+                            Spacer(modifier = Modifier.height(64.dp)) // 빈 공간 유지
                         }
                     }
 
@@ -461,7 +459,7 @@ fun TimerView(
                             .weight(1f),
                         state = pagerState,
                         verticalAlignment = Alignment.CenterVertically
-                    ) { page ->
+                    ) { page: Int ->
                         when (page) {
                             0 -> { // 표지
                                 Column(
@@ -470,14 +468,14 @@ fun TimerView(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Image(
-                                        modifier = Modifier
-                                            .padding(horizontal = 64.dp),
-                                        painter = painterResource(id = firstCurrentWiD.title.smallImage),
-                                        contentDescription = "제목 이미지"
-                                    )
+//                                    Image(
+//                                        modifier = Modifier
+//                                            .padding(horizontal = 64.dp),
+//                                        painter = painterResource(id = firstCurrentWiD.title.smallImage),
+//                                        contentDescription = "제목 이미지"
+//                                    )
 
-                                    val elapsedTime = selectedTime - remainingTime // TODO: 최초 선택시간을 화면에 표시해야 함.
+                                    val elapsedTime = selectedTime - remainingTime
                                     val progress = if (selectedTime.seconds > 0) { // 0으로 나누는 오류 방지
                                         elapsedTime.seconds / selectedTime.seconds.toFloat()
                                     } else {
@@ -496,19 +494,22 @@ fun TimerView(
                                         )
                                     )
 
-                                    Row(
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                            .padding(horizontal = 16.dp)
                                     ) {
                                         Text(
-                                            text = timerViewModel.getDurationString(remainingTime),
+                                            modifier = Modifier
+                                                .align(alignment = Alignment.CenterStart),
+                                            text = timerViewModel.getDurationTimeString(remainingTime),
                                             style = MaterialTheme.typography.bodySmall
                                         )
 
                                         Text(
-                                            text = timerViewModel.getDurationString(selectedTime),
+                                            modifier = Modifier
+                                                .align(alignment = Alignment.CenterEnd),
+                                            text = timerViewModel.getDurationTimeString(selectedTime),
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
@@ -516,6 +517,8 @@ fun TimerView(
                             }
                             1 -> { // 시간
                                 Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
                                     text = timerViewModel.getTimerDurationString(duration = remainingTime),
                                     style = TextStyle(
                                         textAlign = TextAlign.Center,
@@ -525,19 +528,22 @@ fun TimerView(
                             }
                             2 -> { // 기록
                                 LazyColumn(
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                                     modifier = Modifier
-                                        .padding(horizontal = 16.dp)
                                         .background(
                                             color = MaterialTheme.colorScheme.secondaryContainer,
                                             shape = MaterialTheme.shapes.medium
                                         )
                                 ) {
-                                    item {
+                                    item(
+                                        key = "date",
+                                        contentType = "list-item-date"
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(intrinsicSize = IntrinsicSize.Min)
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -583,18 +589,16 @@ fun TimerView(
                                                 }
                                             }
                                         }
+                                    }
 
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
+                                    item(
+                                        key = "title",
+                                        contentType = "list-item-title"
+                                    ) {
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             verticalArrangement = Arrangement.Center
                                         ) {
@@ -608,19 +612,17 @@ fun TimerView(
                                                 style = MaterialTheme.typography.bodyMedium,
                                             )
                                         }
+                                    }
 
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
+                                    item(
+                                        key = "start",
+                                        contentType = "list-item-start"
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(intrinsicSize = IntrinsicSize.Min)
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -664,19 +666,17 @@ fun TimerView(
                                                 }
                                             }
                                         }
+                                    }
 
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
+                                    item(
+                                        key = "finish",
+                                        contentType = "list-item-finish"
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(intrinsicSize = IntrinsicSize.Min)
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -720,19 +720,17 @@ fun TimerView(
                                                 }
                                             }
                                         }
+                                    }
 
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
+                                    item(
+                                        key = "duration",
+                                        contentType = "list-item-duration"
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(intrinsicSize = IntrinsicSize.Min)
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -747,7 +745,9 @@ fun TimerView(
                                                 )
 
                                                 Text(
-                                                    text = timerViewModel.getDurationString(firstCurrentWiD.duration),
+                                                    text = timerViewModel.getDurationString(
+                                                        firstCurrentWiD.duration
+                                                    ),
                                                     style = MaterialTheme.typography.bodyMedium,
                                                 )
                                             }
@@ -770,25 +770,25 @@ fun TimerView(
                                                     )
 
                                                     Text(
-                                                        text = timerViewModel.getDurationString(secondCurrentWiD.duration),
+                                                        text = timerViewModel.getDurationString(
+                                                            secondCurrentWiD.duration
+                                                        ),
                                                         style = MaterialTheme.typography.bodyMedium,
                                                     )
                                                 }
                                             }
                                         }
+                                    }
 
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
+                                    item(
+                                        key = "exp",
+                                        contentType = "list-item-exp"
+                                    ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(intrinsicSize = IntrinsicSize.Min)
-                                                .height(64.dp)
+                                                .height(72.dp)
                                                 .padding(horizontal = 16.dp),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                                             verticalAlignment = Alignment.CenterVertically
@@ -831,31 +831,6 @@ fun TimerView(
                                                     )
                                                 }
                                             }
-                                        }
-
-                                        HorizontalDivider(
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp),
-                                            thickness = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        )
-
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(64.dp)
-                                                .padding(horizontal = 16.dp),
-                                            verticalArrangement = Arrangement.Center
-                                        ) {
-                                            Text(
-                                                text = "위치",
-                                                style = MaterialTheme.typography.bodyLarge,
-                                            )
-
-                                            Text(
-                                                text = firstCurrentWiD.city.kr + ", " + firstCurrentWiD.city.country.kr,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                            )
                                         }
                                     }
                                 }

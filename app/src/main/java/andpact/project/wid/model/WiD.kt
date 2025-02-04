@@ -2,6 +2,7 @@ package andpact.project.wid.model
 
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 /**
@@ -20,7 +21,7 @@ data class WiD(
     val duration: Duration, // <-> 서버 : Long
     val city: City, // <-> 서버 : String(도시로 나라를 참조할 수 있어서 나라를 필드로 넣지 않음)
     val exp: Int, // <-> 서버 : Long
-    val createdBy: CurrentTool // <-> 서버 : String
+    val tool: Tool // <-> 서버 : String
 ) {
     companion object {
         fun default(): WiD {
@@ -28,13 +29,13 @@ data class WiD(
                 id = "",
                 date = LocalDate.now(),
                 title = Title.UNTITLED,
-                subTitle = SubTitle.UNSELECTED,
+                subTitle = SubTitle.UNSELECTED_UNTITLED,
                 start = LocalTime.MIN,
                 finish = LocalTime.MIN,
                 duration = Duration.ZERO,
                 city = City.SEOUL,
                 exp = 0,
-                createdBy = CurrentTool.LIST
+                tool = Tool.LIST
             )
         }
     }

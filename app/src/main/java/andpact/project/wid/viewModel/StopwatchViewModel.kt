@@ -2,10 +2,7 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.CurrentToolState
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.*
 import andpact.project.wid.ui.theme.chivoMonoBlackItalic
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -43,7 +40,6 @@ class StopwatchViewModel @Inject constructor(
     }
 
     private val LEVEL = userDataSource.LEVEL
-    private val LEVEL_DATE_MAP = userDataSource.LEVEL_DATE_MAP
     private val CURRENT_EXP = userDataSource.CURRENT_EXP
     private val WID_TOTAL_EXP = userDataSource.WID_TOTAL_EXP
 
@@ -75,28 +71,29 @@ class StopwatchViewModel @Inject constructor(
             .getOrDefault(currentToday, emptyList())
     }
 
-//    fun setTitle(newTitle: Title) {
-//        Log.d(TAG, "setTitle executed")
-//
-//        wiDDataSource.setCurrentWiDTitle(newTitle)
-//    }
-
     fun setStopwatchViewBarVisible(stopwatchViewBarVisible: Boolean) {
         Log.d(TAG, "setStopwatchViewBarVisible executed")
 
         _stopwatchViewBarVisible.value = stopwatchViewBarVisible
     }
 
-    fun startStopwatch() {
+    fun startStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
         Log.d(TAG, "startStopwatch executed")
 
-        val currentUser = user.value ?: return // 잘못된 접근
+        val currentUser = user.value
+        if (currentUser == null) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
+            return
+        }
 
         wiDDataSource.startStopwatch(
             email = currentUser.email,
             wiDMinLimit = currentUser.wiDMinLimit,
             wiDMaxLimit = currentUser.wiDMaxLimit,
-            onStopwatchPaused = { newExp: Int ->
+            onResult = { snackbarActionResult: SnackbarActionResult ->
+                onResult(snackbarActionResult)
+            },
+            onStopwatchAutoPaused = { newExp: Int ->
                 val currentLevel = currentUser.level
                 val currentExp = currentUser.currentExp
                 val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
@@ -109,12 +106,7 @@ class StopwatchViewModel @Inject constructor(
                 if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
                     // 레벨 업데이트
                     val newLevel = currentLevel + 1
-                    val newLevelAsString = newLevel.toString()
-                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
-                    levelDateMap[newLevelAsString] = today.value
-
                     updatedFields[LEVEL] = newLevel
-                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
 
                     // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
@@ -125,7 +117,7 @@ class StopwatchViewModel @Inject constructor(
                 }
 
                 updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city // 도시 할당
+                updatedFields[CITY] = currentUser.city.name // 도시 할당
 
                 // UserDataSource를 통해 문서 갱신
                 userDataSource.setUserDocument(
@@ -136,14 +128,21 @@ class StopwatchViewModel @Inject constructor(
         )
     }
 
-    fun pauseStopwatch() {
+    fun pauseStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
         Log.d(TAG, "pauseStopwatch executed")
 
-        val currentUser = user.value ?: return // 잘못된 접근
+        val currentUser = user.value
+        if (currentUser == null) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
+            return
+        }
 
         wiDDataSource.pauseStopwatch(
             email = currentUser.email,
             wiDMinLimit = currentUser.wiDMinLimit,
+            onResult = { snackbarActionResult: SnackbarActionResult ->
+                onResult(snackbarActionResult)
+            },
             onStopwatchPaused = { newExp: Int ->
                 val currentLevel = currentUser.level
                 val currentExp = currentUser.currentExp
@@ -157,12 +156,7 @@ class StopwatchViewModel @Inject constructor(
                 if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
                     // 레벨 업데이트
                     val newLevel = currentLevel + 1
-                    val newLevelAsString = newLevel.toString()
-                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
-                    levelDateMap[newLevelAsString] = today.value
-
                     updatedFields[LEVEL] = newLevel
-                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
 
                     // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
@@ -173,7 +167,7 @@ class StopwatchViewModel @Inject constructor(
                 }
 
                 updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city // 도시 할당
+                updatedFields[CITY] = currentUser.city.name // 도시 할당
 
                 // UserDataSource를 통해 문서 갱신
                 userDataSource.setUserDocument(
@@ -230,10 +224,16 @@ class StopwatchViewModel @Inject constructor(
         }
     }
 
-    fun getDurationString(duration: Duration): String {
+    fun getDurationString(duration: Duration): String { // "H시간 m분 s초"
         Log.d(TAG, "getDurationString executed")
 
         return wiDDataSource.getDurationString(duration = duration)
+    }
+
+    fun getDurationTimeString(duration: Duration): String { // 'HH:mm:ss'
+        Log.d(TAG, "getDurationTimeString executed")
+
+        return wiDDataSource.getDurationTimeString(duration = duration)
     }
 
     @Composable

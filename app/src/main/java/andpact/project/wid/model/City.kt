@@ -26,8 +26,12 @@ enum class City(
     GWANGMYEONG(country = Country.KOREA, kr = "광명");
 
     companion object {
-        fun filterByCountry(country: Country): List<City> {
-            return values().filter { it.country == country }
+        fun filterCitiesByCountry(targetCountry: Country): List<City> {
+            return values().filter { it.country == targetCountry }
+        }
+
+        fun getCityCountByCountry(targetCountry: Country): Int {
+            return City.filterCitiesByCountry(targetCountry).size
         }
     }
 }

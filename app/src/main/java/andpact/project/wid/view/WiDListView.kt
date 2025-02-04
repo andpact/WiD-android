@@ -3,10 +3,7 @@ package andpact.project.wid.view
 import andpact.project.wid.destinations.MainViewDestinations
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.*
@@ -50,6 +47,8 @@ fun WiDListView(onWiDClicked: () -> Unit) {
                     .padding(contentPadding)
             ) {
                 ScrollableTabRow(
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
                     selectedTabIndex = pagerState.currentPage,
                     divider = {},
@@ -70,7 +69,15 @@ fun WiDListView(onWiDClicked: () -> Unit) {
                     }
                 }
 
-                HorizontalPager(state = pagerState) { page: Int ->
+                HorizontalPager(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    state = pagerState,
+//                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+//                        state = pagerState,
+//                        orientation = Orientation.Horizontal
+//                    )
+                ) { page: Int ->
                     when (page) {
                         0 -> DailyWiDListView(
                             onWiDClicked = {

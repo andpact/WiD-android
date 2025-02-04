@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
 
         // window inset(상태 바, 네비게이션 바 패딩)을 수동으로 설정할 때
 //        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // TODO: 위 설정을 사용하면 시스템 바까지 전환되지 않을까?
 
         val intent: Intent = intent
 
@@ -66,12 +67,6 @@ class MainActivity : ComponentActivity() {
         Log.d(TAG, "onDestroy() called")
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun WiDMainActivityPreview() {
-//    WiDMainActivity()
-//}
 
 /**
  * 사용할 거면 액티비티 안에 작성해서 사용하자.

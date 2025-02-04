@@ -61,11 +61,12 @@ fun MonthlyWiDListChartView(
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(7),
         modifier = modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .fillMaxWidth()
+            .heightIn(max = 700.dp), // 레이지 컬럼 안에 레이지 그리드를 쓸려면 높이를 지정해줘야함.
+        columns = GridCells.Fixed(7),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(daysOfWeek.size) { index ->
             val textColor = when (index) {
@@ -128,62 +129,3 @@ fun MonthlyWiDListChartView(
         }
     }
 }
-//
-//@Composable
-//@Preview(showBackground = true)
-//fun MonthlyWiDListChartPreview() {
-//    val today = LocalDate.now()
-//    val tmpStartDate = today.withDayOfMonth(1)
-//    val tmpFinishDate = today.withDayOfMonth(today.lengthOfMonth())
-//
-//    val days = tmpStartDate.until(tmpFinishDate, ChronoUnit.DAYS).toInt() + 1
-//
-//    val tmpWiDList = mutableListOf<WiD>()
-//
-//    for (index in 0 until days step 12) {
-//        val indexDate = tmpStartDate.plusDays(index.toLong())
-//
-//        tmpWiDList.add(
-//            WiD(
-//                id = "tmpWiD",
-//                date = indexDate,
-//                title = Title.STUDY,
-//                subTitle = SubTitle.UNSELECTED,
-//                start = LocalTime.of(0, 0),
-//                finish = LocalTime.of(2, 0),
-//                duration = Duration.ofHours(2),
-//                city = City.SEOUL,
-//                exp = 0,
-//                createdBy = CurrentTool.LIST
-//            )
-//        )
-//
-//        tmpWiDList.add(
-//            WiD(
-//                id = "tmpWiD",
-//                date = indexDate,
-//                title = Title.WORK,
-//                subTitle = SubTitle.UNSELECTED,
-//                start = LocalTime.of(6, 0),
-//                finish = LocalTime.of(9, 0),
-//                duration = Duration.ofHours(3),
-//                city = City.BUSAN,
-//                exp = 0,
-//                createdBy = CurrentTool.LIST
-//            )
-//        )
-//    }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//    ) {
-//        MonthlyWiDListChartView(
-//            modifier = Modifier
-//                .padding(horizontal = 16.dp),
-//            startDate = tmpStartDate,
-//            finishDate = tmpFinishDate,
-//            wiDList = tmpWiDList
-//        )
-//    }
-//}

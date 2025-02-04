@@ -1,68 +1,37 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
 import andpact.project.wid.destinations.MainActivityViewDestinations
-import andpact.project.wid.model.*
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.model.City
+import andpact.project.wid.model.PreviousView
 import android.util.Log
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import kotlinx.coroutines.launch
-import java.time.*
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 // FIXME
-// TODO: 이전 뷰를 문자열 말고 이넘 클래스로 만들어서 사용하기 
+// TODO:
 @Composable
 fun MainActivityView(dynamicLink: String?) {
-    val TAG = "MainActivity"
+    val TAG = "MainActivityView"
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -119,9 +88,9 @@ fun MainActivityView(dynamicLink: String?) {
                         onWiDClicked = {
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route)
                         },
-                        onCityPickerClicked = {
-                            val previousViewString = PreviousView.USER.name
-                            val currentCityString = it.name
+                        onCityPickerClicked = { clickedCity: City ->
+                            val previousViewString = PreviousView.USER_CITY.name
+                            val currentCityString = clickedCity.name
 
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString/$currentCityString")
                         },
@@ -212,19 +181,19 @@ fun MainActivityView(dynamicLink: String?) {
                         onBackButtonPressed = {
                             mainActivityViewNavController.popBackStack()
                         },
-                        onTitlePickerClicked = {
-                            val previousViewString = PreviousView.CLICKED_WID.name
+                        onTitlePickerClicked = { previousView: PreviousView -> // TODO: 제목 변경인지 부제목 변경인지
+                            val previousViewString = previousView.name
 
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.TitlePickerViewDestination.route + "/$previousViewString")
                         },
-                        onTimePickerClicked = {
-                            val previousViewString = it.name
+                        onTimePickerClicked = { previousView: PreviousView ->
+                            val previousViewString = previousView.name
 
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.TimePickerViewDestination.route + "/$previousViewString")
                         },
-                        onCityPickerClicked = {
-                            val previousViewString = PreviousView.CLICKED_WID.name
-                            val currentCityString = it.name
+                        onCityPickerClicked = { clickedCity: City ->
+                            val previousViewString = PreviousView.CLICKED_WID_CITY.name
+                            val currentCityString = clickedCity.name
 
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString/$currentCityString")
                         }
@@ -349,180 +318,84 @@ fun MainActivityPreview() {
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
-            TopAppBar(
+            MediumTopAppBar(
+                navigationIcon = {
+                     IconButton(onClick = { /*TODO*/ }) {
+                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
+                     }
+                },
                 title = {
-                    TextButton(
-                        onClick = {
-                        }
-                    ) {
-                        Text(
-                            text = getDateString(LocalDate.now()),
-                            style = MaterialTheme.typography.bodyLarge,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    }
+                    Text(text = "title")
                 },
                 actions = {
-                    FilledTonalIconButton(
-                        onClick = {
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "이전 날짜",
-                        )
-                    }
-
-                    FilledTonalIconButton(
-                        onClick = {
-                        },
-                        enabled = true
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "다음 날짜",
-                        )
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
                     }
                 }
             )
         },
         bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                FilledIconButton(
-                    modifier = Modifier
-                        .size(56.dp),
-                    onClick = {
-                    },
-                    enabled = true,
-                    shape = RectangleShape
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "초기화",
-                    )
+            BottomAppBar() {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
                 }
 
-                FilledIconButton(
-                    modifier = Modifier
-                        .size(56.dp),
-                    onClick = {
-                    },
-                    enabled = true,
-                    shape = RectangleShape
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "초기화",
-                    )
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
                 }
 
-                FilledTonalButton(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    onClick = {
-                    },
-                    enabled = true,
-                    shape = RectangleShape
-                ) {
-                    Text(text = "생성 완료")
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
                 }
             }
-        },
-//        floatingActionButtonPosition = FabPosition.Center,
-//        floatingActionButton = {
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(intrinsicSize = IntrinsicSize.Min)
-//                    .padding(horizontal = 16.dp)
-//                    .border(
-//                        width = 0.5.dp,
-//                        shape = MaterialTheme.shapes.medium,
-//                        color = MaterialTheme.colorScheme.onSurface
-//                    )
-//            ) {
-//                TextButton(
-//                    modifier = Modifier
-//                        .weight(1f),
-//                    onClick = {
-//
-//                    }
-//                ) {
-//                    Text(text = "스톱 워치")
-//                }
-//
-//                VerticalDivider(
-//                    modifier = Modifier
-//                        .padding(vertical = 8.dp)
-//                )
-//
-//                TextButton(
-//                    modifier = Modifier
-//                        .weight(1f),
-//                    onClick = {
-//
-//                    }
-//                ) {
-//                    Text(text = "타이머")
-//                }
-//
-//                VerticalDivider(
-//                    modifier = Modifier
-//                        .padding(vertical = 8.dp)
-//                )
-//
-//                TextButton(
-//                    modifier = Modifier
-//                        .weight(1f),
-//                    onClick = {
-//
-//                    }
-//                ) {
-//                    Text(text = "포모도로")
-//                }
-//            }
-//        }
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(it),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+                .padding(it)
+                .padding(horizontal = 16.dp)
+//            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-        }
-    }
-}
-
-@Composable
-fun getDateString(date: LocalDate): AnnotatedString {
-    val formattedString = buildAnnotatedString {
-        if (date.year == LocalDate.now().year) {
-            append(date.format(DateTimeFormatter.ofPattern("M월 d일 (")))
-        } else {
-            append(date.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일 (")))
-        }
-
-        withStyle(
-            style = SpanStyle(
-                color = when (date.dayOfWeek) {
-                    DayOfWeek.SATURDAY -> DeepSkyBlue
-                    DayOfWeek.SUNDAY -> OrangeRed
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                progress = 0.5f
             )
-        ) {
-            append(date.format(DateTimeFormatter.ofPattern("E", Locale.KOREAN)))
-        }
-        append(")")
-    }
 
-    return formattedString
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = {
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Previous Month"
+                    )
+                }
+
+                Text(
+                    text = "${2023}년 ${10}월",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                IconButton(
+                    enabled = false,
+                    onClick = {
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next Month"
+                    )
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package andpact.project.wid.model
 
-enum class CurrentTool(val kr: String) {
+enum class Tool(val kr: String) {
     NONE(kr = "없음"),
     STOPWATCH(kr = "스톱워치"),
     TIMER(kr = "타이머"),

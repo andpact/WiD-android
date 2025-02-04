@@ -2,12 +2,10 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.City
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.*
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,20 +15,31 @@ class CityPickerViewModel @Inject constructor(
     private val userDataSource: UserDataSource,
     private val wiDDataSource: WiDDataSource
 ): ViewModel() {
-    private val TAG = "TitlePickerViewModel"
+    private val TAG = "CityPickerViewModel"
     init { Log.d(TAG, "created") }
     override fun onCleared() {
         super.onCleared()
         Log.d(TAG, "cleared")
     }
 
-    val cityArray = City.values()
+    val countryList = Country.values().toList()
+    private val _selectedCountry = mutableStateOf(Country.KOREA)
+    val selectedCountry: State<Country> = _selectedCountry
 
     private val CITY = userDataSource.CITY
 
     val user: State<User?> = userDataSource.user
 
     private val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy // 수정 후
+
+    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
+    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+
+    fun setSelectedCountry(newSelectedCountry: Country) {
+        Log.d(TAG, "setSelectedCountry executed")
+
+        _selectedCountry.value = newSelectedCountry
+    }
 
     fun setUserCity(updatedCity: City) {
         Log.d(TAG, "setUserCity executed")
@@ -39,6 +48,7 @@ class CityPickerViewModel @Inject constructor(
         val updatedFields = mutableMapOf<String, Any>()
         updatedFields[CITY] = updatedCity.name // String 타입으로 서버로 보냄.
 
+        // TODO: 스낵 바 호출해야함
         userDataSource.setUserDocument(
             email = currentUser.email,
             updatedUserDocument = updatedFields

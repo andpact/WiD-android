@@ -2,10 +2,7 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.CurrentToolState
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.*
 import andpact.project.wid.ui.theme.chivoMonoBlackItalic
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -38,7 +35,6 @@ class TimerViewModel @Inject constructor(
     }
 
     val LEVEL = userDataSource.LEVEL
-    val LEVEL_DATE_MAP = userDataSource.LEVEL_DATE_MAP
     val CURRENT_EXP = userDataSource.CURRENT_EXP
     val WID_TOTAL_EXP = userDataSource.WID_TOTAL_EXP
 
@@ -89,14 +85,21 @@ class TimerViewModel @Inject constructor(
         _timerViewBarVisible.value = timerViewBarVisible
     }
 
-    fun startTimer() {
+    fun startTimer(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
         Log.d(TAG, "startTimer executed")
 
-        val currentUser = user.value ?: return // 잘못된 접근
+        val currentUser = user.value
+        if (currentUser == null) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
+            return
+        }
 
         wiDDataSource.startTimer(
             email = currentUser.email,
             wiDMinLimit = currentUser.wiDMinLimit,
+            onResult = { snackbarActionResult: SnackbarActionResult ->
+                onResult(snackbarActionResult)
+            },
             onTimerAutoStopped = { newExp: Int ->
                 // 현재 상태
                 val currentLevel = currentUser.level
@@ -111,12 +114,7 @@ class TimerViewModel @Inject constructor(
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
                     // 레벨 업데이트
                     val newLevel = currentLevel + 1
-                    val newLevelAsString = newLevel.toString()
-                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
-                    levelDateMap[newLevelAsString] = today.value
-
                     updatedFields[LEVEL] = newLevel
-                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
 
                     // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
@@ -127,7 +125,7 @@ class TimerViewModel @Inject constructor(
                 }
 
                 updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city // 도시 할당
+                updatedFields[CITY] = currentUser.city.name // 도시 할당
 
                 // UserDataSource를 통해 문서 갱신
                 userDataSource.setUserDocument(
@@ -138,14 +136,21 @@ class TimerViewModel @Inject constructor(
         )
     }
 
-    fun pauseTimer() {
+    fun pauseTimer(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
         Log.d(TAG, "pauseTimer executed")
 
-        val currentUser = user.value ?: return // 잘못된 접근
+        val currentUser = user.value
+        if (currentUser == null) {
+            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
+            return
+        }
 
         wiDDataSource.pauseTimer(
             email = currentUser.email,
             wiDMinLimit = currentUser.wiDMinLimit,
+            onResult = { snackbarActionResult: SnackbarActionResult ->
+                onResult(snackbarActionResult)
+            },
             onTimerPaused = { newExp: Int ->
                 // 현재 상태
                 val currentLevel = currentUser.level
@@ -160,12 +165,7 @@ class TimerViewModel @Inject constructor(
                 if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
                     // 레벨 업데이트
                     val newLevel = currentLevel + 1
-                    val newLevelAsString = newLevel.toString()
-                    val levelDateMap = currentUser.levelDateMap.toMutableMap()
-                    levelDateMap[newLevelAsString] = today.value
-
                     updatedFields[LEVEL] = newLevel
-                    updatedFields[LEVEL_DATE_MAP] = levelDateMap.mapValues { it.value.toString() }
 
                     // 경험치 갱신
                     val newCurrentExp = currentExp + newExp - currentRequiredExp
@@ -177,6 +177,7 @@ class TimerViewModel @Inject constructor(
 
                 // 총 WiD 경험치 업데이트
                 updatedFields[WID_TOTAL_EXP] = newWiDTotalExp
+                updatedFields[CITY] = currentUser.city.name // 도시 할당
 
                 // UserDataSource를 통해 문서 갱신
                 userDataSource.setUserDocument(
@@ -213,10 +214,16 @@ class TimerViewModel @Inject constructor(
     }
 
 
-    fun getDurationString(duration: Duration): String {
+    fun getDurationString(duration: Duration): String { // "H시간 m분 s초"
         Log.d(TAG, "getDurationString executed")
 
         return wiDDataSource.getDurationString(duration = duration)
+    }
+
+    fun getDurationTimeString(duration: Duration): String { // 'HH:mm:ss'
+        Log.d(TAG, "getDurationTimeString executed")
+
+        return wiDDataSource.getDurationTimeString(duration = duration)
     }
 
     @Composable

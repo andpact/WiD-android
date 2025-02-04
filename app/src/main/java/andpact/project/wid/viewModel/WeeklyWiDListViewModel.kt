@@ -45,16 +45,29 @@ class WeeklyWiDListViewModel @Inject constructor(
 
     // 날짜
     val today: State<LocalDate> = wiDDataSource.today
-    private val _startDate = mutableStateOf(getFirstDateOfWeek(LocalDate.now()))
+    private val initialToday = LocalDate.now()
+    private val _startDate = mutableStateOf(getFirstDateOfWeek(initialToday)) // 현재 조회 중인 주의 시작 날짜
     val startDate: State<LocalDate> = _startDate
-    private val _finishDate = mutableStateOf(getLastDateOfWeek(LocalDate.now()))
+    private val _finishDate = mutableStateOf(getLastDateOfWeek(initialToday)) // 현재 조회 중인 주의 종료 날짜
     val finishDate: State<LocalDate> = _finishDate
+
     private val _weekPickerExpanded = mutableStateOf(false)
     val weekPickerExpanded: State<Boolean> = _weekPickerExpanded
 
+    private val _weekPickerMidDateOfCurrentMonth = mutableStateOf(_startDate.value.plusDays(3).withDayOfMonth(15))
+    val weekPickerMidDateOfCurrentMonth: State<LocalDate> = _weekPickerMidDateOfCurrentMonth
+    val weekPickerStartDateOfCurrentMonth = derivedStateOf { getFirstDateOfWeek(_weekPickerMidDateOfCurrentMonth.value.withDayOfMonth(1)) } // 해당 월의 1일을 포함하는 가장 가까운 이전 월요일
+    val weekPickerFinishDateOfCurrentMonth = derivedStateOf { getLastDateOfWeek(_weekPickerMidDateOfCurrentMonth.value.withDayOfMonth(_weekPickerMidDateOfCurrentMonth.value.lengthOfMonth())) } // 해당 월의 마지막 날짜를 포함하는 가장 가까운 이후 일요일
+
+    private val _weekPickerStartDateOfCurrentWeek = mutableStateOf(_startDate.value)
+    val weekPickerStartDateOfCurrentWeek: State<LocalDate> = _weekPickerStartDateOfCurrentWeek
+    private val _weekPickerFinishDateOfCurrentWeek = mutableStateOf(_finishDate.value)
+    val weekPickerFinishDateOfCurrentWeek: State<LocalDate> = _weekPickerFinishDateOfCurrentWeek
+
     val wiDList: State<List<WiD>> = derivedStateOf { updateWiDList() }
 
-    // 맵(모든 제목의 맵을 만들어둠).
+    val titleDurationMapList = TitleDurationMap.values().toList()
+
     private val totalDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleTotalDurationMap(wiDList = wiDList.value) }
     private val averageDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleAverageDurationMap(wiDList = wiDList.value) }
     private val maxDurationMap: State<Map<Title, Duration>> = derivedStateOf { wiDDataSource.getWiDTitleMaxDurationMap(wiDList = wiDList.value) }
@@ -68,6 +81,25 @@ class WeeklyWiDListViewModel @Inject constructor(
     private val _currentMapType = mutableStateOf(TitleDurationMap.TOTAL)
     val currentMapType: State<TitleDurationMap> = _currentMapType
     val currentMap: State<Map<Title, Duration>> = derivedStateOf { setCurrentMap() }
+
+    fun setStartDateAndFinishDate(
+        newStartDate: LocalDate,
+        newFinishDate: LocalDate
+    ) {
+        Log.d(TAG, "setStartDateAndFinishDate executed")
+
+        val currentUser = user.value ?: return
+
+        _startDate.value = newStartDate
+        _finishDate.value = newFinishDate
+
+        (newStartDate.year..newFinishDate.year).forEach { year: Int ->
+            wiDDataSource.getYearlyWiDListMap(
+                email = currentUser.email,
+                year = Year.of(year)
+            )
+        }
+    }
 
     private fun updateWiDList(): List<WiD> {
         Log.d(TAG, "updateWiDList executed")
@@ -106,23 +138,20 @@ class WeeklyWiDListViewModel @Inject constructor(
         _weekPickerExpanded.value = expand
     }
 
-    fun setStartDateAndFinishDate(
-        startDate: LocalDate,
-        finishDate: LocalDate
+    fun setWeekPickerMidDateOfCurrentMonth(newWeekPickerMidDateOfCurrentMonth: LocalDate) {
+        Log.d(TAG, "setWeekPickerMidDateOfCurrentMonth executed")
+
+        _weekPickerMidDateOfCurrentMonth.value = newWeekPickerMidDateOfCurrentMonth
+    }
+
+    fun setWeekPickerStartDateOfCurrentWeekAndWeekPickerFinishDateOfCurrentWeek(
+        newWeekPickerStartDateOfCurrentWeek: LocalDate,
+        newWeekPickerFinishDateOfCurrentWeek: LocalDate
     ) {
-        Log.d(TAG, "setStartDateAndFinishDate executed")
+        Log.d(TAG, "setWeekPickerStartDateOfCurrentWeekAndWeekPickerFinishDateOfCurrentWeek executed")
 
-        val currentUser = user.value ?: return
-
-        _startDate.value = startDate
-        _finishDate.value = finishDate
-
-        (startDate.year..finishDate.year).forEach { year: Int ->
-            wiDDataSource.getYearlyWiDListMap(
-                email = currentUser.email,
-                year = Year.of(year)
-            )
-        }
+        _weekPickerStartDateOfCurrentWeek.value = newWeekPickerStartDateOfCurrentWeek
+        _weekPickerFinishDateOfCurrentWeek.value = newWeekPickerFinishDateOfCurrentWeek
     }
 
     fun getDurationString(duration: Duration): String {
@@ -199,6 +228,12 @@ class WeeklyWiDListViewModel @Inject constructor(
         Log.d(TAG, "getFirstDateOfWeek executed")
 
         return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    }
+
+    fun getMidDateOfWeek(date: LocalDate): LocalDate {
+        Log.d(TAG, "getMidDateOfWeek executed")
+
+        return getFirstDateOfWeek(date = date).plusDays(3)
     }
 
     fun getLastDateOfWeek(date: LocalDate): LocalDate {

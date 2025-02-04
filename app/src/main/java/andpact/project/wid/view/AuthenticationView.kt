@@ -61,11 +61,8 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                     },
                     supportingText = {
                         Text(
-                            text = if (emailModified && !emailValid) {
-                                "이메일 형식이 유효하지 않습니다."
-                            } else {
-                                ""
-                            },
+                            text = if (emailModified && !emailValid) { "이메일 형식이 유효하지 않습니다." }
+                            else { "" },
                         )
                     }
                 )
@@ -100,9 +97,7 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                             color = MaterialTheme.colorScheme.surfaceContainerHigh,
                             shape = MaterialTheme.shapes.extraLarge
                         ),
-                    onDismissRequest = {
-
-                    },
+                    onDismissRequest = {},
                     content = {
                         Text(
                             text = "${email}로 전송된 링크를 클릭하여 인증 절차를 완료하세요.\n링크를 클릭하면 기존 계정으로 로그인되거나,\n새로운 계정이 생성됩니다.",

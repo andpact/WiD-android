@@ -2,15 +2,15 @@ package andpact.project.wid.view
 
 import andpact.project.wid.destinations.MainViewDestinations
 import andpact.project.wid.model.City
-import andpact.project.wid.model.CurrentTool
+import andpact.project.wid.model.Tool
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -19,13 +19,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-/**
- * 정확하지 않다. 다시 배우자.
- * 값 변경 시
- * remember { 값 }-> 재 렌더링 안됨.
- * remember(파라미터) { 값 } 의 파라미터가 변경되면 블록('{ 값 }')을 재 실행하여 재 랜더링 됨.
- * mutableStateOf { 값 }-> 재 렌더링 됨.
- */
 @Composable
 fun MainView(
     onStopwatchClicked: () -> Unit,
@@ -42,6 +35,9 @@ fun MainView(
     val navBackStackEntry by mainViewNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
         onDispose { Log.d(TAG, "disposed") }
@@ -52,6 +48,8 @@ fun MainView(
             .fillMaxSize(),
         bottomBar = {
             MainBottomBarView(
+                coroutineScope = coroutineScope,
+                snackbarHostState = snackbarHostState,
                 currentRoute = currentRoute,
                 onDestinationChanged = { route: String ->
                     mainViewNavController.navigate(route) {
@@ -62,15 +60,16 @@ fun MainView(
                         restoreState = true // 이동할 화면이 이전 화면이면 새로운 스택을 쌓는게 아니라 이전 스택으로 이동함.
                     }
                 },
-                onCurrentToolClicked = { currentTool: CurrentTool ->
-                    if (currentTool == CurrentTool.STOPWATCH) {
+                onCurrentToolClicked = { currentTool: Tool ->
+                    if (currentTool == Tool.STOPWATCH) {
                         onStopwatchClicked()
-                    } else if (currentTool == CurrentTool.TIMER) {
+                    } else if (currentTool == Tool.TIMER) {
                         onTimerClicked()
                     }
                 }
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         content = { contentPadding: PaddingValues -> // 이 패딩을 적용하지 않으면 네비게이션 바가 내용물을 덮음.
             NavHost(
                 modifier = Modifier
@@ -99,8 +98,8 @@ fun MainView(
 
                 composable(MainViewDestinations.MyPageViewDestination.route) {
                     MyPageView(
-                        onCityPickerClicked = {
-                            onCityPickerClicked(it)
+                        onCityPickerClicked = { clickedCity: City ->
+                            onCityPickerClicked(clickedCity)
                         },
                         onUserSignedOut = {
                             onUserSignedOut()

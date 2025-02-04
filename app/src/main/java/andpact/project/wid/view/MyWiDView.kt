@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -22,7 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
     val TAG = "MyWiDView"
@@ -30,14 +31,14 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
     val coroutineScope = rememberCoroutineScope()
 
     val wiDMinLimit = myWiDViewModel.user.value?.wiDMinLimit ?: Duration.ZERO
-    val wiDMinLimitHourPagerState = rememberPagerState(initialPage = wiDMinLimit.toHours().toInt(), pageCount = { 12 })
-    val wiDMinLimitMinutePagerState = rememberPagerState(initialPage = (wiDMinLimit.toMinutes() % 60).toInt(), pageCount = { 60 })
-    val wiDMinLimitSecondPagerState = rememberPagerState(initialPage = (wiDMinLimit.seconds % 60).toInt(), pageCount = { 60 })
+    val wiDMinLimitHourListState = rememberLazyListState(initialFirstVisibleItemIndex = wiDMinLimit.toHours().toInt())
+    val wiDMinLimitMinuteListState = rememberLazyListState(initialFirstVisibleItemIndex = (wiDMinLimit.toMinutes() % 60).toInt())
+    val wiDMinLimitSecondListState = rememberLazyListState(initialFirstVisibleItemIndex = (wiDMinLimit.seconds % 60).toInt())
 
     val wiDMaxLimit = myWiDViewModel.user.value?.wiDMaxLimit ?: Duration.ZERO
-    val wiDMaxLimitHourPagerState = rememberPagerState(initialPage = wiDMaxLimit.toHours().toInt(), pageCount = { 12 })
-    val wiDMaxLimitMinutePagerState = rememberPagerState(initialPage = (wiDMaxLimit.toMinutes() % 60).toInt(), pageCount = { 60 })
-    val wiDMaxLimitSecondPagerState = rememberPagerState(initialPage = (wiDMaxLimit.seconds % 60).toInt(), pageCount = { 60 })
+    val wiDMaxLimitHourListState = rememberLazyListState(initialFirstVisibleItemIndex = wiDMaxLimit.toHours().toInt())
+    val wiDMaxLimitMinuteListState = rememberLazyListState(initialFirstVisibleItemIndex = (wiDMaxLimit.toMinutes() % 60).toInt())
+    val wiDMaxLimitSecondListState = rememberLazyListState(initialFirstVisibleItemIndex = (wiDMaxLimit.seconds % 60).toInt())
 
     val showUpdateWiDMinLimitDialog = myWiDViewModel.showUpdateWiDMinLimitDialog.value
     val showUpdateWiDMaxLimitDialog = myWiDViewModel.showUpdateWiDMaxLimitDialog.value
@@ -49,20 +50,18 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp)
     ) {
-        item {
+        item(
+            key = "wid-min-limit",
+            contentType = "list-item"
+        ) {
             ListItem(
                 modifier = Modifier
                     .clickable {
                         myWiDViewModel.setShowUpdateWiDMinLimitDialog(show = true)
                     },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "최소 시간 수정"
-                    )
-                },
                 headlineContent = {
                     Text(text = "생성 가능한 기록 최소 시간")
                 },
@@ -76,18 +75,17 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                     )
                 }
             )
+        }
 
+        item(
+            key = "wid-max-limit",
+            contentType = "list-item"
+        ) {
             ListItem(
                 modifier = Modifier
                     .clickable {
                         myWiDViewModel.setShowUpdateWiDMaxLimitDialog(show = true)
                     },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "최대 시간 수정"
-                    )
-                },
                 headlineContent = {
                     Text(text = "생성 가능한 기록 최대 시간")
                 },
@@ -113,9 +111,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                 ),
             onDismissRequest = { // 취소와 동일
                 coroutineScope.launch {
-                    wiDMinLimitHourPagerState.scrollToPage(wiDMinLimit.toHours().toInt())
-                    wiDMinLimitMinutePagerState.scrollToPage((wiDMinLimit.toMinutes() % 60).toInt())
-                    wiDMinLimitSecondPagerState.scrollToPage((wiDMinLimit.seconds % 60).toInt())
+                    wiDMinLimitHourListState.scrollToItem(wiDMinLimit.toHours().toInt())
+                    wiDMinLimitMinuteListState.scrollToItem((wiDMinLimit.toMinutes() % 60).toInt())
+                    wiDMinLimitSecondListState.scrollToItem((wiDMinLimit.seconds % 60).toInt())
                 }
 
                 myWiDViewModel.setShowUpdateWiDMinLimitDialog(show = false)
@@ -141,12 +139,11 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
 
                 TimeSelectorView(
                     modifier = Modifier
-                        .height(250.dp)
                         .padding(horizontal = 16.dp),
-                    hourPagerState = wiDMinLimitHourPagerState,
-                    minutePagerState = wiDMinLimitMinutePagerState,
-                    secondPagerState = wiDMinLimitSecondPagerState,
-                    coroutineScope = coroutineScope
+                    coroutineScope = coroutineScope,
+                    hourListState = wiDMinLimitHourListState,
+                    minuteListState = wiDMinLimitMinuteListState,
+                    secondListState = wiDMinLimitSecondListState
                 )
 
                 Row(
@@ -165,9 +162,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                     TextButton(
                         onClick = {
                             coroutineScope.launch {
-                                wiDMinLimitHourPagerState.scrollToPage(wiDMinLimit.toHours().toInt())
-                                wiDMinLimitMinutePagerState.scrollToPage((wiDMinLimit.toMinutes() % 60).toInt())
-                                wiDMinLimitSecondPagerState.scrollToPage((wiDMinLimit.seconds % 60).toInt())
+                                wiDMinLimitHourListState.scrollToItem(wiDMinLimit.toHours().toInt())
+                                wiDMinLimitMinuteListState.scrollToItem((wiDMinLimit.toMinutes() % 60).toInt())
+                                wiDMinLimitSecondListState.scrollToItem((wiDMinLimit.seconds % 60).toInt())
                             }
 
                             myWiDViewModel.setShowUpdateWiDMinLimitDialog(show = false)
@@ -178,9 +175,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
 
                     FilledTonalButton(
                         onClick = {
-                            val selectedHours = wiDMinLimitHourPagerState.currentPage
-                            val selectedMinutes = wiDMinLimitMinutePagerState.currentPage
-                            val selectedSeconds = wiDMinLimitSecondPagerState.currentPage
+                            val selectedHours = wiDMinLimitHourListState.firstVisibleItemIndex
+                            val selectedMinutes = wiDMinLimitMinuteListState.firstVisibleItemIndex
+                            val selectedSeconds = wiDMinLimitSecondListState.firstVisibleItemIndex
 
                             val newMinLimit = Duration.ofHours(selectedHours.toLong())
                                 .plusMinutes(selectedMinutes.toLong())
@@ -207,9 +204,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                 ),
             onDismissRequest = {
                 coroutineScope.launch {
-                    wiDMaxLimitHourPagerState.scrollToPage(wiDMaxLimit.toHours().toInt())
-                    wiDMaxLimitMinutePagerState.scrollToPage((wiDMaxLimit.toMinutes() % 60).toInt())
-                    wiDMaxLimitSecondPagerState.scrollToPage((wiDMaxLimit.seconds % 60).toInt())
+                    wiDMaxLimitHourListState.scrollToItem(wiDMaxLimit.toHours().toInt())
+                    wiDMaxLimitMinuteListState.scrollToItem((wiDMaxLimit.toMinutes() % 60).toInt())
+                    wiDMaxLimitSecondListState.scrollToItem((wiDMaxLimit.seconds % 60).toInt())
                 }
 
                 myWiDViewModel.setShowUpdateWiDMaxLimitDialog(show = false)
@@ -235,12 +232,11 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
 
                 TimeSelectorView(
                     modifier = Modifier
-                        .height(250.dp)
                         .padding(horizontal = 16.dp),
-                    hourPagerState = wiDMaxLimitHourPagerState,
-                    minutePagerState = wiDMaxLimitMinutePagerState,
-                    secondPagerState = wiDMaxLimitSecondPagerState,
-                    coroutineScope = coroutineScope
+                    coroutineScope = coroutineScope,
+                    hourListState = wiDMaxLimitHourListState,
+                    minuteListState = wiDMaxLimitMinuteListState,
+                    secondListState = wiDMaxLimitSecondListState
                 )
 
                 Row(
@@ -259,9 +255,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                     TextButton(
                         onClick = {
                             coroutineScope.launch {
-                                wiDMaxLimitHourPagerState.scrollToPage(wiDMaxLimit.toHours().toInt())
-                                wiDMaxLimitMinutePagerState.scrollToPage((wiDMaxLimit.toMinutes() % 60).toInt())
-                                wiDMaxLimitSecondPagerState.scrollToPage((wiDMaxLimit.seconds % 60).toInt())
+                                wiDMaxLimitHourListState.scrollToItem(wiDMaxLimit.toHours().toInt())
+                                wiDMaxLimitMinuteListState.scrollToItem((wiDMaxLimit.toMinutes() % 60).toInt())
+                                wiDMaxLimitSecondListState.scrollToItem((wiDMaxLimit.seconds % 60).toInt())
                             }
 
                             myWiDViewModel.setShowUpdateWiDMaxLimitDialog(show = false)
@@ -272,9 +268,9 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
 
                     FilledTonalButton(
                         onClick = {
-                            val selectedHours = wiDMaxLimitHourPagerState.currentPage
-                            val selectedMinutes = wiDMaxLimitMinutePagerState.currentPage
-                            val selectedSeconds = wiDMaxLimitSecondPagerState.currentPage
+                            val selectedHours = wiDMaxLimitHourListState.firstVisibleItemIndex
+                            val selectedMinutes = wiDMaxLimitMinuteListState.firstVisibleItemIndex
+                            val selectedSeconds = wiDMaxLimitSecondListState.firstVisibleItemIndex
 
                             val newMaxLimit = Duration.ofHours(selectedHours.toLong())
                                 .plusMinutes(selectedMinutes.toLong())
