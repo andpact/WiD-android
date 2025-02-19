@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.WiD" parent="android:Theme.Material.Light.NoActionBar" >
-<!--        아래는 현재 스플래쉬 화면에 적용되는 코드 인듯.-->
-<!--        <item name="android:statusBarColor" >@color/black</item>-->
-<!--        <item name="android:windowLightStatusBar" >true</item>-->
+<!--    스플래쉬 이전에 Material이 적용되기 전에 적용됨.-->
+<!--Material Light Mode - Material.Light : 스플래쉬 이전 화면이 밝음-->
+<!--Material Dark Mode - Material : 스플래쉬 이전 화면이 어두움-->
+<!--    여기서 액션 바를 없애도 -->
+<!--    <style name="Theme.WiD" parent="android:Theme.Material.Light.NoActionBar" >-->
+    <style name="Theme.WiD" parent="android:Theme.Material" >
+<!--        <item name="android:statusBarColor">@color/black</item> &lt;!&ndash; 상태 표시줄 색상 &ndash;&gt;-->
+<!--        <item name="android:windowLightStatusBar">true</item> &lt;!&ndash; 상태 표시줄 아이콘 색상 &ndash;&gt;-->
     </style>
 </resources>

@@ -1,11 +1,13 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.PlayerState
+import andpact.project.wid.ui.theme.AppEmerald
 import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.viewModel.HomeViewModel
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,13 +16,13 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,7 +42,6 @@ fun HomeView(
 ) {
     val TAG = "HomeView"
 
-    val today = homeViewModel.today.value
     val now = homeViewModel.now.value
 
 //    val displayName = homeViewModel.firebaseUser.value?.displayName ?: ""
@@ -54,9 +55,7 @@ fun HomeView(
     val formattedCurrentExp = numberFormat.format(currentExp)
     val formattedRequiredExp = numberFormat.format(requiredExp)
 
-    val firstCurrentWiD = homeViewModel.firstCurrentWiD.value
-
-    val currentToolState = homeViewModel.currentToolState
+    val playerState = homeViewModel.playerState
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -70,82 +69,72 @@ fun HomeView(
         topBar = {
             TopAppBar(
                 title = {
-//                    Image(
-//                        modifier = Modifier
-//                            .size(36.dp),
-//                        painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main은 안되네?
-//                        contentDescription = "앱 아이콘"
-//                    )
-
-                    Text(text = "WIVD")
+                    Text(
+                        text = "WIVD",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic),
+                        color = AppEmerald
+                    )
                 }
             )
         },
-        bottomBar = {
-            if (currentToolState.value == CurrentToolState.STOPPED) {
-                Card(
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            if (playerState.value == PlayerState.STOPPED) {
+                ExtendedFloatingActionButton(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium.copy(
-                        bottomStart = CornerSize(size = 0.dp),
-                        bottomEnd = CornerSize(size = 0.dp)
-                    ),
-                    colors = CardDefaults.cardColors(containerColor = NavigationBarDefaults.containerColor)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    onClick = {  } // TODO: 클릭 반응 없애기
                 ) {
-//                    Text(
-//                        modifier = Modifier
-//                            .fillMaxWidth(),
-//                        text = "새로운 기록을 만들어 보세요!",
-//                        style = MaterialTheme.typography.bodySmall,
-//                        textAlign = TextAlign.Center
-//                    )
-
-                    Row(
-                        modifier = Modifier
-                            .height(intrinsicSize = IntrinsicSize.Min)
-                    ) {
-                        Text(
+                    Column {
+                        Box(
                             modifier = Modifier
-                                .weight(1f),
-                            text = "기록 만들기",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-
-                        TextButton(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            onClick = {
-                                onStopwatchClicked()
-                            },
-                            shape = RectangleShape
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "스톱워치")
+                            Text(
+                                text = "새로운 기록을 만들어 보세요!",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            )
                         }
 
-                        TextButton(
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            onClick = {
-                                onTimerClicked()
-                            },
-                            shape = RectangleShape
+                                .fillMaxWidth()
+                                .height(64.dp),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "타이머")
-                        }
+                            OutlinedButton(
+                                onClick = {
+                                    onStopwatchClicked()
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                Text(text = "스톱워치")
+                            }
 
-//                        TextButton(
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .height(48.dp),
+                            OutlinedButton(
+                                onClick = {
+                                    onTimerClicked()
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                Text(text = "타이머")
+                            }
+
+//                        OutlinedButton(
 //                            onClick = {
-//                                // TODO: 포모도로 뷰로 이동
+//
 //                            },
-//                            shape = RectangleShape
+//                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
 //                        ) {
 //                            Text(text = "포모도로")
 //                        }
+                        }
                     }
                 }
             }
@@ -155,7 +144,12 @@ fun HomeView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(contentPadding),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = if (playerState.value == PlayerState.STOPPED) {
+                    PaddingValues(top = 8.dp, bottom = (56.dp + 48.dp + 8.dp) + 8.dp) // 헤더(56.dp) + 버튼(48.dp) + 플로팅 여백(8.dp)
+                } else {
+                    PaddingValues(vertical = 8.dp)
+                },
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item(
                     key = "email",
@@ -165,16 +159,9 @@ fun HomeView(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         text = "${email}님",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                         maxLines = 1
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -185,11 +172,11 @@ fun HomeView(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                     ) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
                             modifier = Modifier
@@ -207,11 +194,11 @@ fun HomeView(
                                 .clip(shape = MaterialTheme.shapes.extraLarge)
                                 .border(
                                     width = 0.5.dp,
-                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     shape = MaterialTheme.shapes.extraLarge
                                 ),
                             progress = expRatio.coerceIn(0f, 1f),
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             trackColor = Transparent,
                         )
 
@@ -233,24 +220,17 @@ fun HomeView(
                             Text(
                                 modifier = Modifier
                                     .background(
-                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         shape = MaterialTheme.shapes.extraSmall
                                     )
                                     .padding(horizontal = 4.dp),
                                 text = "${(expRatio * 100).toInt()}%",
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primaryContainer
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -260,26 +240,18 @@ fun HomeView(
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        text = "오늘",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "오늘 날짜",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
                     key = "today-chart",
                     contentType = "today-chart"
                 ) {
-                    val yearProgress = today.dayOfYear.toFloat() / today.lengthOfYear().toFloat()
-                    val monthProgress = today.dayOfMonth.toFloat() / YearMonth.from(today).lengthOfMonth().toFloat()
-                    val dayProgress = now.toSecondOfDay().toFloat() / LocalTime.MAX.toSecondOfDay().toFloat()
+                    val yearProgress = now.dayOfYear.toFloat() / now.toLocalDate().lengthOfYear().toFloat()
+                    val monthProgress = now.dayOfMonth.toFloat() / YearMonth.from(now.toLocalDate()).lengthOfMonth().toFloat()
+                    val dayProgress = now.toLocalTime().toSecondOfDay().toFloat() / LocalTime.MAX.toSecondOfDay().toFloat()
 
                     Row(
                         modifier = Modifier
@@ -288,7 +260,7 @@ fun HomeView(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // Year progress
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .weight(1f),
                         ) {
@@ -304,8 +276,10 @@ fun HomeView(
                                         .fillMaxSize(),
                                     progress = yearProgress,
                                     strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round
+                                    strokeCap = StrokeCap.Round,
+                                    color = MaterialTheme.colorScheme.secondaryContainer
                                 )
+
                                 Text(
                                     text = "${(yearProgress * 100).toInt()}%",
                                     style = MaterialTheme.typography.bodyLarge
@@ -315,7 +289,7 @@ fun HomeView(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                text = "${today.year}년",
+                                text = "${now.year}년",
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -324,7 +298,7 @@ fun HomeView(
                         }
 
                         // Month progress
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .weight(1f),
                         ) {
@@ -340,7 +314,8 @@ fun HomeView(
                                         .fillMaxSize(),
                                     progress = monthProgress,
                                     strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round
+                                    strokeCap = StrokeCap.Round,
+                                    color = MaterialTheme.colorScheme.secondaryContainer
                                 )
                                 Text(
                                     text = "${(monthProgress * 100).toInt()}%",
@@ -351,7 +326,7 @@ fun HomeView(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                text = "${today.monthValue}월",
+                                text = "${now.monthValue}월",
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -360,7 +335,7 @@ fun HomeView(
                         }
 
                         // Day progress
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .weight(1f),
                         ) {
@@ -376,8 +351,10 @@ fun HomeView(
                                         .fillMaxSize(),
                                     progress = dayProgress,
                                     strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round
+                                    strokeCap = StrokeCap.Round,
+                                    color = MaterialTheme.colorScheme.secondaryContainer
                                 )
+
                                 Text(
                                     text = "${(dayProgress * 100).toInt()}%",
                                     style = MaterialTheme.typography.bodyLarge
@@ -387,7 +364,7 @@ fun HomeView(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                text = "${today.dayOfMonth}일",
+                                text = "${now.dayOfMonth}일",
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -397,13 +374,6 @@ fun HomeView(
                     }
                 }
 
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
                 item(
                     key = "now",
                     contentType = "header"
@@ -411,17 +381,9 @@ fun HomeView(
                     Text(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        text = "현재",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "현재 시간",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -435,107 +397,96 @@ fun HomeView(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 시간
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(1f / 1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    val hourTens = now.hour / 10
-                                    val hourOnes = now.hour % 10
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                val hourTens = now.hour / 10
+                                val hourOnes = now.hour % 10
 
-                                    // 십의 자리
-                                    AnimatedContent(
-                                        targetState = hourTens,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { tensDigit ->
-                                        Text(
-                                            text = tensDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = hourTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                    )
+                                }
 
-                                    // 일의 자리
-                                    AnimatedContent(
-                                        targetState = hourOnes,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { onesDigit ->
-                                        Text(
-                                            text = onesDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = hourOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                    )
                                 }
                             }
                         }
 
                         Text(
                             text = ":",
-                            style = MaterialTheme.typography.displayLarge,
+                            style = MaterialTheme.typography.displayLarge
                         )
 
                         // 분
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(1f / 1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    val minuteTens = now.minute / 10
-                                    val minuteOnes = now.minute % 10
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                val minuteTens = now.minute / 10
+                                val minuteOnes = now.minute % 10
 
-                                    // 십의 자리
-                                    AnimatedContent(
-                                        targetState = minuteTens,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { tensDigit ->
-                                        Text(
-                                            text = tensDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = minuteTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                    )
+                                }
 
-                                    // 일의 자리
-                                    AnimatedContent(
-                                        targetState = minuteOnes,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { onesDigit ->
-                                        Text(
-                                            text = onesDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = minuteOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                    )
                                 }
                             }
                         }
@@ -546,51 +497,46 @@ fun HomeView(
                         )
 
                         // 초
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .aspectRatio(1f / 1f)
+                                .aspectRatio(1f / 1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    val secondTens = now.second / 10
-                                    val secondOnes = now.second % 10
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                val secondTens = now.second / 10
+                                val secondOnes = now.second % 10
 
-                                    // 십의 자리
-                                    AnimatedContent(
-                                        targetState = secondTens,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { tensDigit ->
-                                        Text(
-                                            text = tensDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = secondTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge
+                                    )
+                                }
 
-                                    // 일의 자리
-                                    AnimatedContent(
-                                        targetState = secondOnes,
-                                        transitionSpec = {
-                                            slideInVertically(animationSpec = tween(300)) { it } +
-                                                    fadeIn(animationSpec = tween(300)) togetherWith
-                                                    slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                    fadeOut(animationSpec = tween(300))
-                                        }
-                                    ) { onesDigit ->
-                                        Text(
-                                            text = onesDigit.toString(),
-                                            style = MaterialTheme.typography.displayLarge
-                                        )
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = secondOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
                                     }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge
+                                    )
                                 }
                             }
                         }

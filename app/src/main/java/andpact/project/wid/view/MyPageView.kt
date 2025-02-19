@@ -5,10 +5,7 @@ import andpact.project.wid.model.City
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CornerSize
@@ -18,6 +15,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -46,7 +44,10 @@ fun MyPageView(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = MainViewDestinations.MyPageViewDestination.title)
+                    Text(
+                        text = MainViewDestinations.MyPageViewDestination.title,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
                 }
             )
         },
@@ -57,6 +58,8 @@ fun MyPageView(
                     .padding(contentPadding)
             ) {
                 ScrollableTabRow(
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
                     selectedTabIndex = pagerState.currentPage,
                     divider = {},
@@ -65,10 +68,7 @@ fun MyPageView(
                     pageList.forEachIndexed { index: Int, _: String ->
                         Tab(
                             text = {
-                                Text(
-                                    text = pageList[index],
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Text(text = pageList[index])
                             },
                             selected = pagerState.currentPage == index,
                             onClick = {

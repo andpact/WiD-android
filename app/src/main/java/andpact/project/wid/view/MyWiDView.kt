@@ -1,15 +1,14 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.chartView.TimeSelectorView
 import andpact.project.wid.viewModel.MyWiDViewModel
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -18,12 +17,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
     val TAG = "MyWiDView"
@@ -63,7 +64,7 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                         myWiDViewModel.setShowUpdateWiDMinLimitDialog(show = true)
                     },
                 headlineContent = {
-                    Text(text = "생성 가능한 기록 최소 시간")
+                    Text(text = "생성 가능한 기록의 최소 시간")
                 },
                 supportingContent = {
                     Text(text = myWiDViewModel.getDurationString(duration = wiDMinLimit))
@@ -87,7 +88,7 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                         myWiDViewModel.setShowUpdateWiDMaxLimitDialog(show = true)
                     },
                 headlineContent = {
-                    Text(text = "생성 가능한 기록 최대 시간")
+                    Text(text = "생성 가능한 기록의 최대 시간")
                 },
                 supportingContent = {
                     Text(text = myWiDViewModel.getDurationString(duration = wiDMaxLimit))
@@ -106,8 +107,8 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
         AlertDialog(
             modifier = Modifier
                 .background(
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    shape = MaterialTheme.shapes.extraLarge
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.medium
                 ),
             onDismissRequest = { // 취소와 동일
                 coroutineScope.launch {
@@ -128,7 +129,7 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .height(56.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -137,19 +138,196 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                     )
                 }
 
-                TimeSelectorView(
+                Column(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    coroutineScope = coroutineScope,
-                    hourListState = wiDMinLimitHourListState,
-                    minuteListState = wiDMinLimitMinuteListState,
-                    secondListState = wiDMinLimitSecondListState
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf("시", "분", "초").forEach { label ->
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(intrinsicSize = IntrinsicSize.Min)
+                    ) {
+                        VerticalDivider()
+
+                        // 시
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp)
+                                .heightIn(max = 700.dp),
+                            state = wiDMinLimitHourListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMinLimitHourListState)
+                        ) {
+                            item(
+                                key = "wid-min-hour-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 24,
+                                key = { itemIndex -> "hour-item-$itemIndex" },
+                                contentType = { "hour-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMinLimitHourListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMinLimitHourListState.firstVisibleItemIndex == itemIndex && !wiDMinLimitHourListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-min-hour-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+
+                        // 분
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp),
+                            state = wiDMinLimitMinuteListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMinLimitMinuteListState)
+                        ) {
+                            item(
+                                key = "wid-min-minute-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 60,
+                                key = { itemIndex -> "minute-item-$itemIndex" },
+                                contentType = { "minute-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMinLimitMinuteListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMinLimitMinuteListState.firstVisibleItemIndex == itemIndex && !wiDMinLimitMinuteListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-min-minute-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+
+                        // 초
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp),
+                            state = wiDMinLimitSecondListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMinLimitSecondListState)
+                        ) {
+                            item(
+                                key = "wid-min-second-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 60,
+                                key = { itemIndex -> "second-item-$itemIndex" },
+                                contentType = { "second-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMinLimitSecondListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMinLimitSecondListState.firstVisibleItemIndex == itemIndex && !wiDMinLimitSecondListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-min-second-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+                    }
+                }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
+                        .height(56.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -199,8 +377,8 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
         AlertDialog(
             modifier = Modifier
                 .background(
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    shape = MaterialTheme.shapes.extraLarge
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    shape = MaterialTheme.shapes.medium
                 ),
             onDismissRequest = {
                 coroutineScope.launch {
@@ -221,7 +399,7 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .height(56.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -230,19 +408,195 @@ fun MyWiDView(myWiDViewModel: MyWiDViewModel = hiltViewModel()) {
                     )
                 }
 
-                TimeSelectorView(
+                Column(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    coroutineScope = coroutineScope,
-                    hourListState = wiDMaxLimitHourListState,
-                    minuteListState = wiDMaxLimitMinuteListState,
-                    secondListState = wiDMaxLimitSecondListState
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf("시", "분", "초").forEach { label ->
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(intrinsicSize = IntrinsicSize.Min)
+                    ) {
+                        VerticalDivider()
+
+                        // 시
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp),
+                            state = wiDMaxLimitHourListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMaxLimitHourListState)
+                        ) {
+                            item(
+                                key = "wid-max-hour-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 24,
+                                key = { itemIndex -> "hour-item-$itemIndex" },
+                                contentType = { "hour-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMaxLimitHourListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMaxLimitHourListState.firstVisibleItemIndex == itemIndex && !wiDMaxLimitHourListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-max-hour-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+
+                        // 분
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp),
+                            state = wiDMaxLimitMinuteListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMaxLimitMinuteListState)
+                        ) {
+                            item(
+                                key = "wid-max-minute-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 60,
+                                key = { itemIndex -> "minute-item-$itemIndex" },
+                                contentType = { "minute-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMaxLimitMinuteListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMaxLimitMinuteListState.firstVisibleItemIndex == itemIndex && !wiDMaxLimitMinuteListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-max-minute-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+
+                        // 초
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((48 * 3).dp),
+                            state = wiDMaxLimitSecondListState,
+                            flingBehavior = rememberSnapFlingBehavior(lazyListState = wiDMaxLimitSecondListState)
+                        ) {
+                            item(
+                                key = "wid-max-second-spacer-top",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+
+                            items(
+                                count = 60,
+                                key = { itemIndex -> "second-item-$itemIndex" },
+                                contentType = { "second-item" }
+                            ) { itemIndex ->
+                                TextButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            wiDMaxLimitSecondListState.animateScrollToItem(index = itemIndex)
+                                        }
+                                    },
+                                    shape = RectangleShape
+                                ) {
+                                    Text(
+                                        text = "$itemIndex",
+                                        style = if (wiDMaxLimitSecondListState.firstVisibleItemIndex == itemIndex && !wiDMaxLimitSecondListState.isScrollInProgress) {
+                                            MaterialTheme.typography.bodyLarge
+                                        } else {
+                                            MaterialTheme.typography.bodySmall
+                                        }
+                                    )
+                                }
+                            }
+
+                            item(
+                                key = "wid-max-second-spacer-bottom",
+                                contentType = "spacer"
+                            ) {
+                                Spacer(modifier = Modifier.height(48.dp))
+                            }
+                        }
+
+                        VerticalDivider()
+                    }
+                }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
+                        .height(56.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically

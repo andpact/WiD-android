@@ -2,12 +2,7 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.TitleDurationMap
-import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
-import andpact.project.wid.ui.theme.DeepSkyBlue
-import andpact.project.wid.ui.theme.OrangeRed
+import andpact.project.wid.model.*
 import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -20,10 +15,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.DayOfWeek
-import java.time.Duration
-import java.time.LocalDate
-import java.time.Year
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.*
@@ -44,7 +36,7 @@ class WeeklyWiDListViewModel @Inject constructor(
     private val user: State<User?> = userDataSource.user
 
     // 날짜
-    val today: State<LocalDate> = wiDDataSource.today
+    val now: State<LocalDateTime> = wiDDataSource.now
     private val initialToday = LocalDate.now()
     private val _startDate = mutableStateOf(getFirstDateOfWeek(initialToday)) // 현재 조회 중인 주의 시작 날짜
     val startDate: State<LocalDate> = _startDate
@@ -94,9 +86,14 @@ class WeeklyWiDListViewModel @Inject constructor(
         _finishDate.value = newFinishDate
 
         (newStartDate.year..newFinishDate.year).forEach { year: Int ->
-            wiDDataSource.getYearlyWiDListMap(
+            wiDDataSource.getWiD(
                 email = currentUser.email,
-                year = Year.of(year)
+                year = Year.of(year),
+                onResult = { snackbarActionResult: SnackbarActionResult ->
+                    if (snackbarActionResult == SnackbarActionResult.FAIL_SERVER_ERROR) {
+                        // TODO: 서버 호출 실패 시 스낵 바 띄우기 
+                    }
+                }
             )
         }
     }
@@ -106,13 +103,39 @@ class WeeklyWiDListViewModel @Inject constructor(
 
         val start = _startDate.value
         val finish = _finishDate.value
+        val resultWiDList = mutableListOf<WiD>()
 
-        return wiDDataSource.yearDateWiDListMap.value
-            .filterKeys { year -> year.value == start.year || year.value == finish.year } // 필요한 연도만 필터링
-            .flatMap { (_, dateMap: Map<LocalDate, List<WiD>>) ->
-                dateMap.filterKeys { date -> date in start..finish } // start부터 finish까지의 날짜만 필터링
-                    .values.flatten() // 날짜에 해당하는 WiD 리스트를 병합
+        var currentDate = start
+        while (currentDate <= finish) {
+            val dayStart = currentDate.atStartOfDay()
+            val dayEnd = currentDate.atTime(LocalTime.MAX)
+
+            // 현재 날짜에 해당하는 기록 리스트 가져오기
+            val wiDListForDay = wiDDataSource.yearDateWiDListMap.value
+                .getOrDefault(Year.of(currentDate.year), emptyMap())
+                .getOrDefault(currentDate, emptyList())
+
+            // 날짜를 벗어나는 부분을 잘라서 리스트에 추가
+            val adjustedWiDList = wiDListForDay.mapNotNull { wiD ->
+                val adjustedStart = maxOf(wiD.start, dayStart)
+                val adjustedFinish = minOf(wiD.finish, dayEnd)
+
+                if (adjustedStart.isBefore(adjustedFinish)) {
+                    wiD.copy(
+                        start = adjustedStart,
+                        finish = adjustedFinish,
+                        duration = Duration.between(adjustedStart, adjustedFinish)
+                    )
+                } else {
+                    null // 잘린 후 남은 시간이 없는 경우 제외
+                }
             }
+
+            resultWiDList.addAll(adjustedWiDList)
+            currentDate = currentDate.plusDays(1) // 다음 날짜로 이동
+        }
+
+        return resultWiDList
     }
 
     fun setCurrentMapType(mapType: TitleDurationMap) {
@@ -189,8 +212,8 @@ class WeeklyWiDListViewModel @Inject constructor(
             withStyle(
                 style = SpanStyle(
                     color = when (firstDayOfWeek.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> DeepSkyBlue
-                        DayOfWeek.SUNDAY -> OrangeRed
+                        DayOfWeek.SATURDAY -> MaterialTheme.colorScheme.onTertiaryContainer
+                        DayOfWeek.SUNDAY -> MaterialTheme.colorScheme.onErrorContainer
                         else -> MaterialTheme.colorScheme.primary
                     }
                 )
@@ -211,8 +234,8 @@ class WeeklyWiDListViewModel @Inject constructor(
             withStyle(
                 style = SpanStyle(
                     color = when (lastDayOfWeek.dayOfWeek) {
-                        DayOfWeek.SATURDAY -> DeepSkyBlue
-                        DayOfWeek.SUNDAY -> OrangeRed
+                        DayOfWeek.SATURDAY -> MaterialTheme.colorScheme.onTertiaryContainer
+                        DayOfWeek.SUNDAY -> MaterialTheme.colorScheme.onErrorContainer
                         else -> MaterialTheme.colorScheme.primary
                     }
                 )

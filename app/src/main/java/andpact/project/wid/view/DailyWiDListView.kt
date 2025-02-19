@@ -1,6 +1,5 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
 import andpact.project.wid.chartView.DailyWiDListChartView
 import andpact.project.wid.model.Title
 import andpact.project.wid.model.WiD
@@ -10,19 +9,18 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -30,21 +28,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.*
-import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyWiDListView(
-    onWiDClicked: () -> Unit,
+    onWiDClicked: (currentDate: LocalDate) -> Unit,
     dailyWiDListViewModel: DailyWiDListViewModel = hiltViewModel()
 ) {
     val TAG = "DailyWiDListView"
@@ -56,8 +53,8 @@ fun DailyWiDListView(
     val CURRENT_WID: String = dailyWiDListViewModel.CURRENT_WID
 
     // 날짜
-    val today = dailyWiDListViewModel.today.value
     val now = dailyWiDListViewModel.now.value
+    val today = now.toLocalDate() // 현재 날짜
     val currentDate = dailyWiDListViewModel.currentDate.value // 조회하려는 날짜
     val showDatePicker = dailyWiDListViewModel.showDatePicker.value
     val dayPickerCurrentDate = dailyWiDListViewModel.dayPickerCurrentDate.value
@@ -69,6 +66,11 @@ fun DailyWiDListView(
 
     // 합계
     val totalDurationMap = dailyWiDListViewModel.totalDurationMap.value
+    val totalDuration = totalDurationMap.values.fold(Duration.ZERO) { acc, duration ->
+        acc + duration
+    }
+    val totalDurationProgress = (totalDuration.seconds / Duration.ofSeconds(86_000).seconds).toFloat()
+
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -101,7 +103,11 @@ fun DailyWiDListView(
                     }
                 },
                 actions = {
-                    FilledTonalIconButton(
+                    FilledIconButton(
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         onClick = {
                             val newDate = currentDate.minusDays(1)
                             dailyWiDListViewModel.setCurrentDate(newDate = newDate)
@@ -113,7 +119,11 @@ fun DailyWiDListView(
                         )
                     }
 
-                    FilledTonalIconButton(
+                    FilledIconButton(
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         onClick = {
                             val newDate = currentDate.plusDays(1)
                             dailyWiDListViewModel.setCurrentDate(newDate = newDate)
@@ -133,22 +143,24 @@ fun DailyWiDListView(
                 FloatingActionButton(
                     onClick = {
                         val isToday = today == currentDate
-                        val minTime = LocalTime.MIN
-                        val nowOrMax = if (isToday) LocalTime.now() else LocalTime.MAX.withNano(0)
+                        val minDateTime = LocalDateTime.of(currentDate, LocalTime.MIN)
+                        val maxDateTime = LocalDateTime.of(currentDate, LocalTime.MAX) // TODO: 다음 날짜의 MIN을 사용?
+                        val nowOrMax = if (isToday) LocalDateTime.now() else maxDateTime // TODO: 나노 세컨드 상관 없는지?
 
                         val newClickedWiD = WiD.default().copy(
                             id = if (isToday) LAST_NEW_WID else NEW_WID,
-                            date = currentDate,
-                            start = minTime, // 기록이 없는 날짜기 때문에 무조건 Min에서 시작
+                            start = minDateTime, // 기록이 없는 날짜기 때문에 무조건 Min에서 시작
                             finish = nowOrMax, // 갱신되기 전에 최초 초기화
-                            duration = Duration.between(minTime, nowOrMax)
+                            duration = Duration.between(minDateTime, nowOrMax)
                         )
 
                         dailyWiDListViewModel.setClickedWiDAndCopy(clickedWiD = newClickedWiD)
 
-                        onWiDClicked()
+                        onWiDClicked(currentDate)
                     },
-                    shape = MaterialTheme.shapes.medium
+//                    shape = MaterialTheme.shapes.medium,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -164,7 +176,7 @@ fun DailyWiDListView(
                 .padding(contentPadding),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            if (fullWiDList.size == 1) {
+            if (fullWiDList.size == 1) { // 새 기록 하나만 있을 때
                 item(
                     key = "no-data",
                     contentType = "no-data"
@@ -175,16 +187,31 @@ fun DailyWiDListView(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                     ) {
-                        Icon(
+                        Column(
                             modifier = Modifier
-                                .size(100.dp),
-                            painter = painterResource(id = R.drawable.baseline_more_vert_24), // TODO: 수평 점으로 변경
-                            contentDescription = "no-data-icon"
-                        )
+                                .size(240.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    shape = MaterialTheme.shapes.extraSmall
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
+                        ) {
+                            Text(
+                                text = "NO",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+
+                            Text(
+                                text = "DATA",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
 
                         Text(
                             text = "표시할 데이터가 없습니다.",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 }
@@ -195,17 +222,10 @@ fun DailyWiDListView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "히스토리",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -215,16 +235,89 @@ fun DailyWiDListView(
                     DailyWiDListChartView(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),
-                        fullWiDList = fullWiDList,
-                        wiDListLimitPerDay = WID_LIST_LIMIT_PER_DAY.toString()
+                        fullWiDList = fullWiDList
                     )
                 }
 
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
+                item(
+                    key = "wid-count",
+                    contentType = "header2"
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "기록 개수",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+
+                        Text(
+                            text = "${filteredWiDList.size} / $WID_LIST_LIMIT_PER_DAY",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        for (i in 0 until WID_LIST_LIMIT_PER_DAY) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(8.dp)
+                                    .background(
+                                        shape = MaterialTheme.shapes.extraSmall.copy(CornerSize(16)),
+                                        color = if (i < filteredWiDList.size) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                            )
+                        }
+                    }
+                }
+
+                item(
+                    key = "wid-percentage",
+                    contentType = "header2"
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "기록률",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+
+                        Text(
+                            text = "${totalDurationProgress.toInt()}%", // TODO: 소수점 나오게
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
+                item {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(shape = MaterialTheme.shapes.extraSmall.copy(CornerSize(16))),
+                        progress = totalDurationProgress.coerceIn(0f, 1f),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        trackColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    )
                 }
 
                 item(
@@ -233,58 +326,42 @@ fun DailyWiDListView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "기록 리스트",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                item(
-                    key = "start-time",
-                    contentType = "time"
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                .padding(horizontal = 4.dp),
-                            text = dailyWiDListViewModel.getTimeString(time = LocalTime.MIN),
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            letterSpacing = (-1).sp
-                        )
-
-                        HorizontalDivider()
-                    }
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 itemsIndexed(
                     items = fullWiDList,
                     key = { index, _ -> "wid-$index" }, // 인덱스를 포함하여 고유 키 생성
                     contentType = { _, _ -> "wid-list-item" }
-                ) { _, item ->
+                ) { index, item ->
                     val isNewWiD = item.id == NEW_WID || item.id == LAST_NEW_WID
                     val isCurrentWiD = item.id == CURRENT_WID
                     val enableToCreateNewWiD = filteredWiDList.size <= WID_LIST_LIMIT_PER_DAY
+
+                    // TODO: 첫 기록 시작 날짜 이상하게 나온다.
+                    if (index == 0) { // 첫 기록의 시작 시간 표시
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                    .padding(horizontal = 4.dp),
+                                text = dailyWiDListViewModel.getDateTimeString(dateTime = item.start),
+                                fontFamily = FontFamily.Monospace,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                letterSpacing = (-1).sp
+                            )
+
+                            HorizontalDivider()
+                        }
+                    }
 
                     Column(
                         modifier = Modifier
@@ -299,7 +376,7 @@ fun DailyWiDListView(
                                     .height(intrinsicSize = IntrinsicSize.Min),
                                 onClick = {
                                     dailyWiDListViewModel.setClickedWiDAndCopy(clickedWiD = item)
-                                    onWiDClicked()
+                                    onWiDClicked(currentDate)
                                 },
                                 enabled = enableToCreateNewWiD
                             ) {
@@ -310,6 +387,16 @@ fun DailyWiDListView(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                shape = MaterialTheme.shapes.medium
+                                            )
+                                    )
+
                                     Column(
                                         modifier = Modifier
                                             .weight(1f)
@@ -339,9 +426,13 @@ fun DailyWiDListView(
                                     .height(intrinsicSize = IntrinsicSize.Min),
                                 onClick = {
                                     dailyWiDListViewModel.setClickedWiDAndCopy(clickedWiD = item)
-                                    onWiDClicked()
+                                    onWiDClicked(currentDate)
                                 },
-                                enabled = !isCurrentWiD
+                                enabled = !isCurrentWiD,
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -350,6 +441,17 @@ fun DailyWiDListView(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                shape = MaterialTheme.shapes.medium
+                                            )
+                                    )
+
+                                    // TODO: 이미지 정하면 복구
 //                                    Image(
 //                                        modifier = Modifier
 //                                            .size(56.dp)
@@ -377,12 +479,12 @@ fun DailyWiDListView(
                                         Text(
                                             modifier = Modifier
                                                 .background(
-                                                    color = MaterialTheme.colorScheme.error,
+                                                    color = MaterialTheme.colorScheme.errorContainer,
                                                     shape = MaterialTheme.shapes.extraSmall
                                                 )
                                                 .padding(horizontal = 4.dp),
                                             text = "LIVE",
-                                            color = MaterialTheme.colorScheme.onError
+                                            color = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     } else {
                                         Icon(
@@ -393,35 +495,26 @@ fun DailyWiDListView(
                                 }
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     Row(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
                             modifier = Modifier
-                                .background(color = if (item.finish == now) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondaryContainer)
+                                .background(color = if (item.finish == now) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer)
                                 .padding(horizontal = 4.dp),
-                            text = dailyWiDListViewModel.getTimeString(time = item.finish),
+                            text = dailyWiDListViewModel.getDateTimeString(dateTime = item.finish), // TODO: 요일색과 배경 색이 맞는지?
                             fontFamily = FontFamily.Monospace,
-                            color = if (item.finish == now) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSecondaryContainer,
+                            color = if (item.finish == now) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                             letterSpacing = (-1).sp
                         )
 
                         HorizontalDivider()
                     }
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -430,17 +523,10 @@ fun DailyWiDListView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "합계 기록",
                         style = MaterialTheme.typography.bodyLarge
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 itemsIndexed(
@@ -454,14 +540,14 @@ fun DailyWiDListView(
                                 modifier = Modifier
                                     .size(56.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = MaterialTheme.shapes.medium
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "${index + 1}",
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         },
@@ -481,6 +567,10 @@ fun DailyWiDListView(
 
         if (showDatePicker) {
             DatePickerDialog(
+                shape = MaterialTheme.shapes.medium,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
                 onDismissRequest = {
                     dailyWiDListViewModel.setDayPickerMidDateOfCurrentMonth(newDayPickerMidDateOfCurrentMonth = currentDate.withDayOfMonth(15))
                     dailyWiDListViewModel.setDayPickerCurrentDate(newDayPickerCurrentDate = currentDate)
@@ -488,7 +578,7 @@ fun DailyWiDListView(
                     dailyWiDListViewModel.setShowDatePicker(show = false)
                 },
                 confirmButton = {
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             dailyWiDListViewModel.setDayPickerMidDateOfCurrentMonth(newDayPickerMidDateOfCurrentMonth = dayPickerCurrentDate.withDayOfMonth(15))
                             dailyWiDListViewModel.setCurrentDate(newDate = dayPickerCurrentDate)
@@ -515,24 +605,24 @@ fun DailyWiDListView(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(64.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "일 선택",
-                        style = MaterialTheme.typography.bodyLarge
+                        text = "날짜 선택",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(64.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    OutlinedIconButton(
                         onClick = {
                             val newDayPickerMidDateOfCurrentMonth = dayPickerMidDateOfCurrentMonth.minusMonths(1)
                             dailyWiDListViewModel.setDayPickerMidDateOfCurrentMonth(newDayPickerMidDateOfCurrentMonth = newDayPickerMidDateOfCurrentMonth)
@@ -549,7 +639,7 @@ fun DailyWiDListView(
                         style = MaterialTheme.typography.bodyLarge
                     )
 
-                    IconButton(
+                    OutlinedIconButton(
                         enabled = dayPickerMidDateOfCurrentMonth < today.withDayOfMonth(15),
                         onClick = {
                             val newDayPickerMidDateOfCurrentMonth = dayPickerMidDateOfCurrentMonth.plusMonths(1)
@@ -566,7 +656,7 @@ fun DailyWiDListView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(64.dp)
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -574,8 +664,8 @@ fun DailyWiDListView(
 
                     daysOfWeek.forEachIndexed { index, day ->
                         val textColor = when (index) {
-                            0 -> OrangeRed
-                            6 -> DeepSkyBlue
+                            0 -> MaterialTheme.colorScheme.onErrorContainer
+                            6 -> MaterialTheme.colorScheme.onTertiaryContainer
                             else -> MaterialTheme.colorScheme.onSurface
                         }
 
@@ -583,7 +673,7 @@ fun DailyWiDListView(
                             modifier = Modifier
                                 .weight(1f),
                             text = day,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                             color = textColor
                         )
@@ -607,8 +697,8 @@ fun DailyWiDListView(
                         .padding(horizontal = 16.dp),
                     columns = GridCells.Fixed(7),
                     userScrollEnabled = false,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(
                         items = days,
@@ -627,8 +717,8 @@ fun DailyWiDListView(
                                 MaterialTheme.colorScheme.outline
                             } else {
                                 when (index % 7) {
-                                    0 -> OrangeRed // Sunday
-                                    6 -> DeepSkyBlue // Saturday
+                                    0 -> MaterialTheme.colorScheme.onErrorContainer
+                                    6 -> MaterialTheme.colorScheme.onTertiaryContainer
                                     else -> MaterialTheme.colorScheme.onSurface
                                 }
                             }
@@ -656,7 +746,7 @@ fun DailyWiDListView(
                                 ) {
                                     Text(
                                         text = day.dayOfMonth.toString(),
-                                        style = MaterialTheme.typography.bodySmall,
+                                        style = MaterialTheme.typography.bodyLarge,
                                         color = textColor
                                     )
                                 }

@@ -1,16 +1,13 @@
 package andpact.project.wid.chartView
 
-import andpact.project.wid.model.*
-import andpact.project.wid.ui.theme.DeepSkyBlue
-import andpact.project.wid.ui.theme.OrangeRed
+import andpact.project.wid.model.Title
+import andpact.project.wid.model.WiD
 import andpact.project.wid.ui.theme.Transparent
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,12 +15,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 
 @Composable
 fun MonthlyWiDListChartView(
@@ -46,7 +39,7 @@ fun MonthlyWiDListChartView(
 
     // Map<LocalDate, List<Title>> 생성 (순위만 사용)
     val dateTitleMap: Map<LocalDate, List<Title>> = wiDList
-        .groupBy { it.date }
+        .groupBy { it.start.toLocalDate() }
         .mapValues { (_, records) ->
             records.groupBy { it.title }
                 .entries
@@ -70,8 +63,8 @@ fun MonthlyWiDListChartView(
     ) {
         items(daysOfWeek.size) { index ->
             val textColor = when (index) {
-                0 -> OrangeRed
-                6 -> DeepSkyBlue
+                0 -> MaterialTheme.colorScheme.onErrorContainer
+                6 -> MaterialTheme.colorScheme.onTertiaryContainer
                 else -> MaterialTheme.colorScheme.onSurface
             }
 
@@ -79,7 +72,7 @@ fun MonthlyWiDListChartView(
                 modifier = Modifier
                     .fillMaxWidth(),
                 text = daysOfWeek[index],
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = textColor,
                 textAlign = TextAlign.Center,
             )
@@ -110,8 +103,11 @@ fun MonthlyWiDListChartView(
                         ),
                     text = date.dayOfMonth.toString() + "일",
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     textAlign = TextAlign.Center
                 )
+
+                // TODO: 그냥 파이 차트를 표시하는 게 나을지도?
 
                 for (i in 0 until 3) {
                     val title = topTitles.getOrNull(i) // i번째 제목 가져오기

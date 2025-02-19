@@ -3,7 +3,7 @@ package andpact.project.wid.viewModel
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.destinations.MainViewDestinations
-import andpact.project.wid.model.CurrentToolState
+import andpact.project.wid.model.PlayerState
 import andpact.project.wid.model.SnackbarActionResult
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
@@ -12,7 +12,6 @@ import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel // <- 생성자 주입 할 때 명시해야함.
@@ -33,14 +32,11 @@ class MainBottomBarViewModel @Inject constructor(
 
     private val CITY = userDataSource.CITY
 
-    val today: State<LocalDate> = wiDDataSource.today
-
     val user: State<User?> = userDataSource.user
 
-    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
-    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+    val currentWiD: State<WiD> = wiDDataSource.currentWiD
 
-    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val playerState: State<PlayerState> = wiDDataSource.playerState
 
     val totalDuration: State<Duration> = wiDDataSource.totalDuration
     val selectedTime: State<Duration> = wiDDataSource.selectedTime

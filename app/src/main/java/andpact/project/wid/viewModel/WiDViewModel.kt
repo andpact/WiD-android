@@ -11,10 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.Year
+import java.time.*
 import java.util.*
 import javax.inject.Inject
 import kotlin.concurrent.timer
@@ -37,15 +34,14 @@ class WiDViewModel @Inject constructor(
     val START = wiDDataSource.START
     val FINISH = wiDDataSource.FINISH
 
-    private val today = wiDDataSource.today
-    val now = wiDDataSource.now
+//    val now: State<LocalDateTime> = wiDDataSource.now
     private val user: State<User?> = userDataSource.user
 
     // WiD
     val clickedWiD: State<WiD> = wiDDataSource.clickedWiD // 수정 전
     val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy // 수정 후
-    val updateClickedWiDToNow: State<Boolean> = wiDDataSource.updateClickedWiDToNow
-    val updateClickedWiDCopyToNow: State<Boolean> = wiDDataSource.updateClickedWiDCopyToNow
+    val updateClickedWiDToNow: State<Boolean> = wiDDataSource.updateClickedWiDFinishToNow
+    val updateClickedWiDCopyToNow: State<Boolean> = wiDDataSource.updateClickedWiDCopyFinishToNow
     val isNewWiD: State<Boolean> = derivedStateOf { clickedWiD.value.id == NEW_WID || clickedWiD.value.id == LAST_NEW_WID }
     val isLastNewWiD: State<Boolean> = derivedStateOf { clickedWiD.value.id == LAST_NEW_WID }
     private val _showDeleteWiDDialog = mutableStateOf(false)
@@ -62,7 +58,7 @@ class WiDViewModel @Inject constructor(
     val cityModified: State<Boolean> = derivedStateOf { clickedWiD.value.city != clickedWiDCopy.value.city }
 
     // 도구
-    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val playerState: State<PlayerState> = wiDDataSource.playerState
 
     fun setClickedWiDCopy(newClickedWiDCopy: WiD) { // 제목, 시작, 종료, 위치 변경시
         Log.d(TAG, "setClickedWiDCopy executed")
@@ -70,16 +66,16 @@ class WiDViewModel @Inject constructor(
         wiDDataSource.setClickedWiDCopy(newClickedWiDCopy = newClickedWiDCopy)
     }
 
-    fun setUpdateClickedWiDToNow(update: Boolean) {
+    fun setUpdateClickedWiDFinishToNow(update: Boolean) {
         Log.d(TAG, "setUpdateClickedWiDToNow executed")
 
-        wiDDataSource.setUpdateClickedWiDToNow(update = update)
+        wiDDataSource.setUpdateClickedWiDFinishToNow(update = update)
     }
 
-    fun setUpdateClickedWiDCopyToNow(update: Boolean) {
-        Log.d(TAG, "setUpdateClickedWiDCopyToNow executed")
+    fun setUpdateClickedWiDCopyFinishToNow(update: Boolean) {
+        Log.d(TAG, "setUpdateClickedWiDCopyFinishToNow executed")
 
-        wiDDataSource.setUpdateClickedWiDCopyToNow(update = update)
+        wiDDataSource.setUpdateClickedWiDCopyFinishToNow(update = update)
     }
 
     fun setShowDeleteWiDDialog(show: Boolean) {
@@ -166,9 +162,16 @@ class WiDViewModel @Inject constructor(
         return wiDDataSource.getDateString(date = date)
     }
 
-    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
-        Log.d(TAG, "getTimeString executed")
+//    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
+//        Log.d(TAG, "getTimeString executed")
+//
+//        return wiDDataSource.getTimeString(time = time)
+//    }
 
-        return wiDDataSource.getTimeString(time = time)
+    @Composable
+    fun getDateTimeString(dateTime: LocalDateTime): AnnotatedString {
+//        Log.d(TAG, "getDateTimeString executed")
+
+        return wiDDataSource.getDateTimeString(dateTime = dateTime)
     }
 }

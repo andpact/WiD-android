@@ -36,8 +36,7 @@ class TitlePickerViewModel @Inject constructor(private val wiDDataSource: WiDDat
 
     val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy
 
-    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
-    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+    val currentWiD: State<WiD> = wiDDataSource.currentWiD
 
     fun setSelectedTitle(newSelectedTitle: Title) {
         Log.d(TAG, "setSelectedTitle executed")

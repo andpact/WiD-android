@@ -1,5 +1,6 @@
 package andpact.project.wid.activity
 
+import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.view.MainActivityView
 import android.content.Intent
@@ -7,8 +8,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import com.google.firebase.dynamiclinks.FirebaseDynamicLinks
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,9 +31,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate() called")
 
-        // window inset(상태 바, 네비게이션 바 패딩)을 수동으로 설정할 때
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
-        // TODO: 위 설정을 사용하면 시스템 바까지 전환되지 않을까?
+        /**
+         * 시스템 바 설정 적용 순서
+         * 1. themes.xml
+         * 2. MainActivity
+         * 3. Theme.kt
+         */
+        actionBar?.hide() // 테마에서 액션바를 없애기 전에 액션바를 없앰.
+//        window.apply {
+//            WindowCompat.setDecorFitsSystemWindows(this, false) // 시스템 바 영역까지 UI 확장
+//            statusBarColor = Transparent.toArgb() // 상태 표시줄 투명
+//            navigationBarColor = Transparent.toArgb() // 탐색 메뉴 투명
+//        }
 
         val intent: Intent = intent
 

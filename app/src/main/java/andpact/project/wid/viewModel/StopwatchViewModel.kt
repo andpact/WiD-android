@@ -13,10 +13,7 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.Year
+import java.time.*
 import javax.inject.Inject
 
 /**
@@ -48,13 +45,11 @@ class StopwatchViewModel @Inject constructor(
     val WID_LIST_LIMIT_PER_DAY = wiDDataSource.WID_LIST_LIMIT_PER_DAY
 
     val user: State<User?> = userDataSource.user
-    val today: State<LocalDate> = wiDDataSource.today
+    val now: State<LocalDateTime> = wiDDataSource.now
 
-    val isSameDateForStartAndFinish: State<Boolean> = wiDDataSource.isSameDateForStartAndFinish
-    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
-    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+    val currentWiD: State<WiD> = wiDDataSource.currentWiD
 
-    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val playerState: State<PlayerState> = wiDDataSource.playerState
     val totalDuration: State<Duration> = wiDDataSource.totalDuration
     private val _stopwatchViewBarVisible = mutableStateOf(true)
     val stopwatchViewBarVisible: State<Boolean> = _stopwatchViewBarVisible
@@ -64,7 +59,7 @@ class StopwatchViewModel @Inject constructor(
     private fun updateWiDList(): List<WiD> {
         Log.d(TAG, "updateWiDList executed")
 
-        val currentToday = today.value
+        val currentToday = now.value.toLocalDate()
 
         return wiDDataSource.yearDateWiDListMap.value
             .getOrDefault(Year.of(currentToday.year), emptyMap())
@@ -247,5 +242,12 @@ class StopwatchViewModel @Inject constructor(
         Log.d(TAG, "getTimeString executed")
 
         return wiDDataSource.getTimeString(time = time)
+    }
+
+    @Composable
+    fun getDateTimeString(dateTime: LocalDateTime): AnnotatedString {
+//        Log.d(TAG, "getDateTimeString executed")
+
+        return wiDDataSource.getDateTimeString(dateTime = dateTime)
     }
 }

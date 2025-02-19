@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +22,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
@@ -36,6 +40,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TitlePickerView(
+    statusBarHeight: Dp,
+    navigationBarHeight: Dp,
     previousView: PreviousView,
     onBackButtonPressed: () -> Unit,
     titlePickerViewModel: TitlePickerViewModel = hiltViewModel()
@@ -52,17 +58,16 @@ fun TitlePickerView(
 
     val clickedWiDCopy = titlePickerViewModel.clickedWiDCopy.value
 
-    val firstCurrentWiD = titlePickerViewModel.firstCurrentWiD.value
-    val secondCurrentWiD = titlePickerViewModel.secondCurrentWiD.value
+    val currentWiD = titlePickerViewModel.currentWiD.value
 
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = if (previousView == PreviousView.CLICKED_WID_SUB_TITLE) 1 else 0, pageCount = { 2 })
+    val pagerState = rememberPagerState(initialPage = if (previousView == PreviousView.CLICKED_WID_TITLE) 0 else 1, pageCount = { 2 })
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
         if (previousView == PreviousView.STOPWATCH || previousView == PreviousView.TIMER) { // 최초 제목 초기화
-            titlePickerViewModel.setSelectedTitle(newSelectedTitle = firstCurrentWiD.title)
+            titlePickerViewModel.setSelectedTitle(newSelectedTitle = currentWiD.title)
         } else {
             titlePickerViewModel.setSelectedTitle(newSelectedTitle = clickedWiDCopy.title)
         }
@@ -75,20 +80,28 @@ fun TitlePickerView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface, // Scaffold 중첩 시 배경색을 자식 뷰도 지정해야함.
         topBar = {
-            CenterAlignedTopAppBar(
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onBackButtonPressed()
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(statusBarHeight)
+                        .background(MaterialTheme.colorScheme.surface)
+                )
+
+                CenterAlignedTopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onBackButtonPressed()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "뒤로 가기",
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "뒤로 가기",
-                        )
-                    }
-                },
-                title = {
+                    },
+                    title = {
 //                    AnimatedContent(
 //                        targetState = isSearchMode,
 //                        transitionSpec = {
@@ -116,8 +129,11 @@ fun TitlePickerView(
 //                        }
 //                    }
 
-                    Text(text = "${previousView.kr} > 제목 선택")
-                },
+                        Text(
+                            text = "${previousView.kr} > 제목 선택",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    },
 //                actions = {
 //                    IconButton(
 //                        onClick = {
@@ -141,6 +157,15 @@ fun TitlePickerView(
 //                        }
 //                    }
 //                }
+                )
+            }
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(navigationBarHeight)
+                    .background(MaterialTheme.colorScheme.surface)
             )
         }
     ) { contentPadding: PaddingValues ->
@@ -148,37 +173,37 @@ fun TitlePickerView(
             modifier = Modifier
                 .padding(contentPadding)
         ) {
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                SegmentedButton(
-                    modifier = Modifier
-                        .height(40.dp),
-                    selected = pagerState.currentPage == 0,
-                    shape = MaterialTheme.shapes.extraLarge.copy(topEnd = CornerSize(0.dp), bottomEnd = CornerSize(0.dp)),
-                    onClick = {
-                        coroutineScope.launch { pagerState.animateScrollToPage(0) }
-                    },
-                    icon = {}
-                ) {
-                    Text(text = "제목 선택")
-                }
+            val currentPage = pagerState.currentPage
 
-                SegmentedButton(
-                    modifier = Modifier
-                        .height(40.dp),
-                    selected = pagerState.currentPage == 1,
-                    shape = MaterialTheme.shapes.extraLarge.copy(topStart = CornerSize(0.dp), bottomStart = CornerSize(0.dp)),
-                    onClick = {
-                        coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                    },
-                    icon = {}
-                ) {
-                   Text(text = "부 제목 선택")
+            TabRow(
+                selectedTabIndex = currentPage,
+                indicator = { tabPositions ->
+                    TabRowDefaults.PrimaryIndicator(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[currentPage]),
+                        width = tabPositions[currentPage].contentWidth
+                    )
                 }
+            ) {
+                Tab(
+                    selected = currentPage == 0,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }
+                    },
+                    text = { Text(text = "제목 선택")}
+                )
+
+                Tab(
+                    selected = currentPage == 1,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
+                    },
+                    text = { Text(text = "부 제목 선택")}
+                )
             }
 
             HorizontalPager(
@@ -220,7 +245,7 @@ fun TitlePickerView(
 //                                            onClick = null
 //                                        )
 
-                                        Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "부 제목 선택 이동")
+                                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "부 제목 선택 이동")
                                     }
                                 )
                             }
@@ -259,7 +284,7 @@ fun TitlePickerView(
                                     },
                                     trailingContent = {
                                         val isSelected = if (previousView == PreviousView.STOPWATCH || previousView == PreviousView.TIMER) {
-                                            firstCurrentWiD.subTitle == itemSubTitle
+                                            currentWiD.subTitle == itemSubTitle
                                         } else {
                                             clickedWiDCopy.subTitle == itemSubTitle
                                         }

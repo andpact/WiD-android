@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,7 +38,8 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
     val TAG = "WeeklyWiDListView"
 
     // 날짜
-    val today = weeklyWiDListViewModel.today.value
+    val now = weeklyWiDListViewModel.now.value
+    val today = now.toLocalDate()
     val startDate = weeklyWiDListViewModel.startDate.value // 조회 시작 날짜
     val finishDate = weeklyWiDListViewModel.finishDate.value // 조회 종료 날짜
     
@@ -92,7 +95,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     }
                 },
                 actions = {
-                    FilledTonalIconButton(
+                    FilledIconButton(
                         onClick = {
                             val newStartDate = startDate.minusWeeks(1)
                             val newFinishDate = finishDate.minusWeeks(1)
@@ -106,6 +109,10 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                 newWeekPickerFinishDateOfCurrentWeek = newFinishDate
                             )
                         },
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowLeft,
@@ -113,7 +120,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         )
                     }
 
-                    FilledTonalIconButton(
+                    FilledIconButton(
                         onClick = {
                             val newStartDate = startDate.plusWeeks(1)
                             val newFinishDate = finishDate.plusWeeks(1)
@@ -127,6 +134,10 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                 newWeekPickerFinishDateOfCurrentWeek = newFinishDate
                             )
                         },
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         enabled = !(startDate == weeklyWiDListViewModel.getFirstDateOfWeek(today) && finishDate == weeklyWiDListViewModel.getLastDateOfWeek(today))
                     ) {
                         Icon(
@@ -155,16 +166,31 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                     ) {
-                        Icon(
+                        Column(
                             modifier = Modifier
-                                .size(100.dp),
-                            painter = painterResource(id = R.drawable.baseline_more_vert_24), // TODO: 수평 점으로 변경
-                            contentDescription = "no-data-icon"
-                        )
+                                .size(240.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    shape = MaterialTheme.shapes.extraSmall
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
+                        ) {
+                            Text(
+                                text = "NO",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+
+                            Text(
+                                text = "DATA",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
 
                         Text(
                             text = "표시할 데이터가 없습니다.",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 }
@@ -175,17 +201,10 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "히스토리",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -201,13 +220,6 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     )
                 }
 
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
                 item(
                     key = "titleDurationMapListFilterChipRow",
                     contentType = "lazyRow"
@@ -220,11 +232,11 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        items(
+                        itemsIndexed(
                             items = titleDurationMapList,
-                            key = { "titleDurationMapListFilterChip" },
-                            contentType = { "filterChip" }
-                        ) { itemMapType: TitleDurationMap ->
+                            key = { index, _ -> "titleDurationMapListFilterChip-$index" },
+                            contentType = { _, _ -> "filterChip" }
+                        ) { _, itemMapType: TitleDurationMap ->
                             FilterChip(
                                 selected = currentMapType == itemMapType,
                                 onClick = {
@@ -249,12 +261,15 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                 modifier = Modifier
                                     .size(56.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = MaterialTheme.shapes.medium
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = "${index + 1}")
+                                Text(
+                                    text = "${index + 1}",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             }
                         },
                         headlineContent = {
@@ -280,6 +295,10 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
 
         if (weekPickerExpanded) {
             DatePickerDialog(
+                shape = MaterialTheme.shapes.medium,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
                 onDismissRequest = {
                     // 대화 상자의 날짜를 조회 날짜로 초기화
                     weeklyWiDListViewModel.setWeekPickerMidDateOfCurrentMonth(startDate.plusDays(3).withDayOfMonth(15))
@@ -291,7 +310,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     weeklyWiDListViewModel.setWeekPickerExpanded(expand = false)
                 },
                 confirmButton = {
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             // 대화 상자의 날짜를 대화 상자의 날짜로 초기화(선택 후 변경될 수 있기 때문에)
                             weeklyWiDListViewModel.setWeekPickerMidDateOfCurrentMonth(weekPickerStartDateOfCurrentWeek.plusDays(3).withDayOfMonth(15))
@@ -328,24 +347,24 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(64.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "주 선택",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(64.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    OutlinedIconButton(
                         onClick = {
                             val newWeekPickerMidDateOfCurrentMonth = weekPickerMidDateOfCurrentMonth.minusMonths(1)
                             weeklyWiDListViewModel.setWeekPickerMidDateOfCurrentMonth(newWeekPickerMidDateOfCurrentMonth = newWeekPickerMidDateOfCurrentMonth)
@@ -362,8 +381,8 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         style = MaterialTheme.typography.bodyLarge
                     )
 
-                    IconButton(
-                        enabled = startDate.plusDays(3).month != weekPickerMidDateOfCurrentMonth.month,
+                    OutlinedIconButton(
+                        enabled = weekPickerMidDateOfCurrentMonth < today.withDayOfMonth(15),
                         onClick = {
                             val newWeekPickerMidDateOfCurrentMonth = weekPickerMidDateOfCurrentMonth.plusMonths(1)
                             weeklyWiDListViewModel.setWeekPickerMidDateOfCurrentMonth(newWeekPickerMidDateOfCurrentMonth = newWeekPickerMidDateOfCurrentMonth)
@@ -379,7 +398,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(64.dp)
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -387,8 +406,8 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
 
                     daysOfWeek.forEachIndexed { index, day ->
                         val textColor = when (index) {
-                            5 -> DeepSkyBlue
-                            6 -> OrangeRed
+                            5 -> MaterialTheme.colorScheme.onTertiaryContainer
+                            6 -> MaterialTheme.colorScheme.onErrorContainer
                             else -> MaterialTheme.colorScheme.onSurface
                         }
 
@@ -396,7 +415,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                             modifier = Modifier
                                 .weight(1f),
                             text = day,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                             color = textColor
                         )
@@ -406,68 +425,76 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 val totalDays = ChronoUnit.DAYS.between(weekPickerStartDateOfCurrentMonth, weekPickerFinishDateOfCurrentMonth).toInt() + 1
                 val daysList = List(totalDays) { weekPickerStartDateOfCurrentMonth.plusDays(it.toLong()) }
 
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp * 6) // 항상 6줄 표시
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                        .height(300.dp), // 대화 상자가 잘려서 높이를 지정해줌
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 ) {
-                    daysList.chunked(7).forEach { week: List<LocalDate> ->
-                        val isStartAndFinishDate = week.contains(startDate) && week.contains(finishDate)
-                        val isCurrentWeek = week.contains(weekPickerStartDateOfCurrentWeek) && week.contains(weekPickerFinishDateOfCurrentWeek)
-
-                        val weekFirst = week.first()
-                        val weekLast = week.last()
-
-                        val weekEnabled = weekFirst <= weeklyWiDListViewModel.getFirstDateOfWeek(today) && weekLast <= weeklyWiDListViewModel.getLastDateOfWeek(today)
-
-                        OutlinedCard(
+                    item {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isCurrentWeek) MaterialTheme.colorScheme.primary else Transparent,
-                                disabledContainerColor = Transparent
-                            ),
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = if (isStartAndFinishDate) MaterialTheme.colorScheme.outline else Transparent
-                            ),
-                            enabled = weekEnabled,
-                            onClick = {
-                                weeklyWiDListViewModel.setWeekPickerStartDateOfCurrentWeekAndWeekPickerFinishDateOfCurrentWeek(
-                                    newWeekPickerStartDateOfCurrentWeek = weekFirst,
-                                    newWeekPickerFinishDateOfCurrentWeek = weekLast
-                                )
-                            }
+                                .height(64.dp * 6), // 항상 6줄 표시
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                week.forEach { date: LocalDate ->
-                                    val textColor = if (isCurrentWeek) {
-                                        MaterialTheme.colorScheme.onPrimary
-                                    } else if (!weekEnabled) {
-                                        MaterialTheme.colorScheme.outline
-                                    } else {
-                                        when (date.dayOfWeek) {
-                                            DayOfWeek.SATURDAY -> DeepSkyBlue
-                                            DayOfWeek.SUNDAY -> OrangeRed
-                                            else -> MaterialTheme.colorScheme.onSurface
+                            daysList.chunked(7).forEach { week: List<LocalDate> ->
+                                val isStartAndFinishDate = week.contains(startDate) && week.contains(finishDate)
+                                val isCurrentWeek = week.contains(weekPickerStartDateOfCurrentWeek) && week.contains(weekPickerFinishDateOfCurrentWeek)
+
+                                val weekFirst = week.first()
+                                val weekLast = week.last()
+
+                                val weekEnabled = weekFirst <= weeklyWiDListViewModel.getFirstDateOfWeek(today) && weekLast <= weeklyWiDListViewModel.getLastDateOfWeek(today)
+
+                                OutlinedCard(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(64.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (isCurrentWeek) MaterialTheme.colorScheme.primary else Transparent,
+                                        disabledContainerColor = Transparent
+                                    ),
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = if (isStartAndFinishDate) MaterialTheme.colorScheme.outline else Transparent
+                                    ),
+                                    enabled = weekEnabled,
+                                    onClick = {
+                                        weeklyWiDListViewModel.setWeekPickerStartDateOfCurrentWeekAndWeekPickerFinishDateOfCurrentWeek(
+                                            newWeekPickerStartDateOfCurrentWeek = weekFirst,
+                                            newWeekPickerFinishDateOfCurrentWeek = weekLast
+                                        )
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        week.forEach { date: LocalDate ->
+                                            val textColor = if (isCurrentWeek) {
+                                                MaterialTheme.colorScheme.onPrimary
+                                            } else if (!weekEnabled) {
+                                                MaterialTheme.colorScheme.outline
+                                            } else {
+                                                when (date.dayOfWeek) {
+                                                    DayOfWeek.SATURDAY -> MaterialTheme.colorScheme.onTertiaryContainer
+                                                    DayOfWeek.SUNDAY -> MaterialTheme.colorScheme.onErrorContainer
+                                                    else -> MaterialTheme.colorScheme.onSurface
+                                                }
+                                            }
+
+                                            Text(
+                                                modifier = Modifier
+                                                    .weight(1f),
+                                                text = date.dayOfMonth.toString(),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = textColor,
+                                                textAlign = TextAlign.Center
+                                            )
                                         }
                                     }
-
-                                    Text(
-                                        modifier = Modifier
-                                            .weight(1f),
-                                        text = date.dayOfMonth.toString(),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = textColor,
-                                        textAlign = TextAlign.Center
-                                    )
                                 }
                             }
                         }

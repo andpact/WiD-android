@@ -1,5 +1,6 @@
 package andpact.project.wid.chartView
 
+import andpact.project.wid.model.Title
 import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
 import android.util.Log
@@ -24,7 +25,6 @@ import kotlin.math.*
 @Composable
 fun DailyWiDListChartView(
     fullWiDList: List<WiD>,
-    wiDListLimitPerDay: String,
 //    onWiDClicked: (wiD: WiD) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -40,11 +40,9 @@ fun DailyWiDListChartView(
     val typography = MaterialTheme.typography
 
     val totalDuration = Duration.ofHours(24).seconds
-    val chartDataList = fullWiDList.map { TitleDurationChartData(it.title, it.duration) }
 
-    val filteredWiDList = fullWiDList.filterNot { it.id == "newWiD" || it.id == "lastNewWiD" }
-    val filteredListSize = filteredWiDList.size
-    val displayText = "$filteredListSize / $wiDListLimitPerDay"
+    // TODO: 날짜에 포함안되는 기록 앞 뒤 자르기.
+    val chartDataList = fullWiDList.map { TitleDurationChartData(it.title, it.duration) }
 
     Canvas(
         modifier = modifier
@@ -58,8 +56,10 @@ fun DailyWiDListChartView(
                 val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
                 if (sweepAngle <= 0) return@forEach
 
+                val arcColor = if (data.title == Title.UNTITLED) colorScheme.surfaceContainer else data.title.color
+
                 drawArc(
-                    color = data.title.color,
+                    color = arcColor,
                     startAngle = startAngle,
                     sweepAngle = sweepAngle,
                     useCenter = true,
@@ -85,22 +85,6 @@ fun DailyWiDListChartView(
                 textSize = typography.bodySmall.fontSize.toPx()
             }
 
-            // 가운데 텍스트
-            drawContext.canvas.nativeCanvas.apply {
-                val centerTextPaint = android.graphics.Paint().apply {
-                    color = colorScheme.onSurface.toArgb()
-                    textSize = typography.bodyLarge.fontSize.toPx()
-                    textAlign = android.graphics.Paint.Align.CENTER
-                }
-
-                drawText(
-                    displayText,
-                    centerX,
-                    centerY,
-                    centerTextPaint
-                )
-            }
-
             for (i in 0 until 24) {
                 val angleInDegree = (i * 15.0) - 90.0 // 360도를 24등분, 초기 각도를 0으로 설정
                 val angleInRadian = Math.toRadians(angleInDegree)
@@ -118,12 +102,15 @@ fun DailyWiDListChartView(
 
                 val paint = when (i) {
                     6 -> textPaint.apply {
+                        color = colorScheme.onTertiaryContainer.toArgb()
                         textAlign = android.graphics.Paint.Align.RIGHT
                     }
                     18 -> textPaint.apply {
+                        color = colorScheme.onTertiaryContainer.toArgb()
                         textAlign = android.graphics.Paint.Align.LEFT
                     }
                     else -> textPaint.apply {
+                        color = colorScheme.onSurface.toArgb()
                         textAlign = android.graphics.Paint.Align.CENTER
                     }
                 }
@@ -163,7 +150,7 @@ fun DailyWiDListChartView(
                             backgroundRight,
                             y + textBounds.height() / 2f - 2.dp.toPx(),
                             android.graphics.Paint().apply {
-                                color = colorScheme.secondaryContainer.toArgb()
+                                color = colorScheme.tertiaryContainer.toArgb()
                             }
                         )
                     }

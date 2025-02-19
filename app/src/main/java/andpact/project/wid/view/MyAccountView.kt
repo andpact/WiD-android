@@ -273,6 +273,10 @@ fun MyAccountView(
 
     if (showSignOutDialog) {
         DatePickerDialog(
+            shape = MaterialTheme.shapes.medium,
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
             onDismissRequest = {
                 myAccountViewModel.setShowSignOutDialog(show = false)
             },
@@ -310,6 +314,10 @@ fun MyAccountView(
 
     if (showDeleteUserDialog) {
         DatePickerDialog(
+            shape = MaterialTheme.shapes.medium,
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
             onDismissRequest = {
                 myAccountViewModel.setShowDeleteUserDialog(show = false)
             },

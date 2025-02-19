@@ -11,12 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltViewModel()) {
+fun AuthenticationView(
+    statusBarHeight: Dp,
+    navigationBarHeight: Dp,
+    authenticationViewModel: AuthenticationViewModel = hiltViewModel()
+) {
     val TAG = "AuthenticationView"
 
     val email = authenticationViewModel.email.value
@@ -34,10 +39,27 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
         modifier = Modifier
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+             Box(
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .height(statusBarHeight)
+                     .background(color = MaterialTheme.colorScheme.surface)
+             )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(navigationBarHeight)
+                    .background(color = MaterialTheme.colorScheme.surface)
+            )
+        },
         content = { contentPadding: PaddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(contentPadding)
                     .padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -94,8 +116,8 @@ fun AuthenticationView(authenticationViewModel: AuthenticationViewModel = hiltVi
                 AlertDialog(
                     modifier = Modifier
                         .background(
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            shape = MaterialTheme.shapes.extraLarge
+                            color = MaterialTheme.colorScheme.surfaceContainer,
+                            shape = MaterialTheme.shapes.medium
                         ),
                     onDismissRequest = {},
                     content = {

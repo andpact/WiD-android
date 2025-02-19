@@ -3,20 +3,25 @@ package andpact.project.wid.view
 import andpact.project.wid.destinations.MainViewDestinations
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun WiDListView(onWiDClicked: () -> Unit) {
+fun WiDListView(onWiDClicked: (currentDate: LocalDate) -> Unit) {
     val TAG = "WiDListView"
 
     // 화면
@@ -36,7 +41,10 @@ fun WiDListView(onWiDClicked: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = MainViewDestinations.WiDListViewDestination.title)
+                    Text(
+                        text = MainViewDestinations.WiDListViewDestination.title,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
                 }
             )
         },
@@ -73,15 +81,11 @@ fun WiDListView(onWiDClicked: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth(),
                     state = pagerState,
-//                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-//                        state = pagerState,
-//                        orientation = Orientation.Horizontal
-//                    )
                 ) { page: Int ->
                     when (page) {
                         0 -> DailyWiDListView(
-                            onWiDClicked = {
-                                onWiDClicked()
+                            onWiDClicked = { currentDate: LocalDate ->
+                                onWiDClicked(currentDate)
                             },
                         )
                         1 -> WeeklyWiDListView()

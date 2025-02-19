@@ -7,17 +7,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashView(
+    statusBarHeight: Dp,
+    navigationBarHeight: Dp,
     dynamicLink: String?,
     onEmailLinkVerified: (Boolean) -> Unit,
     splashViewModel: SplashViewModel = hiltViewModel()
@@ -60,49 +64,37 @@ fun SplashView(
         onDispose { Log.d(TAG, "disposed") }
     }
 
-    Box(
+    Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
+            .fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(statusBarHeight)
+                    .background(color = MaterialTheme.colorScheme.surface)
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(navigationBarHeight)
+                    .background(color = MaterialTheme.colorScheme.surface)
+            )
+        },
+    ) { contentPadding: PaddingValues ->
+        Box(
             modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(contentPadding),
+            contentAlignment = Alignment.Center
         ) {
             Image(
-                //                    modifier = Modifier
-                //                        .size(96.dp),
                 painter = painterResource(id = R.mipmap.ic_main_foreground), // ic_main, ic_main_rounded는 안되네?
                 contentDescription = "앱 아이콘"
             )
-
-            //                Text(
-            //                    text = "WiD",
-            //                    style = TextStyle(
-            //                        color = MaterialTheme.colorScheme.primary,
-            //                        textAlign = TextAlign.Center,
-            //                        fontSize = 70.sp,
-            //                        fontWeight = FontWeight.Bold,
-            //                        fontFamily = acmeRegular
-            //                    )
-            //                )
         }
-        /** 인터넷 연결 확인 메시지는 대화상자로 띄우자. */
-        //            if (!isInternetConnected) {
-        //                Column(modifier = Modifier
-        //                    .fillMaxSize()
-        //                    .padding(bottom = 100.dp),
-        //                    verticalArrangement = Arrangement.Center,
-        //                    horizontalAlignment = Alignment.CenterHorizontally
-        //                ) {
-        //                    Text(
-        //                        text = "인터넷 연결을 확인하세요.",
-        //                        style = MaterialTheme.typography.bodySmall,
-        //                        color = MaterialTheme.colorScheme.primary
-        //                    )
-        //                }
-        //            }
     }
 }

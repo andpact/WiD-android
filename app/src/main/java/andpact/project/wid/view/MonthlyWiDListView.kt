@@ -1,10 +1,7 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
 import andpact.project.wid.chartView.MonthlyWiDListChartView
 import andpact.project.wid.model.TitleDurationMap
-import andpact.project.wid.ui.theme.DeepSkyBlue
-import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.viewModel.MonthlyWiDListViewModel
 import android.util.Log
@@ -12,13 +9,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -29,10 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.LocalDate
 import java.time.Year
@@ -42,7 +38,8 @@ import java.time.Year
 fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltViewModel()) {
     val TAG = "MonthlyWiDListView"
 
-    val today = monthlyWiDListViewModel.today.value
+    val now = monthlyWiDListViewModel.now.value
+    val today = now.toLocalDate()
     val startDate = monthlyWiDListViewModel.startDate.value // 조회 시작 날짜
     val finishDate = monthlyWiDListViewModel.finishDate.value // 조회 종료 날짜
 
@@ -91,13 +88,17 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                     }
                 },
                 actions = {
-                    FilledTonalIconButton(
+                    FilledIconButton(
                         onClick = {
                             val newStartDate = monthlyWiDListViewModel.getFirstDateOfMonth(startDate.minusDays(15))
                             val newFinishDate = monthlyWiDListViewModel.getLastDateOfMonth(finishDate.minusDays(45))
 
                             monthlyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                         },
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                     ) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowLeft,
@@ -105,13 +106,17 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         )
                     }
 
-                    FilledTonalIconButton(
+                    FilledIconButton(
                         onClick = {
                             val newStartDate = monthlyWiDListViewModel.getFirstDateOfMonth(startDate.plusDays(45))
                             val newFinishDate = monthlyWiDListViewModel.getLastDateOfMonth(finishDate.plusDays(15))
 
                             monthlyWiDListViewModel.setStartDateAndFinishDate(newStartDate, newFinishDate)
                         },
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         enabled = !(startDate == monthlyWiDListViewModel.getFirstDateOfMonth(today) && finishDate == monthlyWiDListViewModel.getLastDateOfMonth(today))
                     ) {
                         Icon(
@@ -140,16 +145,31 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
                     ) {
-                        Icon(
+                        Column(
                             modifier = Modifier
-                                .size(100.dp),
-                            painter = painterResource(id = R.drawable.baseline_more_vert_24), // TODO: 수평 점으로 변경
-                            contentDescription = "no-data-icon"
-                        )
+                                .size(240.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    shape = MaterialTheme.shapes.extraSmall
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
+                        ) {
+                            Text(
+                                text = "NO",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+
+                            Text(
+                                text = "DATA",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
 
                         Text(
                             text = "표시할 데이터가 없습니다.",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 }
@@ -160,17 +180,10 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "히스토리",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -184,13 +197,6 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         finishDate = finishDate,
                         wiDList = wiDList
                     )
-                }
-
-                item (
-                    key = "spacer",
-                    contentType = "spacer"
-                ) {
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 item(
@@ -234,12 +240,15 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                                 modifier = Modifier
                                     .size(56.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = MaterialTheme.shapes.medium
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = "${index + 1}")
+                                Text(
+                                    text = "${index + 1}",
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             }
                         },
                         headlineContent = {
@@ -265,6 +274,10 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
 
         if (monthPickerExpanded) {
             DatePickerDialog(
+                shape = MaterialTheme.shapes.medium,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                ),
                 onDismissRequest = {
                     // 대화 상자 날짜를 조회 날짜로 초기화
                     monthlyWiDListViewModel.setMonthPickerCurrentYear(newYear = Year.of(startDate.year))
@@ -292,7 +305,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             // 대화 상자의 날짜를 대화 상자의 날짜로 초기화(선택 후 변경될 수 있기 때문에)
                             monthlyWiDListViewModel.setMonthPickerCurrentYear(newYear = Year.of(monthPickerStartDateOfCurrentMonth.year))
@@ -313,24 +326,24 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(64.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "월 선택",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(64.dp)
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    OutlinedIconButton(
                         onClick = {
                             val newYear = monthPickerCurrentYear.minusYears(1)
                             monthlyWiDListViewModel.setMonthPickerCurrentYear(newYear = newYear)
@@ -347,7 +360,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         style = MaterialTheme.typography.bodyLarge
                     )
 
-                    IconButton(
+                    OutlinedIconButton(
                         enabled = monthPickerCurrentYear.value < today.year,
                         onClick = {
                             val newYear = monthPickerCurrentYear.plusYears(1)
@@ -369,9 +382,9 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(400.dp), // 대화 상자가 잘려서 높이를 지정해줌
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                        .height(300.dp), // 대화 상자가 잘려서 높이를 지정해줌
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     itemsIndexed(
                         items = months.chunked(3), // 한 행에 3개의 월을 포함하는 청크로 나눔
@@ -381,7 +394,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             quarter.forEach { monthDate: LocalDate ->
                                 val isStartAndFinishDate = monthDate == startDate // 조회 날짜
@@ -456,8 +469,8 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                                                         MaterialTheme.colorScheme.outline
                                                     } else {
                                                         when (index % 7) {
-                                                            0 -> OrangeRed // Sunday
-                                                            6 -> DeepSkyBlue // Saturday
+                                                            0 -> MaterialTheme.colorScheme.onErrorContainer
+                                                            6 -> MaterialTheme.colorScheme.onTertiaryContainer
                                                             else -> MaterialTheme.colorScheme.onSurface
                                                         }
                                                     }
@@ -469,7 +482,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                                                     ) {
                                                         Text(
                                                             text = day,
-                                                            style = MaterialTheme.typography.labelSmall,
+                                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                                                             color = textColor,
                                                         )
                                                     }

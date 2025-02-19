@@ -1,8 +1,6 @@
 package andpact.project.wid.chartView
 
 import andpact.project.wid.model.*
-import andpact.project.wid.ui.theme.DeepSkyBlue
-import andpact.project.wid.ui.theme.OrangeRed
 import andpact.project.wid.ui.theme.Transparent
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,10 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import java.time.DayOfWeek
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.*
 import java.time.temporal.ChronoUnit
 
 @Composable
@@ -45,6 +40,8 @@ fun WeeklyWiDListChartView(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(64.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // 더미
             Text(
@@ -60,8 +57,8 @@ fun WeeklyWiDListChartView(
 
             daysOfWeek.forEachIndexed { index, day ->
                 val textColor = when (index) {
-                    5 -> DeepSkyBlue
-                    6 -> OrangeRed
+                    5 -> MaterialTheme.colorScheme.onTertiaryContainer
+                    6 -> MaterialTheme.colorScheme.onErrorContainer
                     else -> MaterialTheme.colorScheme.onSurface
                 }
 
@@ -97,7 +94,7 @@ fun WeeklyWiDListChartView(
                     }
 
                     val backgroundColor = when (hour) {
-                        0, 12, 24 -> MaterialTheme.colorScheme.secondaryContainer // 배경색
+                        0, 12, 24 -> MaterialTheme.colorScheme.tertiaryContainer // 배경색
                         else -> Transparent // 기본 투명
                     }
 
@@ -121,7 +118,7 @@ fun WeeklyWiDListChartView(
                 val currentDate = startDate.plusDays(i.toLong())
 
                 // currentDate에 해당하는 WiD 리스트 필터링
-                val dailyWiDList = wiDList.filter { it.date == currentDate }
+                val dailyWiDList = wiDList.filter { it.start.toLocalDate() == currentDate }
 
                 // 막대 차트 데이터 생성
                 val barChartData = mutableListOf<TitleDurationChartData>()
@@ -182,12 +179,13 @@ fun WeeklyWiDListChartView(
                 ) {
                     for (barData in barChartData) {
                         val barHeight = barData.duration.toMinutes().toFloat() / totalMinutes // duration을 비율로 계산
+                        val barColor = if (barData.title == Title.UNTITLED) MaterialTheme.colorScheme.surfaceContainer else barData.title.color
                         if (0.01f <= barHeight) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .weight(barHeight) // 계산된 높이를 weight로 설정
-                                    .background(color = barData.title.color)
+                                    .background(color = barColor)
                             )
                         }
                     }
@@ -218,8 +216,8 @@ fun WeeklyWiDListChartView(
 
                     // 토요일과 일요일에 대해 색상 설정
                     val textColor = when (dayOfWeek) {
-                        DayOfWeek.SATURDAY -> DeepSkyBlue
-                        DayOfWeek.SUNDAY -> OrangeRed
+                        DayOfWeek.SATURDAY -> MaterialTheme.colorScheme.onTertiaryContainer
+                        DayOfWeek.SUNDAY -> MaterialTheme.colorScheme.onErrorContainer
                         else -> MaterialTheme.colorScheme.onSurface
                     }
 
@@ -251,30 +249,28 @@ fun WeeklyWiDListStackedVerticalBarChartPreview() {
         tmpWiDList.add(
             WiD(
                 id = "tmpWiD",
-                date = indexDate,
                 title = Title.STUDY,
-                subTitle = SubTitle.UNSELECTED,
-                start = LocalTime.of(0, 0),
-                finish = LocalTime.of(2, 0),
+                subTitle = SubTitle.UNSELECTED_STUDY,
+                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0)),
+                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(2, 0)),
                 duration = Duration.ofHours(2),
                 city = City.SEOUL,
                 exp = 0,
-                createdBy = CurrentTool.LIST
+                tool = Tool.LIST
             )
         )
 
         tmpWiDList.add(
             WiD(
                 id = "tmpWiD",
-                date = indexDate,
                 title = Title.STUDY,
-                subTitle = SubTitle.UNSELECTED,
-                start = LocalTime.of(6, 0),
-                finish = LocalTime.of(9, 0),
+                subTitle = SubTitle.UNSELECTED_STUDY,
+                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(4, 0)),
+                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 0)),
                 duration = Duration.ofHours(3),
                 city = City.BUSAN,
                 exp = 0,
-                createdBy = CurrentTool.LIST
+                tool = Tool.LIST
             )
         )
     }

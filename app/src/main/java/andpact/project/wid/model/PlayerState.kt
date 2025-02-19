@@ -1,6 +1,6 @@
 package andpact.project.wid.model
 
-enum class CurrentToolState {
+enum class PlayerState {
     STOPPED,
     STARTED,
     PAUSED

@@ -1,18 +1,14 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
-import andpact.project.wid.chartView.TimeSelectorView
 import andpact.project.wid.model.City
 import andpact.project.wid.model.PreviousView
 import andpact.project.wid.model.SnackbarActionResult
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.viewModel.WiDViewModel
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -21,24 +17,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
-import java.time.Duration
-import java.time.LocalTime
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WiDView(
+    statusBarHeight: Dp,
+    navigationBarHeight: Dp,
     onBackButtonPressed: () -> Unit,
     onTitlePickerClicked: (previousView: PreviousView) -> Unit,
-    onTimePickerClicked: (previousView: PreviousView) -> Unit,
+    onDateTimePickerClicked: (previousView: PreviousView) -> Unit,
     onCityPickerClicked: (currentCity: City) -> Unit,
     wiDViewModel: WiDViewModel = hiltViewModel()
 ) {
@@ -75,111 +68,141 @@ fun WiDView(
             .fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            if (isLastNewWiD) { // 나갈 때도 확인
-                                wiDViewModel.setUpdateClickedWiDToNow(update = false)
-                                wiDViewModel.setUpdateClickedWiDCopyToNow(update = false)
-                            }
+            Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(statusBarHeight)
+                        .background(MaterialTheme.colorScheme.surface)
+                )
 
-                            onBackButtonPressed()
+                CenterAlignedTopAppBar(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                if (isLastNewWiD) { // 나갈 때도 확인
+                                    wiDViewModel.setUpdateClickedWiDFinishToNow(update = false)
+                                    wiDViewModel.setUpdateClickedWiDCopyFinishToNow(update = false)
+                                }
+
+                                onBackButtonPressed()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "뒤로 가기",
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "뒤로 가기",
-                        )
-                    }
-                },
-                title = {
-                    Text(text = if (isNewWiD) "새로운 기록" else "기록")
-                },
-            )
+                    },
+                    title = {
+                        Text(text = if (isNewWiD) "새로운 기록" else "기록")
+                    },
+                )
+            }
         },
         bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                FilledIconButton(
+            Column {
+                Row(
                     modifier = Modifier
-                        .size(56.dp),
-                    onClick = {
-                        wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = clickedWiD) // 제목, 시작, 종료 초기화
-                        wiDViewModel.setUpdateClickedWiDCopyToNow(update = isLastNewWiD)
-                    },
-                    enabled = clickedWiD != clickedWiDCopy, // TODO: 이미 초기 상태면 클릭할 수 없도록.
-                    shape = RectangleShape
+                        .fillMaxWidth()
+                        .height(56.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "초기화",
-                    )
-                }
-
-                if (!isNewWiD) {
                     FilledIconButton(
                         modifier = Modifier
                             .size(56.dp),
                         onClick = {
-                            wiDViewModel.setShowDeleteWiDDialog(show = true)
+                            wiDViewModel.setClickedWiDCopy(newClickedWiDCopy = clickedWiD) // 제목, 시작, 종료 초기화
+                            wiDViewModel.setUpdateClickedWiDCopyFinishToNow(update = isLastNewWiD)
                         },
-                        shape = RectangleShape
+                        enabled = clickedWiD != clickedWiDCopy, // TODO: 이미 초기 상태면 클릭할 수 없도록.
+                        shape = RectangleShape,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "삭제"
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "초기화",
                         )
+                    }
+
+                    if (!isNewWiD) {
+                        FilledIconButton(
+                            modifier = Modifier
+                                .size(56.dp),
+                            onClick = {
+                                wiDViewModel.setShowDeleteWiDDialog(show = true)
+                            },
+                            shape = RectangleShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "삭제"
+                            )
+                        }
+                    }
+
+                    FilledTonalButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        onClick = {
+                            if (isNewWiD) {
+                                wiDViewModel.createWiD(
+                                    onResult = { snackbarActionResult: SnackbarActionResult ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = snackbarActionResult.message,
+                                                actionLabel = "확인",
+                                                withDismissAction = true,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+
+                                        onBackButtonPressed()
+                                    }
+                                )
+                            } else {
+                                wiDViewModel.updateWiD(
+                                    onResult = { snackbarActionResult: SnackbarActionResult ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = snackbarActionResult.message,
+                                                actionLabel = "확인",
+                                                withDismissAction = true,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+
+                                        onBackButtonPressed()
+                                    }
+                                )
+                            }
+                        },
+                        enabled = if (isNewWiD) { titleExist } else { titleModified || startModified || finishModified || cityModified },
+                        shape = RectangleShape,
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Text(text = if (isNewWiD) { "새로운 기록 생성" } else { "수정 완료" })
                     }
                 }
 
-                FilledTonalButton(
+                Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    onClick = {
-                        if (isNewWiD) {
-                            wiDViewModel.createWiD(
-                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = snackbarActionResult.message,
-                                            actionLabel = "확인",
-                                            withDismissAction = true,
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-
-                                    onBackButtonPressed()
-                                }
-                            )
-                        } else {
-                            wiDViewModel.updateWiD(
-                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = snackbarActionResult.message,
-                                            actionLabel = "확인",
-                                            withDismissAction = true,
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-
-                                    onBackButtonPressed()
-                                }
-                            )
-                        }
-                    },
-                    enabled = if (isNewWiD) { titleExist } else { titleModified || startModified || finishModified || cityModified },
-                    shape = RectangleShape
-                ) {
-                    Text(text = if (isNewWiD) { "새로운 기록 생성" } else { "수정 완료" })
-                }
+                        .fillMaxWidth()
+                        .height(navigationBarHeight)
+                        .background(MaterialTheme.colorScheme.surface)
+                )
             }
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -190,29 +213,6 @@ fun WiDView(
                     .padding(contentPadding)
                     .padding(vertical = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(72.dp)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "날짜",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-
-                    Text(
-                        text = wiDViewModel.getDateString(date = clickedWiDCopy.date),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -339,7 +339,7 @@ fun WiDView(
                         .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
-                            onTimePickerClicked(PreviousView.CLICKED_WID_START)
+                            onDateTimePickerClicked(PreviousView.CLICKED_WID_START)
                         }
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -355,7 +355,7 @@ fun WiDView(
                         )
 
                         Text(
-                            text = wiDViewModel.getTimeString(time = clickedWiDCopy.start),
+                            text = wiDViewModel.getDateTimeString(dateTime = clickedWiDCopy.start),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -376,7 +376,7 @@ fun WiDView(
                             )
 
                             Text(
-                                text = wiDViewModel.getTimeString(time = clickedWiD.start),
+                                text = wiDViewModel.getDateTimeString(dateTime = clickedWiD.start),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -399,7 +399,7 @@ fun WiDView(
                         .height(72.dp)
                         .height(intrinsicSize = IntrinsicSize.Min)
                         .clickable {
-                            onTimePickerClicked(PreviousView.CLICKED_WID_FINISH)
+                            onDateTimePickerClicked(PreviousView.CLICKED_WID_FINISH)
                         }
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -418,7 +418,7 @@ fun WiDView(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = wiDViewModel.getTimeString(time = clickedWiDCopy.finish),
+                                text = wiDViewModel.getDateTimeString(dateTime = clickedWiDCopy.finish),
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
@@ -426,13 +426,13 @@ fun WiDView(
                                 Text(
                                     modifier = Modifier
                                         .background(
-                                            color = MaterialTheme.colorScheme.error,
-                                            shape = MaterialTheme.shapes.medium
+                                            color = MaterialTheme.colorScheme.errorContainer,
+                                            shape = MaterialTheme.shapes.extraSmall
                                         )
                                         .padding(horizontal = 4.dp),
                                     text = "Now",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onError
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                             }
                         }
@@ -457,7 +457,7 @@ fun WiDView(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = wiDViewModel.getTimeString(time = clickedWiD.finish),
+                                    text = wiDViewModel.getDateTimeString(dateTime = clickedWiD.finish),
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
 
@@ -465,13 +465,13 @@ fun WiDView(
                                     Text(
                                         modifier = Modifier
                                             .background(
-                                                color = MaterialTheme.colorScheme.error,
-                                                shape = MaterialTheme.shapes.medium
+                                                color = MaterialTheme.colorScheme.errorContainer,
+                                                shape = RoundedCornerShape(16)
                                             )
                                             .padding(horizontal = 4.dp),
                                         text = "Now",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onError
+                                        color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                 }
                             }

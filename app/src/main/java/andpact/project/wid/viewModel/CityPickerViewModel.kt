@@ -32,8 +32,7 @@ class CityPickerViewModel @Inject constructor(
 
     private val clickedWiDCopy: State<WiD> = wiDDataSource.clickedWiDCopy // 수정 후
 
-    val firstCurrentWiD: State<WiD> = wiDDataSource.firstCurrentWiD
-    val secondCurrentWiD: State<WiD> = wiDDataSource.secondCurrentWiD
+    val currentWiD: State<WiD> = wiDDataSource.currentWiD
 
     fun setSelectedCountry(newSelectedCountry: Country) {
         Log.d(TAG, "setSelectedCountry executed")

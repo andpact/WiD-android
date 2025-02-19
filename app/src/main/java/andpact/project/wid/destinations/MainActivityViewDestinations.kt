@@ -9,6 +9,6 @@ sealed class MainActivityViewDestinations(val route: String) {
 //    object PomodoroViewDestination : MainActivityViewDestinations(route = "pomodoro_view")
     object WiDViewDestination : MainActivityViewDestinations(route = "wid_view")
     object TitlePickerViewDestination : MainActivityViewDestinations(route = "title_picker_view")
-    object TimePickerViewDestination : MainActivityViewDestinations(route = "time_picker_view")
+    object DateTimePickerViewDestination : MainActivityViewDestinations(route = "date_time_picker_view")
     object CityPickerViewDestination : MainActivityViewDestinations(route = "city_picker_view")
 }

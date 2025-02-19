@@ -2,26 +2,17 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.CurrentToolState
-import andpact.project.wid.model.Title
-import andpact.project.wid.model.User
-import andpact.project.wid.model.WiD
+import andpact.project.wid.model.*
 import android.util.Log
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.Year
-import java.util.*
+import java.time.*
 import javax.inject.Inject
-import kotlin.concurrent.timer
 
 @HiltViewModel
 class DailyWiDListViewModel @Inject constructor(
@@ -41,8 +32,7 @@ class DailyWiDListViewModel @Inject constructor(
     val LAST_NEW_WID = wiDDataSource.LAST_NEW_WID
     val CURRENT_WID = wiDDataSource.CURRENT_WID
 
-    val today: State<LocalDate> = wiDDataSource.today
-    val now: State<LocalTime> = wiDDataSource.now
+    val now: State<LocalDateTime> = wiDDataSource.now
 
     // 유저
     private val user: State<User?> = userDataSource.user
@@ -60,10 +50,10 @@ class DailyWiDListViewModel @Inject constructor(
     val dayPickerCurrentDate: State<LocalDate> = _dayPickerCurrentDate
 
     // 도구
-    val currentToolState: State<CurrentToolState> = wiDDataSource.currentToolState
+    val playerState: State<PlayerState> = wiDDataSource.playerState
 
     // Full WiD List
-    val fullWiDList: State<List<WiD>> = derivedStateOf { updateFullWiDList() } // 이 블럭 안의 State 변수가 변화하면 영향을 받음
+    val fullWiDList: State<List<WiD>> = derivedStateOf { getFullWiDList() } // 이 블럭 안의 State 변수가 변화하면 영향을 받음
 
     // 합계
     val totalDurationMap: State<Map<Title, Duration>> = derivedStateOf { getWiDTitleTotalDurationMap() }
@@ -81,9 +71,14 @@ class DailyWiDListViewModel @Inject constructor(
 
         val currentUser = user.value ?: return
 
-        wiDDataSource.getYearlyWiDListMap(
+        wiDDataSource.getWiD(
             email = currentUser.email,
-            year = Year.of(newDate.year)
+            year = Year.of(newDate.year),
+            onResult = { snackbarActionResult: SnackbarActionResult ->
+                if (snackbarActionResult == SnackbarActionResult.FAIL_SERVER_ERROR) {
+                    // TODO: 실패 시 스낵 바 띄우기
+                }
+            }
         )
     }
 
@@ -91,7 +86,6 @@ class DailyWiDListViewModel @Inject constructor(
         Log.d(TAG, "setDayPickerCurrentDate executed")
 
         _dayPickerCurrentDate.value = newDayPickerCurrentDate
-
     }
 
     fun setDayPickerMidDateOfCurrentMonth(newDayPickerMidDateOfCurrentMonth: LocalDate) {
@@ -116,33 +110,55 @@ class DailyWiDListViewModel @Inject constructor(
         return wiDDataSource.getDurationString(duration = duration)
     }
 
-    private fun updateFullWiDList(): List<WiD> {
-        Log.d(TAG, "fullWiDList updated")
+    private fun getFullWiDList(): List<WiD> {
+        Log.d(TAG, "getFullWiDList updated")
 
+        // TODO: 파이 차트 코드 안에서 날짜에 포함되지 않는 앞 뒤 자르기.
+        // TODO: 리스트에서는 자르지 않고 표시(전날 3시간 30분 + 당일 3시간 30분) 
         val currentDate = _currentDate.value
-        val now = if (currentToolState.value == CurrentToolState.STARTED) { null } else { now.value }
+        val currentTime = if (playerState.value == PlayerState.STARTED) { null } else { now.value }
 
         val wiDList = wiDDataSource.yearDateWiDListMap.value
             .getOrDefault(Year.of(currentDate.year), emptyMap())
             .getOrDefault(currentDate, emptyList())
 
-        return wiDDataSource.getFullWiDListFromWiDList(
+        return wiDDataSource.getFullWiDList(
             date = currentDate,
             wiDList = wiDList,
-            today = today.value,
-            currentTime = now
+            today = now.value.toLocalDate(),
+            currentTime = currentTime
         )
     }
 
     private fun getWiDTitleTotalDurationMap(): Map<Title, Duration> {
-        Log.d(TAG, "getWiDTitleTotalDurationMap executed")
+//        Log.d(TAG, "getWiDTitleTotalDurationMap executed")
 
         val currentDate = _currentDate.value
-        val wiDList = wiDDataSource.yearDateWiDListMap.value
+        val startOfDay = currentDate.atStartOfDay()
+//        val endOfDay = currentDate.atTime(LocalTime.MAX.withNano(0))
+        val endOfDay = currentDate.atTime(LocalTime.MAX) // TODO: 나노 세컨드를 없애서 반올림하면?
+
+        val wiDList: List<WiD> = wiDDataSource.yearDateWiDListMap.value
             .getOrDefault(Year.of(currentDate.year), emptyMap())
             .getOrDefault(currentDate, emptyList())
 
-        return wiDDataSource.getWiDTitleTotalDurationMap(wiDList = wiDList)
+        // 날짜를 벗어난 기록의 시간을 조정
+        val adjustedWiDList = wiDList.mapNotNull { wiD: WiD ->
+            val adjustedStart = maxOf(wiD.start, startOfDay)
+            val adjustedFinish = minOf(wiD.finish, endOfDay)
+
+            if (adjustedStart.isBefore(adjustedFinish)) {
+                wiD.copy(
+                    start = adjustedStart,
+                    finish = adjustedFinish,
+                    duration = Duration.between(adjustedStart, adjustedFinish)
+                )
+            } else {
+                null // 시작과 종료 시간이 같거나 잘려서 없어진 경우 제외
+            }
+        }
+
+        return wiDDataSource.getWiDTitleTotalDurationMap(wiDList = adjustedWiDList)
     }
 
     fun getDurationPercentageStringOfDay(duration: Duration): String {
@@ -167,9 +183,16 @@ class DailyWiDListViewModel @Inject constructor(
         return wiDDataSource.getDateString(date = date)
     }
 
-    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
-//        Log.d(TAG, "getTimeString executed")
+//    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
+////        Log.d(TAG, "getTimeString executed")
+//
+//        return wiDDataSource.getTimeString(time = time)
+//    }
 
-        return wiDDataSource.getTimeString(time = time)
+    @Composable
+    fun getDateTimeString(dateTime: LocalDateTime): AnnotatedString {
+//        Log.d(TAG, "getDateTimeString executed")
+
+        return wiDDataSource.getDateTimeString(dateTime = dateTime)
     }
 }

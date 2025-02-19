@@ -13,11 +13,10 @@ import java.time.LocalTime
  */
 data class WiD(
     val id: String, // 14자리 문자열
-    val date: LocalDate, // <-> 서버 : String("yyyy-MM-dd")
     val title: Title, // <-> 서버 : String(부제목을 선택 안 할 수도 있기 때문에 제목이 필요함)
     val subTitle: SubTitle, // <-> 서버 : String
-    val start: LocalTime, // <-> 서버 : TimeStamp
-    val finish: LocalTime, // <-> 서버 : TimeStamp
+    val start: LocalDateTime, // <-> 서버 : TimeStamp
+    val finish: LocalDateTime, // <-> 서버 : TimeStamp
     val duration: Duration, // <-> 서버 : Long
     val city: City, // <-> 서버 : String(도시로 나라를 참조할 수 있어서 나라를 필드로 넣지 않음)
     val exp: Int, // <-> 서버 : Long
@@ -27,11 +26,10 @@ data class WiD(
         fun default(): WiD {
             return WiD(
                 id = "",
-                date = LocalDate.now(),
                 title = Title.UNTITLED,
                 subTitle = SubTitle.UNSELECTED_UNTITLED,
-                start = LocalTime.MIN,
-                finish = LocalTime.MIN,
+                start = LocalDateTime.MIN,
+                finish = LocalDateTime.MIN,
                 duration = Duration.ZERO,
                 city = City.SEOUL,
                 exp = 0,

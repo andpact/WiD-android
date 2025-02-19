@@ -9,7 +9,7 @@ enum class Title(
     val kr: String,
     val color: Color
 ) {
-    UNTITLED(kr = "무제", color = Color.Gray),
+    UNTITLED(kr = "무제", color = Color.Gray), // 컬러 사용될 일은 없음.
 
     // 1
     STUDY(kr = "공부", color = LightStudy),
