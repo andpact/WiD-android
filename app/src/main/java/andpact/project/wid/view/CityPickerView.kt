@@ -1,6 +1,8 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.model.*
+import andpact.project.wid.model.City
+import andpact.project.wid.model.Country
+import andpact.project.wid.model.PreviousView
 import andpact.project.wid.viewModel.CityPickerViewModel
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -8,20 +10,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -133,9 +134,6 @@ fun CityPickerView(
                             pagerState.animateScrollToPage(0)
                         }
                     },
-                    icon = {
-
-                    },
                     text = { Text(text = "국가 선택")}
                 )
 
@@ -178,7 +176,17 @@ fun CityPickerView(
                                         Text(text = "${City.getCityCountByCountry(itemCountry)}")
                                     },
                                     trailingContent = {
-                                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "도시 선택 이동")
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(
+                                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                                    shape = CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "도시 선택 이동")
+                                        }
                                     }
                                 )
                             }

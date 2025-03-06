@@ -44,13 +44,12 @@ class CityPickerViewModel @Inject constructor(
         Log.d(TAG, "setUserCity executed")
 
         val currentUser = user.value ?: return
-        val updatedFields = mutableMapOf<String, Any>()
-        updatedFields[CITY] = updatedCity.name // String 타입으로 서버로 보냄.
+        val updatedUserDocument = mutableMapOf<String, Any>()
+        updatedUserDocument[CITY] = updatedCity.name // String 타입으로 서버로 보냄.
 
-        // TODO: 스낵 바 호출해야함
-        userDataSource.setUserDocument(
+        userDataSource.updateUserDocument(
             email = currentUser.email,
-            updatedUserDocument = updatedFields
+            updatedUserDocument = updatedUserDocument
         )
     }
 

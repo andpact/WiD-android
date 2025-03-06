@@ -1,8 +1,7 @@
 package andpact.project.wid.module
 
 import andpact.project.wid.dataSource.*
-import andpact.project.wid.repository.UserRepository
-import andpact.project.wid.repository.WiDRepository
+import andpact.project.wid.repository.Repository
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.firebase.auth.FirebaseAuth
@@ -38,25 +37,19 @@ object SingletonModule {
     @Singleton
     @Provides
     fun provideUserDataSource(): UserDataSource {
-        return UserDataSource(userRepository = provideUserRepository())
+        return UserDataSource(repository = provideRepository())
     }
 
     @Singleton
     @Provides
     fun provideWiDDataSource(): WiDDataSource {
-        return WiDDataSource(wiDRepository = provideWiDRepository())
+        return WiDDataSource(repository = provideRepository())
     }
 
     @Singleton
     @Provides
-    fun provideWiDRepository(): WiDRepository {
-        return WiDRepository(firestore = provideFirebaseFirestore())
-    }
-
-    @Singleton
-    @Provides
-    fun provideUserRepository(): UserRepository {
-        return UserRepository(
+    fun provideRepository(): Repository {
+        return Repository(
             auth = provideFirebaseAuth(),
             firestore = provideFirebaseFirestore()
         )

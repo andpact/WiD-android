@@ -1,24 +1,10 @@
 package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
-import andpact.project.wid.repository.UserRepository
-import android.app.Application
-import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
 import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -36,44 +22,44 @@ class SplashViewModel @Inject constructor(
         Log.d(TAG, "cleared")
     }
 
-    fun setFirebaseUserAndUser() {
-        Log.d(TAG, "setFirebaseUserAndUser executed")
+    fun getUserDocument() {
+        Log.d(TAG, "getUserDocument executed")
 
-        userDataSource.getFirebaseUserAndUser()
+        userDataSource.getUserDocument()
     }
 
     // 한 번 실행하고 말거니까, 필드로 굳이 빼지말자, 스플래쉬 뷰에서는 로그인 기록이 있는 지만 확인하면 되니까 FirebaseUser객체를 반환할 필요 없다.
-    fun hasFirebaseUser(): Boolean {
+    fun getFirebaseUser(): Boolean {
         Log.d(TAG, "hasFirebaseUser executed")
 
-        return userDataSource.hasFirebaseUser()
+        return userDataSource.getFirebaseUser()
     }
 
-    fun verifyAuthenticationLink(
-        dynamicLink: String?,
-        onAuthenticationLinkVerified: (Boolean) -> Unit
-    ) {
-        Log.d(TAG, "verifyAuthenticationLink executed")
-
-        val email = getEmailFromSharedPreferences()
-
-        userDataSource.verifyAuthenticationLink(
-            email = email,
-            dynamicLink = dynamicLink,
-            onAuthenticationLinkVerified = { authenticationLinkVerified: Boolean ->
-                onAuthenticationLinkVerified(authenticationLinkVerified)
-            }
-        )
-    }
-
-    private fun getEmailFromSharedPreferences(): String {
-        val key = "Email"
-        val email = sharedPreferences.getString(key, "") ?: ""
-
-        Log.d(TAG, "getEmailFromSharedPreferences executed : $email")
-
-        return email
-    }
+//    fun verifyAuthenticationLink(
+//        dynamicLink: String?,
+//        onAuthenticationLinkVerified: (Boolean) -> Unit
+//    ) {
+//        Log.d(TAG, "verifyAuthenticationLink executed")
+//
+//        val email = getEmailFromSharedPreferences()
+//
+//        userDataSource.verifyAuthenticationLink(
+//            email = email,
+//            dynamicLink = dynamicLink,
+//            onAuthenticationLinkVerified = { authenticationLinkVerified: Boolean ->
+//                onAuthenticationLinkVerified(authenticationLinkVerified)
+//            }
+//        )
+//    }
+//
+//    private fun getEmailFromSharedPreferences(): String {
+//        val key = "Email"
+//        val email = sharedPreferences.getString(key, "") ?: ""
+//
+//        Log.d(TAG, "getEmailFromSharedPreferences executed : $email")
+//
+//        return email
+//    }
 
 //    fun getCurrentUser() : FirebaseUser? {
 //        Log.d(TAG, "isCurrentSignedIn executed")

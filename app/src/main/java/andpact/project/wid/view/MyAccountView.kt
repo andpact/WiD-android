@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.NumberFormat
 import java.time.LocalDate
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,8 +47,9 @@ fun MyAccountView(
 //    val displayName = myAccountViewModel.firebaseUser.value?.displayName ?: "tmp nickname222"
 //    val displayNameForDialog = myAccountViewModel.displayNameForDialog.value
 //    val showDisplayNameDialog = myAccountViewModel.showDisplayNameDialog.value
-    val currentExp = myAccountViewModel.user.value?.currentExp ?: 0
-    val wiDTotalExp = myAccountViewModel.user.value?.wiDTotalExp ?: 0
+    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+    val formattedCurrentExp = numberFormat.format(myAccountViewModel.user.value?.currentExp ?: 0)
+    val formattedWiDTotalExp = numberFormat.format(myAccountViewModel.user.value?.wiDTotalExp ?: 0)
     val showSignOutDialog = myAccountViewModel.showSignOutDialog.value
     val showDeleteUserDialog = myAccountViewModel.showDeleteUserDialog.value
 
@@ -65,6 +69,15 @@ fun MyAccountView(
                 supportingContent = {
                     Text(text = email)
                 }
+            )
+        }
+
+        item(
+          contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -92,6 +105,15 @@ fun MyAccountView(
 //            )
 //        }
 
+//        item(
+//            contentType = "divider"
+//        ){
+//            HorizontalDivider(
+//                modifier = Modifier
+//                    .padding(horizontal = 16.dp)
+//            )
+//        }
+
         item(
             key = "location",
             contentType = "list-item"
@@ -108,11 +130,30 @@ fun MyAccountView(
                     Text(text = "${city.kr}, ${city.country.kr}")
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "위치 수정 대화상자 열기"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "위치 수정 대화상자 열기"
+                        )
+                    }
                 }
+            )
+        }
+
+        item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -131,6 +172,15 @@ fun MyAccountView(
         }
 
         item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+        }
+
+        item(
             key = "level",
             contentType = "list-item"
         ) {
@@ -145,6 +195,15 @@ fun MyAccountView(
         }
 
         item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+            )
+        }
+
+        item(
             key = "current-exp",
             contentType = "list-item"
         ) {
@@ -153,8 +212,17 @@ fun MyAccountView(
                     Text(text = "현재 경험치")
                 },
                 supportingContent = {
-                    Text(text = "$currentExp")
+                    Text(text = formattedCurrentExp)
                 }
+            )
+        }
+
+        item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -167,8 +235,17 @@ fun MyAccountView(
                     Text(text = "총 경험치")
                 },
                 supportingContent = {
-                    Text(text = "$wiDTotalExp")
+                    Text(text = formattedWiDTotalExp)
                 }
+            )
+        }
+
+        item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -188,11 +265,30 @@ fun MyAccountView(
                     Text(text = "계정이 로그아웃 됩니다.")
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "로그아웃 대화상자 열기"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "로그아웃 대화상자 열기"
+                        )
+                    }
                 }
+            )
+        }
+
+        item(
+            contentType = "divider"
+        ){
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
             )
         }
 
@@ -212,10 +308,20 @@ fun MyAccountView(
                     Text(text = "계정을 삭제합니다.")
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "회원 탈퇴 대화상자 열기"
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainer,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "회원 탈퇴 대화상자 열기"
+                        )
+                    }
                 }
             )
         }

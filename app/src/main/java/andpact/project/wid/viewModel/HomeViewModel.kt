@@ -43,11 +43,4 @@ class HomeViewModel @Inject constructor(
 
         wiDDataSource.startLastNewWiDTimer()
     }
-
-    fun getTimeString(time: LocalTime): String {
-        Log.d(TAG, "getTimeString executed")
-        // 'HH:mm:ss'
-
-        return wiDDataSource.getTimeString(time = time)
-    }
 }

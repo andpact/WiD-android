@@ -4,10 +4,7 @@ import andpact.project.wid.model.PreviousView
 import andpact.project.wid.ui.theme.*
 import andpact.project.wid.viewModel.DateTimePickerViewModel
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -37,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -53,75 +52,76 @@ fun DateTimePickerView(
 ) {
     val TAG = "DateTimePickerView"
 
-//    val START = dateTimePickerViewModel.START
-//    val FINISH = dateTimePickerViewModel.FINISH
-
 //    val now = dateTimePickerViewModel.now.value
 
-    val isLastNewWiD = dateTimePickerViewModel.isLastNewWiD.value
+    val user = dateTimePickerViewModel.user.value
+    val wiDMinLimit = user?.wiDMinLimit ?: Duration.ofMinutes(5)
+    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ofHours(12)
 
-    val updateClickedWiDCopyToNow = dateTimePickerViewModel.updateClickedWiDCopyToNow.value
+    val isLastNewWiD = dateTimePickerViewModel.isLastNewWiD.value
 
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(initialPage = if (previousView == PreviousView.CLICKED_WID_START) 0 else 1, pageCount = { 2 })
 
-//    val clickedWiD = dateTimePickerViewModel.clickedWiD.value
+    val clickedWiD = dateTimePickerViewModel.clickedWiD.value
     val clickedWiDCopy = dateTimePickerViewModel.clickedWiDCopy.value
 
+    val minStart = dateTimePickerViewModel.minStart.value // 조회 기록의 최소 시작
+    val maxFinish = dateTimePickerViewModel.maxFinish.value // 조회 기록의 최대 종료
+    val updateMaxFinish = dateTimePickerViewModel.updateMaxFinish.value
+    val applyMaxFinish = dateTimePickerViewModel.applyMaxFinish.value // 조회 기록의 최대 종료을 뷰에서 사용할지
+
     val startCurrentDate = dateTimePickerViewModel.startCurrentDate.value
-//    val startDatePickerMidDate = dateTimePickerViewModel.startDatePickerMidDate.value
     val startHourListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.start.hour)
     val startMinuteListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.start.minute)
     val startSecondListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.start.second)
-    val startEnabled = dateTimePickerViewModel.startEnabled.value
-    val minStart = dateTimePickerViewModel.minStart.value
-    val maxStart = dateTimePickerViewModel.maxStart.value
+    val startCurrentTime = LocalTime.of(startHourListState.firstVisibleItemIndex, startMinuteListState.firstVisibleItemIndex, startSecondListState.firstVisibleItemIndex)
+    val currentStart = LocalDateTime.of(startCurrentDate, startCurrentTime)
+    val currentStartEnabled = minStart <= currentStart
 
     val finishCurrentDate = dateTimePickerViewModel.finishCurrentDate.value
-//    val finishDatePickerMidDate = dateTimePickerViewModel.finishDatePickerMidDate.value
     val finishHourListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.finish.hour)
     val finishMinuteListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.finish.minute)
     val finishSecondListState = rememberLazyListState(initialFirstVisibleItemIndex = clickedWiDCopy.finish.second)
-    val finishEnabled = dateTimePickerViewModel.finishEnabled.value
-    val minFinish = dateTimePickerViewModel.minFinish.value
-    val maxFinish = dateTimePickerViewModel.maxFinish.value
+    val finishCurrentTime = LocalTime.of(finishHourListState.firstVisibleItemIndex, finishMinuteListState.firstVisibleItemIndex, finishSecondListState.firstVisibleItemIndex)
+    val currentFinish = LocalDateTime.of(finishCurrentDate, finishCurrentTime)
+    val currentFinishEnabled = currentFinish <= maxFinish
 
-    // 마지막 새 기록 시작 시간을 실시간으로 갱신
-//    LaunchedEffect(clickedWiDCopy.start) {
-//        startHourListState.scrollToItem(index = clickedWiDCopy.start.hour)
-//        startMinuteListState.scrollToItem(index = clickedWiDCopy.start.minute)
-//        startSecondListState.scrollToItem(index = clickedWiDCopy.start.second)
-//    }
-
-    // 마지막 새 기록 종료 시간을 실시간으로 갱신
-//    LaunchedEffect(clickedWiDCopy.finish) {
-//        finishHourListState.scrollToItem(index = clickedWiDCopy.finish.hour)
-//        finishMinuteListState.scrollToItem(index = clickedWiDCopy.finish.minute)
-//        finishSecondListState.scrollToItem(index = clickedWiDCopy.finish.second)
-//    }
+    val currentDuration = Duration.between(currentStart, currentFinish)
+    val currentDurationEnabled = currentDuration in wiDMinLimit..wiDMaxLimit
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
 
-        dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = clickedWiDCopy.start.toLocalDate())
-        dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = clickedWiDCopy.finish.toLocalDate())
+        dateTimePickerViewModel.setCurrentDate(newCurrentDate = currentDate) // currentStart와 currentFinish의 제한을 구하기 위해서 설정함.
+
+        dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = clickedWiDCopy.start.toLocalDate()) // 시작 날짜 초기화
+        dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = clickedWiDCopy.finish.toLocalDate()) // 종료 날짜 초기화
+
+        dateTimePickerViewModel.setApplyMaxFinish(apply = isLastNewWiD) // 마지막 새 기록만 maxFinish 적용되어 있음.
 
         onDispose { Log.d(TAG, "disposed") }
     }
 
-//    BackHandler {
-//        coroutineScope.launch { // clickedWiDCopy가 직전 수정 버전
-//            startHourListState.scrollToItem(index = clickedWiDCopy.start.hour)
-//            startMinuteListState.scrollToItem(index = clickedWiDCopy.start.minute)
-//            startSecondListState.scrollToItem(index = clickedWiDCopy.start.second)
-//
-//            finishHourListState.scrollToItem(index = clickedWiDCopy.finish.hour)
-//            finishMinuteListState.scrollToItem(index = clickedWiDCopy.finish.minute)
-//            finishSecondListState.scrollToItem(index = clickedWiDCopy.finish.second)
-//        }
-//
-//        onBackButtonPressed()
-//    }
+    LaunchedEffect( // 최대 종료 시간 사용
+        key1 = maxFinish,
+        block = {
+            if (applyMaxFinish) {
+                if (currentFinish.toLocalDate() != maxFinish.toLocalDate()) { dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = maxFinish.toLocalDate()) }
+                coroutineScope.launch {
+                    if (currentFinish.hour != maxFinish.hour) {
+                        finishHourListState.animateScrollToItem(index = maxFinish.hour)
+                    }
+                    if (currentFinish.minute != maxFinish.minute) {
+                        finishMinuteListState.animateScrollToItem(index = maxFinish.minute)
+                    }
+                    if (currentFinish.second != maxFinish.second) {
+                        finishSecondListState.animateScrollToItem(index = maxFinish.second)
+                    }
+                }
+            }
+        }
+    )
 
     Scaffold(
         modifier = Modifier
@@ -142,17 +142,9 @@ fun DateTimePickerView(
                     navigationIcon = {
                         IconButton(
                             onClick = {
-//                            coroutineScope.launch { // clickedWiDCopy가 직전 수정 버전
-//                                startHourListState.scrollToItem(index = clickedWiDCopy.start.hour)
-//                                startMinuteListState.scrollToItem(index = clickedWiDCopy.start.minute)
-//                                startSecondListState.scrollToItem(index = clickedWiDCopy.start.second)
-//
-//                                finishHourListState.scrollToItem(index = clickedWiDCopy.finish.hour)
-//                                finishMinuteListState.scrollToItem(index = clickedWiDCopy.finish.minute)
-//                                finishSecondListState.scrollToItem(index = clickedWiDCopy.finish.second)
-//                            }
-
                                 onBackButtonPressed()
+                                dateTimePickerViewModel.setClickedWiDCopyStart(newStart = clickedWiD.start)
+                                dateTimePickerViewModel.setClickedWiDCopyFinish(newFinish = clickedWiD.finish)
                             }
                         ) {
                             Icon(
@@ -166,7 +158,7 @@ fun DateTimePickerView(
                             text = "${previousView.kr} 시간 선택",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
-                    },
+                    }
                 )
             }
         },
@@ -183,19 +175,10 @@ fun DateTimePickerView(
                             .height(56.dp),
                         shape = RectangleShape,
                         colors = ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                        onClick = { // 뒤로가기 + 초기화
-//                        coroutineScope.launch { // clickedWiDCopy가 직전 수정 버전
-//                            startHourListState.scrollToItem(index = clickedWiDCopy.start.hour)
-//                            startMinuteListState.scrollToItem(index = clickedWiDCopy.start.minute)
-//                            startSecondListState.scrollToItem(index = clickedWiDCopy.start.second)
-//
-//                            finishHourListState.scrollToItem(index = clickedWiDCopy.finish.hour)
-//                            finishMinuteListState.scrollToItem(index = clickedWiDCopy.finish.minute)
-//                            finishSecondListState.scrollToItem(index = clickedWiDCopy.finish.second)
-//                        }
-
-                            // 초기화할 필요는 사실 없음
+                        onClick = {
                             onBackButtonPressed()
+                            dateTimePickerViewModel.setClickedWiDCopyStart(newStart = clickedWiD.start)
+                            dateTimePickerViewModel.setClickedWiDCopyFinish(newFinish = clickedWiD.finish)
                         }
                     ) {
                         Text(text = "취소")
@@ -211,19 +194,17 @@ fun DateTimePickerView(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
                         onClick = {
-                            val newStartTime = LocalTime.of(startHourListState.firstVisibleItemIndex, startMinuteListState.firstVisibleItemIndex, startSecondListState.firstVisibleItemIndex)
-                            val newFinishTime = LocalTime.of(finishHourListState.firstVisibleItemIndex, finishMinuteListState.firstVisibleItemIndex, finishSecondListState.firstVisibleItemIndex)
-                            val newStartDateTime = LocalDateTime.of(startCurrentDate, newStartTime)
-                            val newFinishDateTime = LocalDateTime.of(finishCurrentDate, newFinishTime)
+                            onBackButtonPressed()
 
-                            if (clickedWiDCopy.start != newStartDateTime) { // 직전 시작 시간 수정됨
-                                dateTimePickerViewModel.setClickedWiDCopyStart(newStart = newStartDateTime)
-                            } else if (clickedWiDCopy.finish != newFinishDateTime) { // 직전 종료 시간 수정됨
-                                dateTimePickerViewModel.setClickedWiDCopyFinish(newFinish = newFinishDateTime)
-                                dateTimePickerViewModel.setUpdateClickedWiDCopyFinishToNow(update = false)
+                            dateTimePickerViewModel.setClickedWiDCopyStart(newStart = currentStart) // 시작 수정
+
+                            if (applyMaxFinish) {
+                                dateTimePickerViewModel.setUpdateClickedWiDCopyFinishToMaxFinish(update = true) // 종료 시간 갱신
+                            } else {
+                                dateTimePickerViewModel.setClickedWiDCopyFinish(newFinish = currentFinish) // 종료 수정
                             }
                         },
-                        enabled = !startEnabled && !finishEnabled
+                        enabled = currentStartEnabled && currentFinishEnabled && currentDurationEnabled
                     ) {
                         Text(text = "수정 완료")
                     }
@@ -262,7 +243,7 @@ fun DateTimePickerView(
                             pagerState.animateScrollToPage(0)
                         }
                     },
-                    icon = { Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "") },
+//                    icon = { Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "시작 시점") },
                     text = { Text(text = "시작 시점") }
                 )
 
@@ -273,7 +254,7 @@ fun DateTimePickerView(
                             pagerState.animateScrollToPage(1)
                         }
                     },
-                    icon = { Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "") },
+//                    icon = { Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "종료 시점") },
                     text = { Text(text = "종료 시점") }
                 )
             }
@@ -286,8 +267,7 @@ fun DateTimePickerView(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            contentPadding = PaddingValues(vertical = 8.dp),
-//                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
                             item(
                                 key = "start-current-date-picker",
@@ -428,169 +408,205 @@ fun DateTimePickerView(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp),
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = startHourListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = startHourListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 24,
-                                            key = { itemIndex -> "hour-item-$itemIndex" },
-                                            contentType = { "hour-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        startHourListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = startHourListState,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = startHourListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (startHourListState.firstVisibleItemIndex == itemIndex && !startHourListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 24,
+                                                key = { itemIndex -> "hour-item-$itemIndex" },
+                                                contentType = { "hour-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            startHourListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (startHourListState.firstVisibleItemIndex == itemIndex && !startHourListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
 
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = startMinuteListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = startMinuteListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 60,
-                                            key = { itemIndex -> "minute-item-$itemIndex" },
-                                            contentType = { "minute-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        startMinuteListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = startMinuteListState,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = startMinuteListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (startMinuteListState.firstVisibleItemIndex == itemIndex && !startMinuteListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 60,
+                                                key = { itemIndex -> "minute-item-$itemIndex" },
+                                                contentType = { "minute-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            startMinuteListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (startMinuteListState.firstVisibleItemIndex == itemIndex && !startMinuteListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
 
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = startSecondListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = startSecondListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 60,
-                                            key = { itemIndex -> "second-item-$itemIndex" },
-                                            contentType = { "second-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        startSecondListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = startSecondListState,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = startSecondListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (startSecondListState.firstVisibleItemIndex == itemIndex && !startSecondListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 60,
+                                                key = { itemIndex -> "second-item-$itemIndex" },
+                                                contentType = { "second-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            startSecondListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (startSecondListState.firstVisibleItemIndex == itemIndex && !startSecondListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
                                 }
                             }
@@ -673,116 +689,113 @@ fun DateTimePickerView(
                             }
 
                             item(
-                                key = "min-start-time-picker",
-                                contentType = "start-time-picker-card"
+                                key = "min-start",
+                                contentType = "list-item"
                             ) {
-                                val isMinStartEnabled = !(startHourListState.firstVisibleItemIndex == minStart.hour &&
-                                        startMinuteListState.firstVisibleItemIndex == minStart.minute &&
-                                        startSecondListState.firstVisibleItemIndex == minStart.second)
-
-                                Card(
+                                ListItem(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(72.dp)
-                                        .height(intrinsicSize = IntrinsicSize.Min),
-                                    shape = RectangleShape,
-                                    enabled = isMinStartEnabled,
-                                    onClick = {
-                                        dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = minStart.toLocalDate())
-                                        dateTimePickerViewModel.setUpdateClickedWiDCopyStartToNowMinus12Hours(update = true)
+                                        .clickable {
+                                            if (startCurrentDate != minStart.toLocalDate()) {
+                                                dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = minStart.toLocalDate())
+                                            }
 
-                                        coroutineScope.launch {
-                                            launch { startHourListState.animateScrollToItem(index = minStart.hour) }
-                                            launch { startMinuteListState.animateScrollToItem(index = minStart.minute) }
-                                            launch { startSecondListState.animateScrollToItem(index = minStart.second) }
-                                        }
+                                            if (currentStart != minStart) {
+                                                coroutineScope.launch {
+                                                    launch { startHourListState.animateScrollToItem(index = minStart.hour) }
+                                                    launch { startMinuteListState.animateScrollToItem(index = minStart.minute) }
+                                                    launch { startSecondListState.animateScrollToItem(index = minStart.second) }
+                                                }
+                                            }
+                                        },
+                                    headlineContent = {
+                                        Text(text = "최소 시작 시간 제한")
                                     },
-                                    colors = CardDefaults.cardColors(containerColor = Transparent)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 16.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                        ) {
-                                            Text(
-                                                text = "선택 가능한 최소 시간",
-                                                style = MaterialTheme.typography.bodyLarge
-                                            )
-
-                                            Text(
-                                                text = dateTimePickerViewModel.getDateTimeString(dateTime = minStart),
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "최소 시간 사용"
+                                    supportingContent = {
+                                        Text(text = dateTimePickerViewModel.getDateTimeString(dateTime = minStart))
+                                    },
+                                    trailingContent = {
+                                        RadioButton(
+                                            selected = currentStart == minStart,
+                                            onClick = null
                                         )
                                     }
-                                }
+                                )
+
+//                                Card(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .height(72.dp)
+//                                        .height(intrinsicSize = IntrinsicSize.Min),
+//                                    enabled = currentStart != minStart,
+//                                    onClick = {
+//                                        dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = minStart.toLocalDate())
+//                                        coroutineScope.launch {
+//                                            launch { startHourListState.animateScrollToItem(index = minStart.hour) }
+//                                            launch { startMinuteListState.animateScrollToItem(index = minStart.minute) }
+//                                            launch { startSecondListState.animateScrollToItem(index = minStart.second) }
+//                                        }
+//                                    },
+//                                    shape = RectangleShape,
+//                                    colors = CardDefaults.cardColors(
+//                                        containerColor = Transparent,
+//                                        disabledContainerColor = Transparent
+//                                    )
+//                                ) {
+//                                    Row(
+//                                        modifier = Modifier
+//                                            .fillMaxHeight()
+//                                            .padding(horizontal = 16.dp),
+//                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+//                                        verticalAlignment = Alignment.CenterVertically
+//                                    ) {
+//                                        Column(
+//                                            modifier = Modifier
+//                                                .weight(1f)
+//                                        ) {
+//                                            Text(
+//                                                text = "최소 시작 시간 제한",
+//                                                style = MaterialTheme.typography.bodyLarge
+//                                            )
+//
+//                                            Text(
+//                                                text = dateTimePickerViewModel.getDateTimeString(dateTime = minStart),
+//                                                style = MaterialTheme.typography.bodyMedium
+//                                            )
+//                                        }
+//
+//                                        Icon(
+//                                            imageVector = Icons.Default.KeyboardArrowDown,
+//                                            contentDescription = "최소 시작 시간 사용",
+//                                        )
+//                                    }
+//                                }
                             }
 
                             item(
-                                key = "max-start-time-picker",
-                                contentType = "start-time-picker-card"
+                                key = "min-start-divider",
+                                contentType = "divider"
                             ) {
-                                val isMaxStartEnabled = !(startHourListState.firstVisibleItemIndex == maxStart.hour &&
-                                        startMinuteListState.firstVisibleItemIndex == maxStart.minute &&
-                                        startSecondListState.firstVisibleItemIndex == maxStart.second)
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            }
 
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(72.dp)
-                                        .height(intrinsicSize = IntrinsicSize.Min),
-                                    shape = RectangleShape,
-                                    enabled = isMaxStartEnabled,
-                                    onClick = {
-                                        dateTimePickerViewModel.setStartCurrentDate(newStartCurrentDate = maxStart.toLocalDate())
-
-                                        coroutineScope.launch {
-                                            launch { startHourListState.animateScrollToItem(index = maxStart.hour) }
-                                            launch { startMinuteListState.animateScrollToItem(index = maxStart.minute) }
-                                            launch { startSecondListState.animateScrollToItem(index = maxStart.second) }
-                                        }
-                                    },
-                                    colors = CardDefaults.cardColors(containerColor = Transparent)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 16.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                        ) {
-                                            Text(
-                                                text = "선택 가능한 최대 시간",
-                                                style = MaterialTheme.typography.bodyLarge
-                                            )
-
-                                            Text(
-                                                text = dateTimePickerViewModel.getDateTimeString(dateTime = maxStart),
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "최대 시간 사용",
+                            item(
+                                key = "current-duration-with-min-start",
+                                contentType = "list-item"
+                            ) {
+                                ListItem(
+                                    overlineContent = {
+                                        Text(
+                                            text = "최소 ${dateTimePickerViewModel.getDurationString(duration = wiDMinLimit)} ~ 최대 ${dateTimePickerViewModel.getDurationString(duration = wiDMaxLimit)}",
+                                            maxLines = 1
                                         )
+                                    },
+                                    headlineContent = {
+                                        Text(text = "현재 소요 시간")
+                                    },
+                                    supportingContent = {
+                                        Text(text = dateTimePickerViewModel.getDurationString(duration = currentDuration))
                                     }
-                                }
+                                )
                             }
                         }
                     }
@@ -791,7 +804,6 @@ fun DateTimePickerView(
                             modifier = Modifier
                                 .fillMaxWidth(),
                             contentPadding = PaddingValues(vertical = 8.dp),
-//                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             item(
                                 key = "finish-current-date-picker",
@@ -810,7 +822,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                         ),
-                                        enabled = finishCurrentDate == currentDate.plusDays(1),
+                                        enabled = finishCurrentDate == currentDate.plusDays(1) && !applyMaxFinish,
                                         onClick = {
                                             val newFinishCurrentDate = finishCurrentDate.minusDays(1)
                                             dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = newFinishCurrentDate)
@@ -832,7 +844,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                         ),
-                                        enabled = finishCurrentDate == currentDate,
+                                        enabled = finishCurrentDate == currentDate && !applyMaxFinish,
                                         onClick = {
                                             val newFinishCurrentDate = finishCurrentDate.plusDays(1)
                                             dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = newFinishCurrentDate)
@@ -865,7 +877,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishHourListState.canScrollBackward,
+                                        enabled = finishHourListState.canScrollBackward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishHourListState.animateScrollToItem(index = finishHourListState.firstVisibleItemIndex - 1)
@@ -886,7 +898,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishMinuteListState.canScrollBackward,
+                                        enabled = finishMinuteListState.canScrollBackward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishMinuteListState.animateScrollToItem(index = finishMinuteListState.firstVisibleItemIndex - 1)
@@ -907,7 +919,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishSecondListState.canScrollBackward,
+                                        enabled = finishSecondListState.canScrollBackward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishSecondListState.animateScrollToItem(index = finishSecondListState.firstVisibleItemIndex - 1)
@@ -928,169 +940,212 @@ fun DateTimePickerView(
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = finishHourListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = finishHourListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 24,
-                                            key = { itemIndex -> "hour-item-$itemIndex" },
-                                            contentType = { "hour-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        finishHourListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = finishHourListState,
+                                            userScrollEnabled = !applyMaxFinish,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = finishHourListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (finishHourListState.firstVisibleItemIndex == itemIndex && !finishHourListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 24,
+                                                key = { itemIndex -> "hour-item-$itemIndex" },
+                                                contentType = { "hour-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    enabled = !applyMaxFinish,
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            finishHourListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (finishHourListState.firstVisibleItemIndex == itemIndex && !finishHourListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
 
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = finishMinuteListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = finishMinuteListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 60,
-                                            key = { itemIndex -> "minute-item-$itemIndex" },
-                                            contentType = { "minute-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        finishMinuteListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = finishMinuteListState,
+                                            userScrollEnabled = !applyMaxFinish,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = finishMinuteListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (finishMinuteListState.firstVisibleItemIndex == itemIndex && !finishMinuteListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 60,
+                                                key = { itemIndex -> "minute-item-$itemIndex" },
+                                                contentType = { "minute-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    enabled = !applyMaxFinish,
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            finishMinuteListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (finishMinuteListState.firstVisibleItemIndex == itemIndex && !finishMinuteListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
 
-                                    LazyColumn(
+                                    Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height((48 * 3).dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        state = finishSecondListState,
-                                        flingBehavior = rememberSnapFlingBehavior(lazyListState = finishSecondListState)
                                     ) {
-                                        item(
-                                            key = "second-spacer-top",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
 
-                                        items(
-                                            count = 60,
-                                            key = { itemIndex -> "second-item-$itemIndex" },
-                                            contentType = { "second-item" }
-                                        ) { itemIndex ->
-                                            TextButton(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp),
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        finishSecondListState.animateScrollToItem(index = itemIndex)
-                                                    }
-                                                },
-                                                shape = RectangleShape
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height((48 * 3).dp),
+                                            state = finishSecondListState,
+                                            userScrollEnabled = !applyMaxFinish,
+                                            flingBehavior = rememberSnapFlingBehavior(lazyListState = finishSecondListState)
+                                        ) {
+                                            item(
+                                                key = "second-spacer-top",
+                                                contentType = "spacer"
                                             ) {
-                                                Text(
-                                                    text = "$itemIndex",
-                                                    style = if (finishSecondListState.firstVisibleItemIndex == itemIndex && !finishSecondListState.isScrollInProgress) {
-                                                        MaterialTheme.typography.bodyLarge
-                                                    } else {
-                                                        MaterialTheme.typography.bodySmall
-                                                    }
-                                                )
+                                                Spacer(modifier = Modifier.height(48.dp))
+                                            }
+
+                                            items(
+                                                count = 60,
+                                                key = { itemIndex -> "second-item-$itemIndex" },
+                                                contentType = { "second-item" }
+                                            ) { itemIndex ->
+                                                TextButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .height(48.dp),
+                                                    enabled = !applyMaxFinish,
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            finishSecondListState.animateScrollToItem(index = itemIndex)
+                                                        }
+                                                    },
+                                                    shape = RectangleShape
+                                                ) {
+                                                    Text(
+                                                        text = "$itemIndex",
+                                                        style = if (finishSecondListState.firstVisibleItemIndex == itemIndex && !finishSecondListState.isScrollInProgress) {
+                                                            MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                        } else {
+                                                            MaterialTheme.typography.labelSmall
+                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                            item(
+                                                key = "second-spacer-bottom",
+                                                contentType = "spacer"
+                                            ) {
+                                                Spacer(modifier = Modifier.height(48.dp))
                                             }
                                         }
 
-                                        item(
-                                            key = "second-spacer-bottom",
-                                            contentType = "spacer"
-                                        ) {
-                                            Spacer(modifier = Modifier.height(48.dp))
-                                        }
+                                        VerticalDivider(
+                                            modifier = Modifier
+                                                .height((48 * 3).dp),
+                                            thickness = 0.5.dp
+                                        )
                                     }
                                 }
                             }
@@ -1115,7 +1170,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishHourListState.canScrollForward,
+                                        enabled = finishHourListState.canScrollForward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishHourListState.animateScrollToItem(index = finishHourListState.firstVisibleItemIndex + 1)
@@ -1136,7 +1191,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishMinuteListState.canScrollForward,
+                                        enabled = finishMinuteListState.canScrollForward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishMinuteListState.animateScrollToItem(index = finishMinuteListState.firstVisibleItemIndex + 1)
@@ -1157,7 +1212,7 @@ fun DateTimePickerView(
                                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                         ),
-                                        enabled = finishSecondListState.canScrollForward,
+                                        enabled = finishSecondListState.canScrollForward && !applyMaxFinish,
                                         onClick = {
                                             coroutineScope.launch {
                                                 finishSecondListState.animateScrollToItem(index = finishSecondListState.firstVisibleItemIndex + 1)
@@ -1173,30 +1228,36 @@ fun DateTimePickerView(
                             }
 
                             item(
-                                key = "min-finish-time-picker",
-                                contentType = "finish-time-picker-card"
+                                key = "max-finish",
+                                contentType = "list-item"
                             ) {
-                                val isMinFinishEnabled = !(finishHourListState.firstVisibleItemIndex == minFinish.hour &&
-                                        finishMinuteListState.firstVisibleItemIndex == minFinish.minute &&
-                                        finishSecondListState.firstVisibleItemIndex == minFinish.second)
-
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(72.dp)
                                         .height(intrinsicSize = IntrinsicSize.Min),
-                                    shape = RectangleShape,
-                                    enabled = isMinFinishEnabled,
+                                    enabled = if (updateMaxFinish) { true } else { currentFinish != maxFinish },
                                     onClick = {
-                                        dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = minFinish.toLocalDate())
-
-                                        coroutineScope.launch {
-                                            launch { finishHourListState.animateScrollToItem(index = minFinish.hour) }
-                                            launch { finishMinuteListState.animateScrollToItem(index = minFinish.minute) }
-                                            launch { finishSecondListState.animateScrollToItem(index = minFinish.second) }
+                                        if (updateMaxFinish) { // 최대 종료 갱신 상태
+                                            dateTimePickerViewModel.setApplyMaxFinish(!applyMaxFinish)
+                                            dateTimePickerViewModel.setUpdateClickedWiDCopyFinishToMaxFinish(!applyMaxFinish)
+                                        } else { // 최대 종료 정지 상태
+                                            if (finishCurrentDate != maxFinish.toLocalDate()) {
+                                                dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = maxFinish.toLocalDate())
+                                            }
+                                            if (currentFinish == maxFinish) {
+                                                coroutineScope.launch {
+                                                    launch { finishHourListState.animateScrollToItem(index = maxFinish.hour) }
+                                                    launch { finishMinuteListState.animateScrollToItem(index = maxFinish.minute) }
+                                                    launch { finishSecondListState.animateScrollToItem(index = maxFinish.second) }
+                                                }
+                                            }
                                         }
                                     },
-                                    colors = CardDefaults.cardColors(containerColor = Transparent)
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Transparent,
+                                        disabledContainerColor = Transparent
+                                    )
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -1210,81 +1271,59 @@ fun DateTimePickerView(
                                                 .weight(1f)
                                         ) {
                                             Text(
-                                                text = "선택 가능한 최소 시간",
-                                                style = MaterialTheme.typography.bodyLarge
-                                            )
-
-                                            Text(
-                                                text = dateTimePickerViewModel.getDateTimeString(dateTime = minFinish),
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                        }
-
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "최소 시간 사용",
-                                        )
-                                    }
-                                }
-                            }
-
-                            item(
-                                key = "max-finish-time-picker",
-                                contentType = "finish-time-picker-card"
-                            ) {
-                                val isMaxFinishEnabled = if (isLastNewWiD) {
-                                    !updateClickedWiDCopyToNow
-                                } else {
-                                    !(finishHourListState.firstVisibleItemIndex == maxFinish.hour &&
-                                            finishMinuteListState.firstVisibleItemIndex == maxFinish.minute &&
-                                            finishSecondListState.firstVisibleItemIndex == maxFinish.second)
-                                }
-
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(72.dp)
-                                        .height(intrinsicSize = IntrinsicSize.Min),
-                                    enabled = isMaxFinishEnabled,
-                                    onClick = {
-                                        dateTimePickerViewModel.setFinishCurrentDate(newFinishCurrentDate = maxFinish.toLocalDate())
-
-                                        coroutineScope.launch {
-                                            launch { finishHourListState.animateScrollToItem(index = maxFinish.hour) }
-                                            launch { finishMinuteListState.animateScrollToItem(index = maxFinish.minute) }
-                                            launch { finishSecondListState.animateScrollToItem(index = maxFinish.second) }
-                                        }
-                                    },
-                                    colors = CardDefaults.cardColors(containerColor = Transparent)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 16.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                        ) {
-                                            Text(
-                                                text = "선택 가능한 최대 시간",
+                                                text = "최대 종료 시간 제한",
                                                 style = MaterialTheme.typography.bodyLarge
                                             )
 
                                             Text(
                                                 text = dateTimePickerViewModel.getDateTimeString(dateTime = maxFinish),
-                                                style = MaterialTheme.typography.bodySmall
+                                                style = MaterialTheme.typography.bodyMedium
                                             )
                                         }
 
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "최대 시간 사용",
-                                        )
+                                        if (updateMaxFinish) {
+                                            Switch(
+                                                checked = applyMaxFinish,
+                                                onCheckedChange = {
+                                                    dateTimePickerViewModel.setApplyMaxFinish(it)
+                                                    dateTimePickerViewModel.setUpdateClickedWiDCopyFinishToMaxFinish(it)
+                                                }
+                                            )
+                                        } else {
+                                            RadioButton(
+                                                selected = currentFinish == maxFinish,
+                                                onClick = null
+                                            )
+                                        }
                                     }
                                 }
+                            }
+
+                            item(
+                                key = "max-finish-divider",
+                                contentType = "divider"
+                            ) {
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            }
+
+                            item(
+                                key = "current-duration-with-max-finish",
+                                contentType = "list-item"
+                            ) {
+                                ListItem(
+                                    overlineContent = {
+                                        Text(
+                                            text = "최소 ${dateTimePickerViewModel.getDurationString(duration = wiDMinLimit)} ~ 최대 ${dateTimePickerViewModel.getDurationString(duration = wiDMaxLimit)}",
+                                            maxLines = 1
+                                        )
+                                    },
+                                    headlineContent = {
+                                        Text(text = "현재 소요 시간")
+                                    },
+                                    supportingContent = {
+                                        Text(text = dateTimePickerViewModel.getDurationString(duration = currentDuration))
+                                    }
+                                )
                             }
                         }
                     }

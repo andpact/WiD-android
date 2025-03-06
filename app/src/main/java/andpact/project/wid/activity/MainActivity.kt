@@ -4,10 +4,12 @@ import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.ui.theme.WiDTheme
 import andpact.project.wid.view.MainActivityView
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val TAG = "MainActivity"
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate() called")
@@ -37,7 +40,7 @@ class MainActivity : ComponentActivity() {
          * 2. MainActivity
          * 3. Theme.kt
          */
-        actionBar?.hide() // 테마에서 액션바를 없애기 전에 액션바를 없앰.
+        actionBar?.hide() // Theme.kt에서 액션바를 없애기 전에 액션바를 없앰.
 //        window.apply {
 //            WindowCompat.setDecorFitsSystemWindows(this, false) // 시스템 바 영역까지 UI 확장
 //            statusBarColor = Transparent.toArgb() // 상태 표시줄 투명

@@ -75,12 +75,7 @@ class MonthlyWiDListViewModel @Inject constructor(
         (newStartDate.year..newFinishDate.year).forEach { year: Int ->
             wiDDataSource.getWiD(
                 email = currentUser.email,
-                year = Year.of(year),
-                onResult = { snackbarActionResult: SnackbarActionResult ->
-                    if (snackbarActionResult == SnackbarActionResult.FAIL_SERVER_ERROR) {
-                        // TODO: 서버 호출 실패 시 스낵 바 띄우기
-                    }
-                }
+                year = Year.of(year)
             )
         }
     }
@@ -145,7 +140,7 @@ class MonthlyWiDListViewModel @Inject constructor(
         var currentDate = start
         while (currentDate <= finish) {
             val dayStart = currentDate.atStartOfDay()
-            val dayEnd = currentDate.atTime(LocalTime.MAX)
+            val dayEnd = currentDate.plusDays(1).atStartOfDay()
 
             // 현재 날짜에 해당하는 기록 리스트 가져오기
             val wiDListForDay = wiDDataSource.yearDateWiDListMap.value

@@ -97,7 +97,7 @@ class MyAccountViewModel @Inject constructor(
 
         val currentUser = user.value ?: return
 
-        userDataSource.deleteUser(
+        userDataSource.deleteUserAndDataDocument(
             email = currentUser.email,
             onUserDeleted = { userDeleted: Boolean ->
                 onUserDeleted(userDeleted)

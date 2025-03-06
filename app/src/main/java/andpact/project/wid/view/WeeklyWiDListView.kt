@@ -1,6 +1,5 @@
 package andpact.project.wid.view
 
-import andpact.project.wid.R
 import andpact.project.wid.chartView.WeeklyWiDListChartView
 import andpact.project.wid.model.TitleDurationMap
 import andpact.project.wid.ui.theme.*
@@ -9,12 +8,11 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -22,7 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -169,28 +167,35 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         Column(
                             modifier = Modifier
                                 .size(240.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    shape = MaterialTheme.shapes.extraSmall
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    shape = MaterialTheme.shapes.medium
                                 ),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
                         ) {
                             Text(
                                 text = "NO",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.displayMedium
+                                    .copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontStyle = FontStyle.Italic
+                                    )
                             )
 
                             Text(
                                 text = "DATA",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.displayMedium
+                                    .copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontStyle = FontStyle.Italic
+                                    )
                             )
                         }
 
                         Text(
                             text = "표시할 데이터가 없습니다.",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 }
@@ -227,7 +232,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                     LazyRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(48.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -259,16 +264,16 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(56.dp)
+                                    .size(40.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        shape = MaterialTheme.shapes.medium
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "${index + 1}",
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
                         },
@@ -347,7 +352,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -398,8 +403,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val daysOfWeek = listOf("월", "화", "수", "목", "금", "토", "일")
@@ -415,7 +419,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                             modifier = Modifier
                                 .weight(1f),
                             text = day,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = textColor
                         )
@@ -435,7 +439,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(64.dp * 6), // 항상 6줄 표시
+                                .height(48.dp * 6), // 항상 6줄 표시
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             daysList.chunked(7).forEach { week: List<LocalDate> ->
@@ -449,8 +453,8 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
 
                                 OutlinedCard(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(64.dp),
+                                        .fillMaxWidth() // TODO: 패딩으로 설정하고 마지막줄 더미 넣기. 
+                                        .height(48.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = if (isCurrentWeek) MaterialTheme.colorScheme.primary else Transparent,
                                         disabledContainerColor = Transparent
@@ -489,7 +493,7 @@ fun WeeklyWiDListView(weeklyWiDListViewModel: WeeklyWiDListViewModel = hiltViewM
                                                 modifier = Modifier
                                                     .weight(1f),
                                                 text = date.dayOfMonth.toString(),
-                                                style = MaterialTheme.typography.bodyLarge,
+                                                style = MaterialTheme.typography.bodyMedium,
                                                 color = textColor,
                                                 textAlign = TextAlign.Center
                                             )

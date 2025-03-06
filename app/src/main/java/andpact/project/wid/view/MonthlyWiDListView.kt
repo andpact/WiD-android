@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -148,28 +150,35 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         Column(
                             modifier = Modifier
                                 .size(240.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    shape = MaterialTheme.shapes.extraSmall
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                    shape = MaterialTheme.shapes.medium
                                 ),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
                         ) {
                             Text(
                                 text = "NO",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.displayMedium
+                                    .copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontStyle = FontStyle.Italic
+                                    )
                             )
 
                             Text(
                                 text = "DATA",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.displayMedium
+                                    .copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontStyle = FontStyle.Italic
+                                    )
                             )
                         }
 
                         Text(
                             text = "표시할 데이터가 없습니다.",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 }
@@ -206,7 +215,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                     LazyRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(48.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -238,16 +247,16 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(56.dp)
+                                    .size(40.dp)
                                     .background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        shape = MaterialTheme.shapes.medium
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "${index + 1}",
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
                         },
@@ -326,7 +335,7 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp),
+                        .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -429,17 +438,19 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                                             .fillMaxWidth(),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
+                                        val monthColor = if (isCurrentMonth) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else if (!monthEnabled) {
+                                            MaterialTheme.colorScheme.outline
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        }
+
                                         Text(
                                             text = "${monthDate.monthValue}월",
-                                            style = MaterialTheme.typography.bodySmall,
+                                            style = MaterialTheme.typography.bodyMedium,
                                             textAlign = TextAlign.Center,
-                                            color = if (isCurrentMonth) {
-                                                MaterialTheme.colorScheme.onPrimary
-                                            } else if (!monthEnabled) {
-                                                MaterialTheme.colorScheme.outline
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurface
-                                            }
+                                            color = monthColor
                                         )
 
                                         val firstDayOfWeek = monthDate.withDayOfMonth(1).dayOfWeek.value % 7 // 0: Sunday, ..., 6: Saturday
@@ -449,6 +460,37 @@ fun MonthlyWiDListView(monthlyWiDListViewModel: MonthlyWiDListViewModel = hiltVi
                                             repeat(firstDayOfWeek) { add("") } // 시작 요일 전에 빈칸 추가
                                             addAll((1..totalDaysInMonth).map { it.toString() }) // 실제 날짜 추가
                                             repeat(42 - size) { add("") } // 남은 칸 빈칸으로 채우기
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            val daysOfWeek = listOf("S", "M", "T", "W", "T", "F", "S")
+
+                                            daysOfWeek.forEachIndexed { index, day ->
+                                                val textColor = if (isCurrentMonth) {
+                                                    MaterialTheme.colorScheme.onPrimary
+                                                } else if (!monthEnabled) {
+                                                    MaterialTheme.colorScheme.outline
+                                                } else {
+                                                    when (index) {
+                                                        0 -> MaterialTheme.colorScheme.onErrorContainer
+                                                        6 -> MaterialTheme.colorScheme.onTertiaryContainer
+                                                        else -> MaterialTheme.colorScheme.onSurface
+                                                    }
+                                                }
+
+                                                Text(
+                                                    modifier = Modifier
+                                                        .weight(1f),
+                                                    text = day,
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                                    textAlign = TextAlign.Center,
+                                                    color = textColor
+                                                )
+                                            }
                                         }
 
                                         LazyVerticalGrid(

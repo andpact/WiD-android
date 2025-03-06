@@ -3,7 +3,6 @@ package andpact.project.wid.view
 import andpact.project.wid.R
 import andpact.project.wid.destinations.MainViewDestinations
 import andpact.project.wid.model.PlayerState
-import andpact.project.wid.model.SnackbarActionResult
 import andpact.project.wid.model.Tool
 import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.viewModel.MainBottomBarViewModel
@@ -17,7 +16,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -25,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.time.Duration
 
 @Composable
 fun MainBottomBarView(
@@ -42,16 +39,16 @@ fun MainBottomBarView(
     val selectedTime = mainBottomBarViewModel.selectedTime.value
     val remainingTime = mainBottomBarViewModel.remainingTime.value
 
-    val user = mainBottomBarViewModel.user.value
-    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ZERO
+//    val user = mainBottomBarViewModel.user.value
+//    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ZERO
 
     val playerState = mainBottomBarViewModel.playerState.value
 
     val destinationList = mainBottomBarViewModel.destinationList
 
-    val density = LocalDensity.current
-    val statusBarHeight = WindowInsets.statusBars.getTop(density).dp
-    val navigatorBarHeight = WindowInsets.navigationBars.getBottom(density).dp
+//    val density = LocalDensity.current
+//    val statusBarHeight = WindowInsets.statusBars.getTop(density).dp
+//    val navigatorBarHeight = WindowInsets.navigationBars.getBottom(density).dp
 
 //    val view = LocalView.current
 //    val density = LocalDensity.current
@@ -126,58 +123,14 @@ fun MainBottomBarView(
                                 when (playerState) {
                                     PlayerState.STARTED -> {
                                         when (currentWiD.tool) {
-                                            Tool.STOPWATCH -> mainBottomBarViewModel.pauseStopwatch(
-                                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                    coroutineScope.launch {
-                                                        snackbarHostState.showSnackbar(
-                                                            message = snackbarActionResult.message,
-                                                            actionLabel = "확인",
-                                                            withDismissAction = true,
-                                                            duration = SnackbarDuration.Short
-                                                        )
-                                                    }
-                                                }
-                                            ) // 스톱 워치
-                                            else -> mainBottomBarViewModel.pauseTimer(
-                                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                    coroutineScope.launch {
-                                                        snackbarHostState.showSnackbar(
-                                                            message = snackbarActionResult.message,
-                                                            actionLabel = "확인",
-                                                            withDismissAction = true,
-                                                            duration = SnackbarDuration.Short
-                                                        )
-                                                    }
-                                                }
-                                            ) // 타이머
+                                            Tool.STOPWATCH -> mainBottomBarViewModel.pauseStopwatch() // 스톱 워치
+                                            else -> mainBottomBarViewModel.pauseTimer() // 타이머
                                         }
                                     }
                                     else -> {
                                         when (currentWiD.tool) {
-                                            Tool.STOPWATCH -> mainBottomBarViewModel.startStopwatch(
-                                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                    coroutineScope.launch {
-                                                        snackbarHostState.showSnackbar(
-                                                            message = snackbarActionResult.message,
-                                                            actionLabel = "확인",
-                                                            withDismissAction = true,
-                                                            duration = SnackbarDuration.Short
-                                                        )
-                                                    }
-                                                }
-                                            ) // 스톱 워치
-                                            else -> mainBottomBarViewModel.startTimer(
-                                                onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                    coroutineScope.launch {
-                                                        snackbarHostState.showSnackbar(
-                                                            message = snackbarActionResult.message,
-                                                            actionLabel = "확인",
-                                                            withDismissAction = true,
-                                                            duration = SnackbarDuration.Short
-                                                        )
-                                                    }
-                                                }
-                                            ) // 타이머
+                                            Tool.STOPWATCH -> mainBottomBarViewModel.startStopwatch() // 스톱 워치
+                                            else -> mainBottomBarViewModel.startTimer() // 타이머
                                         }
                                     }
                                 }

@@ -2,18 +2,16 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.model.PlayerState
-import andpact.project.wid.model.SnackbarActionResult
+import andpact.project.wid.model.SubTitle
 import andpact.project.wid.model.Title
 import andpact.project.wid.ui.theme.Transparent
-import andpact.project.wid.ui.theme.White
 import andpact.project.wid.viewModel.StopwatchViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -31,15 +29,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.time.Duration
+import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -54,15 +54,15 @@ fun StopwatchView(
 
     val WID_LIST_LIMIT_PER_DAY = stopwatchViewModel.WID_LIST_LIMIT_PER_DAY
 
-    val now = stopwatchViewModel.now.value
+//    val now = stopwatchViewModel.now.value
 
     val currentWiD = stopwatchViewModel.currentWiD.value
 
     val wiDList = stopwatchViewModel.wiDList.value
 
     val user = stopwatchViewModel.user.value
-    val wiDMinLimit = user?.wiDMinLimit ?: Duration.ZERO
-    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ZERO
+    val wiDMinLimit = user?.wiDMinLimit ?: Duration.ofMinutes(5)
+    val wiDMaxLimit = user?.wiDMaxLimit ?: Duration.ofHours(12)
 
     // 화면
     val stopwatchViewBarVisible = stopwatchViewModel.stopwatchViewBarVisible.value
@@ -100,7 +100,7 @@ fun StopwatchView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(statusBarHeight)
-                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
                         )
 
                         CenterAlignedTopAppBar(
@@ -121,9 +121,9 @@ fun StopwatchView(
                                 )
                             },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+//                                navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+//                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                     }
@@ -178,34 +178,14 @@ fun StopwatchView(
                                 ),
                                 onClick = {
                                     if (playerState == PlayerState.STARTED) { // 시작 상태
-                                        stopwatchViewModel.pauseStopwatch(
-                                            onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = snackbarActionResult.message,
-                                                        actionLabel = "확인",
-                                                        withDismissAction = true,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        stopwatchViewModel.pauseStopwatch()
                                     } else { // 중지 및 정지 상태
-                                        stopwatchViewModel.startStopwatch(
-                                            onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = snackbarActionResult.message,
-                                                        actionLabel = "확인",
-                                                        withDismissAction = true,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        stopwatchViewModel.startStopwatch()
                                     }
                                 },
-                                enabled = wiDList.size <= WID_LIST_LIMIT_PER_DAY && currentWiD.title != Title.UNTITLED
+                                enabled = wiDList.size <= WID_LIST_LIMIT_PER_DAY
+                                        && currentWiD.title != Title.UNTITLED
+                                        && currentWiD.subTitle != SubTitle.UNSELECTED_UNTITLED
                             ) {
                                 Icon(
                                     painter = painterResource(
@@ -288,13 +268,13 @@ fun StopwatchView(
                                         )
                                         .padding(horizontal = 4.dp),
                                     text = "최대",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 )
 
                                 Text(
                                     text = stopwatchViewModel.getDurationString(wiDMaxLimit),
-                                    style = MaterialTheme.typography.bodySmall
+                                    style = MaterialTheme.typography.labelSmall
                                 )
                             }
                         }
@@ -410,7 +390,7 @@ fun StopwatchView(
 
                         TabRow(
                             modifier = Modifier
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                .background(color = MaterialTheme.colorScheme.surfaceContainer)
                                 .clip(
                                     shape = MaterialTheme.shapes.medium.copy(
                                         bottomStart = CornerSize(0),
@@ -472,26 +452,11 @@ fun StopwatchView(
                         0 -> {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .fillMaxSize()
                                     .padding(horizontal = 16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(240.dp)
-                                        .border(
-                                            width = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            shape = MaterialTheme.shapes.medium
-                                        )
-                                )
-
-                                Text(
-                                    text = stopwatchViewModel.getDurationTimeString(totalDuration),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                )
-
                                 // TODO: 이미지 준비되면 복구
 //                                Image(
 //                                    modifier = Modifier
@@ -499,27 +464,171 @@ fun StopwatchView(
 //                                    painter = painterResource(id = firstCurrentWiD.title.smallImage),
 //                                    contentDescription = "제목 이미지"
 //                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(240.dp)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surfaceContainer,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                )
+
+                                Text(
+                                    text = stopwatchViewModel.getDurationTimeString(totalDuration),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
                         }
                         1 -> {
-                            Box(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Text(
-                                    text = stopwatchViewModel.getStopwatchDurationString(totalDuration),
-                                    style = TextStyle(textAlign = TextAlign.End)
-                                )
+                                val hours = totalDuration.toHours()
+                                val hourTens = hours / 10
+                                val hourOnes = hours % 10
+
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = hourTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = hourOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                val minutes = (totalDuration.toMinutes() % 60).toInt()
+                                val minuteTens = minutes / 10
+                                val minuteOnes = minutes % 10
+
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = minuteTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = minuteOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                val seconds = (totalDuration.seconds % 60).toInt()
+                                val secondTens = seconds / 10
+                                val secondOnes = seconds % 10
+
+                                // 십의 자리
+                                AnimatedContent(
+                                    targetState = secondTens,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { tensDigit ->
+                                    Text(
+                                        text = tensDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
+
+                                // 일의 자리
+                                AnimatedContent(
+                                    targetState = secondOnes,
+                                    transitionSpec = {
+                                        slideInVertically(animationSpec = tween(300)) { it } +
+                                                fadeIn(animationSpec = tween(300)) togetherWith
+                                                slideOutVertically(animationSpec = tween(300)) { -it } +
+                                                fadeOut(animationSpec = tween(300))
+                                    }
+                                ) { onesDigit ->
+                                    Text(
+                                        text = onesDigit.toString(),
+                                        style = MaterialTheme.typography.displayLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        ),
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
                             }
                         }
                         2 -> {
                             LazyColumn(
                                 modifier = Modifier
                                     .padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
-                                    .border(
-                                        width = 0.5.dp,
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surfaceContainer,
                                         shape = MaterialTheme.shapes.medium
                                     )
                             ) {
@@ -528,6 +637,7 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "제목")
                                         },
@@ -542,6 +652,7 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "부제목")
                                         },
@@ -556,12 +667,14 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "시작")
                                         },
                                         supportingContent = {
                                             Text(text = if (playerState == PlayerState.STOPPED) {
-                                                    stopwatchViewModel.getDateTimeString(dateTime = now)
+//                                                    stopwatchViewModel.getDateTimeString(dateTime = now)
+                                                    AnnotatedString("시작 전")
                                                 } else {
                                                     stopwatchViewModel.getDateTimeString(dateTime = currentWiD.start)
                                                 }
@@ -575,12 +688,13 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "종료")
                                         },
                                         supportingContent = {
                                             Text(text = if (playerState == PlayerState.STOPPED) {
-                                                    stopwatchViewModel.getDateTimeString(dateTime = now)
+                                                    AnnotatedString("시작 전")
                                                 } else {
                                                     stopwatchViewModel.getDateTimeString(dateTime = currentWiD.finish)
                                                 }
@@ -594,6 +708,7 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "소요")
                                         },
@@ -608,11 +723,14 @@ fun StopwatchView(
                                     contentType = "list-item"
                                 ) {
                                     ListItem(
+                                        colors = ListItemDefaults.colors(containerColor = Transparent),
                                         headlineContent = {
                                             Text(text = "경험치")
                                         },
                                         supportingContent = {
-                                            Text(text = "${currentWiD.exp}")
+                                            val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+
+                                            Text(text = numberFormat.format(currentWiD.exp))
                                         }
                                     )
                                 }

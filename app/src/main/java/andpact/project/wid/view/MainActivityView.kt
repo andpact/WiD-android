@@ -3,43 +3,22 @@ package andpact.project.wid.view
 import andpact.project.wid.destinations.MainActivityViewDestinations
 import andpact.project.wid.model.City
 import andpact.project.wid.model.PreviousView
-import andpact.project.wid.ui.theme.*
+import andpact.project.wid.ui.theme.rememberSystemBarHeights
 import android.util.Log
-import android.view.ViewTreeObserver
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @Composable
@@ -60,6 +39,7 @@ fun MainActivityView(dynamicLink: String?) {
             .fillMaxSize(),
         navController = mainActivityViewNavController,
         startDestination = MainActivityViewDestinations.SplashViewDestination.route,
+//        startDestination = MainActivityViewDestinations.MainViewDestination.route,
         builder = {
             composable(
                 route = MainActivityViewDestinations.SplashViewDestination.route,
@@ -102,20 +82,28 @@ fun MainActivityView(dynamicLink: String?) {
                         statusBarHeight = statusBarHeight,
                         navigationBarHeight = navigationBarHeight,
                         onStopwatchClicked = {
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.StopwatchViewDestination.route)
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.StopwatchViewDestination.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onTimerClicked = {
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.TimerViewDestination.route)
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.TimerViewDestination.route) {
+                                launchSingleTop = true
+                            }
                         },
                         onWiDClicked = { currentDate: LocalDate ->
                             val currentDateString = currentDate.toString()
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route + "/$currentDateString")
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.WiDViewDestination.route + "/$currentDateString") {
+                                launchSingleTop = true
+                            }
                         },
                         onCityPickerClicked = { clickedCity: City ->
                             val previousViewString = PreviousView.USER_CITY.name
                             val currentCityString = clickedCity.name
 
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString" + "/$currentCityString")
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString" + "/$currentCityString") {
+                                launchSingleTop = true
+                            }
                         },
                         onUserSignedOut = {
                             mainActivityViewNavController.navigate(MainActivityViewDestinations.AuthenticationViewDestination.route)
@@ -136,6 +124,12 @@ fun MainActivityView(dynamicLink: String?) {
                         towards = AnimatedContentTransitionScope.SlideDirection.Left,
                         animationSpec = tween(500)
                     )
+                },
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(durationMillis = 500))
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(durationMillis = 500))
                 },
                 popExitTransition = {
                     slideOutOfContainer(
@@ -167,6 +161,12 @@ fun MainActivityView(dynamicLink: String?) {
                         animationSpec = tween(500)
                     )
                 },
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(durationMillis = 500))
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(durationMillis = 500))
+                },
                 popExitTransition = {
                     slideOutOfContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Right,
@@ -197,6 +197,12 @@ fun MainActivityView(dynamicLink: String?) {
                         animationSpec = tween(500)
                     )
                 },
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(durationMillis = 500))
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(durationMillis = 500))
+                },
                 popExitTransition = {
                     slideOutOfContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Right,
@@ -222,18 +228,24 @@ fun MainActivityView(dynamicLink: String?) {
                         onTitlePickerClicked = { previousView: PreviousView ->
                             val previousViewString = previousView.name
 
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.TitlePickerViewDestination.route + "/$previousViewString")
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.TitlePickerViewDestination.route + "/$previousViewString") {
+                                launchSingleTop = true
+                            }
                         },
                         onDateTimePickerClicked = { previousView: PreviousView ->
                             val previousViewString = previousView.name
 
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.DateTimePickerViewDestination.route + "/$currentDateString" + "/$previousViewString")
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.DateTimePickerViewDestination.route + "/$currentDateString" + "/$previousViewString") {
+                                launchSingleTop = true
+                            }
                         },
                         onCityPickerClicked = { clickedCity: City ->
                             val previousViewString = PreviousView.CLICKED_WID_CITY.name
                             val currentCityString = clickedCity.name
 
-                            mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString" + "/$currentCityString")
+                            mainActivityViewNavController.navigate(MainActivityViewDestinations.CityPickerViewDestination.route + "/$previousViewString" + "/$currentCityString") {
+                                launchSingleTop = true
+                            }
                         }
                     )
                 }

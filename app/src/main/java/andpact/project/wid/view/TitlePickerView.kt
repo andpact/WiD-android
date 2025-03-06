@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -61,7 +62,7 @@ fun TitlePickerView(
     val currentWiD = titlePickerViewModel.currentWiD.value
 
     val coroutineScope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(initialPage = if (previousView == PreviousView.CLICKED_WID_TITLE) 0 else 1, pageCount = { 2 })
+    val pagerState = rememberPagerState(initialPage = if (previousView == PreviousView.CLICKED_WID_SUB_TITLE) 1 else 0, pageCount = { 2 })
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -245,7 +246,17 @@ fun TitlePickerView(
 //                                            onClick = null
 //                                        )
 
-                                        Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "부 제목 선택 이동")
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(
+                                                    color = MaterialTheme.colorScheme.surfaceContainer,
+                                                    shape = CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "부 제목 선택 이동")
+                                        }
                                     }
                                 )
                             }

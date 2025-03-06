@@ -2,18 +2,16 @@ package andpact.project.wid.view
 
 import andpact.project.wid.R
 import andpact.project.wid.model.PlayerState
-import andpact.project.wid.model.SnackbarActionResult
+import andpact.project.wid.model.SubTitle
 import andpact.project.wid.model.Title
 import andpact.project.wid.ui.theme.Transparent
-import andpact.project.wid.ui.theme.White
 import andpact.project.wid.viewModel.TimerViewModel
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,16 +29,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.time.Duration
+import java.util.*
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +53,7 @@ fun TimerView(
 
     val WID_LIST_LIMIT_PER_DAY = timerViewModel.WID_LIST_LIMIT_PER_DAY
 
-    val now = timerViewModel.now.value
+//    val now = timerViewModel.now.value
 
     val currentWiD = timerViewModel.currentWiD.value
 
@@ -117,7 +115,7 @@ fun TimerView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(statusBarHeight)
-                                .background(MaterialTheme.colorScheme.tertiaryContainer)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
                         )
 
                         CenterAlignedTopAppBar(
@@ -140,9 +138,9 @@ fun TimerView(
                                 )
                             },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                navigationIconContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+//                                navigationIconContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+//                                titleContentColor = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         )
                     }
@@ -192,39 +190,21 @@ fun TimerView(
 
                             FilledIconButton(
                                 colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = if (playerState == PlayerState.STARTED) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.tertiaryContainer,
-                                    contentColor = if (playerState == PlayerState.STARTED) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onTertiaryContainer,
+                                    containerColor = if (playerState == PlayerState.STARTED) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = if (playerState == PlayerState.STARTED) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                                 ),
                                 onClick = {
                                     if (playerState == PlayerState.STARTED) { // 시작 상태
-                                        timerViewModel.pauseTimer(
-                                            onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = snackbarActionResult.message,
-                                                        actionLabel = "확인",
-                                                        withDismissAction = true,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        timerViewModel.pauseTimer()
                                     } else { // 중지 및 정지 상태
-                                        timerViewModel.startTimer(
-                                            onResult = { snackbarActionResult: SnackbarActionResult ->
-                                                coroutineScope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        message = snackbarActionResult.message,
-                                                        actionLabel = "확인",
-                                                        withDismissAction = true,
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        )
+                                        timerViewModel.startTimer()
                                     }
                                 },
-                                enabled = wiDMinLimit <= selectedTime && selectedTime <= wiDMaxLimit && wiDList.size <= WID_LIST_LIMIT_PER_DAY && currentWiD.title != Title.UNTITLED
+                                enabled = wiDMinLimit <= selectedTime
+                                        && selectedTime <= wiDMaxLimit
+                                        && wiDList.size <= WID_LIST_LIMIT_PER_DAY
+                                        && currentWiD.title != Title.UNTITLED
+                                        && currentWiD.subTitle != SubTitle.UNSELECTED_UNTITLED
                             ) {
                                 Icon(
                                     painter = painterResource(
@@ -307,13 +287,13 @@ fun TimerView(
                                         )
                                         .padding(horizontal = 4.dp),
                                     text = "최대",
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 )
 
                                 Text(
                                     text = timerViewModel.getDurationString(wiDMaxLimit),
-                                    style = MaterialTheme.typography.bodySmall
+                                    style = MaterialTheme.typography.labelSmall
                                 )
                             }
                         }
@@ -416,6 +396,69 @@ fun TimerView(
             ) {
                 if (playerState == PlayerState.STOPPED) { // 스톱 워치 정지 상태
                     // TODO: 탭 로우 추가하고 정해진 시간(기존 타이머 동작)과 정해진 시각(16:00:00까지)로 나누기
+                    AnimatedContent(
+                        targetState = timerViewBarVisible,
+                        transitionSpec = {
+                            fadeIn() togetherWith fadeOut()
+                        },
+                    ) { isVisible: Boolean ->
+                        if (isVisible) {
+                            val currentPage = pagerState.currentPage
+
+                            TabRow(
+                                modifier = Modifier
+                                    .background(color = MaterialTheme.colorScheme.surfaceContainer)
+                                    .clip(
+                                        shape = MaterialTheme.shapes.medium.copy(
+                                            bottomStart = CornerSize(0),
+                                            bottomEnd = CornerSize(0)
+                                        )
+                                    ),
+                                containerColor = MaterialTheme.colorScheme.surface, // 색상 지정안하니 기본 색상이 지정됨.
+                                selectedTabIndex = currentPage,
+//                                indicator = { tabPositions ->
+//                                    TabRowDefaults.PrimaryIndicator(
+//                                        modifier = Modifier
+//                                            .tabIndicatorOffset(tabPositions[currentPage]),
+//                                        width = tabPositions[currentPage].contentWidth
+//                                    )
+//                                }
+                            ) {
+//                                Tab(
+//                                    selected = currentPage == 0,
+//                                    onClick = {
+//                                        coroutineScope.launch {
+//                                            pagerState.animateScrollToPage(0)
+//                                        }
+//                                    },
+//                                    text = { Text(text = "이미지")}
+//                                )
+//
+//                                Tab(
+//                                    selected = currentPage == 1,
+//                                    onClick = {
+//                                        coroutineScope.launch {
+//                                            pagerState.animateScrollToPage(1)
+//                                        }
+//                                    },
+//                                    text = { Text(text = "시간")}
+//                                )
+//
+//                                Tab(
+//                                    selected = currentPage == 2,
+//                                    onClick = {
+//                                        coroutineScope.launch {
+//                                            pagerState.animateScrollToPage(2)
+//                                        }
+//                                    },
+//                                    text = { Text(text = "기록")}
+//                                )
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.height(48.dp))
+                        }
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -462,9 +505,9 @@ fun TimerView(
                                         Text(
                                             text = "$itemIndex",
                                             style = if (hourListState.firstVisibleItemIndex == itemIndex && !hourListState.isScrollInProgress) {
-                                                MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                                             } else {
-                                                MaterialTheme.typography.bodySmall
+                                                MaterialTheme.typography.bodyLarge
                                             }
                                         )
                                     }
@@ -515,9 +558,9 @@ fun TimerView(
                                         Text(
                                             text = "$itemIndex",
                                             style = if (minuteListState.firstVisibleItemIndex == itemIndex && !minuteListState.isScrollInProgress) {
-                                                MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                                             } else {
-                                                MaterialTheme.typography.bodySmall
+                                                MaterialTheme.typography.bodyLarge
                                             }
                                         )
                                     }
@@ -568,9 +611,9 @@ fun TimerView(
                                         Text(
                                             text = "$itemIndex",
                                             style = if (secondListState.firstVisibleItemIndex == itemIndex && !secondListState.isScrollInProgress) {
-                                                MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                                MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                                             } else {
-                                                MaterialTheme.typography.bodySmall
+                                                MaterialTheme.typography.bodyLarge
                                             }
                                         )
                                     }
@@ -600,7 +643,7 @@ fun TimerView(
 
                             TabRow(
                                 modifier = Modifier
-                                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                    .background(color = MaterialTheme.colorScheme.surfaceContainer)
                                     .clip(
                                         shape = MaterialTheme.shapes.medium.copy(
                                             bottomStart = CornerSize(0),
@@ -662,16 +705,15 @@ fun TimerView(
                             0 -> { // 표지
                                 Column(
                                     modifier = Modifier
-                                        .fillMaxWidth(),
+                                        .fillMaxSize(),
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterVertically)
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .size(240.dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = MaterialTheme.colorScheme.onSurface,
+                                            .background(
+                                                color = MaterialTheme.colorScheme.surfaceContainer,
                                                 shape = MaterialTheme.shapes.medium
                                             )
                                     )
@@ -712,33 +754,167 @@ fun TimerView(
                                             modifier = Modifier
                                                 .align(alignment = Alignment.CenterStart),
                                             text = timerViewModel.getDurationTimeString(remainingTime),
-                                            style = MaterialTheme.typography.bodyLarge
+                                            style = MaterialTheme.typography.bodyMedium
                                         )
 
                                         Text(
                                             modifier = Modifier
                                                 .align(alignment = Alignment.CenterEnd),
                                             text = timerViewModel.getDurationTimeString(selectedTime),
-                                            style = MaterialTheme.typography.bodyLarge
+                                            style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
                                 }
                             }
                             1 -> { // 시간
-                                Text(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth(),
-                                    text = timerViewModel.getTimerDurationString(duration = remainingTime),
-                                    textAlign = TextAlign.Center
-                                )
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    val hours = remainingTime.toHours()
+                                    val hourTens = hours / 10
+                                    val hourOnes = hours % 10
+
+                                    // 십의 자리
+                                    AnimatedContent(
+                                        targetState = hourTens,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { tensDigit ->
+                                        Text(
+                                            text = tensDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+
+                                    // 일의 자리
+                                    AnimatedContent(
+                                        targetState = hourOnes,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { onesDigit ->
+                                        Text(
+                                            text = onesDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    val minutes = (remainingTime.toMinutes() % 60).toInt()
+                                    val minuteTens = minutes / 10
+                                    val minuteOnes = minutes % 10
+
+                                    // 십의 자리
+                                    AnimatedContent(
+                                        targetState = minuteTens,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { tensDigit ->
+                                        Text(
+                                            text = tensDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    // 일의 자리
+                                    AnimatedContent(
+                                        targetState = minuteOnes,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { onesDigit ->
+                                        Text(
+                                            text = onesDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    val seconds = (remainingTime.seconds % 60).toInt()
+                                    val secondTens = seconds / 10
+                                    val secondOnes = seconds % 10
+
+                                    // 십의 자리
+                                    AnimatedContent(
+                                        targetState = secondTens,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { tensDigit ->
+                                        Text(
+                                            text = tensDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                    }
+
+                                    // 일의 자리
+                                    AnimatedContent(
+                                        targetState = secondOnes,
+                                        transitionSpec = {
+                                            slideInVertically(animationSpec = tween(300)) { -it } +
+                                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                                    slideOutVertically(animationSpec = tween(300)) { it } +
+                                                    fadeOut(animationSpec = tween(300))
+                                        }
+                                    ) { onesDigit ->
+                                        Text(
+                                            text = onesDigit.toString(),
+                                            style = MaterialTheme.typography.displayLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                fontFamily = FontFamily.Monospace
+                                            ),
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                    }
+                                }
                             }
                             2 -> { // 기록
                                 LazyColumn(
                                     modifier = Modifier
                                         .padding(PaddingValues(horizontal = 16.dp, vertical = 8.dp))
-                                        .border(
-                                            width = 0.5.dp,
-                                            color = MaterialTheme.colorScheme.onSurface,
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surfaceContainer,
                                             shape = MaterialTheme.shapes.medium
                                         )
                                 ) {
@@ -747,6 +923,7 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "제목")
                                             },
@@ -761,6 +938,7 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "부제목")
                                             },
@@ -775,6 +953,7 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "시작")
                                             },
@@ -789,6 +968,7 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "종료")
                                             },
@@ -803,6 +983,7 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "소요")
                                             },
@@ -817,11 +998,13 @@ fun TimerView(
                                         contentType = "list-item"
                                     ) {
                                         ListItem(
+                                            colors = ListItemDefaults.colors(containerColor = Transparent),
                                             headlineContent = {
                                                 Text(text = "경험치")
                                             },
                                             supportingContent = {
-                                                Text(text = "${currentWiD.exp}")
+                                                val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+                                                Text(text = numberFormat.format(currentWiD.exp))
                                             }
                                         )
                                     }

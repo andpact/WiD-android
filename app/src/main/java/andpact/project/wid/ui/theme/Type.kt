@@ -1,18 +1,21 @@
 package andpact.project.wid.ui.theme
 
-import andpact.project.wid.R
-import androidx.compose.material3.Typography
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+//val chivoMonoBlackItalic = FontFamily(
+//    Font(R.font.chivo_mono_black_italic)
+//)
 
-val chivoMonoBlackItalic = FontFamily(
-    Font(R.font.chivo_mono_black_italic)
-)
-
+/**
+ * 앱 내에서는
+ * bodyLarge
+ * bodyMedium
+ * labelSmall
+ *
+ * 굵게, 기울이기 등은 직접 설정.
+ *
+ * 위 3가지만 사용함.
+ * (기본 설정 되어 있는 건 제외)
+ *
+ */
 //val Typography = Typography(
     /* (Normal = Regular)
         displayLarge = TextStyle(

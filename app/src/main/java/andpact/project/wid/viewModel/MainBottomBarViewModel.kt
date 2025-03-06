@@ -4,7 +4,6 @@ import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
 import andpact.project.wid.destinations.MainViewDestinations
 import andpact.project.wid.model.PlayerState
-import andpact.project.wid.model.SnackbarActionResult
 import andpact.project.wid.model.User
 import andpact.project.wid.model.WiD
 import android.util.Log
@@ -48,104 +47,63 @@ class MainBottomBarViewModel @Inject constructor(
         MainViewDestinations.MyPageViewDestination
     )
 
-    fun startStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun startStopwatch() {
         Log.d(TAG, "startStopwatch executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
-        }
+        val currentUser = user.value ?: return
 
         wiDDataSource.startStopwatch(
-            email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
             wiDMaxLimit = currentUser.wiDMaxLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onStopwatchAutoPaused = { newExp: Int ->
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            onStopwatchAutoPaused = { stopwatchAutoPaused: Boolean ->
+                if (stopwatchAutoPaused) {
+                    pauseStopwatch()
+                    stopStopwatch()
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }
 
-    fun pauseStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun pauseStopwatch() {
         Log.d(TAG, "pauseStopwatch executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
+        val currentUser = user.value ?: return
+        val wiDMinLimit = currentUser.wiDMinLimit
+        val currentWiD = currentWiD.value
+        if (currentWiD.duration < wiDMinLimit) return // 최소 시간 제한
+
+        val newExp = currentWiD.exp // 플레이어는 무조건
+        val currentLevel = currentUser.level
+        val currentExp = currentUser.currentExp
+        val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
+        val wiDTotalExp = currentUser.wiDTotalExp
+        val newWiDTotalExp = wiDTotalExp + newExp
+
+        val updatedUserDocument = mutableMapOf<String, Any>()
+
+        if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+            // 레벨 업데이트
+            val newLevel = currentLevel + 1
+            updatedUserDocument[LEVEL] = newLevel
+
+            // 경험치 갱신
+            val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
+            updatedUserDocument[CURRENT_EXP] = newCurrentExp
+        } else {
+            // 레벨 업이 아닌 경우 현재 경험치만 갱신
+            updatedUserDocument[CURRENT_EXP] = currentExp + newExp
         }
+
+        updatedUserDocument[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+        updatedUserDocument[CITY] = currentUser.city.name // 도시 할당
 
         wiDDataSource.pauseStopwatch(
             email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onStopwatchPaused = { newExp: Int ->
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            currentWiD = currentWiD,
+            updatedUserDocument = updatedUserDocument,
+            onResult = { success ->
+                if (success) {
+                    userDataSource.updateUser(updatedUserDocument = updatedUserDocument)
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }
@@ -156,104 +114,63 @@ class MainBottomBarViewModel @Inject constructor(
         wiDDataSource.stopStopwatch()
     }
 
-    fun startTimer(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun startTimer() {
         Log.d(TAG, "startTimer executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
-        }
+        val currentUser = user.value ?: return // 잘못된 접근
 
         wiDDataSource.startTimer(
             email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onTimerAutoStopped = { newExp: Int ->
-                // 현재 상태
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            onTimerAutoStopped = { timerAutoStopped: Boolean ->
+                if (timerAutoStopped) {
+                    pauseTimer()
+                    stopTimer()
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }
 
-    fun pauseTimer(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun pauseTimer() {
         Log.d(TAG, "pauseTimer executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
+        val currentUser = user.value ?: return // 잘못된 접근
+        val wiDMinLimit = currentUser.wiDMinLimit
+        val currentWiD = currentWiD.value
+        if (currentWiD.duration < wiDMinLimit) return // 최소 시간 제한
+
+        val newExp = currentWiD.exp // 플레이어는 무조건
+        val currentLevel = currentUser.level
+        val currentExp = currentUser.currentExp
+        val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
+        val wiDTotalExp = currentUser.wiDTotalExp
+        val newWiDTotalExp = wiDTotalExp + newExp
+
+        val updatedUserDocument = mutableMapOf<String, Any>()
+
+        if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+            // 레벨 업데이트
+            val newLevel = currentLevel + 1
+            updatedUserDocument[LEVEL] = newLevel
+
+            // 경험치 갱신
+            val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
+            updatedUserDocument[CURRENT_EXP] = newCurrentExp
+        } else {
+            // 레벨 업이 아닌 경우 현재 경험치만 갱신
+            updatedUserDocument[CURRENT_EXP] = currentExp + newExp
         }
+
+        updatedUserDocument[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+        updatedUserDocument[CITY] = currentUser.city.name // 도시 할당
 
         wiDDataSource.pauseTimer(
             email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onTimerPaused = { newExp: Int ->
-                // 현재 상태
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            currentWiD = currentWiD,
+            updatedUserDocument = updatedUserDocument,
+            onResult = { success: Boolean ->
+                if (success) {
+                    userDataSource.updateUser(updatedUserDocument = updatedUserDocument)
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }

@@ -6,20 +6,16 @@ import andpact.project.wid.ui.theme.Transparent
 import andpact.project.wid.viewModel.HomeViewModel
 import android.util.Log
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.NumberFormat
-import java.time.LocalTime
+import java.time.Duration
 import java.time.YearMonth
 import java.util.*
 
@@ -86,13 +82,13 @@ fun HomeView(
                         .padding(horizontal = 16.dp),
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     contentColor = MaterialTheme.colorScheme.onSurface,
-                    onClick = {  } // TODO: 클릭 반응 없애기
+                    onClick =  { null } // TODO: 클릭 반응 없애기
                 ) {
                     Column {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp),
+                                .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -126,14 +122,14 @@ fun HomeView(
                                 Text(text = "타이머")
                             }
 
-//                        OutlinedButton(
-//                            onClick = {
-//
-//                            },
-//                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
-//                        ) {
-//                            Text(text = "포모도로")
-//                        }
+                            OutlinedButton(
+                                onClick = {
+                                    // TODO: 작성
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                Text(text = "포모도로")
+                            }
                         }
                     }
                 }
@@ -157,7 +153,7 @@ fun HomeView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "${email}님",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                         maxLines = 1
@@ -239,7 +235,7 @@ fun HomeView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "오늘 날짜",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
@@ -251,125 +247,126 @@ fun HomeView(
                 ) {
                     val yearProgress = now.dayOfYear.toFloat() / now.toLocalDate().lengthOfYear().toFloat()
                     val monthProgress = now.dayOfMonth.toFloat() / YearMonth.from(now.toLocalDate()).lengthOfMonth().toFloat()
-                    val dayProgress = now.toLocalTime().toSecondOfDay().toFloat() / LocalTime.MAX.toSecondOfDay().toFloat()
+                    val dayProgress = now.toLocalTime().toSecondOfDay().toFloat() / Duration.ofHours(24).seconds.toFloat()
 
-                    Row(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
                     ) {
-                        // Year progress
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Box(
+                            // Year progress
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1f / 1f)
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
+                                    .weight(1f),
                             ) {
-                                CircularProgressIndicator(
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize(),
-                                    progress = yearProgress,
-                                    strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f / 1f)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        progress = yearProgress,
+                                        strokeWidth = 8.dp,
+                                        strokeCap = StrokeCap.Round,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Text(
+                                        text = "${(yearProgress * 100).toInt()}%",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
 
                                 Text(
-                                    text = "${(yearProgress * 100).toInt()}%",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    text = "${now.year}년",
+                                    textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
 
-                            Text(
+                            // Month progress
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                text = "${now.year}년",
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-
-                        // Month progress
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1f / 1f)
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
+                                    .weight(1f),
                             ) {
-                                CircularProgressIndicator(
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize(),
-                                    progress = monthProgress,
-                                    strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f / 1f)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        progress = monthProgress,
+                                        strokeWidth = 8.dp,
+                                        strokeCap = StrokeCap.Round,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                    Text(
+                                        text = "${(monthProgress * 100).toInt()}%",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+
                                 Text(
-                                    text = "${(monthProgress * 100).toInt()}%",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    text = "${now.monthValue}월",
+                                    textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
 
-                            Text(
+                            // Day progress
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                text = "${now.monthValue}월",
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-
-                        // Day progress
-                        Column(
-                            modifier = Modifier
-                                .weight(1f),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1f / 1f)
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.Center
+                                    .weight(1f),
                             ) {
-                                CircularProgressIndicator(
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxSize(),
-                                    progress = dayProgress,
-                                    strokeWidth = 8.dp,
-                                    strokeCap = StrokeCap.Round,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f / 1f)
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        progress = dayProgress,
+                                        strokeWidth = 8.dp,
+                                        strokeCap = StrokeCap.Round,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+
+                                    Text(
+                                        text = "${(dayProgress * 100).toInt()}%",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
 
                                 Text(
-                                    text = "${(dayProgress * 100).toInt()}%",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    text = "${now.dayOfMonth}일",
+                                    textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
-
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                text = "${now.dayOfMonth}일",
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
@@ -380,7 +377,7 @@ fun HomeView(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = "현재 시간",
                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                     )
@@ -390,152 +387,105 @@ fun HomeView(
                     key = "now-chart",
                     contentType = "now-chart"
                 ) {
-                    Row(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f / 1f),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                val hourTens = now.hour / 10
-                                val hourOnes = now.hour % 10
+                            // 시간(시)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    val hourTens = now.hour / 10
+                                    val hourOnes = now.hour % 10
 
-                                // 십의 자리
-                                AnimatedContent(
-                                    targetState = hourTens,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { tensDigit ->
+                                    // 십의 자리
                                     Text(
-                                        text = tensDigit.toString(),
+                                        text = hourTens.toString(),
                                         style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
-                                }
 
-                                // 일의 자리
-                                AnimatedContent(
-                                    targetState = hourOnes,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { onesDigit ->
+                                    // 일의 자리
                                     Text(
-                                        text = onesDigit.toString(),
+                                        text = hourOnes.toString(),
                                         style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
                                 }
                             }
-                        }
 
-                        Text(
-                            text = ":",
-                            style = MaterialTheme.typography.displayLarge
-                        )
+                            Text(
+                                text = ":",
+                                style = MaterialTheme.typography.displayLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
 
-                        // 분
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f / 1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                val minuteTens = now.minute / 10
-                                val minuteOnes = now.minute % 10
+                            // 분
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    val minuteTens = now.minute / 10
+                                    val minuteOnes = now.minute % 10
 
-                                // 십의 자리
-                                AnimatedContent(
-                                    targetState = minuteTens,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { tensDigit ->
+                                    // 십의 자리
                                     Text(
-                                        text = tensDigit.toString(),
+                                        text = minuteTens.toString(),
                                         style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
-                                }
 
-                                // 일의 자리
-                                AnimatedContent(
-                                    targetState = minuteOnes,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { onesDigit ->
+                                    // 일의 자리
                                     Text(
-                                        text = onesDigit.toString(),
+                                        text = minuteOnes.toString(),
                                         style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
                                 }
                             }
-                        }
 
-                        Text(
-                            text = ":",
-                            style = MaterialTheme.typography.displayLarge
-                        )
+                            Text(
+                                text = ":",
+                                style = MaterialTheme.typography.displayLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
 
-                        // 초
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f / 1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                val secondTens = now.second / 10
-                                val secondOnes = now.second % 10
+                            // 초
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    val secondTens = now.second / 10
+                                    val secondOnes = now.second % 10
 
-                                // 십의 자리
-                                AnimatedContent(
-                                    targetState = secondTens,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { tensDigit ->
+                                    // 십의 자리
                                     Text(
-                                        text = tensDigit.toString(),
-                                        style = MaterialTheme.typography.displayLarge
+                                        text = secondTens.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
-                                }
 
-                                // 일의 자리
-                                AnimatedContent(
-                                    targetState = secondOnes,
-                                    transitionSpec = {
-                                        slideInVertically(animationSpec = tween(300)) { it } +
-                                                fadeIn(animationSpec = tween(300)) togetherWith
-                                                slideOutVertically(animationSpec = tween(300)) { -it } +
-                                                fadeOut(animationSpec = tween(300))
-                                    }
-                                ) { onesDigit ->
+                                    // 일의 자리
                                     Text(
-                                        text = onesDigit.toString(),
-                                        style = MaterialTheme.typography.displayLarge
+                                        text = secondOnes.toString(),
+                                        style = MaterialTheme.typography.displayLarge,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
                                 }
                             }

@@ -84,12 +84,7 @@ val dark_scrim = Color(0xFF000000)
 
 
 
-val White = Color(0xFFFFFFFF)
 val Transparent = Color(0x00FFFFFF)
-
-//val DeepSkyBlue = Color(0xFF00BFFF)     // 진한 하늘색(파란색 버튼용)
-//val OrangeRed = Color(0xFFFF4500)       // 붉은 색(빨간 버튼용)
-//val LimeGreen = Color(0xFF32CD32)       // 라임 녹색(초록 버튼용)
 
 //val AppYellow = Color(0xFFFAEF5D)
 //val AppIndigo = Color(0xFF1D2B53)
@@ -99,25 +94,28 @@ val AppEmerald = Color(0xFF15F5BA)
 //val AppEmerald2 = Color(0xFF15F5AA)
 //val App3 = Color(0xFFF0F3FF)
 
-val Study = Color(0xFFFF0000)    // 빨강 (Red)
-val Work = Color(0xFFFF7F00)     // 주황 (Orange)
-val Exercise = Color(0xFFFFFF00) // 노랑 (Yellow)
-val Hobby = Color(0xFF00FF00)    // 연두 (Lime Green)
-val Relaxation = Color(0xFF007F00) // 녹색 (Dark Green)
-val Meal = Color(0xFF00FFFF)     // 청록 (Aqua)
-val Travel = Color(0xFF0000FF)   // 파랑 (Blue)
-val Cleaning = Color(0xFF00007F) // 남색 (Navy Blue)
-val Hygiene = Color(0xFF7F00FF) // 보라 (Purple)
-val Sleep = Color(0xFF7F007F)    // 자주색 (Dark Magenta)
+//val original_study = Color(0xFFFF0000)    // 빨강 (Red)
+//val original_work = Color(0xFFFF7F00)     // 주황 (Orange)
+//val original_exercise = Color(0xFFFFFF00) // 노랑 (Yellow)
+//val original_hobby = Color(0xFF007F00) // 녹색 (Dark Green)
+//val original_daily = Color(0xFF0000FF)   // 파랑 (Blue)
+//val original_essential = Color(0xFF00007F) // 남색 (Navy Blue)
+//val original_other = Color(0xFF7F00FF) // 보라 (Purple)
 
-// Light / Dark Mode Colors
-val LightStudy = Color(0xFFFF6666)           // 밝은 빨강
-val LightWork = Color(0xFFFFB266)            // 밝은 주황
-val LightExercise = Color(0xFFFFFF66)        // 밝은 노랑
-val LightHobby = Color(0xFF99FF99)           // 밝은 연두
-val LightRelaxation = Color(0xFF66CC66)      // 밝은 녹색
-val LightMeal = Color(0xFF66FFFF)            // 밝은 청록
-val LightTravel = Color(0xFF66B2FF)          // 밝은 파랑
-val LightCleaning = Color(0xFFB3B3FF)        // 밝은 남색
-val LightHygiene = Color(0xFFCC99FF)         // 밝은 보라
-val LightSleep = Color(0xFFFF80FF)           // 밝은 자주색
+// Light Mode Colors
+val light_study = Color(0xFFFFCCCC)     // 연한 빨강 (Light Red)
+val light_work = Color(0xFFFFE0B2)      // 연한 주황 (Light Orange)
+val light_exercise = Color(0xFFFFFFAA)   // 연한 노랑 (Light Yellow)
+val light_hobby = Color(0xFFC8E6C9)      // 연한 녹색 (Light Green)
+val light_daily = Color(0xFFBBDEFB)      // 연한 파랑 (Light Blue)
+val light_essential = Color(0xFFB2EBF2)  // 연한 남색 (Light Navy Blue)
+val light_other = Color(0xFFD1C4E9)      // 연한 보라 (Light Purple)
+
+// Dark Mode Colors
+val dark_study = Color(0xFFB22222)       // 다크 레드
+val dark_work = Color(0xFFFFA500)        // 다크 오렌지
+val dark_exercise = Color(0xFFAAAA00)    // 다크 노랑
+val dark_hobby = Color(0xFF005700)       // 다크 녹색
+val dark_daily = Color(0xFF0000CD)       // 다크 파랑
+val dark_essential = Color(0xFF00008B)   // 다크 남색
+val dark_other = Color(0xFF800080)       // 다크 보라

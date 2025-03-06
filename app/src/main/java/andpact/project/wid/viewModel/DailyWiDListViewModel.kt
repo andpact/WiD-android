@@ -35,7 +35,7 @@ class DailyWiDListViewModel @Inject constructor(
     val now: State<LocalDateTime> = wiDDataSource.now
 
     // 유저
-    private val user: State<User?> = userDataSource.user
+    val user: State<User?> = userDataSource.user
 
     // 날짜
     private val initialToday = LocalDate.now()
@@ -71,15 +71,24 @@ class DailyWiDListViewModel @Inject constructor(
 
         val currentUser = user.value ?: return
 
-        wiDDataSource.getWiD(
-            email = currentUser.email,
-            year = Year.of(newDate.year),
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                if (snackbarActionResult == SnackbarActionResult.FAIL_SERVER_ERROR) {
-                    // TODO: 실패 시 스낵 바 띄우기
-                }
-            }
-        )
+        // 1월 1일에 12월 31일 데이터가 필요하므로 전년도 기록을 가져옴
+        if (newDate.month == Month.JANUARY && newDate.dayOfMonth == 1) {
+            wiDDataSource.getWiD(
+                email = currentUser.email,
+                year = Year.of(newDate.year)
+            )
+
+            wiDDataSource.getWiD(
+                email = currentUser.email,
+                year = Year.of(newDate.year).minusYears(1)
+            )
+        } else {
+            // TODO: 1/1이면 작년 데이터도 가지고 오도록.
+            wiDDataSource.getWiD(
+                email = currentUser.email,
+                year = Year.of(newDate.year)
+            )
+        }
     }
 
     fun setDayPickerCurrentDate(newDayPickerCurrentDate: LocalDate) {
@@ -99,7 +108,7 @@ class DailyWiDListViewModel @Inject constructor(
 
         val currentUser = user.value ?: return
 
-        val updatedClickedWiD = clickedWiD.copy(city = currentUser.city)
+        val updatedClickedWiD = clickedWiD.copy(city = currentUser.city) // 기록에 도시 할당.
 
         wiDDataSource.setClickedWiDAndCopy(clickedWiD = updatedClickedWiD)
     }
@@ -113,19 +122,22 @@ class DailyWiDListViewModel @Inject constructor(
     private fun getFullWiDList(): List<WiD> {
         Log.d(TAG, "getFullWiDList updated")
 
-        // TODO: 파이 차트 코드 안에서 날짜에 포함되지 않는 앞 뒤 자르기.
-        // TODO: 리스트에서는 자르지 않고 표시(전날 3시간 30분 + 당일 3시간 30분) 
         val currentDate = _currentDate.value
-        val currentTime = if (playerState.value == PlayerState.STARTED) { null } else { now.value }
+        val now = now.value
+        val currentTime = if (playerState.value == PlayerState.STARTED) { // 마지막 새 기록 미추가
+            null
+        } else { // 마지막 새 기록 추가
+            now
+        }
 
         val wiDList = wiDDataSource.yearDateWiDListMap.value
             .getOrDefault(Year.of(currentDate.year), emptyMap())
             .getOrDefault(currentDate, emptyList())
 
         return wiDDataSource.getFullWiDList(
-            date = currentDate,
+            currentDate = currentDate,
             wiDList = wiDList,
-            today = now.value.toLocalDate(),
+            today = now.toLocalDate(),
             currentTime = currentTime
         )
     }
@@ -135,8 +147,7 @@ class DailyWiDListViewModel @Inject constructor(
 
         val currentDate = _currentDate.value
         val startOfDay = currentDate.atStartOfDay()
-//        val endOfDay = currentDate.atTime(LocalTime.MAX.withNano(0))
-        val endOfDay = currentDate.atTime(LocalTime.MAX) // TODO: 나노 세컨드를 없애서 반올림하면?
+        val endOfDay = currentDate.plusDays(1).atStartOfDay() // 다음날 00:00을 기준으로 설정
 
         val wiDList: List<WiD> = wiDDataSource.yearDateWiDListMap.value
             .getOrDefault(Year.of(currentDate.year), emptyMap())
@@ -145,7 +156,7 @@ class DailyWiDListViewModel @Inject constructor(
         // 날짜를 벗어난 기록의 시간을 조정
         val adjustedWiDList = wiDList.mapNotNull { wiD: WiD ->
             val adjustedStart = maxOf(wiD.start, startOfDay)
-            val adjustedFinish = minOf(wiD.finish, endOfDay)
+            val adjustedFinish = minOf(wiD.finish, endOfDay) // 다음날 00:00을 기준으로 자름
 
             if (adjustedStart.isBefore(adjustedFinish)) {
                 wiD.copy(
@@ -183,16 +194,13 @@ class DailyWiDListViewModel @Inject constructor(
         return wiDDataSource.getDateString(date = date)
     }
 
-//    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
-////        Log.d(TAG, "getTimeString executed")
-//
-//        return wiDDataSource.getTimeString(time = time)
-//    }
-
     @Composable
-    fun getDateTimeString(dateTime: LocalDateTime): AnnotatedString {
-//        Log.d(TAG, "getDateTimeString executed")
+    fun getDateTimeStringShort(dateTime: LocalDateTime): AnnotatedString {
+//        Log.d(TAG, "getDateTimeStringShort executed")
 
-        return wiDDataSource.getDateTimeString(dateTime = dateTime)
+        return wiDDataSource.getDateTimeStringShort(
+            currentDate = _currentDate.value, // 조회 날짜
+            dateTime = dateTime
+        )
     }
 }

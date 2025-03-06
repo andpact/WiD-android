@@ -5,28 +5,37 @@ import andpact.project.wid.model.TitleDurationChartData
 import andpact.project.wid.model.WiD
 import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.math.*
 
 @Composable
 fun DailyWiDListChartView(
+    currentDate: LocalDate,
     fullWiDList: List<WiD>,
-//    onWiDClicked: (wiD: WiD) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+//    onWiDClicked: (WiD) -> Unit,
 ) {
     val TAG = "DailyWiDListChartView"
 
@@ -35,28 +44,71 @@ fun DailyWiDListChartView(
         onDispose { Log.d(TAG, "disposed") }
     }
 
-//    val localContext = LocalContext.current // 폰트 불러오기 위해 선언함.
+    val isDarkMode = isSystemInDarkTheme()
+
     val colorScheme = MaterialTheme.colorScheme // 캔버스 밖에 선언해야함.
     val typography = MaterialTheme.typography
 
-    val totalDuration = Duration.ofHours(24).seconds
+    val dailyMaxDuration = Duration.ofHours(24).seconds
 
-    // TODO: 날짜에 포함안되는 기록 앞 뒤 자르기.
-    val chartDataList = fullWiDList.map { TitleDurationChartData(it.title, it.duration) }
+    val chartDataList: List<TitleDurationChartData> = fullWiDList.mapNotNull { wiD ->
+        val dayStart = currentDate.atStartOfDay()
+        val dayEnd = currentDate.plusDays(1).atStartOfDay()
 
-    Canvas(
+        // WiD가 currentDate와 겹치는지 확인
+        if (wiD.finish <= dayStart || dayEnd <= wiD.start ) {
+            null // 현재 날짜에 포함되지 않는 경우 제거
+        } else {
+            val adjustedStart = maxOf(wiD.start, dayStart)
+            val adjustedFinish = minOf(wiD.finish, dayEnd)
+
+            // 조정된 기간의 duration 계산
+            val adjustedDuration = Duration.between(adjustedStart, adjustedFinish)
+
+            TitleDurationChartData(wiD.title, adjustedDuration)
+        }
+    }
+
+    Box(
         modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f / 1f),
-        onDraw = {
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(
+            modifier = Modifier
+                .size(300.dp)
+        ) {
+            val outerRadius = size.width / 2.01f
+            val innerRadius = size.width * 0.402f
+
+            // 바깥쪽 테두리
+            drawCircle(
+                color = colorScheme.onSurface,
+                radius = outerRadius,
+                center = Offset(size.width / 2, size.height / 2),
+                style = Stroke(width = 0.5.dp.toPx()) // 테두리 두께
+            )
+
+            // 안쪽 원 테두리
+            drawCircle(
+                color = colorScheme.onSurface,
+                radius = innerRadius,
+                center = Offset(size.width / 2, size.height / 2),
+                style = Stroke(width = 0.5.dp.toPx()) // 테두리 두께
+            )
+
             var startAngle = -90f
 
             // 파이 차트
             chartDataList.forEach { data: TitleDurationChartData ->
-                val sweepAngle = (data.duration.seconds.toFloat() / totalDuration) * 360f
+                val sweepAngle = (data.duration.seconds.toFloat() / dailyMaxDuration) * 360f
                 if (sweepAngle <= 0) return@forEach
 
-                val arcColor = if (data.title == Title.UNTITLED) colorScheme.surfaceContainer else data.title.color
+                val arcColor = if (isDarkMode) {
+                    data.title.darkColor
+                } else {
+                    data.title.lightColor
+                }
 
                 drawArc(
                     color = arcColor,
@@ -78,11 +130,12 @@ fun DailyWiDListChartView(
 
             val radius: Float = size.minDimension / 2.8f // 원의 반지름
             val centerX = center.x
-            val centerY = center.y + radius / 25 // TODO: 절대 값이 아니라 상대 값 사용?
+            val centerY = center.y + radius / 25
 
             val textPaint = android.graphics.Paint().apply {
                 color = colorScheme.onSurface.toArgb()
-                textSize = typography.bodySmall.fontSize.toPx()
+//                textSize = typography.labelSmall.fontSize.toPx()
+                textSize = typography.bodyMedium.fontSize.toPx()
             }
 
             for (i in 0 until 24) {
@@ -165,5 +218,87 @@ fun DailyWiDListChartView(
                 }
             }
         }
-    )
+    }
 }
+
+//@Composable
+//fun DailyWiDListChartView(
+//    currentDate: LocalDate,
+//    fullWiDList: List<WiD>,
+//    modifier: Modifier = Modifier,
+//    onWiDClicked: (WiD) -> Unit,
+//) {
+//    val TAG = "DailyWiDListChartView"
+//
+//    DisposableEffect(Unit) {
+//        Log.d(TAG, "composed")
+//        onDispose { Log.d(TAG, "disposed") }
+//    }
+//
+//    val isDarkMode = isSystemInDarkTheme()
+//    val colorScheme = MaterialTheme.colorScheme
+//    val dailyMaxDuration = Duration.ofHours(24).seconds
+//
+//    val chartDataList: List<Pair<WiD, Float>> = fullWiDList.mapNotNull { wiD ->
+//        val dayStart = currentDate.atStartOfDay()
+//        val dayEnd = currentDate.plusDays(1).atStartOfDay()
+//
+//        if (wiD.finish <= dayStart || dayEnd <= wiD.start) {
+//            null
+//        } else {
+//            val adjustedStart = maxOf(wiD.start, dayStart)
+//            val adjustedFinish = minOf(wiD.finish, dayEnd)
+//            val adjustedDuration = Duration.between(adjustedStart, adjustedFinish)
+//            val sweepAngle = (adjustedDuration.seconds.toFloat() / dailyMaxDuration) * 360f
+//            wiD to sweepAngle
+//        }
+//    }
+//
+//    Box(
+//        modifier = modifier.fillMaxWidth(),
+//        contentAlignment = Alignment.Center
+//    ) {
+//        Canvas(
+//            modifier = Modifier
+//                .size(300.dp)
+//                .pointerInput(Unit) {
+//                    detectTapGestures { offset ->
+//                        val center = Offset(size.width.toFloat() / 2, size.height.toFloat() / 2)
+//                        val tappedAngle = atan2(offset.y - center.y, offset.x - center.x) * (180 / Math.PI).toFloat()
+//                        val adjustedAngle = if (tappedAngle < -90) 360 + tappedAngle else tappedAngle + 90
+//
+//                        var accumulatedAngle = -90f
+//                        for ((wiD, sweepAngle) in chartDataList) {
+//                            if (adjustedAngle in accumulatedAngle..(accumulatedAngle + sweepAngle)) {
+//                                onWiDClicked(wiD)
+//                                break
+//                            }
+//                            accumulatedAngle += sweepAngle
+//                        }
+//                    }
+//                }
+//        ) {
+//            var startAngle = -90f
+//
+//            chartDataList.forEach { (wiD, sweepAngle) ->
+//                if (sweepAngle > 0) {
+//                    val arcColor = if (isDarkMode) wiD.title.darkColor else wiD.title.lightColor
+//                    drawArc(
+//                        color = arcColor,
+//                        startAngle = startAngle,
+//                        sweepAngle = sweepAngle,
+//                        useCenter = true,
+//                        size = Size(size.width, size.height)
+//                    )
+//                }
+//                startAngle += sweepAngle
+//            }
+//
+//            drawCircle(
+//                color = colorScheme.surface,
+//                radius = size.width * 0.4f,
+//                center = Offset(size.width / 2, size.height / 2)
+//            )
+//        }
+//    }
+//}

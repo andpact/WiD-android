@@ -4,7 +4,9 @@ import andpact.project.wid.model.*
 import andpact.project.wid.ui.theme.Transparent
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,11 +23,13 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun WeeklyWiDListChartView(
     modifier: Modifier = Modifier,
-    startDate: LocalDate,
-    finishDate: LocalDate,
-    wiDList: List<WiD>
+    startDate: LocalDate, // 주의 시작 날짜로 보장됨.
+    finishDate: LocalDate, // 주의 종 날짜로 보장됨.
+    wiDList: List<WiD> // 각 기록의 시작과 종료는 같은 날짜에 포함되도록 보장됨.
 ) {
     val TAG = "WeeklyWiDListChartView"
+
+    val isDarkMode = isSystemInDarkTheme()
 
     DisposableEffect(Unit) {
         Log.d(TAG, "composed")
@@ -40,7 +44,7 @@ fun WeeklyWiDListChartView(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp),
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 더미
@@ -48,7 +52,7 @@ fun WeeklyWiDListChartView(
                 modifier = Modifier
                     .padding(horizontal = 4.dp),
                 text = "자정",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center,
                 color = Transparent
             )
@@ -66,7 +70,7 @@ fun WeeklyWiDListChartView(
                     modifier = Modifier
                         .weight(1f),
                     text = day,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
                     color = textColor
                 )
@@ -81,7 +85,8 @@ fun WeeklyWiDListChartView(
             // 시간
             Column(
                 modifier = Modifier
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .padding(bottom = 12.dp), // 기록 개수, 기록률 높이
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -106,7 +111,7 @@ fun WeeklyWiDListChartView(
                             )
                             .padding(horizontal = 4.dp),
                         text = displayText,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -116,79 +121,124 @@ fun WeeklyWiDListChartView(
 
             for (i in 0 until days) {
                 val currentDate = startDate.plusDays(i.toLong())
-
-                // currentDate에 해당하는 WiD 리스트 필터링
                 val dailyWiDList = wiDList.filter { it.start.toLocalDate() == currentDate }
 
                 // 막대 차트 데이터 생성
-                val barChartData = mutableListOf<TitleDurationChartData>()
-                val totalMinutes = 24 * 60
-                var currentMinute = 0
+                val maxSeconds = 24 * 60 * 60L
+                var currentSecond = 0L
+                val chartDataList = mutableListOf<TitleDurationChartData>()
 
                 if (dailyWiDList.isEmpty()) {
-                    val noBarChartData = TitleDurationChartData(
-                        duration = Duration.ofMinutes(totalMinutes.toLong()), // 수정된 부분
-                        title = Title.UNTITLED
+                    chartDataList.add(
+                        TitleDurationChartData(
+                            title = Title.UNTITLED,
+                            duration = Duration.ofSeconds(maxSeconds)
+                        )
                     )
-                    barChartData.add(noBarChartData)
                 } else {
-                    for (wiD in dailyWiDList) {
-                        val startMinutes = wiD.start.hour * 60 + wiD.start.minute
+                    val sortedDailyWiDList = dailyWiDList.sortedBy { it.start }
+
+                    for (wiD in sortedDailyWiDList) {
+                        val startSeconds = wiD.start.hour * 60 + wiD.start.minute + wiD.start.second
 
                         // 비어 있는 시간대의 엔트리 추가
-                        if (startMinutes > currentMinute) {
-                            val emptyMinutes = startMinutes - currentMinute
-                            val emptyBarChartData = TitleDurationChartData(
-                                duration = Duration.ofMinutes(emptyMinutes.toLong()), // 수정된 부분
-                                title = Title.UNTITLED
+                        if (currentSecond < startSeconds) {
+                            val emptySeconds = startSeconds - currentSecond
+                            chartDataList.add(
+                                TitleDurationChartData(
+                                    title = Title.UNTITLED,
+                                    duration = Duration.ofSeconds(emptySeconds)
+                                )
                             )
-                            barChartData.add(emptyBarChartData)
                         }
 
                         // WiD 데이터 추가
-                        val durationMinutes = wiD.duration.toMinutes().toInt()
-                        if (durationMinutes >= 1) {
-                            val wiDBarChartData = TitleDurationChartData(
-                                duration = wiD.duration, // 수정된 부분
-                                title = wiD.title
+                        val durationSeconds = wiD.duration.seconds
+                        if (0 < durationSeconds) {
+                            chartDataList.add(
+                                TitleDurationChartData(
+                                    title = wiD.title,
+                                    duration = wiD.duration
+                                )
                             )
-                            barChartData.add(wiDBarChartData)
                         }
 
                         // 시작 시간 업데이트
-                        currentMinute = startMinutes + durationMinutes
+                        currentSecond = startSeconds + durationSeconds
                     }
 
                     // 남은 시간대 비어 있는 막대 추가
-                    if (currentMinute < totalMinutes) {
-                        val emptyMinutes = totalMinutes - currentMinute
-                        val emptyBarChartData = TitleDurationChartData(
-                            duration = Duration.ofMinutes(emptyMinutes.toLong()), // 수정된 부분
-                            title = Title.UNTITLED
+                    if (currentSecond < maxSeconds) {
+                        val emptyMinutes = maxSeconds - currentSecond
+                        chartDataList.add(
+                            TitleDurationChartData(
+                                title = Title.UNTITLED,
+                                duration = Duration.ofSeconds(emptyMinutes)
+                            )
                         )
-                        barChartData.add(emptyBarChartData)
                     }
                 }
 
-                // 그래프
+                val count = dailyWiDList.size
+                val maxCount = 24
+                val countFraction = (count / maxCount).toFloat().coerceIn(0f, 1f)
+
+                val totalDuration = dailyWiDList.fold(Duration.ZERO) { acc, wiD -> acc + wiD.duration }
+                val dailyMaxDuration = Duration.ofHours(24).seconds
+                val totalDurationFraction = (totalDuration.seconds.toFloat() / dailyMaxDuration).coerceIn(0f, 1f)
+
+                // 막대 그래프 + 기록 개수 + 기록률
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 10.dp, vertical = 8.dp)
-                        .clip(shape = MaterialTheme.shapes.extraSmall)
+                        .padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    for (barData in barChartData) {
-                        val barHeight = barData.duration.toMinutes().toFloat() / totalMinutes // duration을 비율로 계산
-                        val barColor = if (barData.title == Title.UNTITLED) MaterialTheme.colorScheme.surfaceContainer else barData.title.color
-                        if (0.01f <= barHeight) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(barHeight) // 계산된 높이를 weight로 설정
-                                    .background(color = barColor)
-                            )
+                    // 그래프
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 8.dp)
+                            .clip(shape = MaterialTheme.shapes.extraSmall)
+                    ) {
+                        for (barData in chartDataList) {
+                            val barHeight = barData.duration.seconds.toFloat() / maxSeconds // duration을 비율로 계산
+                            val barColor = if (isDarkMode) {
+                                barData.title.darkColor
+                            } else {
+                                barData.title.lightColor
+                            }
+
+                            if (0.01f <= barHeight) { // 0.01 이하는 오류가 나지? 아마?
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(barHeight) // 계산된 높이를 weight로 설정
+                                        .background(color = barColor)
+                                )
+                            }
                         }
                     }
+
+                    LinearProgressIndicator( // 기록 개수
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(shape = MaterialTheme.shapes.extraSmall),
+                        progress = countFraction,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        trackColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(shape = MaterialTheme.shapes.extraSmall),
+                        progress = totalDurationFraction,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        trackColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
                 }
             }
         }
@@ -197,13 +247,14 @@ fun WeeklyWiDListChartView(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
             // 더미
             Text(
                 modifier = Modifier
                     .padding(horizontal = 4.dp),
                 text = "자정",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 textAlign = TextAlign.Center,
                 color = Transparent
             )
@@ -225,7 +276,7 @@ fun WeeklyWiDListChartView(
                         modifier = Modifier
                             .weight(1f),
                         text = "${dayNumber}일", // "n일" 형식으로 날짜 표시
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         color = textColor // 조건부 색상 적용
                     )
@@ -234,50 +285,50 @@ fun WeeklyWiDListChartView(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WeeklyWiDListStackedVerticalBarChartPreview() {
-    val days: Long = 7
-    val tmpStartDate = LocalDate.now().minusDays(1)
-    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
-
-    val tmpWiDList = mutableListOf<WiD>()
-
-    for (index in 0 until days) {
-        val indexDate = tmpStartDate.plusDays(index)
-
-        tmpWiDList.add(
-            WiD(
-                id = "tmpWiD",
-                title = Title.STUDY,
-                subTitle = SubTitle.UNSELECTED_STUDY,
-                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0)),
-                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(2, 0)),
-                duration = Duration.ofHours(2),
-                city = City.SEOUL,
-                exp = 0,
-                tool = Tool.LIST
-            )
-        )
-
-        tmpWiDList.add(
-            WiD(
-                id = "tmpWiD",
-                title = Title.STUDY,
-                subTitle = SubTitle.UNSELECTED_STUDY,
-                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(4, 0)),
-                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 0)),
-                duration = Duration.ofHours(3),
-                city = City.BUSAN,
-                exp = 0,
-                tool = Tool.LIST
-            )
-        )
-    }
-
-    WeeklyWiDListChartView(
-        startDate = tmpStartDate,
-        finishDate = tmpFinishDate,
-        wiDList = tmpWiDList
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WeeklyWiDListStackedVerticalBarChartPreview() {
+//    val days: Long = 7
+//    val tmpStartDate = LocalDate.now().minusDays(1)
+//    val tmpFinishDate = tmpStartDate.plusDays(days - 1)
+//
+//    val tmpWiDList = mutableListOf<WiD>()
+//
+//    for (index in 0 until days) {
+//        val indexDate = tmpStartDate.plusDays(index)
+//
+//        tmpWiDList.add(
+//            WiD(
+//                id = "tmpWiD",
+//                title = Title.STUDY,
+//                subTitle = SubTitle.UNSELECTED_STUDY,
+//                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(0, 0)),
+//                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(2, 0)),
+//                duration = Duration.ofHours(2),
+//                city = City.SEOUL,
+//                exp = 0,
+//                tool = Tool.LIST
+//            )
+//        )
+//
+//        tmpWiDList.add(
+//            WiD(
+//                id = "tmpWiD",
+//                title = Title.STUDY,
+//                subTitle = SubTitle.UNSELECTED_STUDY,
+//                start = LocalDateTime.of(LocalDate.now(), LocalTime.of(4, 0)),
+//                finish = LocalDateTime.of(LocalDate.now(), LocalTime.of(7, 0)),
+//                duration = Duration.ofHours(3),
+//                city = City.BUSAN,
+//                exp = 0,
+//                tool = Tool.LIST
+//            )
+//        )
+//    }
+//
+//    WeeklyWiDListChartView(
+//        startDate = tmpStartDate,
+//        finishDate = tmpFinishDate,
+//        wiDList = tmpWiDList
+//    )
+//}

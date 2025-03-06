@@ -2,18 +2,21 @@ package andpact.project.wid.viewModel
 
 import andpact.project.wid.dataSource.UserDataSource
 import andpact.project.wid.dataSource.WiDDataSource
-import andpact.project.wid.model.*
-import andpact.project.wid.ui.theme.chivoMonoBlackItalic
+import andpact.project.wid.model.PlayerState
+import andpact.project.wid.model.User
+import andpact.project.wid.model.WiD
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.text.*
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.*
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.Year
 import javax.inject.Inject
 
 /**
@@ -56,6 +59,7 @@ class StopwatchViewModel @Inject constructor(
 
     val wiDList: State<List<WiD>> = derivedStateOf { updateWiDList() }
 
+    // TODO: 플레이어 동작 중 자정 넘어가면 그 날짜의 기록에 카운트가 되나?
     private fun updateWiDList(): List<WiD> {
         Log.d(TAG, "updateWiDList executed")
 
@@ -72,103 +76,63 @@ class StopwatchViewModel @Inject constructor(
         _stopwatchViewBarVisible.value = stopwatchViewBarVisible
     }
 
-    fun startStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun startStopwatch() {
         Log.d(TAG, "startStopwatch executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
-        }
+        val currentUser = user.value ?: return
 
         wiDDataSource.startStopwatch(
-            email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
             wiDMaxLimit = currentUser.wiDMaxLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onStopwatchAutoPaused = { newExp: Int ->
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            onStopwatchAutoPaused = { stopwatchAutoPaused: Boolean ->
+                if (stopwatchAutoPaused) {
+                    pauseStopwatch()
+                    stopStopwatch()
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }
 
-    fun pauseStopwatch(onResult: (snackbarActionResult: SnackbarActionResult) -> Unit) {
+    fun pauseStopwatch() {
         Log.d(TAG, "pauseStopwatch executed")
 
-        val currentUser = user.value
-        if (currentUser == null) {
-            onResult(SnackbarActionResult.FAIL_CLIENT_ERROR) // 클라이언트 에러 콜백 호출
-            return
+        val currentUser = user.value ?: return
+        val wiDMinLimit = currentUser.wiDMinLimit
+        val currentWiD = currentWiD.value
+        if (currentWiD.duration < wiDMinLimit) return // 최소 시간 제한
+
+        val newExp = currentWiD.exp // 플레이어는 무조건
+        val currentLevel = currentUser.level
+        val currentExp = currentUser.currentExp
+        val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
+        val wiDTotalExp = currentUser.wiDTotalExp
+        val newWiDTotalExp = wiDTotalExp + newExp
+
+        val updatedUserDocument = mutableMapOf<String, Any>()
+
+        if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
+            // 레벨 업데이트
+            val newLevel = currentLevel + 1
+            updatedUserDocument[LEVEL] = newLevel
+
+            // 경험치 갱신
+            val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
+            updatedUserDocument[CURRENT_EXP] = newCurrentExp
+        } else {
+            // 레벨 업이 아닌 경우 현재 경험치만 갱신
+            updatedUserDocument[CURRENT_EXP] = currentExp + newExp
         }
+
+        updatedUserDocument[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
+        updatedUserDocument[CITY] = currentUser.city.name // 도시 할당
 
         wiDDataSource.pauseStopwatch(
             email = currentUser.email,
-            wiDMinLimit = currentUser.wiDMinLimit,
-            onResult = { snackbarActionResult: SnackbarActionResult ->
-                onResult(snackbarActionResult)
-            },
-            onStopwatchPaused = { newExp: Int ->
-                val currentLevel = currentUser.level
-                val currentExp = currentUser.currentExp
-                val currentLevelRequiredExp = userDataSource.levelRequiredExpMap[currentLevel] ?: 0
-                val wiDTotalExp = currentUser.wiDTotalExp
-                val newWiDTotalExp = wiDTotalExp + newExp
-
-                // 업데이트할 필드
-                val updatedFields = mutableMapOf<String, Any>()
-
-                if (currentLevelRequiredExp <= currentExp + newExp) { // 레벨 업
-                    // 레벨 업데이트
-                    val newLevel = currentLevel + 1
-                    updatedFields[LEVEL] = newLevel
-
-                    // 경험치 갱신
-                    val newCurrentExp = currentExp + newExp - currentLevelRequiredExp
-                    updatedFields[CURRENT_EXP] = newCurrentExp
-                } else {
-                    // 레벨 업이 아닌 경우 현재 경험치만 갱신
-                    updatedFields[CURRENT_EXP] = currentExp + newExp
+            currentWiD = currentWiD,
+            updatedUserDocument = updatedUserDocument,
+            onResult = { success ->
+                if (success) {
+                    userDataSource.updateUser(updatedUserDocument = updatedUserDocument)
                 }
-
-                updatedFields[WID_TOTAL_EXP] = newWiDTotalExp // 총 WiD 경험치 업데이트
-                updatedFields[CITY] = currentUser.city.name // 도시 할당
-
-                // UserDataSource를 통해 문서 갱신
-                userDataSource.setUserDocument(
-                    email = currentUser.email,
-                    updatedUserDocument = updatedFields
-                )
             }
         )
     }
@@ -177,46 +141,6 @@ class StopwatchViewModel @Inject constructor(
         Log.d(TAG, "stopStopwatch executed")
 
         wiDDataSource.stopStopwatch()
-    }
-
-    fun getStopwatchDurationString(duration: Duration): AnnotatedString {
-        Log.d(TAG, "getStopwatchDurationString executed")
-
-        val hours = duration.toHours()
-        val minutes = (duration.toMinutes() % 60).toInt()
-        val seconds = (duration.seconds % 60).toInt()
-
-        val hoursText = hours.toString()
-        val minutesText = if (0 < hours) {
-            minutes.toString().padStart(2, '0')
-        } else {
-            minutes.toString().padStart(1, '0')
-        }
-        val secondsText = if (0 < minutes || 0 < hours) {
-            seconds.toString().padStart(2, '0')
-        } else {
-            seconds.toString().padStart(1, '0')
-        }
-
-        return buildAnnotatedString {
-            withStyle(style = ParagraphStyle(lineHeight = 80.sp)) {
-                if (0 < hours) {
-                    withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
-                        append(hoursText + "\n")
-                    }
-                }
-
-                if (0 < minutes || 0 < hours) {
-                    withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
-                        append(minutesText + "\n")
-                    }
-                }
-
-                withStyle(style = SpanStyle(fontSize = 100.sp, fontFamily = chivoMonoBlackItalic)) {
-                    append(secondsText + "\n")
-                }
-            }
-        }
     }
 
     fun getDurationString(duration: Duration): String { // "H시간 m분 s초"
@@ -238,16 +162,13 @@ class StopwatchViewModel @Inject constructor(
         return wiDDataSource.getDateString(date = date)
     }
 
-    fun getTimeString(time: LocalTime): String { // 'HH:mm:ss'
-        Log.d(TAG, "getTimeString executed")
-
-        return wiDDataSource.getTimeString(time = time)
-    }
-
     @Composable
     fun getDateTimeString(dateTime: LocalDateTime): AnnotatedString {
 //        Log.d(TAG, "getDateTimeString executed")
 
-        return wiDDataSource.getDateTimeString(dateTime = dateTime)
+        return wiDDataSource.getDateTimeString(
+            currentDateTime = now.value,
+            dateTime = dateTime
+        )
     }
 }

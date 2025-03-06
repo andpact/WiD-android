@@ -50,12 +50,12 @@ class MyWiDViewModel @Inject constructor(
 
         val currentUser = user.value ?: return // 잘못된 접근
 
-        val updatedFields = mutableMapOf<String, Any>()
-        updatedFields[WID_MIN_LIMIT] = minLimit.seconds // Long 타입으로 서버로 보냄
+        val updatedUserDocument = mutableMapOf<String, Any>()
+        updatedUserDocument[WID_MIN_LIMIT] = minLimit.seconds // Long 타입으로 서버로 보냄
 
-        userDataSource.setUserDocument(
+        userDataSource.updateUserDocument(
             email = currentUser.email,
-            updatedUserDocument = updatedFields
+            updatedUserDocument = updatedUserDocument
         )
     }
 
@@ -64,12 +64,12 @@ class MyWiDViewModel @Inject constructor(
 
         val currentUser = user.value ?: return // 잘못된 접근
 
-        val updatedFields = mutableMapOf<String, Any>()
-        updatedFields[WID_MAX_LIMIT] = maxLimit.seconds // Long 타입으로 서버로 보냄
+        val updatedUserDocument = mutableMapOf<String, Any>()
+        updatedUserDocument[WID_MAX_LIMIT] = maxLimit.seconds // Long 타입으로 서버로 보냄
 
-        userDataSource.setUserDocument(
+        userDataSource.updateUserDocument(
             email = currentUser.email,
-            updatedUserDocument = updatedFields
+            updatedUserDocument = updatedUserDocument
         )
     }
 

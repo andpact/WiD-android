@@ -88,7 +88,7 @@ private val DarkColorScheme = darkColorScheme(
     surfaceDim = dark_surface_dim                       // 32
 )
 
-@RequiresApi(Build.VERSION_CODES.Q)
+@RequiresApi(Build.VERSION_CODES.Q) // 탐색 바 전경색 없애기.
 @Composable
 fun WiDTheme( // 메인 액티비티에 적용되는 테마
     darkTheme: Boolean = isSystemInDarkTheme(),
